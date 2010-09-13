@@ -1,0 +1,1524 @@
+This is pdfTeXk, Version 3.1415926-1.40.9 (Web2C 7.5.7) (format=pdflatex 2008.12.28)  13 SEP 2010 11:06
+entering extended mode
+\write18 enabled.
+ %&-line parsing enabled.
+**x10.tex
+(./x10.tex
+LaTeX2e <2005/12/01>
+Babel <v3.8l> and hyphenation patterns for english, usenglishmax, dumylang, noh
+yphenation, german-x-2008-06-18, ngerman-x-2008-06-18, ancientgreek, ibycus, ar
+abic, basque, bulgarian, catalan, pinyin, coptic, croatian, czech, danish, dutc
+h, esperanto, estonian, farsi, finnish, french, galician, german, ngerman, mono
+greek, greek, hungarian, icelandic, indonesian, interlingua, irish, italian, la
+tin, lithuanian, mongolian, mongolian2a, bokmal, nynorsk, polish, portuguese, r
+omanian, russian, sanskrit, serbian, slovak, slovenian, spanish, swedish, turki
+sh, ukenglish, ukrainian, uppersorbian, welsh, loaded.
+(/usr/local/texlive/2008/texmf-dist/tex/latex/base/report.cls
+Document Class: report 2005/09/16 v1.4f Standard LaTeX document class
+(/usr/local/texlive/2008/texmf-dist/tex/latex/base/size12.clo
+File: size12.clo 2005/09/16 v1.4f Standard LaTeX file (size option)
+)
+\c@part=\count79
+\c@chapter=\count80
+\c@section=\count81
+\c@subsection=\count82
+\c@subsubsection=\count83
+\c@paragraph=\count84
+\c@subparagraph=\count85
+\c@figure=\count86
+\c@table=\count87
+\abovecaptionskip=\skip41
+\belowcaptionskip=\skip42
+\bibindent=\dimen102
+) (./x10.sty
+(/usr/local/texlive/2008/texmf-dist/tex/latex/listings/listings.sty
+(/usr/local/texlive/2008/texmf-dist/tex/latex/graphics/keyval.sty
+Package: keyval 1999/03/16 v1.13 key=value parser (DPC)
+\KV@toks@=\toks14
+)
+\lst@mode=\count88
+\lst@gtempboxa=\box26
+\lst@token=\toks15
+\lst@length=\count89
+\lst@currlwidth=\dimen103
+\lst@column=\count90
+\lst@pos=\count91
+\lst@lostspace=\dimen104
+\lst@width=\dimen105
+\lst@newlines=\count92
+\lst@lineno=\count93
+\lst@maxwidth=\dimen106
+
+(/usr/local/texlive/2008/texmf-dist/tex/latex/listings/lstmisc.sty
+File: lstmisc.sty 2007/02/22 1.4 (Carsten Heinz)
+\c@lstnumber=\count94
+\lst@skipnumbers=\count95
+\lst@framebox=\box27
+)
+(/usr/local/texlive/2008/texmf-dist/tex/latex/listings/listings.cfg
+File: listings.cfg 2007/02/22 1.4 listings configuration
+))
+Package: listings 2007/02/22 1.4 (Carsten Heinz)
+)
+(./tenv.sty
+\eStop=\box28
+) (/usr/local/texlive/2008/texmf-dist/tex/latex/ltxmisc/url.sty
+\Urlmuskip=\muskip10
+Package: url 2006/04/12  ver 3.3  Verb mode for urls, etc.
+)
+(/usr/local/texlive/2008/texmf-dist/tex/latex/psnfss/times.sty
+Package: times 2005/04/12 PSNFSS-v9.2a (SPQR) 
+) (./txtt.sty
+LaTeX Font Info:    Redeclaring math alphabet \mathtt on input line 3.
+LaTeX Font Info:    Overwriting math alphabet `\mathtt' in version `normal'
+(Font)                  OT1/cmtt/m/n --> OT1/txtt/m/n on input line 3.
+LaTeX Font Info:    Overwriting math alphabet `\mathtt' in version `bold'
+(Font)                  OT1/cmtt/m/n --> OT1/txtt/m/n on input line 3.
+LaTeX Font Info:    Overwriting math alphabet `\mathtt' in version `bold'
+(Font)                  OT1/txtt/m/n --> OT1/txtt/b/n on input line 4.
+)
+(/usr/local/texlive/2008/texmf-dist/tex/generic/oberdiek/ifpdf.sty
+Package: ifpdf 2007/12/12 v1.6 Provides the ifpdf switch (HO)
+Package ifpdf Info: pdfTeX in pdf mode detected.
+)
+(./tocloft.sty
+Package: tocloft 2003/09/26 v2.3c parameterised ToC, etc., typesetting
+
+
+Package tocloft Note: The document has chapter divisions.
+
+\cftparskip=\skip43
+\cftbeforetoctitleskip=\skip44
+\cftaftertoctitleskip=\skip45
+\cftbeforepartskip=\skip46
+\cftpartnumwidth=\skip47
+\cftpartindent=\skip48
+\cftbeforechapskip=\skip49
+\cftchapindent=\skip50
+\cftchapnumwidth=\skip51
+\cftbeforesecskip=\skip52
+\cftsecindent=\skip53
+\cftsecnumwidth=\skip54
+\cftbeforesubsecskip=\skip55
+\cftsubsecindent=\skip56
+\cftsubsecnumwidth=\skip57
+\cftbeforesubsubsecskip=\skip58
+\cftsubsubsecindent=\skip59
+\cftsubsubsecnumwidth=\skip60
+\cftbeforeparaskip=\skip61
+\cftparaindent=\skip62
+\cftparanumwidth=\skip63
+\cftbeforesubparaskip=\skip64
+\cftsubparaindent=\skip65
+\cftsubparanumwidth=\skip66
+\cftbeforeloftitleskip=\skip67
+\cftafterloftitleskip=\skip68
+\cftbeforefigskip=\skip69
+\cftfigindent=\skip70
+\cftfignumwidth=\skip71
+\c@lofdepth=\count96
+\c@lotdepth=\count97
+\cftbeforelottitleskip=\skip72
+\cftafterlottitleskip=\skip73
+\cftbeforetabskip=\skip74
+\cfttabindent=\skip75
+\cfttabnumwidth=\skip76
+) (./bcprules.sty
+\afterruleskip=\skip77
+\labelminsep=\skip78
+\labelcolwidth=\dimen107
+\@labelbox=\box29
+\rulebox=\box30
+\ruledim=\dimen108
+\labeldim=\dimen109
+)
+(/usr/local/texlive/2008/texmf-dist/tex/latex/tools/xspace.sty
+Package: xspace 2006/05/08 v1.12 Space after command names (DPC,MH)
+)
+\@indexfile=\write3
+\openout3 = `x10.idx'.
+
+
+Writing index file x10.idx
+(./commands.sty
+\modwidth=\skip79
+\modskip=\skip80
+\@modheight=\skip81
+\@modpos=\skip82
+)
+(/usr/local/texlive/2008/texmf-dist/tex/latex/hyperref/hyperref.sty
+Package: hyperref 2008/12/26 v6.78n Hypertext links for LaTeX
+
+(/usr/local/texlive/2008/texmf-dist/tex/generic/oberdiek/ifvtex.sty
+Package: ifvtex 2008/11/04 v1.4 Switches for detecting VTeX and its modes (HO)
+Package ifvtex Info: VTeX not detected.
+)
+(/usr/local/texlive/2008/texmf-dist/tex/generic/ifxetex/ifxetex.sty
+Package: ifxetex 2008/09/18 v0.4 Provides ifxetex conditional
+)
+(/usr/local/texlive/2008/texmf-dist/tex/latex/oberdiek/hycolor.sty
+Package: hycolor 2008/09/08 v1.4 Code for color options of hyperref/bookmark (H
+O)
+
+(/usr/local/texlive/2008/texmf-dist/tex/latex/oberdiek/xcolor-patch.sty
+Package: xcolor-patch 2008/09/08 xcolor patch
+))
+\@linkdim=\dimen110
+\Hy@linkcounter=\count98
+\Hy@pagecounter=\count99
+
+(/usr/local/texlive/2008/texmf-dist/tex/latex/hyperref/pd1enc.def
+File: pd1enc.def 2008/12/26 v6.78n Hyperref: PDFDocEncoding definition (HO)
+)
+(/usr/local/texlive/2008/texmf-dist/tex/generic/oberdiek/etexcmds.sty
+Package: etexcmds 2007/12/12 v1.2 Prefix for e-TeX command names (HO)
+
+(/usr/local/texlive/2008/texmf-dist/tex/generic/oberdiek/infwarerr.sty
+Package: infwarerr 2007/09/09 v1.2 Providing info/warning/message (HO)
+)
+Package etexcmds Info: Could not find \expanded.
+(etexcmds)             That can mean that you are not using pdfTeX 1.50 or
+(etexcmds)             that some package has redefined \expanded.
+(etexcmds)             In the latter case, load this package earlier.
+)
+(/usr/local/texlive/2008/texmf/tex/latex/config/hyperref.cfg
+File: hyperref.cfg 2002/06/06 v1.2 hyperref configuration of TeXLive
+)
+(/usr/local/texlive/2008/texmf-dist/tex/latex/oberdiek/kvoptions.sty
+Package: kvoptions 2007/10/18 v3.0 Keyval support for LaTeX options (HO)
+)
+Package hyperref Info: Hyper figures OFF on input line 2907.
+Package hyperref Info: Link nesting OFF on input line 2912.
+Package hyperref Info: Hyper index ON on input line 2915.
+Package hyperref Info: Plain pages OFF on input line 2922.
+Package hyperref Info: Backreferencing OFF on input line 2927.
+
+Implicit mode ON; LaTeX internals redefined
+Package hyperref Info: Bookmarks ON on input line 3117.
+LaTeX Info: Redefining \url on input line 3354.
+(/usr/local/texlive/2008/texmf-dist/tex/generic/oberdiek/bitset.sty
+Package: bitset 2007/09/28 v1.0 Data type bit set (HO)
+
+(/usr/local/texlive/2008/texmf-dist/tex/generic/oberdiek/intcalc.sty
+Package: intcalc 2007/09/27 v1.1 Expandable integer calculations (HO)
+)
+(/usr/local/texlive/2008/texmf-dist/tex/generic/oberdiek/bigintcalc.sty
+Package: bigintcalc 2007/11/11 v1.1 Expandable big integer calculations (HO)
+
+(/usr/local/texlive/2008/texmf-dist/tex/generic/oberdiek/pdftexcmds.sty
+Package: pdftexcmds 2007/12/12 v0.3 LuaTeX support for pdfTeX utility functions
+ (HO)
+Package pdftexcmds Info: LuaTeX not detected on input line 139.
+)))
+(/usr/local/texlive/2008/texmf-dist/tex/generic/oberdiek/kvsetkeys.sty
+Package: kvsetkeys 2007/09/29 v1.3 Key value parser with default handler suppor
+t (HO)
+)
+\Fld@menulength=\count100
+\Field@Width=\dimen111
+\Fld@charsize=\dimen112
+\Field@toks=\toks16
+Package hyperref Info: Hyper figures OFF on input line 4271.
+Package hyperref Info: Link nesting OFF on input line 4276.
+Package hyperref Info: Hyper index ON on input line 4279.
+Package hyperref Info: backreferencing OFF on input line 4286.
+Package hyperref Info: Link coloring OFF on input line 4291.
+Package hyperref Info: Link coloring with OCG OFF on input line 4296.
+Package hyperref Info: PDF/A mode OFF on input line 4301.
+
+(/usr/local/texlive/2008/texmf-dist/tex/generic/oberdiek/atbegshi.sty
+Package: atbegshi 2008/07/31 v1.9 At begin shipout hook (HO)
+)
+\Hy@abspage=\count101
+\c@Item=\count102
+\c@Hfootnote=\count103
+)
+*hyperref using default driver hpdftex*
+(/usr/local/texlive/2008/texmf-dist/tex/latex/hyperref/hpdftex.def
+File: hpdftex.def 2008/12/26 v6.78n Hyperref driver for pdfTeX
+\Fld@listcount=\count104
+)
+\c@example=\count105
+\c@planned=\count106
+ (./x10.aux)
+\openout1 = `x10.aux'.
+
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 93.
+LaTeX Font Info:    ... okay on input line 93.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 93.
+LaTeX Font Info:    ... okay on input line 93.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 93.
+LaTeX Font Info:    ... okay on input line 93.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 93.
+LaTeX Font Info:    ... okay on input line 93.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 93.
+LaTeX Font Info:    ... okay on input line 93.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 93.
+LaTeX Font Info:    ... okay on input line 93.
+LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 93.
+LaTeX Font Info:    ... okay on input line 93.
+LaTeX Font Info:    Try loading font information for OT1+ptm on input line 93.
+(/usr/local/texlive/2008/texmf-dist/tex/latex/psnfss/ot1ptm.fd
+File: ot1ptm.fd 2001/06/04 font definitions for OT1/ptm.
+)
+\c@lstlisting=\count107
+Package hyperref Info: Link coloring OFF on input line 93.
+
+(/usr/local/texlive/2008/texmf-dist/tex/latex/hyperref/nameref.sty
+Package: nameref 2007/05/29 v2.31 Cross-referencing by name of section
+
+(/usr/local/texlive/2008/texmf-dist/tex/latex/oberdiek/refcount.sty
+Package: refcount 2008/08/11 v3.1 Data extraction from references (HO)
+)
+\c@section@level=\count108
+)
+LaTeX Info: Redefining \ref on input line 93.
+LaTeX Info: Redefining \pageref on input line 93.
+
+(./x10.out) (./x10.out)
+\@outlinefile=\write4
+\openout4 = `x10.out'.
+
+\AtBeginShipoutBox=\box31
+ (./first.tex
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <14.4> on input line 25.
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <7> on input line 25.
+LaTeX Font Info:    Try loading font information for OT1+txtt on input line 25.
+
+
+(/usr/local/texlive/2008/texmf-dist/tex/latex/txfonts/ot1txtt.fd
+File: ot1txtt.fd 2000/12/15 v3.1
+)
+Overfull \hbox (81.52902pt too wide) in paragraph at lines 25--25
+ [][] 
+
+\hbox(12.59995+77.40005)x390.0 []
+
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <12> on input line 32.
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <8> on input line 32.
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <6> on input line 32.
+
+Overfull \hbox (5.2404pt too wide) in paragraph at lines 29--34
+\OT1/ptm/m/n/12 class-based object-oriented pro-gram-ming lan-guage de-signed f
+or high-performance,
+
+\hbox(8.18385+2.5979)x390.0, glue set - 1.0 []
+
+
+Overfull \hbox (9.34479pt too wide) in paragraph at lines 59--83
+\OT1/ptm/m/n/12 Philippe Charles, Perry Cheng, Christo-pher Don-awa, Ju-lian Do
+lby, Ke-mal Ebcio[]glu,
+
+\hbox(8.18385+2.5979)x390.0, glue set - 1.0 []
+
+[1
+
+{/usr/local/texlive/2008/texmf-var/fonts/map/pdftex/updmap/pdftex.map}]
+LaTeX Font Info:    Font shape `OT1/ptm/bx/n' in size <12> not available
+(Font)              Font shape `OT1/ptm/b/n' tried instead on input line 113.
+
+
+LaTeX Warning: Citation `jls2' on page 2 undefined on input line 113.
+
+
+LaTeX Warning: Citation `polyj' on page 2 undefined on input line 141.
+
+) [2]
+LaTeX Font Info:    Font shape `OT1/ptm/bx/n' in size <24.88> not available
+(Font)              Font shape `OT1/ptm/b/n' tried instead on input line 109.
+ (./x10.toc [3
+
+] [4] [5] [6] [7]
+Underfull \vbox (badness 1609) has occurred while \output is active
+\vbox(548.5+0.0)x390.0, glue set 2.52785 []
+
+ [8])
+\tf@toc=\write5
+\openout5 = `x10.toc'.
+
+
+(./Intro.tex [9]
+Chapter 1.
+LaTeX Font Info:    Font shape `OT1/ptm/bx/n' in size <14.4> not available
+(Font)              Font shape `OT1/ptm/b/n' tried instead on input line 3.
+
+LaTeX Warning: Citation `mpi' on page 10 undefined on input line 26.
+
+
+Overfull \hbox (0.8834pt too wide) in paragraph at lines 23--37
+\OT1/ptm/m/n/12 Mul-ti-ple pro-ces-sors are made to in-ter-act via a rel-a-tive
+ly language-neutral message-
+
+\hbox(8.18385+2.5979)x390.0, glue set - 1.0 []
+
+
+LaTeX Warning: Citation `pgas' on page 10 undefined on input line 40.
+
+
+LaTeX Warning: Citation `titanium' on page 10 undefined on input line 40.
+
+[10
+
+]
+Overfull \hbox (5.09647pt too wide) in paragraph at lines 49--56
+\OT1/ptm/m/n/12 fun-da-men-tal goal of X10 is to en-able scal-able, high-perfor
+mance, high-productivity
+
+\hbox(8.18385+2.5979)x390.0, glue set - 1.0 []
+
+
+LaTeX Warning: Citation `moreira00java' on page 11 undefined on input line 62.
+
+
+LaTeX Warning: Citation `kava' on page 11 undefined on input line 62.
+
+
+LaTeX Warning: Citation `zpl' on page 11 undefined on input line 67.
+
+
+Overfull \hbox (2.87654pt too wide) in paragraph at lines 70--95
+[]\OT1/ptm/m/n/12 X10 in-tro-duces a flex-i-ble treat-ment of con-cur-rency, di
+s-tri-bu-tion and lo-cal-ity, within
+
+\hbox(8.18385+2.5979)x390.0, glue set - 1.0 []
+
+[11]) (./Overview.tex [12]
+Chapter 2.
+LaTeX Font Info:    Font shape `OT1/ptm/bx/n' in size <17.28> not available
+(Font)              Font shape `OT1/ptm/b/n' tried instead on input line 10.
+LaTeX Font Info:    Try loading font information for OMS+ptm on input line 16.
+(/usr/local/texlive/2008/texmf-dist/tex/latex/psnfss/omsptm.fd
+File: omsptm.fd 
+)
+LaTeX Font Info:    Font shape `OMS/ptm/m/n' in size <12> not available
+(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 16.
+ [13
+
+] [14]
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <5> on input line 193.
+
+Overfull \hbox (56.37376pt too wide) in paragraph at lines 195--201
+[] \OT1/ptm/m/n/12 dec-la-ra-tion on the sec-ond line makes [][] be a syn-onym 
+for [][][][][][][][]
+
+\hbox(8.20198+2.5979)x390.0, glue set - 1.0 []
+
+[15]
+Overfull \hbox (43.4992pt too wide) in paragraph at lines 232--233
+[][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][] 
+
+\hbox(10.14995+4.35004)x366.0 []
+
+[16]
+Underfull \vbox (badness 1460) has occurred while \output is active
+\vbox(548.5+0.0)x390.0, glue set 2.44481 []
+
+ [17]
+[18] [19] [20] [21]
+
+LaTeX Warning: Reference `extern' on page 22 undefined on input line 534.
+
+LaTeX Font Info:    Font shape `OT1/ptm/bx/n' in size <10> not available
+(Font)              Font shape `OT1/ptm/b/n' tried instead on input line 551.
+
+LaTeX Warning: Citation `zpl' on page 22 undefined on input line 551.
+
+) (./Lex.tex [22]
+Chapter 3.
+
+LaTeX Warning: Citation `jls2' on page 23 undefined on input line 3.
+
+[23
+
+]
+Overfull \hbox (5.69928pt too wide) in paragraph at lines 46--47
+[][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][
+][][] 
+
+\hbox(10.14995+4.35004)x366.0 []
+
+[24]
+Overfull \hbox (11.52982pt too wide) in paragraph at lines 111--115
+\OT1/ptm/m/n/12 am-ple, [][], [][], [][], [], and [][]
+
+\hbox(8.20198+2.5979)x360.6253, glue set - 1.0 []
+
+
+Overfull \hbox (29.5146pt too wide) in paragraph at lines 122--131
+[][] \OT1/ptm/m/n/12 lit-er-als have the form $\OML/cmm/m/it/12 ^^[^^^$[][][]\O
+T1/ptm/m/n/12 , $\OML/cmm/m/it/12 ^^[^^^\OT1/txtt/m/n/12 D$\OT1/ptm/m/n/12 , an
+d $\OML/cmm/m/it/12 ^^[^^^\OT1/txtt/m/n/12 d$\OT1/ptm/m/n/12 . \OT1/ptm/m/it/12
+ E.g.\OT1/ptm/m/n/12 , [], [][], [][],
+
+\hbox(9.81061+2.47792)x360.6253, glue set - 1.0 []
+
+[25]) (./Types.tex [26]
+Chapter 4.
+[27
+
+]
+Overfull \hbox (126.96478pt too wide) in paragraph at lines 72--106
+[] 
+
+\hbox(162.49983+156.49983)x390.0 []
+
+
+Underfull \vbox (badness 10000) has occurred while \output is active
+\vbox(548.5+0.0)x390.0, glue set 88.125 []
+
+ [28]
+[29] [30] [31] [32] [33]
+Overfull \hbox (5.52908pt too wide) in paragraph at lines 433--436
+[]\OT1/ptm/m/it/12 invariant\OT1/ptm/m/n/12 : Given a def-i-ni-tion [][][][][][
+][], [][][][] and [][][][]
+
+\hbox(8.18385+1.6919)x360.6253, glue set - 1.0 []
+
+[34]
+Overfull \hbox (11.99927pt too wide) in paragraph at lines 486--487
+[][][][][][][][][][][][][][][][][][][][][][][][][][][][][][] 
+
+\hbox(10.14995+4.35004)x366.0 []
+
+[35] (./TypeDefs.tex [36]
+Overfull \hbox (68.69916pt too wide) in paragraph at lines 91--92
+[][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][] 
+
+\hbox(10.14995+4.35004)x366.0 []
+
+[37]) [38]
+Overfull \hbox (26.90126pt too wide) in paragraph at lines 701--706
+[] \OT1/ptm/m/n/12 and still has [][], so [][][][][][][][][][]
+
+\hbox(8.18385+2.004)x360.6253, glue set - 1.0 []
+
+
+Overfull \hbox (21.18947pt too wide) in paragraph at lines 701--706
+\OT1/ptm/m/n/12 as well. So, [][][][][][][][][][][][][][][][][][][][][][][]. 
+
+\hbox(8.18385+1.6919)x360.6253, glue set - 1.0 []
+
+[39]
+Overfull \hbox (8.04926pt too wide) in paragraph at lines 706--709
+[]\OT1/ptm/m/n/12 Furthermore, since [][][][][][][], [][][][][][][][][][][][][]
+
+
+\hbox(8.18385+2.004)x360.6253, glue set - 1.0 []
+
+
+Overfull \hbox (51.24988pt too wide) in paragraph at lines 706--709
+[][]\OT1/ptm/m/n/12 . So, [][][][][][][][][][][][][][][][][][][][][][][]. 
+
+\hbox(10.14995+4.35004)x360.6253, glue set - 1.0 []
+
+[40] [41]
+Overfull \hbox (1.77394pt too wide) in paragraph at lines 847--852
+\OT1/ptm/m/n/12 fines a prop-erty [] of type []. [][][], when [] is a class, is
+ [][][][][][][][].
+
+\hbox(8.20198+2.5979)x390.0, glue set - 1.0 []
+
+[42] [43]
+Overfull \hbox (110.68706pt too wide) in paragraph at lines 1062--1072
+[][][][][][][][][][][][][][][][][][][] \OT1/ptm/m/n/12 and [][][][][][][][][][]
+[][][][][][][][][][]
+
+\hbox(10.14995+4.35004)x390.0, glue set - 1.0 []
+
+[44]
+Overfull \hbox (26.52441pt too wide) in paragraph at lines 1082--1090
+[][] 
+
+\hbox(39.24997+33.24995)x390.0 []
+
+
+Overfull \hbox (20.2046pt too wide) in paragraph at lines 1105--1116
+[]\OT1/ptm/m/n/12 A class or struct def-i-ni-tion may use a func-tion type [][]
+[][][][][][][][][][][][][][][][][]
+
+\hbox(8.18385+2.5979)x390.0, glue set - 1.0 []
+
+[45]
+Overfull \hbox (77.15976pt too wide) in paragraph at lines 1228--1229
+[][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][] 
+
+\hbox(11.58664+3.0)x334.77562 []
+
+[46]
+Overfull \hbox (13.06848pt too wide) in paragraph at lines 1241--1246
+[]\OT1/ptm/b/n/12 Function types: [][][][][][][][][][][][][][][][][][][][][][][
+][][][][][][][][][][][][][][][][][][][][][][][][][]
+
+\hbox(8.26794+2.4419)x360.6253, glue set - 1.0 []
+
+[47] [48]
+
+Package hyperref Warning: Token not allowed in a PDF string (PDFDocEncoding):
+(hyperref)                removing `\lstinline' on input line 1405.
+
+[49]
+LaTeX Font Info:    Font shape `OMS/ptm/m/n' in size <10> not available
+(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 1429.
+
+
+Overfull \hbox (11.14575pt too wide) in paragraph at lines 1426--1435
+\OT1/ptm/m/n/12 ery-thing.[][][] [][][][] pro-duces a string rep-re-sen-ta-tion
+ of [], and [][][][]
+
+\hbox(9.81061+2.5979)x390.0, glue set - 1.0 []
+
+
+Package hyperref Warning: Token not allowed in a PDF string (PDFDocEncoding):
+(hyperref)                removing `\lstinline' on input line 1437.
+
+[50]
+Overfull \hbox (17.48096pt too wide) in paragraph at lines 1504--1510
+\OT1/ptm/m/n/12 the X10 com-piler would re-ject this pro-gram for at-tempt-ing 
+to over-ride [][]
+
+\hbox(8.18385+2.5979)x390.0, glue set - 1.0 []
+
+
+Overfull \hbox (10.29344pt too wide) in paragraph at lines 1504--1510
+\OT1/ptm/m/n/12 ply the type that is ac-tu-ally in-tended for [], such as [][][
+][][][]
+
+\hbox(8.20198+2.5979)x390.0, glue set - 1.0 []
+
+[51]
+Overfull \hbox (24.38322pt too wide) in paragraph at lines 1601--1606
+\OT1/ptm/m/n/12 Given [][][][][][][][][][][][][], [][][][][][][][][][][][][], a
+nd [][]
+
+\hbox(8.18385+1.6919)x390.0, glue set - 1.0 []
+
+
+Overfull \hbox (60.78885pt too wide) in paragraph at lines 1601--1606
+[][][][][]\OT1/ptm/m/n/12 , in the fol-low-ing snip-pet, the al-go-rithm will i
+n-fer the type [][][][]
+
+\hbox(10.14995+4.35004)x390.0, glue set - 1.0 []
+
+[52]
+Overfull \hbox (24.59924pt too wide) in paragraph at lines 1625--1626
+[][][][][][][][][][][][][][][][][][][][][][][][][][][][] 
+
+\hbox(10.14995+4.35004)x366.0 []
+
+) (./Vars.tex [53]
+Chapter 5.
+[54
+
+] [55] [56]
+
+LaTeX Warning: Citation `jls2' on page 57 undefined on input line 248.
+
+[57] [58] [59]
+Overfull \hbox (48.72575pt too wide) in paragraph at lines 435--453
+[][] 
+
+\hbox(126.24988+120.24986)x390.0 []
+
+) (./Packages.tex [60]
+Chapter 6.
+
+LaTeX Warning: Citation `jls2' on page 61 undefined on input line 5.
+
+[61
+
+]
+
+Package hyperref Warning: Token not allowed in a PDF string (PDFDocEncoding):
+(hyperref)                removing `\lstinline' on input line 61.
+
+
+Overfull \hbox (3.47653pt too wide) in paragraph at lines 75--79
+\OT1/ptm/m/n/12 The dec-la-ra-tion [][][] \OT1/ptm/m/it/12 Type-Name [] \OT1/pt
+m/m/n/12 im-ports a sin-gle type into the cur-rent names-
+
+\hbox(8.18385+2.5979)x390.0, glue set - 1.0 []
+
+
+Overfull \hbox (3.41675pt too wide) in paragraph at lines 86--91
+\OT1/ptm/m/n/12 The au-to-matic im-port [][][][][][][], loosely, im-ports all t
+he pub-lic mem-
+
+\hbox(8.18385+2.5979)x390.0, glue set - 1.0 []
+
+[62]) (./Interfaces.tex [63]
+Chapter 7.
+
+LaTeX Warning: Citation `jls2' on page 64 undefined on input line 5.
+
+
+Overfull \hbox (10.65723pt too wide) in paragraph at lines 49--59
+[][]
+
+\hbox(31.99997+25.99997)x390.0 []
+
+[64
+
+]
+Overfull \hbox (0.46422pt too wide) in paragraph at lines 85--90
+\OT1/ptm/m/n/12 An in-ter-face may de-clare a [] field, with a value. This fiel
+d is im-plic-itly [][]
+
+\hbox(8.18385+2.5979)x390.0, glue set - 1.0 []
+
+[65]) (./Classes.tex [66]
+Chapter 8.
+[67
+
+] [68] [69]
+Overfull \hbox (56.09918pt too wide) in paragraph at lines 209--210
+[][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][
+] 
+
+\hbox(10.14995+4.35004)x366.0 []
+
+
+Overfull \hbox (24.59924pt too wide) in paragraph at lines 211--212
+[][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][] 
+
+\hbox(10.14995+4.35004)x366.0 []
+
+[70] [71]
+Overfull \hbox (7.90448pt too wide) in paragraph at lines 297--299
+[]\OT1/ptm/m/n/12 No checked ex-cep-tions may be thrown. (There is no place to 
+put a [][][]
+
+\hbox(8.18385+2.5979)x360.6253, glue set - 1.0 []
+
+[72]
+Overfull \hbox (37.19922pt too wide) in paragraph at lines 358--359
+[][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][
+][][] 
+
+\hbox(10.14995+4.35004)x366.0 []
+
+[73]
+Overfull \hbox (0.51205pt too wide) in paragraph at lines 471--473
+[]\OT1/ptm/m/n/12 Properties are ini-tial-ized by the in-vo-ca-tion of a spe-ci
+al [] state-ment, which
+
+\hbox(8.18385+2.5979)x390.0, glue set - 1.0 []
+
+[74]
+Overfull \hbox (9.85986pt too wide) in paragraph at lines 551--558
+\OT1/ptm/m/n/12 Often, a method will only make sense to in-voke un-der cer-tain
+ statically-determinable
+
+\hbox(8.18385+2.5979)x390.0, glue set - 1.0 []
+
+[75] [76]
+Overfull \hbox (68.69916pt too wide) in paragraph at lines 661--662
+[][][][][][][][][][][][][][][][][][][][][][][][][][][][] 
+
+\hbox(10.14995+4.35004)x366.0 []
+
+
+Overfull \hbox (30.89923pt too wide) in paragraph at lines 672--673
+[][][][][][][][][][][][][][][][][][][][][][][][][][] 
+
+\hbox(10.14995+4.35004)x366.0 []
+
+[77] [78]
+Overfull \hbox (3.22374pt too wide) in paragraph at lines 838--840
+\OT1/ptm/m/n/12 A method may be de-clared [], in-di-cat-ing that it will be ex-
+e-cuted atomically---
+
+\hbox(8.18385+2.5979)x390.0, glue set - 1.0 []
+
+[79]
+Overfull \hbox (2.26634pt too wide) in paragraph at lines 881--882
+[][] \OT1/ptm/m/n/12 meth-ods can be over-rid-den only by meth-ods marked []. 
+
+\hbox(8.18385+2.5979)x390.0, glue set - 1.0 []
+
+[80]
+Overfull \hbox (5.69928pt too wide) in paragraph at lines 930--931
+[][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][] 
+
+\hbox(10.14995+4.35004)x366.0 []
+
+
+Overfull \hbox (15.26118pt too wide) in paragraph at lines 936--943
+\OT1/ptm/m/n/12 the nullary con-struc-tor call [][][][][] will re-turn a value 
+of type [][][][][][]
+
+\hbox(8.20198+2.5979)x390.0, glue set - 1.0 []
+
+
+Package hyperref Warning: Token not allowed in a PDF string (PDFDocEncoding):
+(hyperref)                removing `\lstinline' on input line 975.
+
+[81]
+Overfull \hbox (0.36868pt too wide) in paragraph at lines 1003--1007
+[]\OT1/ptm/m/n/12 This ap-proach can be ex-tended to give al-most ar-bi-trar-il
+y bad be-hav-ior for partially-
+
+\hbox(8.18385+2.5979)x390.0, glue set - 1.0 []
+
+[82] [83] [84]
+Overfull \hbox (56.09918pt too wide) in paragraph at lines 1365--1366
+[][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][] 
+
+\hbox(10.14995+4.35004)x366.0 []
+
+
+Overfull \hbox (106.49908pt too wide) in paragraph at lines 1366--1367
+[][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][] 
+
+\hbox(10.14995+4.35004)x366.0 []
+
+[85]
+Overfull \hbox (11.99927pt too wide) in paragraph at lines 1370--1371
+[][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][
+][][][][][][][][][][][][] 
+
+\hbox(10.14995+4.35004)x366.0 []
+
+
+Overfull \hbox (18.29926pt too wide) in paragraph at lines 1397--1398
+[][][][][][][][][][][][][][][][][][][][][][][][][][][][][] 
+
+\hbox(10.14995+4.35004)x366.0 []
+
+
+Overfull \hbox (43.4992pt too wide) in paragraph at lines 1399--1401
+[][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][
+][][] 
+
+\hbox(10.14995+4.35004)x366.0 []
+
+
+Overfull \hbox (5.69928pt too wide) in paragraph at lines 1440--1441
+[][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][] 
+
+\hbox(10.14995+4.35004)x366.0 []
+
+[86]
+Overfull \hbox (5.69928pt too wide) in paragraph at lines 1479--1480
+[][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][] 
+
+\hbox(10.14995+4.35004)x366.0 []
+
+
+Overfull \hbox (5.69928pt too wide) in paragraph at lines 1506--1507
+[][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][] 
+
+\hbox(10.14995+4.35004)x366.0 []
+
+
+Overfull \hbox (128.01442pt too wide) in paragraph at lines 1528--1540
+[] 
+
+\hbox(53.74995+47.74994)x390.0 []
+
+
+Overfull \hbox (2.74525pt too wide) in paragraph at lines 1563--1566
+\OT1/ptm/m/n/12 Unary op-er-a-tors are de-fined in a sim-i-lar way, with [] ap-
+pear-ing in the []
+
+\hbox(8.18385+2.5979)x390.0, glue set - 1.0 []
+
+[87]
+Overfull \hbox (5.69928pt too wide) in paragraph at lines 1577--1578
+[][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][] 
+
+\hbox(10.14995+4.35004)x366.0 []
+
+
+Overfull \hbox (0.56737pt too wide) in paragraph at lines 1590--1594
+[][] 
+
+\hbox(10.25+4.24998)x390.0 []
+
+
+Overfull \hbox (18.29926pt too wide) in paragraph at lines 1612--1613
+[][][][][][][][][][][][][][][][][][][][][][][][][][][][][] 
+
+\hbox(10.14995+4.35004)x366.0 []
+
+[88]
+Overfull \hbox (37.19922pt too wide) in paragraph at lines 1701--1703
+[][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][] 
+
+\hbox(10.14995+4.35004)x366.0 []
+
+
+Package hyperref Warning: Token not allowed in a PDF string (PDFDocEncoding):
+(hyperref)                removing `\lstinline' on input line 1720.
+
+
+Package hyperref Warning: Token not allowed in a PDF string (PDFDocEncoding):
+(hyperref)                removing `\lstinline' on input line 1720.
+
+[89]
+Overfull \hbox (1.24477pt too wide) in paragraph at lines 1738--1746
+\OT1/ptm/m/n/12 (This has a pos-si-bly sur-pris-ing con-se-quence for the or-de
+r of eval-u-a-tion: in [][][][][][],
+
+\hbox(8.18385+2.5979)x390.0, glue set - 1.0 []
+
+
+Overfull \hbox (6.32176pt too wide) in paragraph at lines 1747--1753
+\OT1/ptm/m/n/12 string rep-re-sen-ta-tion of the odd-vec, which prob-a-bly shou
+ld be done by [][]
+
+\hbox(8.18385+2.5979)x390.0, glue set - 1.0 []
+
+
+Overfull \hbox (49.7992pt too wide) in paragraph at lines 1760--1761
+[][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][
+][][][][][][][][][][][] 
+
+\hbox(10.14995+4.35004)x366.0 []
+
+[90] [91]
+Overfull \hbox (0.5751pt too wide) in paragraph at lines 2000--2003
+[]\OT1/ptm/m/n/12 With ev-ery de-fined class, struct, or in-ter-face [] we as-s
+o-ciate a \OT1/ptm/m/it/12 type in-vari-ant $[]\OT1/cmr/m/n/12 ($[]$)$\OT1/ptm/
+m/n/12 ,
+
+\hbox(9.0+3.0)x390.0, glue set - 1.0 []
+
+[92]
+Overfull \hbox (15.1059pt too wide) in paragraph at lines 2022--2023
+[][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][] 
+
+\hbox(10.14995+4.35004)x366.0 []
+
+
+Overfull \hbox (15.1059pt too wide) in paragraph at lines 2034--2035
+[][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][] 
+
+\hbox(10.14995+4.35004)x366.0 []
+
+
+Package hyperref Warning: Token not allowed in a PDF string (PDFDocEncoding):
+(hyperref)                removing `\lstinline' on input line 2051.
+
+
+Package hyperref Warning: Token not allowed in a PDF string (PDFDocEncoding):
+(hyperref)                removing `\lstinline' on input line 2051.
+
+LaTeX Font Info:    Font shape `OT1/txtt/m/it' in size <12> not available
+(Font)              Font shape `OT1/txtt/m/sl' tried instead on input line 2059
+.
+[93]
+LaTeX Font Info:    Font shape `OMS/ptm/m/it' in size <12> not available
+(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 2093.
+
+
+Overfull \hbox (44.89195pt too wide) in paragraph at lines 2088--2098
+[][] 
+
+\hbox(60.99994+54.99994)x390.0 []
+
+[94]
+Overfull \hbox (5.69928pt too wide) in paragraph at lines 2127--2128
+[][][][][][][][][][][][][][][][][][][][][][][][][][][][] 
+
+\hbox(10.14995+4.35004)x366.0 []
+
+) (./Structs.tex [95] [96]
+Chapter 9.
+
+Underfull \vbox (badness 10000) has occurred while \output is active
+\vbox(548.5+0.0)x390.0, glue set 4.35 []
+
+ [97
+
+]
+[98]
+
+Package hyperref Warning: Token not allowed in a PDF string (PDFDocEncoding):
+(hyperref)                removing `\lstinline' on input line 107.
+
+[99] [100]) (./Functions2.tex [101]
+Chapter 10.
+[102
+
+] [103]
+Overfull \hbox (8.884pt too wide) in paragraph at lines 145--161
+[][] 
+
+\hbox(46.49995+40.49995)x390.0 []
+
+
+Overfull \hbox (18.29926pt too wide) in paragraph at lines 213--214
+[][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][] 
+
+
+\hbox(10.14995+4.35004)x366.0 []
+
+[104] [105]
+Overfull \hbox (37.19922pt too wide) in paragraph at lines 289--290
+[][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][
+][][][][][][][][] 
+
+\hbox(10.14995+4.35004)x366.0 []
+
+
+Underfull \vbox (badness 10000) has occurred while \output is active
+\vbox(548.5+0.0)x390.0, glue set 5.465 []
+
+ [106]
+Overfull \hbox (53.66124pt too wide) in paragraph at lines 377--384
+\OT1/ptm/m/n/12 gu-ment is be-tween zero and nine. It could also be writ-ten []
+[][][][][][][][][][][][][][][]. 
+
+\hbox(8.18385+2.5979)x390.0, glue set - 1.0 []
+
+
+Overfull \hbox (22.32071pt too wide) in paragraph at lines 387--397
+[][] 
+
+\hbox(24.74998+18.74997)x390.0 []
+
+
+Overfull \hbox (39.22456pt too wide) in paragraph at lines 398--406
+\OT1/ptm/m/n/12 static type of [] is a class or struct or in-ter-face [] with a
+ method [][][][][][][][][][][][][][]
+
+\hbox(8.18385+2.5979)x390.0, glue set - 1.0 []
+
+[107]
+Overfull \hbox (27.63261pt too wide) in paragraph at lines 470--471
+[][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][
+][][] 
+
+\hbox(10.14995+4.35004)x366.0 []
+
+
+Overfull \hbox (8.73265pt too wide) in paragraph at lines 472--473
+[][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][] 
+
+\hbox(10.14995+4.35004)x366.0 []
+
+
+Overfull \hbox (46.53258pt too wide) in paragraph at lines 474--475
+[][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][
+][] 
+
+\hbox(10.14995+4.35004)x366.0 []
+
+[108]
+
+Package hyperref Warning: Token not allowed in a PDF string (PDFDocEncoding):
+(hyperref)                removing `\lstinline' on input line 565.
+
+
+Overfull \hbox (29.37386pt too wide) in paragraph at lines 585--591
+\OT1/ptm/m/n/12 lent to [][][]. [][][][], [][][][], and [][][][] are implementa
+tion-
+
+\hbox(8.20198+2.5979)x390.0, glue set - 1.0 []
+
+) (./Expressions.tex [109]
+Chapter 11.
+
+Overfull \hbox (31.64087pt too wide) in paragraph at lines 9--13
+[]\OT1/ptm/m/n/12 Evaluation is per-formed left to right, wher-ever pos-si-ble.
+ For ex-am-ple, in [][][][][][][][][],
+
+\hbox(8.20198+2.5979)x390.0, glue set - 1.0 []
+
+
+Package hyperref Warning: Token not allowed in a PDF string (PDFDocEncoding):
+(hyperref)                removing `\lstinline' on input line 23.
+
+[110
+
+]
+Underfull \vbox (badness 6893) has occurred while \output is active
+\vbox(548.5+0.0)x390.0, glue set 4.10149 []
+
+ [111]
+[112]
+Overfull \hbox (60.70792pt too wide) in paragraph at lines 172--179
+[] 
+
+\hbox(46.49995+40.49995)x390.0 []
+
+[113] [114]
+Overfull \hbox (2.65477pt too wide) in paragraph at lines 282--287
+[][][][][][][][][][][][][][]\OT1/ptm/m/n/12 . Nat-u-rally, it is a static er-ro
+r if no suit-able [] method
+
+\hbox(8.18385+2.5979)x360.6253, glue set - 1.0 []
+
+[115] [116] [117] [118]
+Overfull \hbox (1.14836pt too wide) in paragraph at lines 531--535
+\OT1/ptm/m/n/12 the sec-ond subex-pres-sion (the con-se-quent) is eval-u-ated; 
+oth-er-wise, the third subex-
+
+\hbox(8.18385+2.5979)x390.0, glue set - 1.0 []
+
+[119]
+Overfull \hbox (53.54373pt too wide) in paragraph at lines 589--595
+[] 
+
+\hbox(17.49998+11.49998)x390.0 []
+
+[120]
+Overfull \hbox (83.76868pt too wide) in paragraph at lines 636--640
+\OT1/ptm/m/n/12 run time, and ei-ther a compile-time er-ror or a run-time ex-ce
+p-tion ([][][][][])
+
+\hbox(8.18385+2.5979)x390.0, glue set - 1.0 []
+
+[121]
+
+Package hyperref Warning: Token not allowed in a PDF string (PDFDocEncoding):
+(hyperref)                removing `\lstinline' on input line 710.
+
+
+Overfull \hbox (31.32907pt too wide) in paragraph at lines 721--728
+[] \OT1/ptm/m/n/12 if the \OT1/ptm/m/it/12 Re-la-tional-Ex-pres-sion \OT1/ptm/m
+/n/12 can be co-erced to \OT1/ptm/m/it/12 Type \OT1/ptm/m/n/12 with-out a []
+
+\hbox(8.21388+2.47792)x390.0, glue set - 1.0 []
+
+[122] [123]
+Overfull \hbox (27.45207pt too wide) in paragraph at lines 883--884
+[]\OT1/ptm/m/n/12 Limitation \OT1/ptm/m/it/12 It is cur-rently a static er-ror,
+ rather than the spec-i-fied [],
+
+\hbox(8.21388+2.47792)x390.0, glue set - 1.0 []
+
+[124]
+Overfull \hbox (48.49995pt too wide) in paragraph at lines 909--921
+[]\OT1/ptm/m/n/12 Casting a [] to a [] nor-mally trun-cates dig-its: [][]
+
+\hbox(8.18385+2.5979)x360.6253, glue set - 1.0 []
+
+[125]) (./Statements.tex [126]
+Chapter 12.
+[127
+
+]
+Overfull \hbox (37.19922pt too wide) in paragraph at lines 106--107
+[][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][] 
+
+\hbox(10.14995+4.35004)x366.0 []
+
+
+Overfull \hbox (18.29926pt too wide) in paragraph at lines 107--108
+[][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][] 
+
+\hbox(10.14995+4.35004)x366.0 []
+
+[128] [129] [130] [131]
+Overfull \hbox (38.82277pt too wide) in paragraph at lines 334--350
+[] 
+
+\hbox(60.99994+54.99994)x390.0 []
+
+
+Underfull \vbox (badness 5050) has occurred while \output is active
+\vbox(548.5+0.0)x390.0, glue set 3.69861 []
+
+ [132]
+[133]
+Overfull \hbox (67.86899pt too wide) in paragraph at lines 439--441
+[]\OT1/ptm/m/n/12 The [] state-ment throws an ex-cep-tion, which must be an in-
+stance of [][][][][]. 
+
+\hbox(8.18385+2.5979)x390.0, glue set - 1.0 []
+
+[134]) (./Places.tex [135]
+Chapter 13.
+
+Overfull \hbox (26.92383pt too wide) in paragraph at lines 17--21
+[]\OT1/ptm/m/n/12 Places are first-class val-ues in X10, as in-stances of the b
+uilt-in struct, [][][][][].
+
+\hbox(8.18385+2.124)x390.0, glue set - 1.0 []
+
+
+Underfull \vbox (badness 10000) has occurred while \output is active
+\vbox(548.5+0.0)x390.0, glue set 4.41667 []
+
+ [136
+
+]
+Overfull \hbox (10.95404pt too wide) in paragraph at lines 42--50
+\OT1/ptm/m/n/12 around) in [][][] and its op-po-site [][][][]. In par-tic-u-lar
+, [][][][]
+
+\hbox(8.18385+2.5979)x390.0, glue set - 1.0 []
+
+
+Package hyperref Warning: Token not allowed in a PDF string (PDFDocEncoding):
+(hyperref)                removing `\lstinline' on input line 62.
+
+[137]) (./Activities.tex [138]
+Chapter 14.
+[139
+
+] [140]
+
+Package hyperref Warning: Token not allowed in a PDF string (PDFDocEncoding):
+(hyperref)                removing `\lstinline' on input line 108.
+
+
+Package hyperref Warning: Token not allowed in a PDF string (PDFDocEncoding):
+(hyperref)                removing `\lstinline' on input line 183.
+
+[141]
+Overfull \hbox (5.21756pt too wide) in paragraph at lines 193--199
+[][] 
+
+\hbox(31.99997+25.99997)x390.0 []
+
+[142]
+Overfull \hbox (4.12437pt too wide) in paragraph at lines 279--290
+\OT1/ptm/m/n/12 other asyn-chronous ac-tiv-i-ties (here or at other places). Un
+-caught ex-cep-tions thrown
+
+\hbox(8.18385+2.5979)x390.0, glue set - 1.0 []
+
+
+Overfull \hbox (8.22983pt too wide) in paragraph at lines 279--290
+\OT1/ptm/m/n/12 or prop-a-gated by any ac-tiv-ity spawned by [] are ac-cu-mu-la
+ted at [][][][]. [][]
+
+\hbox(8.20198+2.5979)x390.0, glue set - 1.0 []
+
+[143]
+Overfull \hbox (46.9415pt too wide) in paragraph at lines 294--299
+\OT1/ptm/m/n/12 tions. (If [] throws ex-cep-tions, [][][][] wraps them in one l
+ayer of []
+
+\hbox(8.20198+2.5979)x390.0, glue set - 1.0 []
+
+
+Package hyperref Warning: Token not allowed in a PDF string (PDFDocEncoding):
+(hyperref)                removing `\lstinline' on input line 353.
+
+
+Overfull \hbox (87.42899pt too wide) in paragraph at lines 385--393
+[]\OT1/ptm/m/n/12 The col-lect-ing fin-ish it-self ap-pears in the [][][][] met
+hod. [][][][][][]
+
+\hbox(8.20198+2.5979)x390.0, glue set - 1.0 []
+
+
+Overfull \hbox (37.19922pt too wide) in paragraph at lines 401--402
+[][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][] 
+
+\hbox(10.14995+4.35004)x366.0 []
+
+[144]
+Overfull \hbox (74.99915pt too wide) in paragraph at lines 417--418
+[][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][
+][][][][][][][][] 
+
+\hbox(10.14995+4.35004)x366.0 []
+
+
+Overfull \hbox (5.69928pt too wide) in paragraph at lines 420--421
+[][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][] 
+
+\hbox(10.14995+4.35004)x366.0 []
+
+
+Overfull \hbox (68.69916pt too wide) in paragraph at lines 422--423
+[][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][
+][][] 
+
+\hbox(10.14995+4.35004)x366.0 []
+
+[145]
+Overfull \hbox (55.8698pt too wide) in paragraph at lines 488--493
+\OT1/ptm/m/n/12 class-name []. The class must have a [][][][][][][][][][][][][]
+[][][][][][][][]
+
+\hbox(8.20198+2.124)x390.0, glue set - 1.0 []
+
+[146]
+Overfull \hbox (8.774pt too wide) in paragraph at lines 516--521
+[]\OT1/ptm/m/n/12 The [] state-ment is a par-al-lel ver-sion of the en-hanced [
+] state-ment (\OMS/cmsy/m/n/12 x[]\OT1/ptm/m/n/12 12.12[]).
+
+\hbox(8.33333+2.5979)x390.0, glue set - 1.0 []
+
+
+Overfull \hbox (26.80582pt too wide) in paragraph at lines 516--521
+[][][][][][][][][][][] \OT1/ptm/m/n/12 ex-e-cutes [] \OT1/ptm/m/it/12 se-quen-t
+ially\OT1/ptm/m/n/12 , with ev-ery-thing hap-pen-ing []. [][][][]
+
+\hbox(8.21388+2.5979)x390.0, glue set - 1.0 []
+
+[147] [148] [149]
+
+LaTeX Warning: Citation `herlihy91waitfree' on page 150 undefined on input line
+ 764.
+
+[150]
+Overfull \hbox (11.99927pt too wide) in paragraph at lines 812--813
+[][][][][][][][][][][][][][][][][][][][][][][][][][] 
+
+\hbox(10.14995+4.35004)x366.0 []
+
+[151]
+Overfull \hbox (34.93063pt too wide) in paragraph at lines 862--868
+\OT1/ptm/m/n/12 atomic block. And [][][][][][][][][][][][][][][][][][][][][][][
+][][][]
+
+\hbox(8.20198+1.63199)x390.0, glue set - 1.0 []
+
+[152] [153]) (./Clocks.tex [154]
+Chapter 15.
+[155
+
+] [156]
+Overfull \hbox (6.47746pt too wide) in paragraph at lines 142--147
+\OT1/ptm/m/n/12 There are two lan-guage con-structs for work-ing with clocks. [
+][][][][][][][]
+
+\hbox(8.18385+2.5979)x390.0, glue set - 1.0 []
+
+[157]
+Overfull \hbox (31.48465pt too wide) in paragraph at lines 246--249
+[]\OT1/ptm/m/n/12 An ac-tiv-ity may check that it is reg-is-tered on a clock []
+ by the pred-i-cate [][][][] 
+
+\hbox(8.18385+2.5979)x390.0, glue set - 1.0 []
+
+[158]
+Overfull \hbox (26.13211pt too wide) in paragraph at lines 339--342
+ \OT1/ptm/m/n/12 The ac-tiv-ity is no longer con-sid-ered reg-is-tered with thi
+s clock. A []
+
+\hbox(8.18385+2.5979)x390.0, glue set - 1.0 []
+
+[159]) (./Arrays.tex [160]
+Chapter 16.
+
+Overfull \hbox (11.40991pt too wide) in paragraph at lines 9--12
+[]\OT1/ptm/m/n/12 This chap-ter pro-vides an overview of the [][][] classes [] 
+and [],
+
+\hbox(8.18385+2.5979)x390.0, glue set - 1.0 []
+
+
+Overfull \hbox (18.29926pt too wide) in paragraph at lines 34--35
+[][][][][][][][][][][][][][][][][][][][][][] 
+
+\hbox(10.14995+4.35004)x366.0 []
+
+[161
+
+]
+Overfull \hbox (11.99927pt too wide) in paragraph at lines 81--82
+[][][][][][][][][][][][][][][][][][][][][][][] 
+
+\hbox(10.14995+4.35004)x366.0 []
+
+
+Overfull \hbox (18.29926pt too wide) in paragraph at lines 85--86
+[][][][][][][][][][][][][][][][][][][][][][][][][][][][] 
+
+\hbox(10.14995+4.35004)x366.0 []
+
+
+Overfull \hbox (5.8296pt too wide) in paragraph at lines 128--131
+[][][][][][][][][][][][][][][] \OT1/ptm/m/n/12 re-turns the un-bounded
+
+\hbox(8.20198+2.124)x360.6253, glue set - 1.0 []
+
+
+Overfull \hbox (21.95314pt too wide) in paragraph at lines 128--131
+\OT1/ptm/m/n/12 half-space of rank [][][], con-sist-ing of all points [] sat-is
+-fy-ing [][][][]
+
+\hbox(8.18385+2.5979)x360.6253, glue set - 1.0 []
+
+
+Overfull \hbox (11.4325pt too wide) in paragraph at lines 131--135
+\OT1/ptm/m/n/12 or val-rails of length [], re-turns a [][][][] equal to: [][][]
+[][][][][][][][][]
+
+\hbox(8.18385+2.5979)x360.6253, glue set - 1.0 []
+
+
+Overfull \hbox (12.66833pt too wide) in paragraph at lines 135--137
+[][][][][][][] \OT1/ptm/m/n/12 con-structs the Carte-sian prod-uct of the [][]s
+
+
+\hbox(8.18385+2.5979)x360.6253, glue set - 1.0 []
+
+[162]
+Overfull \hbox (36.27322pt too wide) in paragraph at lines 137--140
+[][][][][][][][][][][][][][][] \OT1/ptm/m/n/12 con-structs the banded [][]
+
+\hbox(8.18385+2.124)x360.6253, glue set - 1.0 []
+
+[163] [164]
+Overfull \hbox (27.71594pt too wide) in paragraph at lines 281--284
+[][][][]\OT1/ptm/m/n/12 , the rank of the points us-able to sub-script []. Iden
+-ti-cal to [][][][][]. 
+
+\hbox(8.18385+2.5979)x360.6253, glue set - 1.0 []
+
+
+Overfull \hbox (23.54083pt too wide) in paragraph at lines 288--293
+\OT1/ptm/m/n/12 To con-struct an ar-ray whose el-e-ments all have the same valu
+e, call [][][][][][][][][][]
+
+\hbox(8.18385+2.5979)x390.0, glue set - 1.0 []
+
+
+Overfull \hbox (23.3017pt too wide) in paragraph at lines 310--318
+\OT1/ptm/m/n/12 The ba-sic op-er-a-tion on []s is sub-script-ing. If [][][][][]
+[] and [][][][][][][]
+
+\hbox(8.18385+2.5979)x390.0, glue set - 1.0 []
+
+[165]
+Overfull \hbox (11.99927pt too wide) in paragraph at lines 388--389
+[][][][][][][][][][][][][][][][][][][][][][][][][][][] 
+
+\hbox(10.14995+4.35004)x366.0 []
+
+[166]
+! Undefined control sequence.
+l.415 {\large \bf \script
+                          The 2.1 revision of the chapter stops here. -bb}
+? 
+[167] [168]
+Overfull \hbox (68.69916pt too wide) in paragraph at lines 638--639
+[][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][] 
+
+\hbox(10.14995+4.35004)x366.0 []
+
+
+Overfull \hbox (18.29926pt too wide) in paragraph at lines 652--653
+[][][][][][][][][][][][][][][][][][][][][][][][][][][][][] 
+
+\hbox(10.14995+4.35004)x366.0 []
+
+
+Overfull \hbox (18.29926pt too wide) in paragraph at lines 653--655
+[][][][][][][][][][][][][][][][][][][][][][][][][][][][][] 
+
+\hbox(10.14995+4.35004)x366.0 []
+
+
+Overfull \hbox (5.69928pt too wide) in paragraph at lines 662--663
+[][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][] 
+
+\hbox(10.14995+4.35004)x366.0 []
+
+[169]
+Overfull \hbox (7.32973pt too wide) in paragraph at lines 713--719
+\OT1/ptm/m/n/12 to [][][][] if that is de-fined and to [][][][] oth-er-wise. Th
+e value [][][][][][][][][]
+
+\hbox(8.18385+2.004)x390.0, glue set - 1.0 []
+
+[170]
+Overfull \hbox (18.29926pt too wide) in paragraph at lines 750--751
+[][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][] 
+
+\hbox(10.14995+4.35004)x366.0 []
+
+) (./Annotations.tex [171] [172]
+Chapter 17.
+[173
+
+] [174] [175]
+
+LaTeX Warning: Citation `ncm03' on page 176 undefined on input line 141.
+
+
+Overfull \hbox (49.02951pt too wide) in paragraph at lines 174--176
+\OT1/ptm/m/n/12 Most plu-g-ins should im-ple-ment ei-ther \OT1/txtt/m/n/12 Simp
+leOnePassPlugin \OT1/ptm/m/n/12 or \OT1/txtt/m/n/12 SimpleVisitorPlugin\OT1/ptm
+/m/n/12 . 
+
+\hbox(8.18385+2.5979)x390.0, glue set - 1.0 []
+
+[176]) (./extern.tex [177]
+Chapter 18.
+
+Package hyperref Warning: Token not allowed in a PDF string (PDFDocEncoding):
+(hyperref)                removing `\lstinline' on input line 14.
+
+[178
+
+] [179] [180] [181]
+Overfull \hbox (100.1991pt too wide) in paragraph at lines 243--244
+[][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][
+][][][] 
+
+\hbox(10.14995+4.35004)x366.0 []
+
+) (./Lost.tex [182]
+Chapter 19.
+) (./x10.bbl [183
+
+]
+
+LaTeX Warning: Empty `thebibliography' environment on input line 3.
+
+) [184
+
+] (./x10.ind [185
+
+
+] [186] [187] [188] [189]) [190] [191]
+Appendix A.
+
+Overfull \hbox (3.80113pt too wide) in paragraph at lines 151--156
+[]\OT1/ptm/m/n/12 , [] and []. [] also de-fines the meth-ods of [],
+
+\hbox(8.18385+2.004)x360.6253, glue set - 1.0 []
+
+[192
+
+] [193] [194
+
+] (./x10.aux)
+
+LaTeX Warning: There were undefined references.
+
+ ) 
+Here is how much of TeX's memory you used:
+ 8346 strings out of 493876
+ 118378 string characters out of 1150567
+ 178964 words of memory out of 3000000
+ 9599 multiletter control sequences out of 10000+50000
+ 39033 words of font info for 75 fonts, out of 3000000 for 5000
+ 714 hyphenation exceptions out of 8191
+ 36i,14n,42p,247b,1771s stack positions out of 5000i,500n,10000p,200000b,50000s
+{/usr/local/texlive/2008/texmf-dist/fonts/enc/dvips/base/8r.enc}</usr/local/t
+exlive/2008/texmf-dist/fonts/type1/bluesky/cm/cmex10.pfb></usr/local/texlive/20
+08/texmf-dist/fonts/type1/bluesky/cm/cmmi10.pfb></usr/local/texlive/2008/texmf-
+dist/fonts/type1/bluesky/cm/cmmi12.pfb></usr/local/texlive/2008/texmf-dist/font
+s/type1/bluesky/cm/cmmi8.pfb></usr/local/texlive/2008/texmf-dist/fonts/type1/bl
+uesky/cm/cmr12.pfb></usr/local/texlive/2008/texmf-dist/fonts/type1/bluesky/cm/c
+mr8.pfb></usr/local/texlive/2008/texmf-dist/fonts/type1/bluesky/cm/cmsy10.pfb><
+/usr/local/texlive/2008/texmf-dist/fonts/type1/bluesky/cm/cmsy6.pfb></usr/local
+/texlive/2008/texmf-dist/fonts/type1/bluesky/cm/cmsy8.pfb></usr/local/texlive/2
+008/texmf-dist/fonts/type1/bluesky/cm/cmti12.pfb></usr/local/texlive/2008/texmf
+-dist/fonts/type1/public/txfonts/txtt.pfb></usr/local/texlive/2008/texmf-dist/f
+onts/type1/public/txfonts/txtt.pfb></usr/local/texlive/2008/texmf-dist/fonts/ty
+pe1/urw/times/utmb8a.pfb></usr/local/texlive/2008/texmf-dist/fonts/type1/urw/ti
+mes/utmr8a.pfb></usr/local/texlive/2008/texmf-dist/fonts/type1/urw/times/utmr8a
+.pfb></usr/local/texlive/2008/texmf-dist/fonts/type1/urw/times/utmri8a.pfb>
+Output written on x10.pdf (194 pages, 917317 bytes).
+PDF statistics:
+ 4117 PDF objects out of 4296 (max. 8388607)
+ 1877 named destinations out of 2073 (max. 131072)
+ 1725 words of extra memory for PDF output out of 10000 (max. 10000000)
+
