@@ -380,18 +380,22 @@ Statement \: ForEachStatement \\
 ForEachStatement \: 
       \xcd"foreach" \xcd"(" Formal \xcd"in" Expression \xcd")"
           Statement 
+ForEachStatement \: 
+      \xcd"foreach" \xcd"(" Expression \xcd")"
+          Statement 
 \end{grammar}
 
 \noo{Check the following!}
 The \xcd"foreach" statement is a parallel version of the enhanced \xcd"for"
 statement (\Sref{ForAllLoop}). \xcd`for(x in C)S` executes \xcd`S` {\em
-  sequentially}, with everything happening \xcd`here`. \xcd`foreach(x in C)S`
-executes \xcd`S` for each iteration of the loop {\em in parallel}, located at
-\xcd`x.home`. It is thus equivalent to:
+  sequentially}. \xcd`foreach(x in C)S`
+executes \xcd`S` for each iteration of the loop {\em in parallel}.
+It is thus equivalent to:
 \begin{xten}
 foreach (x in C)
-  async at (x.home) S
+  async S
 \end{xten}
+If the formal is not used in the statement, it may be elided. 
 
 As a common and useful special case, \xcd`C` may be a \xcd`Dist` or an
 \xcd`Array`.  For both of these, \xcd`foreach(x in C)S` is treated just like 
@@ -412,6 +416,9 @@ propagated to the root activity of the \xcd`foreach`.
 Statement \: AtEachStatement \\
 AtEachStatement \:
       \xcd"ateach" \xcd"(" Formal \xcd"in" Expression \xcd")"
+         Statement 
+AtEachStatement \:
+      \xcd"ateach" \xcd"(" Expression \xcd")"
          Statement 
 \end{grammar}
 
@@ -485,10 +492,10 @@ ateach(p in A)
 Expression \: \xcd"at" \xcd"(" Expression \xcd")" Expression
 \end{grammar}
 
-\noo{Revise this example}
 An \Xcd{at} expression evaluates an expression synchronously at the
-given place and returns its value.  If \xcd`fld` is a non-global field of 
-\xcd`ob`, then \xcd`ob.fld` can be read (from anywhere) by: 
+given place and returns its value.  For instance a copy of the
+value pointed to by a \Xcd{GlobalRef} may be obtained using
+the \Xcd{fetch} method:
 %~~gen
 % package Activities.AtExpressions;
 % class Example {
@@ -496,32 +503,15 @@ given place and returns its value.  If \xcd`fld` is a non-global field of
 %   static def example(val ob: Example) {
 %~~vis
 \begin{xten}
-val f = "This example needs revision. Was: at(ob) ob.fld";
+  def fetch(g:GlobalRef[T]):T = at (g) g();
 \end{xten}
 %~~siv
 % } } 
 %~~neg
 
-
-
-
-
 The expression evaluation may spawn asynchronous activities. The \Xcd{at}
 expression will return without waiting for those activities to terminate. That
 is, \Xcd{at} does not have built-in \Xcd{finish} semantics.
-
-\section{Shared variables}
-\label{Shared}
-
-\limitation{Shared variables are not currently implemented.}
-
-A {\em shared local variable} is declared with the annotation \xcd"shared".
-It can be accessed within any control construct in its scope, including
-\Xcd{async}, \Xcd{at}, \Xcd{future} and closures.
-
-Note that the lifetime of some of these constructs may outlast the
-lifetime of the scope -- requiring the implementation to allocate them
-outside the current stack frame.
 
 \section{Atomic blocks}\label{AtomicBlocks}\index{atomic blocks}
 Languages such as \java{} use low-level synchronization locks to allow
@@ -646,12 +636,12 @@ It may {\em not} include any statement that may potentially block at
 runtime (\eg, \xcd"when", \xcd"force" operations, \xcd"next"
 operations on clocks, \xcd"finish"). 
 
-All locations accessed in an atomic block must statically satisfy the
-{\em locality condition}: they must belong to the place of the current
-activity.\index{locality condition}\label{LocalityCondition} 
+It may {\em not} include any \xcd`at` expressions or
+statements. (Hence all locations accessed in the atomic block must
+belong to the current place.)
+\index{locality condition}\label{LocalityCondition} 
 
 \end{staticrule*}
-
 
 The compiler checks for this condition by checking whether the statement
 could be the body of a \xcd"void" method annotated with \xcd"safe" at
