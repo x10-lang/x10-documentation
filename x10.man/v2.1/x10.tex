@@ -1,14 +1,14 @@
 %\documentclass[10pt,twoside,twocolumn,notitlepage]{report}
 \documentclass[12pt,twoside,notitlepage]{report}
-\usepackage{x10}
-\usepackage{tenv}
+\usepackage{tex/x10}
+\usepackage{tex/tenv}
 \def\Hat{{\tt \char`\^}}
 \usepackage{url}
 \usepackage{times}
-\usepackage{txtt}
+\usepackage{tex/txtt}
 \usepackage{ifpdf}
 \usepackage{tocloft}
-\usepackage{bcprules}
+\usepackage{tex/bcprules}
 \usepackage{xspace}
 
 \newif\ifdraft
@@ -19,7 +19,7 @@
 \showboxdepth=0
 \makeindex
 
-\usepackage{commands}
+\usepackage{tex/commands}
 
 \usepackage[
 pdfauthor={Vijay Saraswat, Bard Bloom, Igor Peshansky, Olivier Tardieu, and David Grove},
@@ -144,6 +144,30 @@ urlcolor=blue
 \appendix
 
 \chapter{Change Log}
+\section{Changes from \Xten{} v2.0.6}
+
+The global object model has been simplified. Classes are now local by
+default and are copied on reference across an \Xcd{at} boundary.
+ \Xcd{Any} defines only \Xcd{toString}, \Xcd{typeName},
+\Xcd{equals} and \Xcd{hashCode}. It no longer defines \Xcd{home},
+\Xcd{at}.  The new struct \Xcd{x10.lang.GlobalRef[T]} is the only
+mechanism for creating a globally usable reference to an
+object. \Xcd{GlobalRef} has a \Xcd{home} property.
+
+The type modifier \Xcd{!} is no longer used. (It is not needed for
+user-defined classes. The typedef \Xcd{GlobalRef[T](p:Place)} can
+be used for specifying a constraint  on the \Xcd{home} property of a
+\Xcd{GlobalRef}.)
+
+\begin{itemize}
+\item \Xcd{Any} is now the top of the type hierarchy (every object,
+  struct and function has a type that is a subtype of
+  \Xcd{Any}). \Xcd{Any} defines \Xcd{home}, \Xcd{at}, \Xcd{toString},
+  \Xcd{typeName}, \Xcd{equals} and \Xcd{hashCode}. \Xcd{Any} also defines the methods
+  of \Xcd{Equals}, so \Xcd{Equals} is not needed any more.
+\item Revised discussion of incomplete types (\Sref{ProtoRules}).
+\item The manual has been revised and brought into line with the current implementation. 
+\end{itemize}
 
 \section{Changes from \Xten{} v2.0}
 
