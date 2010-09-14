@@ -1,7 +1,8 @@
  package Activities;
 class OneBuffer[T] {
   var datum: T;
-  var filled: Boolean = false;
+  def this(t:T) { this.datum = t; this.filled = true; }
+  var filled: Boolean;
   public def send(v: T) {
     when (!filled) {
       this.datum = v;

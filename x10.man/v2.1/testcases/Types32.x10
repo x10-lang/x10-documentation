@@ -1,5 +1,4 @@
-package typesome.Types32;
+ package expsome.Types32;
 
 public class Types32{
-  def check() throws Exception { 
-     var checkycheck : (Double)=>Double;  }}
+  def check(test:Boolean) throws Exception = test ? 0 : 1;  }

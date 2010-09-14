@@ -5,7 +5,7 @@ class Set[-T] {
   def set(x: T) = { this.x = x; }
   def summary(): String = this.x.typeName();
   static def example() {
-    val s : Set[Object]! = new Set[Object](new Throwable());
+    val s : Set[Object] = new Set[Object](new Throwable());
     s.summary(); // == "x10.lang.Throwable"
     s.set("A String");
     s.summary(); // == "x10.lang.String";

@@ -1,6 +1,4 @@
- package stmtsome.Types22;
+ package expsome.Types22;
 
 public class Types22{
-  def check() throws Exception {
-    val nz: Int{nz != 0} = 1;
-  }}
+  def check(x:Int) throws Exception = x instanceof Int{self == 1};  }

@@ -1,5 +1,4 @@
-package typesome.Types31;
+ package expsome.Types31;
 
 public class Types31{
-  def check() throws Exception { 
-     var checkycheck : (b:Int, a:Rail[String]{a.length==b}) => Boolean;  }}
+  def check(test:Boolean) throws Exception = test ? 0 : "non-zero";  }

@@ -159,6 +159,9 @@ only if all of its parameters are instantiated on concrete types.  The
 class Cell[T] {
   var empty : Boolean = true;
   var contents : T;
+  public def this(t:T) { 
+     contents = t; empty = false; 
+  }
   public def putIn(t:T) { 
     contents = t; empty = false; 
   }
@@ -370,7 +373,7 @@ Methods may be generic, even methods in non-generic classes:
 %~~vis
 \begin{xten}
 class NonGeneric {
-  static def first[T](x:List[T]!):T = x(0);
+  static def first[T](x:List[T]):T = x(0);
 }
 \end{xten}
 %~~siv
@@ -457,7 +460,7 @@ class Get[+T] {
   def this(x: T) { this.x = x; }
   def get(): T = x;
   static def example() {
-     val g : Get[Int]! = new Get[Int](31);
+     val g : Get[Int] = new Get[Int](31);
      val n : Int = g.get();
      x10.io.Console.OUT.print("It's " + n);
      x10.io.Console.OUT.print("It's still " + g.get());
@@ -483,7 +486,7 @@ class Set[-T] {
   def set(x: T) = { this.x = x; } 
   def summary(): String = this.x.typeName();
   static def example() {
-    val s : Set[Object]! = new Set[Object](new Throwable());
+    val s : Set[Object] = new Set[Object](new Throwable());
     s.summary(); // == "x10.lang.Throwable"
     s.set("A String");
     s.summary(); // == "x10.lang.String";
@@ -615,37 +618,13 @@ available.)  The values of type \xcd`T{e}` are the values of \xcd`T` for which
 \item Every object has a \xcd`home` property telling where it is located.
       One way to say that objects \xcd`c` and \xcd`d` are located at the same
       place is: 
-%~~gen
-% package Types.flipes.knipes.shipes.wipes;
-% class Exampler {
-% static def someObject(): Object = null;
-% static def example() {
-%~~vis
-\begin{xten}
-  val a : Object = someObject();
-  var b : Object{a.home == b.home};
-\end{xten}
-%~~siv
-%}}
-%~~neg
+\noo{This is wrong!}
 
 \item  As explained in \Sref{XtenPlaces}, certain operations
 can only be performed at an object's home, so having this expressible as a
 type is crucial. One way to say that \xcd`e` is located \xcd`here`, \viz, the same place
       as the current computation, is: 
-%~~gen
-% package Types.cripes.wipes.lipes;
-% class Examplorator {
-% static def someObject() : Object{self.home==here} = null;
-% static def example() {
-%~~vis
-\begin{xten}
-  val e : Object{self.home == here} = someObject();
-\end{xten}
-%~~siv
-%}}
-%~~neg
-\end{itemize}
+\noo{This is wrong!}
 
 \index{self}When constraining a value of type \xcd`T`, \xcd`self` refers to the object of
 type \xcd`T` which is being constrained.  For example, \xcd`Int{self == 4}` is
@@ -1029,7 +1008,7 @@ type of \xcd`i`:
 % static def example() throws DoomExn {
 %~~vis
 \begin{xten}
-val inc = (r:Rail[Int]!, i: Int{i != r.length}) => {
+val inc = (r:Rail[Int], i: Int{i != r.length}) => {
   if (i < 0 || i >= r.length) throw new DoomExn();
   r(i)++;
 };

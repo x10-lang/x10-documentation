@@ -19,6 +19,8 @@ Places are first-class values in X10, as instances of the built-in struct,
 query places, such as \xcd`Place.places`, a \xcd`ValRail` of all the places
 available to the current run of the program.
 
+\noo{No! The following is No!}
+
 Every object \xcd`ob` created by the program has a {\em home place}
 \xcd`ob.home`. Accesses to \xcd`ob` from activities located at \xcd`ob.home`
 are privileged.  Mutable fields can only be changed from \xcd`ob.home`, and
@@ -53,8 +55,8 @@ places, and the ability to dynamically create places.
 
 Place expressions \index{place expression} (\viz, expressions of type
 \xcd`Place`), such as \xcd`here` 
-%~~exp~~`~~`~~ ob:Object~~
-and \xcd`ob.home`, are used in \xcd`at` and
+%~~exp~~`~~`~~ globRef:GlobalRef[Int]~~
+and \xcd`globRef.home`, are used in \xcd`at` and
 \xcd`asynch` statements.  
 
 
@@ -93,7 +95,10 @@ constraints, and \xcd`this` by inner classes.)
 Expression \: \xcd"here" \\
 \end{grammar}
 
+
+
 \begin{example}
+\noo{This needs GlobalPlacing}
 For example, the following method looks through a collection of \xcd`Thing`s
 for ones which belong in the current place \xcd`here`, and deals with the
 things which do.  Note that every object \xcd`thing` has a property
@@ -105,11 +110,14 @@ things which do.  Note that every object \xcd`thing` has a property
 %  static def dealWith(Thing) {}	
 %~~vis
 \begin{xten}
-  public static def dealWithLocal(things: Rail[Thing]!) {
+  public static def dealWithLocal(things: Rail[Thing]) {
+/*
+     THIS EXAMPLE MUST BE UPDATED.
      for(thing in things) {
     	 if (thing.home == here) 
             dealWith(thing);
      }	  
+*/
   }
 \end{xten}
 %~~siv
@@ -142,21 +150,4 @@ ob.nonGlobalMethod();
 This idiom is so common and useful that the constraint
 \xcd`T{self.home==here}` can be abbreviated as \xcd`T!`: 
 
-%~~gen
-% package Places.Are.For.Aces.Of.Graces;
-% class Thing {
-% def nonGlobalMethod():Void{}
-% static def example() {
-%~~vis
-\begin{xten}
-val ob : Thing! = new Thing();
-ob.nonGlobalMethod();
-\end{xten}
-%~~siv
-%}}
-%~~neg
-
-
-\limitationx {\em In the current implementation, sometimes \xcd^T{self.home==here}^
-does not work, though \Xcd{T!} does.}
-
+\noo{Example?}

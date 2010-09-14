@@ -1,4 +1,5 @@
- package Types.Inferred.Return;
-class Shape {
-  def isTriangle() = false;
+ package Types.Voidd;
+ class Voidddd {
+ static
+val f : () => Void = () => {return;};
 }

@@ -1,6 +1,4 @@
- class ConstraintsMayReferToValuesTwo {
- def thoseValues() {
-     val m = 1;
-     val n = 2;
-     var p : Point{m != n};
-}}
+ package expsome.Types21;
+
+public class Types21{
+  def check() throws Exception = 1 instanceof Int{self != 2};  }

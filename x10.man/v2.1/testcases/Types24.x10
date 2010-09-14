@@ -1,4 +1,6 @@
- package expsome.Types24;
 
-public class Types24{
-  def check(x:Int) throws Exception = x instanceof Int{self == 1};  }
+class Position(x: Int, y: Int) {
+   def this(x:Int,y:Int){property(x,y);}
+   }
+class Line(start: Position,
+           end: Position{self != start}) {}

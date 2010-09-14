@@ -1,6 +1,5 @@
-
-class Position(x: Int, y: Int) {
-   def this(x:Int,y:Int){property(x,y);}
-   }
-class Line(start: Position,
-           end: Position{self != start}) {}
+ package Types.Functions;
+ class RecipEx {
+ static
+val recip = (x : Double) => 1/x;
+}

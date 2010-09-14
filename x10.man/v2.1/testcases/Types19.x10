@@ -1,6 +1,6 @@
- package Types.cripes.wipes.lipes;
- class Examplorator {
- static def someObject() : Object{self.home==here} = null;
- static def example() {
-  val e : Object{self.home == here} = someObject();
+ class ConstraintsMayReferToValuesTwo {
+ def thoseValues() {
+     val m = 1;
+     val n = 2;
+     var p : Point{m != n};
 }}

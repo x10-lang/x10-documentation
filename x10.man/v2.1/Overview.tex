@@ -264,8 +264,8 @@ parameter; it can be instantiated with any type.
 \begin{xten}
 class List[T] {
     var head: T;
-    var tail: List[T]!;
-    def this(h: T, t: List[T]!) { head = h; tail = t; }
+    var tail: List[T];
+    def this(h: T, t: List[T]) { head = h; tail = t; }
     def add(x: T) {
         if (this.tail == null)
             this.tail = new List(x, null);
@@ -338,31 +338,6 @@ some other place \xcd`q`, the {\em place-shifting} operation \xcd`at(q)` can
 be used, to move part of the activity to \xcd`q`.   It is easy to compute
 across multiple places, but the expensive operations (\eg, those which require
 communication) are readily visible in the code. 
-
-\paragraph{Object and Places.}
-
-Every object has a {\em home place}, \xcd`x.home`.  \xcd`home` is a property,
-and the constrained type mechanisms mentioned previously can be used with it.
-For example, an object \xcd`x` with a mutable field \xcd`f` only allows
-mutations when \xcd`x.home==here`, which formalizes the concept above.  If we
-know that \xcd`x` is located here but the typechecker doesn't, we can use a
-cast to tell it:
-%~~gen
-%package Overview.ObjectAndPlaces;
-% class FHolder{
-% var f : Int = 0;
-% static def example(x:FHolder) {
-%~~vis
-\begin{xten}
-val xhere = x as FHolder!;
-xhere.f = 12;
-\end{xten}
-%~~siv
-%}}
-%~~neg
-(\xcd`FHolder!` is an abbreviation for \xcd`FHolder{self.home==here}`, a
-\xcd`FHolder` object located here.)
-This will throw an exception if \xcd`x` is not located here.
 
 \paragraph{Atomic blocks.}
 

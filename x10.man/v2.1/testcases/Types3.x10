@@ -2,6 +2,9 @@
 class Cell[T] {
   var empty : Boolean = true;
   var contents : T;
+  public def this(t:T) {
+     contents = t; empty = false;
+  }
   public def putIn(t:T) {
     contents = t; empty = false;
   }

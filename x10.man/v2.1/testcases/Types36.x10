@@ -1,4 +1,5 @@
- package expsome.Types36;
-
-public class Types36{
-  def check() throws Exception = [0,1];  }
+ package Types.For.Gripes.About.Pipes;
+  class A {} class B extends A{} class C extends A{}
+ class D {
+static def pick(t:Boolean, b:B, c:C) = t ? b : c;
+}

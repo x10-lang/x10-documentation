@@ -1,8 +1,6 @@
- package Types.For.Gripes.About.Snipes;
-interface I1 {}
-interface I2 {}
-class A implements I1, I2 {}
-class B implements I1, I2 {}
-class C {
-  static def example(t:Boolean, a:A, b:B) = t ? a : b;
-}
+ package stmtsome.Types39;
+
+public class Types39{
+  def check() throws Exception {
+    val seven: Int{self==7} = 7;
+  }}

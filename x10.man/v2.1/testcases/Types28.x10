@@ -1,5 +1,5 @@
- package Types.Functions;
- class RecipEx {
- static
-val recip = (x : Double) => 1/x;
-}
+package typesome.Types28;
+
+public class Types28{
+  def check() throws Exception { 
+     var checkycheck : (a:Int, b:Rail[String]{b.length==a}) => Boolean;  }}

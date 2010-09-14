@@ -44,12 +44,14 @@ creation, which is acquired by use of \xcd`Outer.this`.
 %~~vis
 \begin{xten}
 class Outer {
+/* REDO THIS EXAMPLE 
   val inner : Inner = new Inner();
   class Inner {
     val outer : Outer = Outer.this;
   }
   def alwaysTrue() = (this == inner.outer);
-}
+*/}
+
 \end{xten}
 %~~siv
 %

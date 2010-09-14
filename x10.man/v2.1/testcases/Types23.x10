@@ -1,4 +1,4 @@
  package expsome.Types23;
 
 public class Types23{
-  def check() throws Exception = 1 instanceof Int{self != 2};  }
+  def check(r:ValRail[Int]) throws Exception = r instanceof ValRail[Int{self != 0}];  }
