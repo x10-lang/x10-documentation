@@ -1,272 +1,269 @@
 \begin{theindex}
 
-  \item (), \hyperpage{89}
-  \item ()=, \hyperpage{89}
-  \item ==, \hyperpage{120}
-  \item \Xcd{Object}, \hyperpage{30}, \hyperpage{50}
-  \item \Xcd{as}, \hyperpage{124}
-  \item \Xcd{ateach}, \hyperpage{147}
-  \item \Xcd{do}, \hyperpage{132}
-  \item \Xcd{foreach}, \hyperpage{147}
-  \item \Xcd{for}, \hyperpage{133}
-  \item \Xcd{instanceof}, \hyperpage{122}
-  \item \Xcd{while}, \hyperpage{132}
-  \item \Xcd{x10.lang.Object}, \hyperpage{30}, \hyperpage{50}
+  \item (), \hyperpage{80}
+  \item ()=, \hyperpage{80}
+  \item ==, \hyperpage{110}
+  \item \Xcd{Object}, \hyperpage{24}, \hyperpage{44}
+  \item \Xcd{as}, \hyperpage{114}
+  \item \Xcd{ateach}, \hyperpage{135}
+  \item \Xcd{do}, \hyperpage{122}
+  \item \Xcd{foreach}, \hyperpage{134}
+  \item \Xcd{for}, \hyperpage{123}
+  \item \Xcd{instanceof}, \hyperpage{112}
+  \item \Xcd{while}, \hyperpage{122}
+  \item \Xcd{x10.lang.Object}, \hyperpage{24}, \hyperpage{44}
 
   \indexspace
 
-  \item AnnotationNode, \hyperpage{177}
-  \item annotations, \hyperpage{173}
-    \subitem type annotations, \hyperpage{45}
+  \item AnnotationNode, \hyperpage{164}
+  \item annotations, \hyperpage{160}
+    \subitem type annotations, \hyperpage{39}
   \item Any
-    \subitem structs, \hyperpage{99}
-  \item apply, \hyperpage{89}
+    \subitem structs, \hyperpage{89}
+  \item apply, \hyperpage{80}
   \item array
-    \subitem access, \hyperpage{169}
-    \subitem pointwise operations, \hyperpage{171}
-    \subitem reductions, \hyperpage{171}
-    \subitem restriction, \hyperpage{170}
-    \subitem scans, \hyperpage{171}
+    \subitem access, \hyperpage{156}
+    \subitem pointwise operations, \hyperpage{158}
+    \subitem reductions, \hyperpage{158}
+    \subitem restriction, \hyperpage{157}
+    \subitem scans, \hyperpage{158}
     \subitem union
-      \subsubitem asymmetric, \hyperpage{170}
-      \subsubitem disjoint, \hyperpage{170}
-  \item arrays, \hyperpage{161}
-    \subitem constant promotion, \hyperpage{170}
-  \item assignment, \hyperpage{114}
-  \item atomic, \hyperpage{79}
-  \item atomic blocks, \hyperpage{149}
+      \subsubitem asymmetric, \hyperpage{157}
+      \subsubitem disjoint, \hyperpage{157}
+  \item arrays, \hyperpage{148}
+    \subitem constant promotion, \hyperpage{157}
+  \item assignment, \hyperpage{104}
+  \item atomic, \hyperpage{70}
+  \item atomic blocks, \hyperpage{136}
   \item auto-boxing
-    \subitem struct to interface, \hyperpage{98}
+    \subitem struct to interface, \hyperpage{88}
 
   \indexspace
 
-  \item casting, \hyperpage{124}
-  \item class, \hyperpage{29}, \hyperpage{67}, \hyperpage{74}
-    \subitem reference class, \hyperpage{30}
-  \item class declaration, \hyperpage{29}
-  \item Class invariant, \hyperpage{92}
-  \item class invariants, \hyperpage{92}
-  \item classcast, \hyperpage{121}
+  \item casting, \hyperpage{114}
+  \item class, \hyperpage{23}, \hyperpage{61}, \hyperpage{65}
+    \subitem reference class, \hyperpage{24}
+  \item class declaration, \hyperpage{23}
+  \item Class invariant, \hyperpage{83}
+  \item class invariants, \hyperpage{83}
+  \item classcast, \hyperpage{111}
   \item clock
-    \subitem clocked statements, \hyperpage{157}
-    \subitem ClockUseException, \hyperpage{156--158}
-    \subitem creation, \hyperpage{157}
-    \subitem drop, \hyperpage{159}
-    \subitem next, \hyperpage{158}
-    \subitem resume, \hyperpage{158}
-  \item clocks, \hyperpage{155}
+    \subitem clocked statements, \hyperpage{144}
+    \subitem ClockUseException, \hyperpage{143--145}
+    \subitem creation, \hyperpage{144}
+    \subitem drop, \hyperpage{146}
+    \subitem next, \hyperpage{145}
+    \subitem resume, \hyperpage{145}
+  \item clocks, \hyperpage{142}
   \item closures
-    \subitem parametrized closures, \hyperpage{32}
-  \item coercions, \hyperpage{124}
-    \subitem explicit coercion, \hyperpage{124}
-    \subitem subsumption coercion, \hyperpage{124}
-  \item collecting finish, \hyperpage{144}
-  \item CompilerPlugin, \hyperpage{176}
-  \item concrete type, \hyperpage{32}
-  \item constrained types, \hyperpage{38}
+    \subitem parametrized closures, \hyperpage{26}
+  \item coercions, \hyperpage{114}
+    \subitem explicit coercion, \hyperpage{114}
+    \subitem subsumption coercion, \hyperpage{114}
+  \item CompilerPlugin, \hyperpage{163}
+  \item concrete type, \hyperpage{26}
+  \item constrained types, \hyperpage{32}
   \item constructors
-    \subitem parametrized constructors, \hyperpage{32}
-  \item contravariant, \hyperpage{33}
-  \item conversions, \hyperpage{124}
-    \subitem numeric conversions, \hyperpage{125}
-    \subitem string conversion, \hyperpage{126}
-    \subitem user defined, \hyperpage{126}
-    \subitem widening conversions, \hyperpage{125}
-  \item covariant, \hyperpage{33}
+    \subitem parametrized constructors, \hyperpage{26}
+  \item contravariant, \hyperpage{27}
+  \item conversions, \hyperpage{114}
+    \subitem numeric conversions, \hyperpage{115}
+    \subitem string conversion, \hyperpage{116}
+    \subitem user defined, \hyperpage{116}
+    \subitem widening conversions, \hyperpage{115}
+  \item covariant, \hyperpage{27}
 
   \indexspace
 
   \item declaration
-    \subitem class declaration, \hyperpage{29}
-    \subitem interface declaration, \hyperpage{31}
-    \subitem reference class declaration, \hyperpage{29}
+    \subitem class declaration, \hyperpage{23}
+    \subitem interface declaration, \hyperpage{25}
+    \subitem reference class declaration, \hyperpage{23}
   \item declarations
-    \subitem type definitions, \hyperpage{36}
-  \item dependent types, \hyperpage{38}
-  \item destructuring, \hyperpage{57}
-  \item distribution, \hyperpage{167}
-    \subitem block, \hyperpage{168}
-    \subitem constant, \hyperpage{167}
+    \subitem type definitions, \hyperpage{30}
+  \item dependent types, \hyperpage{32}
+  \item destructuring, \hyperpage{51}
+  \item distribution, \hyperpage{154}
+    \subitem block, \hyperpage{155}
+    \subitem constant, \hyperpage{154}
     \subitem restriction
-      \subsubitem range, \hyperpage{168}
-      \subsubitem region, \hyperpage{168}
-    \subitem unique, \hyperpage{167}
+      \subsubitem range, \hyperpage{155}
+      \subsubitem region, \hyperpage{155}
+    \subitem unique, \hyperpage{154}
 
   \indexspace
 
   \item equality
-    \subitem function, \hyperpage{109}
-  \item Exception, \hyperpage{134}
-    \subitem model, \hyperpage{140}
-    \subitem unchecked, \hyperpage{102}
-  \item expressions, \hyperpage{110}
-  \item extends  clause, \hyperpage{93}
+    \subitem function, \hyperpage{99}
+  \item Exception, \hyperpage{124}
+    \subitem model, \hyperpage{130}
+    \subitem unchecked, \hyperpage{92}
+  \item expressions, \hyperpage{100}
+  \item extends  clause, \hyperpage{84}
 
   \indexspace
 
-  \item finish, \hyperpage{143}
-    \subitem collecting, \hyperpage{144}
+  \item finish, \hyperpage{133}
   \item function
-    \subitem ==, \hyperpage{109}
-    \subitem at(Object), \hyperpage{109}
-    \subitem at(Place), \hyperpage{109}
-    \subitem equality, \hyperpage{109}
-    \subitem equals, \hyperpage{109}
-    \subitem hashCode, \hyperpage{109}
-    \subitem home, \hyperpage{109}
-    \subitem method selector, \hyperpage{107}
-    \subitem operator, \hyperpage{108}
-    \subitem toString, \hyperpage{109}
-    \subitem typeName, \hyperpage{109}
-    \subitem types, \hyperpage{44}
-  \item functions, \hyperpage{102}
+    \subitem ==, \hyperpage{99}
+    \subitem at(Object), \hyperpage{99}
+    \subitem at(Place), \hyperpage{99}
+    \subitem equality, \hyperpage{99}
+    \subitem equals, \hyperpage{99}
+    \subitem hashCode, \hyperpage{99}
+    \subitem home, \hyperpage{99}
+    \subitem method selector, \hyperpage{97}
+    \subitem operator, \hyperpage{98}
+    \subitem toString, \hyperpage{99}
+    \subitem typeName, \hyperpage{99}
+    \subitem types, \hyperpage{38}
+  \item functions, \hyperpage{92}
 
   \indexspace
 
-  \item generic types, \hyperpage{38}
+  \item generic types, \hyperpage{32}
   \item global
-    \subitem field, \hyperpage{73}
-    \subitem method, \hyperpage{79}
-  \item Goal, \hyperpage{176}
-  \item guards, \hyperpage{92}
+    \subitem field, \hyperpage{64}
+    \subitem method, \hyperpage{70}
+  \item Goal, \hyperpage{163}
+  \item guards, \hyperpage{83}
 
   \indexspace
 
-  \item here, \hyperpage{137}
+  \item here, \hyperpage{127}
 
   \indexspace
 
-  \item identifier, \hyperpage{23}
-  \item immutable variable, \hyperpage{56}
-  \item implements clause, \hyperpage{93}
-  \item import,type definitions, \hyperpage{38}
-  \item initial activity, \hyperpage{146}
+  \item identifier, \hyperpage{17}
+  \item immutable variable, \hyperpage{50}
+  \item implements clause, \hyperpage{84}
+  \item import,type definitions, \hyperpage{32}
+  \item initial activity, \hyperpage{134}
   \item initialization
-    \subitem static, \hyperpage{84}
-  \item interface, \hyperpage{31}
-  \item interface declaration, \hyperpage{31}
-  \item interfaces, \hyperpage{64}
-  \item invariant, \hyperpage{33}
+    \subitem static, \hyperpage{75}
+  \item interface, \hyperpage{25}
+  \item interface declaration, \hyperpage{25}
+  \item interfaces, \hyperpage{58}
+  \item invariant, \hyperpage{27}
 
   \indexspace
 
   \item literal
-    \subitem function, \hyperpage{104}
-  \item literals, \hyperpage{24}
-  \item locality condition, \hyperpage{151}
+    \subitem function, \hyperpage{94}
+  \item literals, \hyperpage{18}
+  \item locality condition, \hyperpage{138}
 
   \indexspace
 
   \item method
-    \subitem underlying function, \hyperpage{107}
+    \subitem underlying function, \hyperpage{97}
   \item methods
-    \subitem parametrized methods, \hyperpage{32}
+    \subitem parametrized methods, \hyperpage{26}
 
   \indexspace
 
-  \item names, \hyperpage{61}
-  \item native code, \hyperpage{178}
-  \item Node, \hyperpage{176}
+  \item names, \hyperpage{55}
+  \item native code, \hyperpage{165}
+  \item Node, \hyperpage{163}
   \item nonblocking
-    \subitem method, \hyperpage{80}
-  \item null, \hyperpage{30}
-  \item nullary constructor, \hyperpage{56}
-  \item numeric promotion, \hyperpage{116}
+    \subitem method, \hyperpage{70}
+  \item null, \hyperpage{24}
+  \item nullary constructor, \hyperpage{50}
+  \item numeric promotion, \hyperpage{106}
 
   \indexspace
 
-  \item Object, \hyperpage{67}
+  \item Object, \hyperpage{61}
 
   \indexspace
 
-  \item packages, \hyperpage{61}
+  \item packages, \hyperpage{55}
   \item pinned
-    \subitem method, \hyperpage{79}
-  \item place expression, \hyperpage{137}
-  \item place types, \hyperpage{42}
-  \item place.home, \hyperpage{67}
-  \item places, \hyperpage{136}
-  \item placetype, \hyperpage{42}
-  \item plugins, \hyperpage{176}
-  \item point syntax, \hyperpage{161}
-  \item Polyglot, \hyperpage{176}
-  \item private, \hyperpage{61}
-  \item promotion, \hyperpage{116}
-  \item properties, \hyperpage{31}
+    \subitem method, \hyperpage{70}
+  \item place expression, \hyperpage{127}
+  \item place types, \hyperpage{36}
+  \item places, \hyperpage{126}
+  \item placetype, \hyperpage{36}
+  \item plugins, \hyperpage{163}
+  \item point syntax, \hyperpage{148}
+  \item Polyglot, \hyperpage{163}
+  \item private, \hyperpage{55}
+  \item promotion, \hyperpage{106}
+  \item properties, \hyperpage{25}
   \item property
-    \subitem call, \hyperpage{74}
-    \subitem initialization, \hyperpage{74}
-  \item protected, \hyperpage{61}
-  \item proto, \hyperpage{81}
-    \subitem rules, \hyperpage{90}
-  \item public, \hyperpage{61}
+    \subitem call, \hyperpage{65}
+    \subitem initialization, \hyperpage{65}
+  \item protected, \hyperpage{55}
+  \item proto, \hyperpage{72}
+    \subitem rules, \hyperpage{81}
+  \item public, \hyperpage{55}
 
   \indexspace
 
   \item Qualifier
-    \subitem field, \hyperpage{73}
-    \subitem method, \hyperpage{79}
+    \subitem field, \hyperpage{64}
+    \subitem method, \hyperpage{70}
 
   \indexspace
 
-  \item reference class type, \hyperpage{30}
-  \item region, \hyperpage{162}
-    \subitem banded, \hyperpage{162}
-    \subitem convex, \hyperpage{163}
-    \subitem intersection, \hyperpage{163}
-    \subitem lowerTriangular, \hyperpage{162}
-    \subitem product, \hyperpage{163}
-    \subitem sub-region, \hyperpage{163}
-    \subitem upperTriangular, \hyperpage{162}
-  \item ReturnStatement, \hyperpage{135}
-  \item root activity, \hyperpage{139}
+  \item reference class type, \hyperpage{24}
+  \item region, \hyperpage{149}
+    \subitem banded, \hyperpage{149}
+    \subitem convex, \hyperpage{150}
+    \subitem intersection, \hyperpage{150}
+    \subitem lowerTriangular, \hyperpage{149}
+    \subitem product, \hyperpage{150}
+    \subitem sub-region, \hyperpage{150}
+    \subitem upperTriangular, \hyperpage{149}
+  \item ReturnStatement, \hyperpage{125}
+  \item root activity, \hyperpage{129}
 
   \indexspace
 
   \item safe
-    \subitem method, \hyperpage{80}
-  \item self, \hyperpage{39}
+    \subitem method, \hyperpage{71}
+  \item self, \hyperpage{33}
   \item sequential
-    \subitem method, \hyperpage{80}
-  \item set, \hyperpage{89}
-  \item statements, \hyperpage{127}
-  \item structs, \hyperpage{97}
-  \item subtyping, \hyperpage{46}
+    \subitem method, \hyperpage{71}
+  \item set, \hyperpage{80}
+  \item statements, \hyperpage{117}
+  \item structs, \hyperpage{87}
+  \item subtyping, \hyperpage{40}
 
   \indexspace
 
-  \item throw, \hyperpage{134}
-  \item type equivalence, \hyperpage{46}
-  \item type inference, \hyperpage{50}
-  \item type invariants, \hyperpage{92}
+  \item throw, \hyperpage{124}
+  \item type equivalence, \hyperpage{40}
+  \item type inference, \hyperpage{44}
+  \item type invariants, \hyperpage{83}
   \item type parameter
-    \subitem contravariant, \hyperpage{33}
-    \subitem covariant, \hyperpage{33}
-    \subitem invariant, \hyperpage{33}
+    \subitem contravariant, \hyperpage{27}
+    \subitem covariant, \hyperpage{27}
+    \subitem invariant, \hyperpage{27}
   \item type-checking
-    \subitem extends clause, \hyperpage{93}
-    \subitem implements clause, \hyperpage{93}
-  \item types, \hyperpage{27}
-    \subitem annotated types, \hyperpage{45}
-    \subitem class types, \hyperpage{29}
-    \subitem concrete types, \hyperpage{32}
-    \subitem constrained types, \hyperpage{38}
-    \subitem dependent types, \hyperpage{38}
-    \subitem function types, \hyperpage{44}
-    \subitem generic types, \hyperpage{32}, \hyperpage{38}
-    \subitem inference, \hyperpage{50}
-    \subitem interface types, \hyperpage{31}
-    \subitem type definitions, \hyperpage{36}
-    \subitem type parameters, \hyperpage{32}
+    \subitem extends clause, \hyperpage{84}
+    \subitem implements clause, \hyperpage{84}
+  \item types, \hyperpage{21}
+    \subitem annotated types, \hyperpage{39}
+    \subitem class types, \hyperpage{23}
+    \subitem concrete types, \hyperpage{26}
+    \subitem constrained types, \hyperpage{32}
+    \subitem dependent types, \hyperpage{32}
+    \subitem function types, \hyperpage{38}
+    \subitem generic types, \hyperpage{26}, \hyperpage{32}
+    \subitem inference, \hyperpage{44}
+    \subitem interface types, \hyperpage{25}
+    \subitem type definitions, \hyperpage{30}
+    \subitem type parameters, \hyperpage{26}
 
   \indexspace
 
   \item variable
-    \subitem immutable, \hyperpage{56}
-  \item variable declaration, \hyperpage{55}
+    \subitem immutable, \hyperpage{50}
+  \item variable declaration, \hyperpage{49}
   \item variable declarator
-    \subitem destructuring, \hyperpage{57}
-  \item variables, \hyperpage{54}
-  \item Void, \hyperpage{52}
+    \subitem destructuring, \hyperpage{51}
+  \item variables, \hyperpage{48}
+  \item Void, \hyperpage{46}
 
 \end{theindex}

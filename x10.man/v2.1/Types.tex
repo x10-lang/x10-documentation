@@ -615,22 +615,13 @@ available.)  The values of type \xcd`T{e}` are the values of \xcd`T` for which
 %}}
 %~~neg
 
-\item Every object has a \xcd`home` property telling where it is located.
-      One way to say that objects \xcd`c` and \xcd`d` are located at the same
-      place is: 
-\noo{This is wrong!}
 
-\item  As explained in \Sref{XtenPlaces}, certain operations
-can only be performed at an object's home, so having this expressible as a
-type is crucial. One way to say that \xcd`e` is located \xcd`here`, \viz, the same place
-      as the current computation, is: 
-\noo{This is wrong!}
 
 \index{self}When constraining a value of type \xcd`T`, \xcd`self` refers to the object of
 type \xcd`T` which is being constrained.  For example, \xcd`Int{self == 4}` is
 the type of \xcd`Int`s which are equal to 4 -- the best possible description
 of \xcd`4`, and a very difficult type to express without using \xcd`self`.  
-
+\end{itemize}
 
 
 
