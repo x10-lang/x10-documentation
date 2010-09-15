@@ -1075,13 +1075,15 @@ fields.
 %~~vis
 \begin{xten}
 class C {
-  var m: Int, n:Int;
+  val m: Int;
+  var n:Int; 
   private final def ctorLike() {
      n = m + 3;
      }
   def this() { 
-     ctorLike();
+     //ILLEGAL: ctorLike();
      m = 7;
+     ctorLike();
      }
 }
 \end{xten}
