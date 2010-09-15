@@ -156,24 +156,11 @@ As a consequence of this, \xcd`S` may contain constructs which only make sense
 within a single activity.  
 \noo{Revise this!}
 For example, 
-%~~gen
-% package Activities.For.Fun.And.Profit;
-% import x10.util.*;
-% class Thing {
-% def nice():Boolean = true;
-% def poke(){}
-% static def example(things:List[Thing]) {
-%~~vis
 \begin{xten}
-/*  for(x in things) 
+    for(x in things) 
     if (at(x.home) x.nice()) 
         return x;
-*/
 \end{xten}
-%~~siv
-% return null;
-%}}
-%~~neg
 returns the first nice thing in a collection.   If we had used 
 \xcd`async at(x.home)`, this would not be allowed; 
 you can't \xcd`return` from an
@@ -379,7 +366,7 @@ places.)
 Statement \: ForEachStatement \\
 ForEachStatement \: 
       \xcd"foreach" \xcd"(" Formal \xcd"in" Expression \xcd")"
-          Statement 
+          Statement \\
 ForEachStatement \: 
       \xcd"foreach" \xcd"(" Expression \xcd")"
           Statement 
@@ -416,7 +403,7 @@ propagated to the root activity of the \xcd`foreach`.
 Statement \: AtEachStatement \\
 AtEachStatement \:
       \xcd"ateach" \xcd"(" Formal \xcd"in" Expression \xcd")"
-         Statement 
+         Statement \\
 AtEachStatement \:
       \xcd"ateach" \xcd"(" Expression \xcd")"
          Statement 
@@ -498,15 +485,13 @@ value pointed to by a \Xcd{GlobalRef} may be obtained using
 the \Xcd{fetch} method:
 %~~gen
 % package Activities.AtExpressions;
-% class Example {
-%   val fld = 1;
-%   static def example(val ob: Example) {
+% class Example[T] {
 %~~vis
 \begin{xten}
   def fetch(g:GlobalRef[T]):T = at (g) g();
 \end{xten}
 %~~siv
-% } } 
+% } 
 %~~neg
 
 The expression evaluation may spawn asynchronous activities. The \Xcd{at}
