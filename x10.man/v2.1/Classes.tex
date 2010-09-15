@@ -503,6 +503,8 @@ not a subtype of \xcd"C{c}".
 
 \subsection{Property methods}
 
+\noo{Make sure this agrees with Yoav's notes}
+
 A method declared with the modifier \xcd"property" may be used
 in constraints.  A property method declared in a class must have
 a body and must not be \xcd"Void".  The body of the method must
@@ -520,6 +522,7 @@ overridden.
 
 A nullary property method definition may omit the formal parameters and
 the \xcd"def" keyword.  That is, the following are equivalent:
+
 
 
 %~~gen
@@ -818,9 +821,274 @@ call above could be abbreviated:
 \subsection{Constructor Bodies}
 
 Constructors have many restrictions, designed to ensure that objects behave
-sanely while being constructed.  
+sanely while being constructed. Constructors initialize fields of objects and
+establish object invariants.  It should never be possible to observe an
+uninitialized object outside of a constructor call.  However, without some
+restrictions, it would be possible to do so quite easily.  A constructor could
+put \Xcd{this} into a data structure before initializing it, and a concurrent
+activity could read it before the initialization is finished.  If the 
+line marked \Xcd{ILLEGAL} were uncommented, the following program would
+exhibit the problem: 
+%~~gen
+% package Classes.ConstructorBodies.Methane.Ammonia.Atmosphere;
+% import x10.util.*;
+%~~vis
+\begin{xten}
+class Escaper {
+   static val all = new ArrayList[Escaper]();
+   val fld : String;
+   def this() {
+      //ILLEGAL: all.add(this);
+      this.fld = "initialized";
+   }
+   def Main(Array[String](1)):Void {
+      finish{
+        async {new Escaper();}
+        async {
+          for (e in Escaper.all) 
+            assert(e.fld == "initialized");
+        }
+      }
+   }
+}
+\end{xten}
+%~~siv
+%
+%~~neg
 
-\noo{Incorporate Yoav's material here!}
+\subsubsection{Initialization of Fields}
+
+All fields of an object must be given a value before they are used.  There are
+several ways that this can be accomplished: 
+\begin{itemize}
+\item A \Xcd{var} field of a type with a default value, if not otherwise
+      initialized, 
+      will have its type's default value. (\Xcd{val} fields may not use this
+      option; they must be given values explicitly, either by an initializer
+      or by a constructor.)  For example, \Xcd{(new C()).zero}
+      in the example below will be zero, the default value of an \Xcd{Int}.
+%~~gen
+% package Classes.Initofields.One;
+%~~vis
+\begin{xten}
+class C {
+  var zero : Int;
+}
+\end{xten}
+%~~siv
+%
+%~~neg
+
+\item A field may have an explicit initializer, in which case its value is the
+      value of the initializer.  \Xcd{(new D()).one} is one.
+%~~gen
+% package Classes.Initofields.Two;
+%~~vis
+\begin{xten}
+class D {
+  val one = 1;
+}
+\end{xten}
+%~~siv
+%
+%~~neg
+
+\item A field may be given a value in a constructor, or in a method called
+      from a constructor.  \Xcd{(new E()).x} is two; \Xcd{(new E(3)).x} is
+      three. 
+%~~gen
+% package Classes.Initofields.Three;
+%~~vis
+\begin{xten}
+class E {
+   var x : Int;
+   def this() { x = 2; }
+   def this(n: Int) { 
+      this.setX(n);
+   }
+   private final def setX(n:Int) {
+     this.x = n;
+   }
+}
+\end{xten}
+%~~siv
+%
+%~~neg
+
+
+\end{itemize}
+
+\subsubsection{Calling Another Constructor}
+
+A constructor for class \Xcd{C} can call another constructor, either of
+\Xcd{C} itself or of \Xcd{C}'s supertype.  The call to the other constructor
+must be the first statement of the constructor body.
+
+%~~gen
+% package Classical.Constructorical.Calling.Another.One;
+%~~vis
+\begin{xten}
+class C {
+  val a : Int;
+  def this(a:Int) { this.a = a; }
+  def this() { 
+     this(0); // call another constructor of C
+  }
+}
+class D extends C {
+  val b : Int; 
+  def this(a:Int, b:Int) {
+     super(a); // call superclass constructor
+     this.b = b;
+  }
+}
+\end{xten}
+%~~siv
+%
+%~~neg
+
+No fields of \Xcd{this} may be read before the optional \Xcd{this}- or
+\Xcd{super}-call. For example, having \Xcd{super(this.x);} as the
+constructor-call is illegal, since it reads \Xcd{this.x} before the
+constructor-call.
+
+\subsubsection{\Xcd{property} Statement}
+
+The \Xcd{property} statement sets the properties of \Xcd{this}; note that
+properties may not be assigned to directly.  For example, 
+\Xcd{(new C(10)).x == 10}.
+%~~gen
+% package Classes.Propertystatement.Squid.Stuffing;
+%~~vis
+\begin{xten}
+class C(x:Int, y:Boolean) {
+   def this(x:Int) {
+      property(x, true);
+   }
+}
+
+\end{xten}
+%~~siv
+%
+%~~neg
+
+The properties of \Xcd{this} may be read after the \Xcd{property} statement,
+but not before it: 
+%~~gen
+% package Classes.Propertystatement.Squid.Stuffing.Pillows;
+%~~vis
+\begin{xten}
+class C(x:Int, y:Boolean) {
+   val z : Int;
+   def this(x:Int) {
+      // x cannot be read here.
+      property(x, true);
+      this.z = x+3;
+   }
+}
+\end{xten}
+%~~siv
+%
+%~~neg
+
+
+\subsubsection{Use of \Xcd{this} in a Constructor Body}
+
+After the optional constructor-call and optional \Xcd{property} statement,
+\Xcd{this} {\em can} be used, subject to certain restrictions. 
+We say that a method is {\em constructor-like} if it is \Xcd{private},
+\Xcd{final}, and obeys the following restrictions.
+
+\begin{itemize}
+\item \Xcd{this} may not be assigned to anything. This prevents problematic
+      cases such as: 
+%~~gen
+% package Classes.Usethisinactorbodytwo;
+%~~vis
+\begin{xten}
+class Outer {
+   var leak : Inner;
+   class Inner {
+      def this() {
+        //ILLEGAL: Outer.this.leak = this;
+      }
+   }
+}
+\end{xten}
+%~~siv
+%
+%~~neg
+(It also prevents harmless cases, such as \Xcd{val nonleak = this;}
+
+\item \Xcd{this} may only be used as an argument or receiver of a
+      constructor-like method call.  The following class definition is legal.
+%~~gen
+% package Classes.Usethisinactorbodyone; 
+%~~vis
+\begin{xten}
+class C {
+  private final def ctorLike() {
+    x10.io.Console.OUT.println("constructed");
+  }
+  def this() {
+    this.ctorLike();
+  }
+}
+\end{xten}
+%~~siv
+%
+%~~neg
+      It would not be legal if \Xcd{private} or \Xcd{final} were omitted, or
+      if \Xcd{ctorLike} called \Xcd{x10.io.Console.OUT.println(this +
+      "constructed");}.  (The implicit \Xcd{this.toString()} call is a call to
+      a non-constructor-like method.)
+\end{itemize}
+
+Constructor code may refer to fields of \Xcd{this} only after they have been
+definitely assigned.\Sectref{DefiniteAssign}  For example: 
+%~~gen
+%package Classes.ctordefassignuse;
+%~~vis
+\begin{xten}
+class C {
+  val d : Int, e:Int; var f: Int;
+  def this() {
+    // ILLEGAL: f = d - 1; 
+    d = 1;
+    e = d + 2;
+    
+  }
+}
+\end{xten}
+%~~siv
+%
+%~~neg
+
+
+The bodies of constructor-like methods called from constructors may only read
+fields of \Xcd{this} which have been initialized at the point that the method
+was called.  They differ from true constructor bodies in that only 
+constructor bodies, not constructor-like methods, may assign to \Xcd{val}
+fields. 
+%~~gen
+% package Classes.Usethisinactorbodythree;
+%~~vis
+\begin{xten}
+class C {
+  var m: Int, n:Int;
+  private final def ctorLike() {
+     n = m + 3;
+     }
+  def this() { 
+     ctorLike();
+     m = 7;
+     }
+}
+\end{xten}
+%~~siv
+%
+%~~neg
+
 
 
 \section{Static initialization}

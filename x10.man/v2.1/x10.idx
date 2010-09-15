@@ -85,112 +85,112 @@
 \indexentry{nonblocking!method|hyperpage}{77}
 \indexentry{sequential!method|hyperpage}{77}
 \indexentry{safe!method|hyperpage}{78}
-\indexentry{initialization!static|hyperpage}{79}
-\indexentry{set|hyperpage}{85}
-\indexentry{apply|hyperpage}{85}
-\indexentry{()|hyperpage}{85}
-\indexentry{()=|hyperpage}{85}
-\indexentry{type invariants|hyperpage}{86}
-\indexentry{class invariants|hyperpage}{86}
-\indexentry{guards|hyperpage}{86}
-\indexentry{Class invariant|hyperpage}{86}
-\indexentry{type-checking!implements clause|hyperpage}{87}
-\indexentry{type-checking!extends clause|hyperpage}{87}
-\indexentry{implements clause|hyperpage}{87}
-\indexentry{extends  clause|hyperpage}{87}
-\indexentry{structs|hyperpage}{90}
-\indexentry{auto-boxing!struct to interface|hyperpage}{91}
-\indexentry{Any!structs|hyperpage}{92}
-\indexentry{functions|hyperpage}{95}
-\indexentry{Exception!unchecked|hyperpage}{95}
-\indexentry{literal!function|hyperpage}{97}
-\indexentry{function!method selector|hyperpage}{100}
-\indexentry{method!underlying function|hyperpage}{100}
-\indexentry{function!operator|hyperpage}{101}
-\indexentry{function!equality|hyperpage}{102}
-\indexentry{equality!function|hyperpage}{102}
-\indexentry{function!==|hyperpage}{102}
-\indexentry{function!equals|hyperpage}{102}
-\indexentry{function!hashCode|hyperpage}{102}
-\indexentry{function!toString|hyperpage}{102}
-\indexentry{function!typeName|hyperpage}{102}
-\indexentry{function!home|hyperpage}{102}
-\indexentry{function!at(Place)|hyperpage}{102}
-\indexentry{function!at(Object)|hyperpage}{102}
-\indexentry{expressions|hyperpage}{103}
-\indexentry{assignment|hyperpage}{107}
-\indexentry{promotion|hyperpage}{109}
-\indexentry{numeric promotion|hyperpage}{109}
-\indexentry{==|hyperpage}{113}
-\indexentry{!=|hyperpage}{113}
-\indexentry{classcast|hyperpage}{114}
-\indexentry{\Xcd{instanceof}|hyperpage}{115}
-\indexentry{conversions|hyperpage}{117}
-\indexentry{coercions|hyperpage}{117}
-\indexentry{coercions!subsumption coercion|hyperpage}{117}
-\indexentry{coercions!explicit coercion|hyperpage}{117}
-\indexentry{casting|hyperpage}{117}
-\indexentry{\Xcd{as}|hyperpage}{117}
-\indexentry{conversions!widening conversions|hyperpage}{118}
-\indexentry{conversions!numeric conversions|hyperpage}{118}
-\indexentry{conversions!string conversion|hyperpage}{119}
-\indexentry{conversions!user defined|hyperpage}{119}
-\indexentry{statements|hyperpage}{120}
-\indexentry{\Xcd{while}|hyperpage}{125}
-\indexentry{\Xcd{do}|hyperpage}{125}
-\indexentry{\Xcd{for}|hyperpage}{126}
-\indexentry{throw|hyperpage}{127}
-\indexentry{Exception|hyperpage}{127}
-\indexentry{ReturnStatement|hyperpage}{128}
-\indexentry{places|hyperpage}{129}
-\indexentry{place expression|hyperpage}{130}
-\indexentry{here|hyperpage}{130}
-\indexentry{root activity|hyperpage}{132}
-\indexentry{Exception!model|hyperpage}{133}
-\indexentry{finish|hyperpage}{136}
-\indexentry{initial activity|hyperpage}{137}
-\indexentry{\Xcd{foreach}|hyperpage}{137}
-\indexentry{\Xcd{ateach}|hyperpage}{138}
-\indexentry{atomic blocks|hyperpage}{139}
-\indexentry{locality condition|hyperpage}{141}
-\indexentry{clocks|hyperpage}{145}
-\indexentry{clock!ClockUseException|hyperpage}{146}
-\indexentry{clock!creation|hyperpage}{147}
-\indexentry{clock!clocked statements|hyperpage}{147}
-\indexentry{clock!ClockUseException|hyperpage}{147}
-\indexentry{clock!resume|hyperpage}{148}
-\indexentry{clock!ClockUseException|hyperpage}{148}
-\indexentry{clock!next|hyperpage}{148}
-\indexentry{clock!drop|hyperpage}{149}
-\indexentry{arrays|hyperpage}{151}
-\indexentry{point syntax|hyperpage}{151}
-\indexentry{region|hyperpage}{152}
-\indexentry{region!upperTriangular|hyperpage}{152}
-\indexentry{region!lowerTriangular|hyperpage}{152}
-\indexentry{region!banded|hyperpage}{152}
-\indexentry{region!convex|hyperpage}{153}
-\indexentry{region!sub-region|hyperpage}{153}
-\indexentry{region!intersection|hyperpage}{153}
-\indexentry{region!product|hyperpage}{153}
-\indexentry{distribution|hyperpage}{157}
-\indexentry{distribution!unique|hyperpage}{157}
-\indexentry{distribution!constant|hyperpage}{157}
-\indexentry{distribution!block|hyperpage}{158}
-\indexentry{distribution!restriction!region|hyperpage}{158}
-\indexentry{distribution!restriction!range|hyperpage}{158}
-\indexentry{array!access|hyperpage}{159}
-\indexentry{arrays!constant promotion|hyperpage}{160}
-\indexentry{array!restriction|hyperpage}{160}
-\indexentry{array!union!disjoint|hyperpage}{160}
-\indexentry{array!union!asymmetric|hyperpage}{160}
-\indexentry{array!pointwise operations|hyperpage}{161}
-\indexentry{array!reductions|hyperpage}{161}
-\indexentry{array!scans|hyperpage}{161}
-\indexentry{annotations|hyperpage}{163}
-\indexentry{plugins|hyperpage}{166}
-\indexentry{Polyglot|hyperpage}{166}
-\indexentry{CompilerPlugin|hyperpage}{166}
-\indexentry{Goal|hyperpage}{166}
-\indexentry{Node|hyperpage}{166}
-\indexentry{AnnotationNode|hyperpage}{167}
-\indexentry{native code|hyperpage}{168}
+\indexentry{initialization!static|hyperpage}{82}
+\indexentry{set|hyperpage}{88}
+\indexentry{apply|hyperpage}{88}
+\indexentry{()|hyperpage}{88}
+\indexentry{()=|hyperpage}{88}
+\indexentry{type invariants|hyperpage}{89}
+\indexentry{class invariants|hyperpage}{89}
+\indexentry{guards|hyperpage}{89}
+\indexentry{Class invariant|hyperpage}{90}
+\indexentry{type-checking!implements clause|hyperpage}{90}
+\indexentry{type-checking!extends clause|hyperpage}{90}
+\indexentry{implements clause|hyperpage}{90}
+\indexentry{extends  clause|hyperpage}{90}
+\indexentry{structs|hyperpage}{94}
+\indexentry{auto-boxing!struct to interface|hyperpage}{95}
+\indexentry{Any!structs|hyperpage}{96}
+\indexentry{functions|hyperpage}{99}
+\indexentry{Exception!unchecked|hyperpage}{99}
+\indexentry{literal!function|hyperpage}{101}
+\indexentry{function!method selector|hyperpage}{104}
+\indexentry{method!underlying function|hyperpage}{104}
+\indexentry{function!operator|hyperpage}{105}
+\indexentry{function!equality|hyperpage}{106}
+\indexentry{equality!function|hyperpage}{106}
+\indexentry{function!==|hyperpage}{106}
+\indexentry{function!equals|hyperpage}{106}
+\indexentry{function!hashCode|hyperpage}{106}
+\indexentry{function!toString|hyperpage}{106}
+\indexentry{function!typeName|hyperpage}{106}
+\indexentry{function!home|hyperpage}{106}
+\indexentry{function!at(Place)|hyperpage}{106}
+\indexentry{function!at(Object)|hyperpage}{106}
+\indexentry{expressions|hyperpage}{107}
+\indexentry{assignment|hyperpage}{111}
+\indexentry{promotion|hyperpage}{113}
+\indexentry{numeric promotion|hyperpage}{113}
+\indexentry{==|hyperpage}{117}
+\indexentry{!=|hyperpage}{117}
+\indexentry{classcast|hyperpage}{118}
+\indexentry{\Xcd{instanceof}|hyperpage}{119}
+\indexentry{conversions|hyperpage}{121}
+\indexentry{coercions|hyperpage}{121}
+\indexentry{coercions!subsumption coercion|hyperpage}{121}
+\indexentry{coercions!explicit coercion|hyperpage}{121}
+\indexentry{casting|hyperpage}{121}
+\indexentry{\Xcd{as}|hyperpage}{121}
+\indexentry{conversions!widening conversions|hyperpage}{122}
+\indexentry{conversions!numeric conversions|hyperpage}{122}
+\indexentry{conversions!string conversion|hyperpage}{123}
+\indexentry{conversions!user defined|hyperpage}{123}
+\indexentry{statements|hyperpage}{124}
+\indexentry{\Xcd{while}|hyperpage}{129}
+\indexentry{\Xcd{do}|hyperpage}{129}
+\indexentry{\Xcd{for}|hyperpage}{130}
+\indexentry{throw|hyperpage}{131}
+\indexentry{Exception|hyperpage}{131}
+\indexentry{ReturnStatement|hyperpage}{132}
+\indexentry{places|hyperpage}{133}
+\indexentry{place expression|hyperpage}{134}
+\indexentry{here|hyperpage}{134}
+\indexentry{root activity|hyperpage}{136}
+\indexentry{Exception!model|hyperpage}{137}
+\indexentry{finish|hyperpage}{140}
+\indexentry{initial activity|hyperpage}{141}
+\indexentry{\Xcd{foreach}|hyperpage}{141}
+\indexentry{\Xcd{ateach}|hyperpage}{142}
+\indexentry{atomic blocks|hyperpage}{143}
+\indexentry{locality condition|hyperpage}{145}
+\indexentry{clocks|hyperpage}{149}
+\indexentry{clock!ClockUseException|hyperpage}{150}
+\indexentry{clock!creation|hyperpage}{151}
+\indexentry{clock!clocked statements|hyperpage}{151}
+\indexentry{clock!ClockUseException|hyperpage}{151}
+\indexentry{clock!resume|hyperpage}{152}
+\indexentry{clock!ClockUseException|hyperpage}{152}
+\indexentry{clock!next|hyperpage}{152}
+\indexentry{clock!drop|hyperpage}{153}
+\indexentry{arrays|hyperpage}{155}
+\indexentry{point syntax|hyperpage}{155}
+\indexentry{region|hyperpage}{156}
+\indexentry{region!upperTriangular|hyperpage}{156}
+\indexentry{region!lowerTriangular|hyperpage}{156}
+\indexentry{region!banded|hyperpage}{156}
+\indexentry{region!convex|hyperpage}{157}
+\indexentry{region!sub-region|hyperpage}{157}
+\indexentry{region!intersection|hyperpage}{157}
+\indexentry{region!product|hyperpage}{157}
+\indexentry{distribution|hyperpage}{161}
+\indexentry{distribution!unique|hyperpage}{161}
+\indexentry{distribution!constant|hyperpage}{161}
+\indexentry{distribution!block|hyperpage}{162}
+\indexentry{distribution!restriction!region|hyperpage}{162}
+\indexentry{distribution!restriction!range|hyperpage}{162}
+\indexentry{array!access|hyperpage}{163}
+\indexentry{arrays!constant promotion|hyperpage}{164}
+\indexentry{array!restriction|hyperpage}{164}
+\indexentry{array!union!disjoint|hyperpage}{164}
+\indexentry{array!union!asymmetric|hyperpage}{164}
+\indexentry{array!pointwise operations|hyperpage}{165}
+\indexentry{array!reductions|hyperpage}{165}
+\indexentry{array!scans|hyperpage}{165}
+\indexentry{annotations|hyperpage}{167}
+\indexentry{plugins|hyperpage}{170}
+\indexentry{Polyglot|hyperpage}{170}
+\indexentry{CompilerPlugin|hyperpage}{170}
+\indexentry{Goal|hyperpage}{170}
+\indexentry{Node|hyperpage}{170}
+\indexentry{AnnotationNode|hyperpage}{171}
+\indexentry{native code|hyperpage}{172}
