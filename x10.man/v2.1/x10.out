@@ -66,6 +66,8 @@
 \BOOKMARK [2][-]{subsection.8.2.2}{Field hiding}{section.8.2}
 \BOOKMARK [2][-]{subsection.8.2.3}{Field qualifiers}{section.8.2}
 \BOOKMARK [2][-]{subsection.8.2.4}{"transient" Qualifier}{section.8.2}
+\BOOKMARK [2][-]{subsection.8.2.5}{"clocked" Qualifier}{section.8.2}
+\BOOKMARK [2][-]{subsection.8.2.6}{"property" Qualifier}{section.8.2}
 \BOOKMARK [1][-]{section.8.3}{Properties}{chapter.8}
 \BOOKMARK [1][-]{section.8.4}{Methods}{chapter.8}
 \BOOKMARK [2][-]{subsection.8.4.1}{"ref" Parameters}{section.8.4}
@@ -173,6 +175,7 @@
 \BOOKMARK [2][-]{subsection.15.1.5}{Dropping clocks}{section.15.1}
 \BOOKMARK [1][-]{section.15.2}{Deadlock Freedom}{chapter.15}
 \BOOKMARK [1][-]{section.15.3}{Program equivalences}{chapter.15}
+\BOOKMARK [1][-]{section.15.4}{Clocked Fields}{chapter.15}
 \BOOKMARK [0][-]{chapter.16}{Local and Distributed Arrays}{}
 \BOOKMARK [1][-]{section.16.1}{Points}{chapter.16}
 \BOOKMARK [1][-]{section.16.2}{Regions}{chapter.16}

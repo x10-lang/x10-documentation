@@ -86,6 +86,8 @@
 \contentsline {subsection}{\numberline {8.2.3}Field qualifiers}{70}{subsection.8.2.3}
 \contentsline {subsubsection}{{\lstinline "static"} qualifier}{70}{section*.22}
 \contentsline {subsection}{\numberline {8.2.4}{\lstinline "transient"} Qualifier}{70}{subsection.8.2.4}
+\contentsline {subsection}{\numberline {8.2.5}{\lstinline "clocked"} Qualifier}{70}{subsection.8.2.5}
+\contentsline {subsection}{\numberline {8.2.6}{\lstinline "property"} Qualifier}{71}{subsection.8.2.6}
 \contentsline {section}{\numberline {8.3}Properties}{71}{section.8.3}
 \contentsline {section}{\numberline {8.4}Methods}{72}{section.8.4}
 \contentsline {subsection}{\numberline {8.4.1}{\lstinline "ref"} Parameters}{73}{subsection.8.4.1}
@@ -96,17 +98,17 @@
 \contentsline {subsubsection}{{\lstinline "atomic"} qualifier}{77}{section*.23}
 \contentsline {subsubsection}{{\lstinline "pinned"} qualifier}{77}{section*.24}
 \contentsline {subsubsection}{{\lstinline "nonblocking"} qualifier}{77}{section*.25}
-\contentsline {subsubsection}{{\lstinline "sequential"} qualifier}{77}{section*.26}
+\contentsline {subsubsection}{{\lstinline "sequential"} qualifier}{78}{section*.26}
 \contentsline {subsubsection}{{\lstinline "safe"} qualifier}{78}{section*.27}
 \contentsline {section}{\numberline {8.5}Instance Initialization}{78}{section.8.5}
 \contentsline {section}{\numberline {8.6}Constructors}{78}{section.8.6}
 \contentsline {subsection}{\numberline {8.6.1}Constructor Return Types}{78}{subsection.8.6.1}
 \contentsline {subsection}{\numberline {8.6.2}Constructor Bodies}{79}{subsection.8.6.2}
 \contentsline {subsubsection}{Initialization of Fields}{80}{section*.28}
-\contentsline {subsubsection}{Calling Another Constructor}{80}{section*.29}
+\contentsline {subsubsection}{Calling Another Constructor}{81}{section*.29}
 \contentsline {subsubsection}{{\lstinline "property"} Statement}{81}{section*.30}
 \contentsline {subsubsection}{Use of {\lstinline "this"} in a Constructor Body}{82}{section*.31}
-\contentsline {section}{\numberline {8.7}Static initialization}{83}{section.8.7}
+\contentsline {section}{\numberline {8.7}Static initialization}{84}{section.8.7}
 \contentsline {section}{\numberline {8.8}User-Defined Operators}{85}{section.8.8}
 \contentsline {subsection}{\numberline {8.8.1}Binary Operators}{86}{subsection.8.8.1}
 \contentsline {subsection}{\numberline {8.8.2}Unary Operators}{87}{subsection.8.8.2}
@@ -114,7 +116,7 @@
 \contentsline {subsection}{\numberline {8.8.4}Implicit Type Coercions}{89}{subsection.8.8.4}
 \contentsline {subsection}{\numberline {8.8.5}\lstinline `set` and \lstinline `apply`}{89}{subsection.8.8.5}
 \contentsline {section}{\numberline {8.9}Class Guards and Invariants}{90}{section.8.9}
-\contentsline {subsection}{\numberline {8.9.1}Invariants for {\lstinline "implements"} and {\lstinline "extends"} clauses}{91}{subsection.8.9.1}
+\contentsline {subsection}{\numberline {8.9.1}Invariants for {\lstinline "implements"} and {\lstinline "extends"} clauses}{92}{subsection.8.9.1}
 \contentsline {subsection}{\numberline {8.9.2}Invariants and constructor definitions}{92}{subsection.8.9.2}
 \contentsline {chapter}{\numberline {9}Structs}{95}{chapter.9}
 \contentsline {section}{\numberline {9.1}Struct declaration}{96}{section.9.1}
@@ -211,6 +213,7 @@
 \contentsline {subsection}{\numberline {15.1.5}Dropping clocks}{154}{subsection.15.1.5}
 \contentsline {section}{\numberline {15.2}Deadlock Freedom}{154}{section.15.2}
 \contentsline {section}{\numberline {15.3}Program equivalences}{155}{section.15.3}
+\contentsline {section}{\numberline {15.4}Clocked Fields}{155}{section.15.4}
 \contentsline {chapter}{\numberline {16}Local and Distributed Arrays}{156}{chapter.16}
 \contentsline {section}{\numberline {16.1}Points}{156}{section.16.1}
 \contentsline {section}{\numberline {16.2}Regions}{157}{section.16.2}

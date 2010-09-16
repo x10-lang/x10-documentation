@@ -74,7 +74,6 @@
 \indexentry{field!transient|hyperpage}{70}
 \indexentry{property!call|hyperpage}{72}
 \indexentry{property!initialization|hyperpage}{72}
-\indexentry{class|hyperpage}{72}
 \indexentry{parameter!var|hyperpage}{72}
 \indexentry{parameter!val|hyperpage}{72}
 \indexentry{ref|hyperpage}{73}
@@ -83,9 +82,9 @@
 \indexentry{atomic|hyperpage}{77}
 \indexentry{pinned!method|hyperpage}{77}
 \indexentry{nonblocking!method|hyperpage}{77}
-\indexentry{sequential!method|hyperpage}{77}
+\indexentry{sequential!method|hyperpage}{78}
 \indexentry{safe!method|hyperpage}{78}
-\indexentry{initialization!static|hyperpage}{83}
+\indexentry{initialization!static|hyperpage}{84}
 \indexentry{set|hyperpage}{89}
 \indexentry{apply|hyperpage}{89}
 \indexentry{()|hyperpage}{89}
@@ -94,10 +93,10 @@
 \indexentry{class invariants|hyperpage}{90}
 \indexentry{guards|hyperpage}{90}
 \indexentry{Class invariant|hyperpage}{91}
-\indexentry{type-checking!implements clause|hyperpage}{91}
-\indexentry{type-checking!extends clause|hyperpage}{91}
-\indexentry{implements clause|hyperpage}{91}
-\indexentry{extends  clause|hyperpage}{91}
+\indexentry{type-checking!implements clause|hyperpage}{92}
+\indexentry{type-checking!extends clause|hyperpage}{92}
+\indexentry{implements clause|hyperpage}{92}
+\indexentry{extends  clause|hyperpage}{92}
 \indexentry{structs|hyperpage}{95}
 \indexentry{auto-boxing!struct to interface|hyperpage}{96}
 \indexentry{Any!structs|hyperpage}{97}
@@ -162,6 +161,8 @@
 \indexentry{clock!ClockUseException|hyperpage}{153}
 \indexentry{clock!next|hyperpage}{153}
 \indexentry{clock!drop|hyperpage}{154}
+\indexentry{field!clocked|hyperpage}{155}
+\indexentry{clocked!field|hyperpage}{155}
 \indexentry{arrays|hyperpage}{156}
 \indexentry{point syntax|hyperpage}{156}
 \indexentry{region|hyperpage}{157}
