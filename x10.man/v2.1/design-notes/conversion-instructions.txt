@@ -3,15 +3,13 @@
 Rules to follow when converting from 2.0 object model to 2.1 object
 model.
 
-
-
 Delete ! types -- replace T! with T. Almost certainly these are not
 needed any more.
 
 Get rid of the "global" modifier on methods in interfaces. Methods are
 global by default.
 
-Get rid of "global" modifier on methds in a classd. Mark at
+Get rid of "global" modifier on methods in a class. Mark at
 @Global. Methods not marked with global may now want to be marked
 @Pinned (see below). 
 
@@ -43,8 +41,8 @@ oddities as well:
   -- Local variables and method parameters should be val's unless
      there is a reason for them not to be.
 
-  -- The main method signature shd be 
-           def main(Rail[String]) {..}
+  -- The main method signature should be 
+           def main(Array[String](1)) {..}
      unless the arg is being used in the body, in which case name it.
 
   -- Replace all uses of at(P) S with async at(P) S.
@@ -126,8 +124,9 @@ Single class global objects idiom (for the second case above)
 Double class global objects idiom
 
 A class D serves as a "proxy" class for objects of another class C. D
-should typically be called RemoteC or GlobalC. D should contain
-internally a GlobalRef[C], e.g.
+should typically be called RemoteC or GlobalC. You may wish to annotate
+it @Global. D should contain internally a GlobalRef[C] to point to its 
+root object(s) e.g.
 
   protected val root: GlobalRef[C];
 

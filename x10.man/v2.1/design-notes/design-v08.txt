@@ -568,7 +568,7 @@ into multiple times during each phase (these multiple writes are
 reduced as usual for acc's).
 
 A clocked val/acc x can only be written into inside a clocked finish at
-the same scope as the clocked val/acc, since the next necesaary to
+the same scope as the clocked val/acc, since the next necessary to
 publish the value can only be executed inside such a clocked finish.
 Only those asyncs spawned within such a finish can read/write x that are 
 marked "clocked". 
