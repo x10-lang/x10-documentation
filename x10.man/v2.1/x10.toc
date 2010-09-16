@@ -42,20 +42,20 @@
 \contentsline {section}{\numberline {4.5}Constrained types}{38}{section.4.5}
 \contentsline {subsection}{\numberline {4.5.1}Constraint Expressions}{40}{subsection.4.5.1}
 \contentsline {subsubsection}{Acyclicity restriction}{41}{section*.21}
-\contentsline {subsection}{\numberline {4.5.2}Place constraints}{41}{subsection.4.5.2}
+\contentsline {subsection}{\numberline {4.5.2}Place constraints}{42}{subsection.4.5.2}
 \contentsline {subsection}{\numberline {4.5.3}Variables in Constraints}{42}{subsection.4.5.3}
 \contentsline {subsection}{\numberline {4.5.4}Operations on Constrained Types}{42}{subsection.4.5.4}
 \contentsline {subsection}{\numberline {4.5.5}Example of Constraints}{43}{subsection.4.5.5}
 \contentsline {section}{\numberline {4.6}Function types}{44}{section.4.6}
 \contentsline {section}{\numberline {4.7}Annotated types}{45}{section.4.7}
-\contentsline {section}{\numberline {4.8}Subtyping and type equivalence}{45}{section.4.8}
+\contentsline {section}{\numberline {4.8}Subtyping and type equivalence}{46}{section.4.8}
 \contentsline {section}{\numberline {4.9}Common ancestors of types}{47}{section.4.9}
 \contentsline {section}{\numberline {4.10}Fundamental types}{49}{section.4.10}
 \contentsline {subsection}{\numberline {4.10.1}The interface \lstinline `Any`}{49}{subsection.4.10.1}
 \contentsline {subsection}{\numberline {4.10.2}The class {\lstinline "Object"}}{50}{subsection.4.10.2}
 \contentsline {section}{\numberline {4.11}Type inference}{50}{section.4.11}
 \contentsline {subsection}{\numberline {4.11.1}Variable declarations}{50}{subsection.4.11.1}
-\contentsline {subsection}{\numberline {4.11.2}Return types}{50}{subsection.4.11.2}
+\contentsline {subsection}{\numberline {4.11.2}Return types}{51}{subsection.4.11.2}
 \contentsline {subsection}{\numberline {4.11.3}Type arguments}{52}{subsection.4.11.3}
 \contentsline {chapter}{\numberline {5}Variables}{54}{chapter.5}
 \contentsline {section}{\numberline {5.1}Immutable variables}{56}{section.5.1}
@@ -106,153 +106,153 @@
 \contentsline {subsubsection}{Calling Another Constructor}{80}{section*.29}
 \contentsline {subsubsection}{{\lstinline "property"} Statement}{81}{section*.30}
 \contentsline {subsubsection}{Use of {\lstinline "this"} in a Constructor Body}{82}{section*.31}
-\contentsline {section}{\numberline {8.7}Static initialization}{82}{section.8.7}
-\contentsline {section}{\numberline {8.8}User-Defined Operators}{84}{section.8.8}
-\contentsline {subsection}{\numberline {8.8.1}Binary Operators}{85}{subsection.8.8.1}
-\contentsline {subsection}{\numberline {8.8.2}Unary Operators}{86}{subsection.8.8.2}
-\contentsline {subsection}{\numberline {8.8.3}Type Conversions}{87}{subsection.8.8.3}
-\contentsline {subsection}{\numberline {8.8.4}Implicit Type Coercions}{88}{subsection.8.8.4}
-\contentsline {subsection}{\numberline {8.8.5}\lstinline `set` and \lstinline `apply`}{88}{subsection.8.8.5}
-\contentsline {section}{\numberline {8.9}Class Guards and Invariants}{89}{section.8.9}
-\contentsline {subsection}{\numberline {8.9.1}Invariants for {\lstinline "implements"} and {\lstinline "extends"} clauses}{90}{subsection.8.9.1}
-\contentsline {subsection}{\numberline {8.9.2}Invariants and constructor definitions}{91}{subsection.8.9.2}
-\contentsline {chapter}{\numberline {9}Structs}{94}{chapter.9}
-\contentsline {section}{\numberline {9.1}Struct declaration}{95}{section.9.1}
-\contentsline {section}{\numberline {9.2}Boxing of structs}{95}{section.9.2}
-\contentsline {section}{\numberline {9.3}Optional Implementation of {\lstinline "Any"} methods}{96}{section.9.3}
-\contentsline {section}{\numberline {9.4}Primitive Types}{97}{section.9.4}
-\contentsline {section}{\numberline {9.5}Generic programming with structs}{97}{section.9.5}
-\contentsline {section}{\numberline {9.6}Example structs}{97}{section.9.6}
-\contentsline {chapter}{\numberline {10}Functions}{99}{chapter.10}
-\contentsline {section}{\numberline {10.1}Overview}{99}{section.10.1}
-\contentsline {section}{\numberline {10.2}Function Literals}{101}{section.10.2}
-\contentsline {subsection}{\numberline {10.2.1}Outer variable access}{102}{subsection.10.2.1}
-\contentsline {section}{\numberline {10.3}Method selectors}{104}{section.10.3}
-\contentsline {section}{\numberline {10.4}Operator functions}{105}{section.10.4}
-\contentsline {section}{\numberline {10.5}Functions as objects of type {\lstinline "Any"}}{106}{section.10.5}
-\contentsline {chapter}{\numberline {11}Expressions}{107}{chapter.11}
-\contentsline {section}{\numberline {11.1}Literals}{107}{section.11.1}
-\contentsline {section}{\numberline {11.2}{\lstinline "this"}}{107}{section.11.2}
-\contentsline {section}{\numberline {11.3}Local variables}{108}{section.11.3}
-\contentsline {section}{\numberline {11.4}Field access}{109}{section.11.4}
-\contentsline {section}{\numberline {11.5}Function Literals}{110}{section.11.5}
-\contentsline {section}{\numberline {11.6}Calls}{110}{section.11.6}
-\contentsline {section}{\numberline {11.7}Assignment}{111}{section.11.7}
-\contentsline {section}{\numberline {11.8}Increment and decrement}{112}{section.11.8}
-\contentsline {section}{\numberline {11.9}Numeric Operations}{113}{section.11.9}
-\contentsline {subsection}{\numberline {11.9.1}Conversions and coercions}{113}{subsection.11.9.1}
-\contentsline {subsection}{\numberline {11.9.2}Unary plus and unary minus}{113}{subsection.11.9.2}
-\contentsline {section}{\numberline {11.10}Bitwise complement}{113}{section.11.10}
-\contentsline {section}{\numberline {11.11}Binary arithmetic operations}{114}{section.11.11}
-\contentsline {section}{\numberline {11.12}Binary shift operations}{114}{section.11.12}
-\contentsline {section}{\numberline {11.13}Binary bitwise operations}{114}{section.11.13}
-\contentsline {section}{\numberline {11.14}String concatenation}{115}{section.11.14}
-\contentsline {section}{\numberline {11.15}Logical negation}{115}{section.11.15}
-\contentsline {section}{\numberline {11.16}Boolean logical operations}{115}{section.11.16}
-\contentsline {section}{\numberline {11.17}Boolean conditional operations}{115}{section.11.17}
-\contentsline {section}{\numberline {11.18}Relational operations}{116}{section.11.18}
-\contentsline {section}{\numberline {11.19}Conditional expressions}{116}{section.11.19}
-\contentsline {section}{\numberline {11.20}Stable equality}{117}{section.11.20}
-\contentsline {section}{\numberline {11.21}Allocation}{117}{section.11.21}
-\contentsline {section}{\numberline {11.22}Casts}{118}{section.11.22}
-\contentsline {section}{\numberline {11.23}{\lstinline "instanceof"}}{119}{section.11.23}
-\contentsline {section}{\numberline {11.24}Subtyping expressions}{119}{section.11.24}
-\contentsline {section}{\numberline {11.25}Contains expressions}{120}{section.11.25}
-\contentsline {section}{\numberline {11.26}Rail constructors}{120}{section.11.26}
-\contentsline {section}{\numberline {11.27}Coercions and conversions}{121}{section.11.27}
-\contentsline {subsection}{\numberline {11.27.1}Coercions}{121}{subsection.11.27.1}
-\contentsline {paragraph}{Subsumption coercion.}{121}{section*.32}
-\contentsline {paragraph}{Explicit coercion (casting with \lstinline "as")}{121}{section*.33}
-\contentsline {paragraph}{Effects of explicit numeric coercion}{122}{section*.34}
-\contentsline {subsection}{\numberline {11.27.2}Conversions}{122}{subsection.11.27.2}
-\contentsline {paragraph}{Widening numeric conversion.}{122}{section*.35}
-\contentsline {paragraph}{String conversion.}{123}{section*.36}
-\contentsline {paragraph}{User defined conversions.}{123}{section*.37}
-\contentsline {chapter}{\numberline {12}Statements}{124}{chapter.12}
-\contentsline {section}{\numberline {12.1}Empty statement}{124}{section.12.1}
-\contentsline {section}{\numberline {12.2}Local variable declaration}{124}{section.12.2}
-\contentsline {section}{\numberline {12.3}Block statement}{125}{section.12.3}
-\contentsline {section}{\numberline {12.4}Expression statement}{125}{section.12.4}
-\contentsline {section}{\numberline {12.5}Labeled statement}{126}{section.12.5}
-\contentsline {section}{\numberline {12.6}Break statement}{126}{section.12.6}
-\contentsline {section}{\numberline {12.7}Continue statement}{127}{section.12.7}
-\contentsline {section}{\numberline {12.8}If statement}{127}{section.12.8}
-\contentsline {section}{\numberline {12.9}Switch statement}{128}{section.12.9}
-\contentsline {section}{\numberline {12.10}While statement}{129}{section.12.10}
-\contentsline {section}{\numberline {12.11}Do--while statement}{129}{section.12.11}
-\contentsline {section}{\numberline {12.12}For statement}{130}{section.12.12}
-\contentsline {section}{\numberline {12.13}Throw statement}{131}{section.12.13}
-\contentsline {section}{\numberline {12.14}Try--catch statement}{131}{section.12.14}
-\contentsline {section}{\numberline {12.15}Return statement}{132}{section.12.15}
-\contentsline {chapter}{\numberline {13}Places}{133}{chapter.13}
-\contentsline {section}{\numberline {13.1}The Structure of Places}{134}{section.13.1}
-\contentsline {section}{\numberline {13.2}{\lstinline "here"}}{134}{section.13.2}
-\contentsline {chapter}{\numberline {14}Activities}{136}{chapter.14}
-\contentsline {paragraph}{Future Extensions.}{137}{section*.38}
-\contentsline {section}{\numberline {14.1}The X10\xspace {} rooted exception model}{137}{section.14.1}
-\contentsline {section}{\numberline {14.2}\lstinline `at`: Place changing}{138}{section.14.2}
-\contentsline {section}{\numberline {14.3}\lstinline `async`: Spawning an activity}{139}{section.14.3}
-\contentsline {section}{\numberline {14.4}Finish}{140}{section.14.4}
-\contentsline {section}{\numberline {14.5}Initial activity}{141}{section.14.5}
-\contentsline {section}{\numberline {14.6}Foreach statements}{141}{section.14.6}
-\contentsline {section}{\numberline {14.7}Ateach statements}{142}{section.14.7}
-\contentsline {section}{\numberline {14.8}At expressions}{143}{section.14.8}
-\contentsline {section}{\numberline {14.9}Atomic blocks}{143}{section.14.9}
-\contentsline {subsection}{\numberline {14.9.1}Unconditional atomic blocks}{144}{subsection.14.9.1}
-\contentsline {paragraph}{Consequences.}{145}{section*.39}
-\contentsline {subsubsection}{Example}{145}{section*.40}
-\contentsline {subsection}{\numberline {14.9.2}Conditional atomic blocks}{146}{subsection.14.9.2}
-\contentsline {chapter}{\numberline {15}Clocks}{149}{chapter.15}
-\contentsline {section}{\numberline {15.1}Clock operations}{151}{section.15.1}
-\contentsline {subsection}{\numberline {15.1.1}Creating new clocks}{151}{subsection.15.1.1}
-\contentsline {subsection}{\numberline {15.1.2}Registering new activities on clocks}{151}{subsection.15.1.2}
-\contentsline {subsection}{\numberline {15.1.3}Resuming clocks}{152}{subsection.15.1.3}
-\contentsline {subsection}{\numberline {15.1.4}Advancing clocks}{152}{subsection.15.1.4}
-\contentsline {subsection}{\numberline {15.1.5}Dropping clocks}{153}{subsection.15.1.5}
-\contentsline {section}{\numberline {15.2}Deadlock Freedom}{153}{section.15.2}
-\contentsline {section}{\numberline {15.3}Program equivalences}{154}{section.15.3}
-\contentsline {chapter}{\numberline {16}Local and Distributed Arrays}{155}{chapter.16}
-\contentsline {section}{\numberline {16.1}Points}{155}{section.16.1}
-\contentsline {section}{\numberline {16.2}Regions}{156}{section.16.2}
-\contentsline {subsection}{\numberline {16.2.1}Operations on regions}{157}{subsection.16.2.1}
-\contentsline {section}{\numberline {16.3}Arrays}{158}{section.16.3}
-\contentsline {subsection}{\numberline {16.3.1}Array Constructors}{159}{subsection.16.3.1}
-\contentsline {subsection}{\numberline {16.3.2}Array Operations}{159}{subsection.16.3.2}
-\contentsline {subsection}{\numberline {16.3.3}Higher-Order Array Operations}{160}{subsection.16.3.3}
-\contentsline {section}{\numberline {16.4}Distributions}{161}{section.16.4}
-\contentsline {subsection}{\numberline {16.4.1}Operations returning distributions}{161}{subsection.16.4.1}
-\contentsline {paragraph}{Unique distribution}{161}{section*.41}
-\contentsline {paragraph}{Constant distributions.}{161}{section*.42}
-\contentsline {paragraph}{Block distributions.}{162}{section*.43}
-\contentsline {paragraph}{Domain Restriction.}{162}{section*.44}
-\contentsline {paragraph}{Range Restriction.}{162}{section*.45}
-\contentsline {section}{\numberline {16.5}Array initializer}{162}{section.16.5}
-\contentsline {section}{\numberline {16.6}Operations on arrays}{163}{section.16.6}
-\contentsline {subsection}{\numberline {16.6.1}Element operations}{163}{subsection.16.6.1}
-\contentsline {subsection}{\numberline {16.6.2}Constant promotion}{164}{subsection.16.6.2}
-\contentsline {subsection}{\numberline {16.6.3}Restriction of an array}{164}{subsection.16.6.3}
-\contentsline {subsection}{\numberline {16.6.4}Assembling an array}{164}{subsection.16.6.4}
-\contentsline {paragraph}{Assembling arrays over disjoint regions}{164}{section*.46}
-\contentsline {paragraph}{Overlaying an array on another}{164}{section*.47}
-\contentsline {subsection}{\numberline {16.6.5}Global operations }{165}{subsection.16.6.5}
-\contentsline {paragraph}{Pointwise operations}{165}{section*.48}
-\contentsline {paragraph}{Reductions}{165}{section*.49}
-\contentsline {paragraph}{Scans}{165}{section*.50}
-\contentsline {chapter}{\numberline {17}Annotations and compiler plugins}{167}{chapter.17}
-\contentsline {section}{\numberline {17.1}Annotation syntax}{167}{section.17.1}
-\contentsline {section}{\numberline {17.2}Annotation declarations}{169}{section.17.2}
-\contentsline {section}{\numberline {17.3}Compiler plugins}{170}{section.17.3}
-\contentsline {chapter}{\numberline {18}Native Code Integration}{172}{chapter.18}
-\contentsline {section}{\numberline {18.1}Native \lstinline `static` Methods}{172}{section.18.1}
-\contentsline {section}{\numberline {18.2}Native Blocks}{174}{section.18.2}
-\contentsline {section}{\numberline {18.3}External Java Code}{174}{section.18.3}
-\contentsline {section}{\numberline {18.4}External C++ Code}{175}{section.18.4}
-\contentsline {subsection}{\numberline {18.4.1}Auxiliary C++ Files}{175}{subsection.18.4.1}
-\contentsline {subsection}{\numberline {18.4.2}C++ System Libraries}{176}{subsection.18.4.2}
-\contentsline {chapter}{\numberline {19}Lost Bits}{177}{chapter.19}
-\contentsline {section}{\numberline {19.1}Visibility of Local Variables and Formals}{177}{section.19.1}
-\contentsline {chapter}{Alphabetic index of definitions of concepts, keywords, and procedures}{180}{chapter*.51}
-\contentsline {chapter}{\numberline {A}Change Log}{186}{appendix.A}
-\contentsline {section}{\numberline {A.1}Changes from X10\xspace {} v2.0.6}{186}{section.A.1}
-\contentsline {section}{\numberline {A.2}Changes from X10\xspace {} v2.0}{186}{section.A.2}
-\contentsline {section}{\numberline {A.3}Changes from X10\xspace {} v1.7}{187}{section.A.3}
+\contentsline {section}{\numberline {8.7}Static initialization}{83}{section.8.7}
+\contentsline {section}{\numberline {8.8}User-Defined Operators}{85}{section.8.8}
+\contentsline {subsection}{\numberline {8.8.1}Binary Operators}{86}{subsection.8.8.1}
+\contentsline {subsection}{\numberline {8.8.2}Unary Operators}{87}{subsection.8.8.2}
+\contentsline {subsection}{\numberline {8.8.3}Type Conversions}{88}{subsection.8.8.3}
+\contentsline {subsection}{\numberline {8.8.4}Implicit Type Coercions}{89}{subsection.8.8.4}
+\contentsline {subsection}{\numberline {8.8.5}\lstinline `set` and \lstinline `apply`}{89}{subsection.8.8.5}
+\contentsline {section}{\numberline {8.9}Class Guards and Invariants}{90}{section.8.9}
+\contentsline {subsection}{\numberline {8.9.1}Invariants for {\lstinline "implements"} and {\lstinline "extends"} clauses}{91}{subsection.8.9.1}
+\contentsline {subsection}{\numberline {8.9.2}Invariants and constructor definitions}{92}{subsection.8.9.2}
+\contentsline {chapter}{\numberline {9}Structs}{95}{chapter.9}
+\contentsline {section}{\numberline {9.1}Struct declaration}{96}{section.9.1}
+\contentsline {section}{\numberline {9.2}Boxing of structs}{96}{section.9.2}
+\contentsline {section}{\numberline {9.3}Optional Implementation of {\lstinline "Any"} methods}{97}{section.9.3}
+\contentsline {section}{\numberline {9.4}Primitive Types}{98}{section.9.4}
+\contentsline {section}{\numberline {9.5}Generic programming with structs}{98}{section.9.5}
+\contentsline {section}{\numberline {9.6}Example structs}{98}{section.9.6}
+\contentsline {chapter}{\numberline {10}Functions}{100}{chapter.10}
+\contentsline {section}{\numberline {10.1}Overview}{100}{section.10.1}
+\contentsline {section}{\numberline {10.2}Function Literals}{102}{section.10.2}
+\contentsline {subsection}{\numberline {10.2.1}Outer variable access}{103}{subsection.10.2.1}
+\contentsline {section}{\numberline {10.3}Method selectors}{105}{section.10.3}
+\contentsline {section}{\numberline {10.4}Operator functions}{106}{section.10.4}
+\contentsline {section}{\numberline {10.5}Functions as objects of type {\lstinline "Any"}}{107}{section.10.5}
+\contentsline {chapter}{\numberline {11}Expressions}{108}{chapter.11}
+\contentsline {section}{\numberline {11.1}Literals}{108}{section.11.1}
+\contentsline {section}{\numberline {11.2}{\lstinline "this"}}{108}{section.11.2}
+\contentsline {section}{\numberline {11.3}Local variables}{109}{section.11.3}
+\contentsline {section}{\numberline {11.4}Field access}{110}{section.11.4}
+\contentsline {section}{\numberline {11.5}Function Literals}{111}{section.11.5}
+\contentsline {section}{\numberline {11.6}Calls}{111}{section.11.6}
+\contentsline {section}{\numberline {11.7}Assignment}{112}{section.11.7}
+\contentsline {section}{\numberline {11.8}Increment and decrement}{113}{section.11.8}
+\contentsline {section}{\numberline {11.9}Numeric Operations}{114}{section.11.9}
+\contentsline {subsection}{\numberline {11.9.1}Conversions and coercions}{114}{subsection.11.9.1}
+\contentsline {subsection}{\numberline {11.9.2}Unary plus and unary minus}{114}{subsection.11.9.2}
+\contentsline {section}{\numberline {11.10}Bitwise complement}{114}{section.11.10}
+\contentsline {section}{\numberline {11.11}Binary arithmetic operations}{115}{section.11.11}
+\contentsline {section}{\numberline {11.12}Binary shift operations}{115}{section.11.12}
+\contentsline {section}{\numberline {11.13}Binary bitwise operations}{115}{section.11.13}
+\contentsline {section}{\numberline {11.14}String concatenation}{116}{section.11.14}
+\contentsline {section}{\numberline {11.15}Logical negation}{116}{section.11.15}
+\contentsline {section}{\numberline {11.16}Boolean logical operations}{116}{section.11.16}
+\contentsline {section}{\numberline {11.17}Boolean conditional operations}{116}{section.11.17}
+\contentsline {section}{\numberline {11.18}Relational operations}{117}{section.11.18}
+\contentsline {section}{\numberline {11.19}Conditional expressions}{117}{section.11.19}
+\contentsline {section}{\numberline {11.20}Stable equality}{118}{section.11.20}
+\contentsline {section}{\numberline {11.21}Allocation}{118}{section.11.21}
+\contentsline {section}{\numberline {11.22}Casts}{119}{section.11.22}
+\contentsline {section}{\numberline {11.23}{\lstinline "instanceof"}}{120}{section.11.23}
+\contentsline {section}{\numberline {11.24}Subtyping expressions}{120}{section.11.24}
+\contentsline {section}{\numberline {11.25}Contains expressions}{121}{section.11.25}
+\contentsline {section}{\numberline {11.26}Rail constructors}{121}{section.11.26}
+\contentsline {section}{\numberline {11.27}Coercions and conversions}{122}{section.11.27}
+\contentsline {subsection}{\numberline {11.27.1}Coercions}{122}{subsection.11.27.1}
+\contentsline {paragraph}{Subsumption coercion.}{122}{section*.32}
+\contentsline {paragraph}{Explicit coercion (casting with \lstinline "as")}{122}{section*.33}
+\contentsline {paragraph}{Effects of explicit numeric coercion}{123}{section*.34}
+\contentsline {subsection}{\numberline {11.27.2}Conversions}{123}{subsection.11.27.2}
+\contentsline {paragraph}{Widening numeric conversion.}{123}{section*.35}
+\contentsline {paragraph}{String conversion.}{124}{section*.36}
+\contentsline {paragraph}{User defined conversions.}{124}{section*.37}
+\contentsline {chapter}{\numberline {12}Statements}{125}{chapter.12}
+\contentsline {section}{\numberline {12.1}Empty statement}{125}{section.12.1}
+\contentsline {section}{\numberline {12.2}Local variable declaration}{125}{section.12.2}
+\contentsline {section}{\numberline {12.3}Block statement}{126}{section.12.3}
+\contentsline {section}{\numberline {12.4}Expression statement}{126}{section.12.4}
+\contentsline {section}{\numberline {12.5}Labeled statement}{127}{section.12.5}
+\contentsline {section}{\numberline {12.6}Break statement}{127}{section.12.6}
+\contentsline {section}{\numberline {12.7}Continue statement}{128}{section.12.7}
+\contentsline {section}{\numberline {12.8}If statement}{128}{section.12.8}
+\contentsline {section}{\numberline {12.9}Switch statement}{129}{section.12.9}
+\contentsline {section}{\numberline {12.10}While statement}{130}{section.12.10}
+\contentsline {section}{\numberline {12.11}Do--while statement}{130}{section.12.11}
+\contentsline {section}{\numberline {12.12}For statement}{131}{section.12.12}
+\contentsline {section}{\numberline {12.13}Throw statement}{132}{section.12.13}
+\contentsline {section}{\numberline {12.14}Try--catch statement}{132}{section.12.14}
+\contentsline {section}{\numberline {12.15}Return statement}{133}{section.12.15}
+\contentsline {chapter}{\numberline {13}Places}{134}{chapter.13}
+\contentsline {section}{\numberline {13.1}The Structure of Places}{135}{section.13.1}
+\contentsline {section}{\numberline {13.2}{\lstinline "here"}}{135}{section.13.2}
+\contentsline {chapter}{\numberline {14}Activities}{137}{chapter.14}
+\contentsline {paragraph}{Future Extensions.}{138}{section*.38}
+\contentsline {section}{\numberline {14.1}The X10\xspace {} rooted exception model}{138}{section.14.1}
+\contentsline {section}{\numberline {14.2}\lstinline `at`: Place changing}{139}{section.14.2}
+\contentsline {section}{\numberline {14.3}\lstinline `async`: Spawning an activity}{140}{section.14.3}
+\contentsline {section}{\numberline {14.4}Finish}{141}{section.14.4}
+\contentsline {section}{\numberline {14.5}Initial activity}{142}{section.14.5}
+\contentsline {section}{\numberline {14.6}Foreach statements}{142}{section.14.6}
+\contentsline {section}{\numberline {14.7}Ateach statements}{143}{section.14.7}
+\contentsline {section}{\numberline {14.8}At expressions}{144}{section.14.8}
+\contentsline {section}{\numberline {14.9}Atomic blocks}{144}{section.14.9}
+\contentsline {subsection}{\numberline {14.9.1}Unconditional atomic blocks}{145}{subsection.14.9.1}
+\contentsline {paragraph}{Consequences.}{146}{section*.39}
+\contentsline {subsubsection}{Example}{146}{section*.40}
+\contentsline {subsection}{\numberline {14.9.2}Conditional atomic blocks}{147}{subsection.14.9.2}
+\contentsline {chapter}{\numberline {15}Clocks}{150}{chapter.15}
+\contentsline {section}{\numberline {15.1}Clock operations}{152}{section.15.1}
+\contentsline {subsection}{\numberline {15.1.1}Creating new clocks}{152}{subsection.15.1.1}
+\contentsline {subsection}{\numberline {15.1.2}Registering new activities on clocks}{152}{subsection.15.1.2}
+\contentsline {subsection}{\numberline {15.1.3}Resuming clocks}{153}{subsection.15.1.3}
+\contentsline {subsection}{\numberline {15.1.4}Advancing clocks}{153}{subsection.15.1.4}
+\contentsline {subsection}{\numberline {15.1.5}Dropping clocks}{154}{subsection.15.1.5}
+\contentsline {section}{\numberline {15.2}Deadlock Freedom}{154}{section.15.2}
+\contentsline {section}{\numberline {15.3}Program equivalences}{155}{section.15.3}
+\contentsline {chapter}{\numberline {16}Local and Distributed Arrays}{156}{chapter.16}
+\contentsline {section}{\numberline {16.1}Points}{156}{section.16.1}
+\contentsline {section}{\numberline {16.2}Regions}{157}{section.16.2}
+\contentsline {subsection}{\numberline {16.2.1}Operations on regions}{158}{subsection.16.2.1}
+\contentsline {section}{\numberline {16.3}Arrays}{159}{section.16.3}
+\contentsline {subsection}{\numberline {16.3.1}Array Constructors}{160}{subsection.16.3.1}
+\contentsline {subsection}{\numberline {16.3.2}Array Operations}{160}{subsection.16.3.2}
+\contentsline {subsection}{\numberline {16.3.3}Higher-Order Array Operations}{161}{subsection.16.3.3}
+\contentsline {section}{\numberline {16.4}Distributions}{162}{section.16.4}
+\contentsline {subsection}{\numberline {16.4.1}Operations returning distributions}{162}{subsection.16.4.1}
+\contentsline {paragraph}{Unique distribution}{162}{section*.41}
+\contentsline {paragraph}{Constant distributions.}{162}{section*.42}
+\contentsline {paragraph}{Block distributions.}{163}{section*.43}
+\contentsline {paragraph}{Domain Restriction.}{163}{section*.44}
+\contentsline {paragraph}{Range Restriction.}{163}{section*.45}
+\contentsline {section}{\numberline {16.5}Array initializer}{163}{section.16.5}
+\contentsline {section}{\numberline {16.6}Operations on arrays}{164}{section.16.6}
+\contentsline {subsection}{\numberline {16.6.1}Element operations}{164}{subsection.16.6.1}
+\contentsline {subsection}{\numberline {16.6.2}Constant promotion}{165}{subsection.16.6.2}
+\contentsline {subsection}{\numberline {16.6.3}Restriction of an array}{165}{subsection.16.6.3}
+\contentsline {subsection}{\numberline {16.6.4}Assembling an array}{165}{subsection.16.6.4}
+\contentsline {paragraph}{Assembling arrays over disjoint regions}{165}{section*.46}
+\contentsline {paragraph}{Overlaying an array on another}{165}{section*.47}
+\contentsline {subsection}{\numberline {16.6.5}Global operations }{166}{subsection.16.6.5}
+\contentsline {paragraph}{Pointwise operations}{166}{section*.48}
+\contentsline {paragraph}{Reductions}{166}{section*.49}
+\contentsline {paragraph}{Scans}{166}{section*.50}
+\contentsline {chapter}{\numberline {17}Annotations and compiler plugins}{168}{chapter.17}
+\contentsline {section}{\numberline {17.1}Annotation syntax}{168}{section.17.1}
+\contentsline {section}{\numberline {17.2}Annotation declarations}{170}{section.17.2}
+\contentsline {section}{\numberline {17.3}Compiler plugins}{171}{section.17.3}
+\contentsline {chapter}{\numberline {18}Native Code Integration}{173}{chapter.18}
+\contentsline {section}{\numberline {18.1}Native \lstinline `static` Methods}{173}{section.18.1}
+\contentsline {section}{\numberline {18.2}Native Blocks}{175}{section.18.2}
+\contentsline {section}{\numberline {18.3}External Java Code}{175}{section.18.3}
+\contentsline {section}{\numberline {18.4}External C++ Code}{176}{section.18.4}
+\contentsline {subsection}{\numberline {18.4.1}Auxiliary C++ Files}{176}{subsection.18.4.1}
+\contentsline {subsection}{\numberline {18.4.2}C++ System Libraries}{177}{subsection.18.4.2}
+\contentsline {chapter}{\numberline {19}Lost Bits}{178}{chapter.19}
+\contentsline {section}{\numberline {19.1}Visibility of Local Variables and Formals}{178}{section.19.1}
+\contentsline {chapter}{Alphabetic index of definitions of concepts, keywords, and procedures}{181}{chapter*.51}
+\contentsline {chapter}{\numberline {A}Change Log}{187}{appendix.A}
+\contentsline {section}{\numberline {A.1}Changes from X10\xspace {} v2.0.6}{187}{section.A.1}
+\contentsline {section}{\numberline {A.2}Changes from X10\xspace {} v2.0}{187}{section.A.2}
+\contentsline {section}{\numberline {A.3}Changes from X10\xspace {} v1.7}{188}{section.A.3}

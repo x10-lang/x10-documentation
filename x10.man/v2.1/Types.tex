@@ -708,26 +708,30 @@ Only the following forms of expression are allowed in constraints.
 {\bf Value expressions in constraints} may be: 
 \begin{enumerate}
 \item Literal constants, like \xcd`3` and \xcd`true`;
+\item Expressions computable at compile time, like \Xcd{3*4+5};
 \item Accessible and immutable variables and parameters;
 \item Accessible and immutable fields of the containing object;
 \item Properties of the type being constrained;
 \item Property methods;
-\item \xcd`this`, if the constraint is in a place where \xcd`this` is defined.
-\item \xcd`here`
-\item \xcd`self`
+\item \xcd`this`, if the constraint is in a place where \xcd`this` is defined;
+\item \xcd`here`;
+\item \xcd`self`;
+\item Calls to property methods, where the receiver and arguments must be
+      value expressions acceptable in constraints.
 \end{enumerate}
 
 
-{\bf Boolean expressions in constraints} may be any of the following, where
+{\bf Constraints}, and {\bf Boolean expressions in constraints}  may be any of
+the following, where 
 all value expressions are of the forms which may appear in constraints: 
 \begin{enumerate}
-\item Equalities \xcd`e == f`,
-\item Inequalities of the form \xcd`e != f`.\footnote{Currently inequalities
+\item Equalities \xcd`e == f`;
+\item Inequalities of the form \xcd`e != f`;\footnote{Currently inequalities
       of the form \xcd`e < f` are not supported.}
-\item Conjunctions of Boolean expressions
-\item Subtyping and supertyping expressions: \xcd`T <: U` and \xcd`T :> U`. 
-\item Type equalities and inequalities: \xcd`T == U` and \xcd`T != U`.
-\item Boolean value expressions.
+\item Conjunctions of Boolean expressions that may appear in constraints;
+\item Subtyping and supertyping expressions: \xcd`T <: U` and \xcd`T :> U`; 
+\item Type equalities and inequalities: \xcd`T == U` and \xcd`T != U`; 
+\item Testing a type for a default: \Xcd{hasZero T}.
 \end{enumerate}
 
 All variables appearing in a constraint expression must be visible wherever
@@ -738,7 +742,11 @@ public method \xcd`m(x: Int{self != p})`, and a call \xcd`ob.m(10)` made
 outside of the class. Since \xcd`p` is only visible inside the class, there is
 no way to tell if \xcd`10` is of type \xcd`Int{self != p}` at the call site.)
 
-
+\limitation{
+Currently \Xcd{hasZero T} is not supported.  
+Certain spurious syntactic forms are accepted by the compiler but treated
+incorrectly. 
+}
 
 
 %%TYPES-CONSTR-EXP%% 
