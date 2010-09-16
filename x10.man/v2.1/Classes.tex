@@ -1,5 +1,6 @@
 \chapter{Classes}
 \label{XtenClasses}\index{class}
+\label{ReferenceClasses}
 
 \section{Principles of X10 Objects}\label{XtenObjects}\index{Object}
 
@@ -233,8 +234,14 @@ class Trans {
 %
 %~~neg
 
-\noo{Are there any other field qualifiers?}
+\subsection{\Xcd{clocked} Qualifier}
 
+Clocked fields are discussed in \Sref{ClockedFields}.
+
+
+\subsection{\Xcd{property}} Qualifier}
+
+\noo{A field may be marked as a \Xcd{property}.  ... or not?}
 
 \section{Properties}
 \label{PropertiesInClasses}
@@ -336,13 +343,6 @@ cycles.)
 
 
 
-\index{class}\label{ReferenceClasses}
-\noo{The following para seems misplaced or redundant:}
-Class declarations may
-be used to construct class types (\Sref{ReferenceTypes}). Classes may
-have mutable fields. Instances of a class are always created in a
-fixed place and in \XtenCurrVer{} stay there for the lifetime of the
-object. 
 
 
 \noo{acc fields must be specified.}
@@ -1629,15 +1629,14 @@ You may define a type conversion to a constrained type, like \xcd`Poly` in
 the previous example.   If you convert to a more specific constraint, X10 will use
 the conversion, but insert a dynamic check to make sure that you have
 satisfied the more specific constraint.  
-\noo{Give example}
 For example: 
 %~~gen
-%package Classes.And.Type.Conversions.For.Street.Urchins;
+%package Classes.And.Type.Conversions;
 %~~vis
 \begin{xten}
 class Uni(n:Int) {
 /*
-  OLD OBSOLETE EXAMPLE FROM 2.0
+  LIMITATION: This example should compile, but doesn't.
 
   public def this(n:Int) : Uni{self.n==n} = {property(n);}
   static operator (String) as Uni{self.n != 9} = new Uni(3);
