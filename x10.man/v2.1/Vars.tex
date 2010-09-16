@@ -1,3 +1,4 @@
+
 \chapter{Variables}\label{XtenVariables}\index{variables}
 
 %%OLDA variable is a storage location.  \Xten{} supports seven kinds of
@@ -452,4 +453,121 @@ FieldModifier \: Annotation \\
 \end{grammar}
 
 
+
+\section{\Xcd{acc}: Accumulator Variables}
+
+Accumulator variables allow the accumulation of partial results to produce a
+final result.  For example, an accumulator variable could compute a running
+sum, product, maximum, or minimum of a collection of numbers.  In particular,
+many concurrent activites can accumulate safely into the {\em same} local
+variable, without need for \Xcd{atomic} blocks or other explicit coordination.  
+
+An accumulator variable is associated with a {\em reducer}, which explains how
+new partial values are accumulated.
+
+\subsection{Reducers}
+
+A notion of accumulation has two aspects: 
+\begin{enumerate}
+\item A {\bf zero} value, which is the initial value of the accumulator,
+      before any partial results have been included.  When accumulating a sum,
+      the zero value is \Xcd{0}; when accumulating a product, it is \Xcd{1}.
+\item A {\bf combining function}, explaining how to combine two partial
+      accumulations into a whole one.  When accumulating a sum, partial sums
+      should be added together; for a product, they should be multiplied.  
+\end{enumerate}
+
+In X10, this is represented as a value of type
+\Xcd{x10.lang.Reducer[T]}: 
+%~~gen
+%package Vars.Notx10lang.Reducerererer;
+%~~vis
+\begin{xten}
+struct Reducer[T](zero:T, apply: (T,T)=>T){}
+\end{xten}
+%~~siv
+%
+%~~neg
+\noindent 
+If \Xcd{r:Reducer[T]}, then \Xcd{r.zero} is the zero element, and
+\Xcd{r(a,b)} --- which can also be written \Xcd{r.apply(a,b)} --- is the
+combination of \Xcd{a} and \Xcd{b}.
+
+For example, the reducers for adding and multiplying integers are: 
+%~~gen
+%package Vars.Notx10lang.Reducerererer;
+%struct Reducer[T](zero:T, apply: (T,T)=>T){}
+%~~vis
+\begin{xten}
+val sum = Reducer[Int](0, Int.+);
+val product = Reducer[Int](1, Int.*);
+\end{xten}
+%~~siv
+%
+%~~neg
+
+
+Reduction is only deterministic if:
+\begin{enumerate}
+\item \Xcd{r.apply} is pure; that is, has no side effects;
+\item \Xcd{r.apply} is commutative; that is, \Xcd{r(a,b) == r(b,a)} for all
+      inputs \Xcd{a} and \Xcd{b};
+\item \Xcd{r.apply} is associative; that is, 
+      \Xcd{r(a,r(b,c)) == r(r(a,b),c)} for all \Xcd{a}, \Xcd{b}, and \Xcd{c}.
+\item \Xcd{r.zero} is the identity element for \Xcd{r.apply}; that is, 
+      \Xcd{r(a, r.zero) == a}
+      for all \Xcd{a}.
+\end{enumerate}
+\Xcd{sum} and \Xcd{product} satisfy all these conditions, and give determinate
+reductions.  The compiler does not require or check these, though.  
+
+
+\subsection{Accumulators}
+
+If \Xcd{r} is a  value of type \Xcd{Reducer[T]}, then an accumulator of type
+\Xcd{T} using \Xcd{r} is declared as:
+%~~gen
+% package Vars.Accumulators.Basic.Little.Idea;
+% class C[T]{
+% static def example (r:Reducer[T]) {
+%~~vis
+\begin{xten}
+acc(r) x;
+\end{xten}
+%~~siv
+%
+%~~neg
+
+\subsection{Sequential Use of Accumulators}
+
+A variable declared as \Xcd{acc(r) x:T;} is initialized to \Xcd{r.zero}.  
+
+Assignment of values of \Xcd{acc} variables has nonstandard semantics.
+\Xcd{x = v;} causes the value \Xcd{r(v,x)} to be stored in \Xcd{x} --- in
+particular, {\em not} the value of \Xcd{v}.
+
+Reading a value from an accumulator retrieves the current accumulation.
+
+For example, the sum and product of a list \Xcd{L} of integers can be computed
+by: 
+%~~gen
+%package Vars.Accumulators.Are.For.Bisimulators;
+% import java.util.*;
+% class Example{
+% static def example(L: List[Int]) {
+%~~vis
+\begin{xten}
+val sum = Reducer[Int](0, Int.+);
+val product = Reducer[Int](1, Int.*);
+acc(sum) s;
+acc(prod) p;
+for (x in L) {
+  s = x;
+  p = x;
+}
+x10.io.Console.OUT.println("Sum = " + s + "; Product = " + p);
+\end{xten}
+%~~siv
+%
+%~~neg
 
