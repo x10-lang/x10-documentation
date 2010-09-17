@@ -454,7 +454,7 @@ FieldModifier \: Annotation \\
 
 
 
-\section{\Xcd{acc}: Accumulator Variables}
+\section{Accumulator Variables}
 
 Accumulator variables allow the accumulation of partial results to produce a
 final result.  For example, an accumulator variable could compute a running
@@ -495,19 +495,23 @@ combination of \Xcd{a} and \Xcd{b}.
 
 For example, the reducers for adding and multiplying integers are: 
 %~~gen
-%package Vars.Notx10lang.Reducerererer;
+%package Vars.Notx10lang.Reducererererererer;
 %struct Reducer[T](zero:T, apply: (T,T)=>T){}
+%class Example{
 %~~vis
 \begin{xten}
-val sum = Reducer[Int](0, Int.+);
-val product = Reducer[Int](1, Int.*);
+val summer = Reducer[Int](0, Int.+);
+val producter = Reducer[Int](1, Int.*);
 \end{xten}
 %~~siv
-%
+%}
 %~~neg
 
 
-Reduction is only deterministic if:
+Reduction is guaranteed to be deterministic if the reducer is {\em
+Abelian},\footnote{This term is borrowed from abstract algebra, where such a
+reducer, together with its type, forms an Abelian monoid.}
+that is, 
 \begin{enumerate}
 \item \Xcd{r.apply} is pure; that is, has no side effects;
 \item \Xcd{r.apply} is commutative; that is, \Xcd{r(a,b) == r(b,a)} for all
@@ -518,27 +522,35 @@ Reduction is only deterministic if:
       \Xcd{r(a, r.zero) == a}
       for all \Xcd{a}.
 \end{enumerate}
-\Xcd{sum} and \Xcd{product} satisfy all these conditions, and give determinate
-reductions.  The compiler does not require or check these, though.  
+
+
+
+
+\Xcd{summer} and \Xcd{producter} satisfy all these conditions, and give
+determinate reductions. The compiler does not require or check these, though.
 
 
 \subsection{Accumulators}
 
 If \Xcd{r} is a  value of type \Xcd{Reducer[T]}, then an accumulator of type
 \Xcd{T} using \Xcd{r} is declared as:
-%~~gen
+%~TODO~gen
 % package Vars.Accumulators.Basic.Little.Idea;
 % class C[T]{
 % static def example (r:Reducer[T]) {
-%~~vis
+%~TODO~vis
 \begin{xten}
 acc(r) x;
 \end{xten}
-%~~siv
+%~TODO~siv
 %
-%~~neg
+%~TODO~neg
 
 \subsection{Sequential Use of Accumulators}
+
+The sequential use of accumulator variables is straightforward, and could be
+done as easily without accumulators.  (The power of accumulators is in their
+concurrent use, \Sref{ConcurrentUseOfAccumulators}.)
 
 A variable declared as \Xcd{acc(r) x:T;} is initialized to \Xcd{r.zero}.  
 
@@ -550,24 +562,139 @@ Reading a value from an accumulator retrieves the current accumulation.
 
 For example, the sum and product of a list \Xcd{L} of integers can be computed
 by: 
-%~~gen
+%~TODO~gen
 %package Vars.Accumulators.Are.For.Bisimulators;
 % import java.util.*;
 % class Example{
 % static def example(L: List[Int]) {
-%~~vis
+%~TODO~vis
 \begin{xten}
-val sum = Reducer[Int](0, Int.+);
-val product = Reducer[Int](1, Int.*);
-acc(sum) s;
-acc(prod) p;
+val summer = Reducer[Int](0, Int.+);
+val producter = Reducer[Int](1, Int.*);
+acc(summer) sum;
+acc(producter) prod;
 for (x in L) {
-  s = x;
-  p = x;
+  sum = x;
+  prod = x;
 }
-x10.io.Console.OUT.println("Sum = " + s + "; Product = " + p);
+x10.io.Console.OUT.println("Sum = " + sum + "; Product = " + prod);
 \end{xten}
-%~~siv
+%~TODO~siv
 %
-%~~neg
+%~TODO~neg
+
+
+
+\subsection{Concurrent Use of Accumulators}
+\label{ConcurrentUseOfAccumulators}
+\index{accumulator!and activities}
+
+Accumulator variables are restricted and synchronized in ways that make them
+ideally suited for concurrent accumulation of data.   The {\em governing
+activity} of an accumulator is the activity in which the \Xcd{acc} variable is
+declared.  
+
+\begin{enumerate}
+\item The governing activity can read the accumulator at any point that it has
+      no running sub-activities.  
+\item Any activity that has lexical access to the accumulator can write to it.  
+      All
+      writes are performed atomically, without need for \Xcd{atomic} or other
+      concurrency control.
+\end{enumerate}
+
+If the reducer is Abelian, this guarantees that \Xcd{acc} variables cannot
+cause race conditions; the result of such a computation is determinate,
+independent of the scheduling of activities. Read-read conflicts are
+impossible, as only a single activity, the governing activity, can read the
+\Xcd{acc} variable. Read-write conflicts are impossible, as reads are only
+allowed at points where the only activity which can refer to the \Xcd{acc}
+variable is the governing activity. Two activities may try to write the
+\Xcd{acc} variable at the same time. The writes are performed atomically, so
+they behave as if they happened in some (arbitrary) order---and, because the
+reducer is Abelian, the order of writes doesn't matter.
+
+If the reducer is not Abelian---\eg, it is accumulating a string result by
+concatenating a lot of partial strings together---the result is indeterminate.
+However, because the accumulator operations are atomic, it will be the result
+of {\em some} combination of the individual elements by the reduction
+operation, \eg, the concatenation of the partial strings in {\em some} order.  
+
+
+
+For example, the following code computes triangle numbers {$\sum_{i=1}^{n}i$}
+concurrently.\footnote{This program is highly inefficient. Even ignoring the
+  constant-time formula {$\sum_{i=1}^{n}i = \frac{n(n+1)}{2}$}, this program
+  incurs the cost of starting {$n$} activities and coordinating {$n$} accesses
+  to the accumulator. Accumulator variables are of most value in multi-place,
+  multi-core computations.}
+
+
+%~TODO~gen
+%package Vars.Accumulator.Concurrency.Example;
+%class Example{
+%
+%~TODO~vis
+\begin{xten}
+def triangle(n:Int) {
+  val summer = Reducer[Int](0, Int.+);
+  acc(summer) sum; 
+  finish {
+    for([i] in 1..n) async {
+      sum = i;  // (A)
+    }
+    // (C)
+  }
+  return sum; // (B)
+}
+\end{xten}
+%~TODO~siv
+%}
+%~TODO~neg
+
+The governing activity of the \Xcd{acc} variable \Xcd{sum} is the activity
+including the body of \Xcd{triangle}.  It starts up \Xcd{n} sub-activities,
+each of which adds one value to \Xcd{sum} at point \Xcd{(A)}.  Note that these
+activities cannot {\em read} the value of \Xcd{sum}---only the governing
+activity can do that---but they can update it.  
+
+At point \Xcd{(B)}, \Xcd{triangle} returns the value in \Xcd{sum}. It is
+clear, from the \Xcd{finish} statement, that all sub-activities started by the
+governing process have finished at this point. X10 forbids reading of
+\Xcd{sum}, even by the governing process, at point \Xcd{(C)}, since
+sub-activities writing into it could still be active when the governing
+activity reaches this point.  The \Xcd{return sum;} statement could not be
+moved to \Xcd{(C)}, which is good, because the program would be wrong if it
+were there.
+
+
+
+
+\subsubsection{Accumulators and Places}
+\index{accumulator!and places} Activity variables can be read and written from
+any place, without need for \Xcd{GlobalRef}s. We may spread the previous
+computation out among all the available processors by simply sticking in an
+\Xcd{at(...)} statement at point \Xcd{(D)}, without need for other
+restructuring of the program.
+
+%~TODO~gen
+%package Vars.Accumulator.Concurrency.Example.Multiplacey;
+%class Example{
+%~TODO~vis
+\begin{xten}
+def triangle(n:Int) {
+  val summer = Reducer[Int](0, Int.+);
+  acc(summer) sum; 
+  finish {
+    for([i] in 1..n) async 
+      at(Places.place(i % Places.MAX_PLACES) { //(D)
+        sum = i;  // (A)
+    }
+  }
+  return sum; // (B)
+}
+\end{xten}
+%~TODO~siv
+%}
+%~TODO~neg
 

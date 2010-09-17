@@ -1,4 +1,4 @@
-This is pdfTeXk, Version 3.1415926-1.40.9 (Web2C 7.5.7) (format=pdflatex 2008.12.28)  16 SEP 2010 10:51
+This is pdfTeXk, Version 3.1415926-1.40.9 (Web2C 7.5.7) (format=pdflatex 2008.12.28)  17 SEP 2010 11:41
 entering extended mode
 \write18 enabled.
  %&-line parsing enabled.
@@ -327,7 +327,12 @@ LaTeX Font Info:    Font shape `OT1/ptm/bx/n' in size <12> not available
 (Font)              Font shape `OT1/ptm/b/n' tried instead on input line 1.
  [3
 
-] [4] [5] [6] [7] [8])
+] [4]
+Underfull \vbox (badness 1168) has occurred while \output is active
+\vbox(548.5+0.0)x390.0, glue set 2.26978 []
+
+ [5]
+[6] [7] [8])
 \tf@toc=\write5
 \openout5 = `x10.toc'.
 
@@ -591,17 +596,31 @@ Chapter 5.
 
 ] [55] [56] [57]
 
-LaTeX Warning: Reference `Shared' on page 58 undefined on input line 350.
+LaTeX Warning: Reference `Shared' on page 58 undefined on input line 351.
 
 [58] [59]
-Overfull \hbox (48.72575pt too wide) in paragraph at lines 435--453
+Overfull \hbox (48.72575pt too wide) in paragraph at lines 436--454
 [][] 
 
 \hbox(126.24988+120.24986)x390.0 []
 
-) (./Packages.tex [60]
+[60] [61]
+Overfull \hbox (56.09918pt too wide) in paragraph at lines 580--581
+[][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][] 
+
+
+\hbox(10.14995+4.35004)x366.0 []
+
+[62] [63]
+Overfull \hbox (28.28072pt too wide) in paragraph at lines 674--679
+\OT1/ptm/m/n/12 Activity vari-ables can be read and writ-ten from any place, wi
+th-out need for []s.
+
+\hbox(8.20198+2.5979)x390.0, glue set - 1.0 []
+
+) (./Packages.tex [64]
 Chapter 6.
-[61
+[65
 
 ]
 
@@ -622,7 +641,7 @@ he pub-lic mem-
 
 \hbox(8.18385+2.5979)x390.0, glue set - 1.0 []
 
-[62]) (./Interfaces.tex [63]
+[66]) (./Interfaces.tex [67]
 Chapter 7.
 
 Overfull \hbox (10.65723pt too wide) in paragraph at lines 49--59
@@ -630,7 +649,7 @@ Overfull \hbox (10.65723pt too wide) in paragraph at lines 49--59
 
 \hbox(31.99997+25.99997)x390.0 []
 
-[64
+[68
 
 ]
 Overfull \hbox (0.46422pt too wide) in paragraph at lines 85--90
@@ -639,18 +658,18 @@ d is im-plic-itly [][]
 
 \hbox(8.18385+2.5979)x390.0, glue set - 1.0 []
 
-[65]) (./Classes.tex [66]
+[69]) (./Classes.tex [70]
 Chapter 8.
-[67
+[71
 
-] [68]
+] [72]
 Overfull \hbox (37.19922pt too wide) in paragraph at lines 186--187
 [][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][
 ][][] 
 
 \hbox(10.14995+4.35004)x366.0 []
 
-[69]
+[73]
 
 Package hyperref Warning: Token not allowed in a PDF string (PDFDocEncoding):
 (hyperref)                removing `\lstinline' on input line 208.
@@ -663,14 +682,14 @@ Package hyperref Warning: Token not allowed in a PDF string (PDFDocEncoding):
 Package hyperref Warning: Token not allowed in a PDF string (PDFDocEncoding):
 (hyperref)                removing `\lstinline' on input line 242.
 
-[70]
+[74]
 Overfull \hbox (0.51205pt too wide) in paragraph at lines 320--322
 []\OT1/ptm/m/n/12 Properties are ini-tial-ized by the in-vo-ca-tion of a spe-ci
 al [] state-ment, which
 
 \hbox(8.18385+2.5979)x390.0, glue set - 1.0 []
 
-[71] [72]
+[75] [76]
 
 Package hyperref Warning: Token not allowed in a PDF string (PDFDocEncoding):
 (hyperref)                removing `\lstinline' on input line 390.
@@ -682,7 +701,7 @@ Overfull \hbox (9.85986pt too wide) in paragraph at lines 420--427
 
 \hbox(8.18385+2.5979)x390.0, glue set - 1.0 []
 
-[73] [74]
+[77] [78]
 Overfull \hbox (68.69916pt too wide) in paragraph at lines 533--534
 [][][][][][][][][][][][][][][][][][][][][][][][][][][][] 
 
@@ -694,7 +713,7 @@ Overfull \hbox (30.89923pt too wide) in paragraph at lines 544--545
 
 \hbox(10.14995+4.35004)x366.0 []
 
-[75] [76]
+[79] [80]
 Overfull \hbox (3.22374pt too wide) in paragraph at lines 709--711
 \OT1/ptm/m/n/12 A method may be de-clared [], in-di-cat-ing that it will be ex-
 e-cuted atomically---
@@ -707,7 +726,7 @@ Overfull \hbox (2.26634pt too wide) in paragraph at lines 739--740
 
 \hbox(8.18385+2.5979)x390.0, glue set - 1.0 []
 
-[77]
+[81]
 Overfull \hbox (5.69928pt too wide) in paragraph at lines 788--789
 [][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][] 
 
@@ -720,9 +739,9 @@ of type [][][][][][]
 
 \hbox(8.20198+2.5979)x390.0, glue set - 1.0 []
 
-[78] [79] [80] [81] [82]
+[82] [83] [84] [85] [86]
 
-LaTeX Warning: Reference `DefiniteAssign' on page 83 undefined on input line 10
+LaTeX Warning: Reference `DefiniteAssign' on page 87 undefined on input line 10
 48.
 
 
@@ -732,7 +751,7 @@ truc-tor bod-ies, not constructor-
 
 \hbox(8.18385+2.5979)x390.0, glue set - 1.0 []
 
-[83] [84]
+[87] [88]
 Overfull \hbox (56.09918pt too wide) in paragraph at lines 1368--1369
 [][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][] 
 
@@ -744,7 +763,7 @@ Overfull \hbox (106.49908pt too wide) in paragraph at lines 1369--1370
 
 \hbox(10.14995+4.35004)x366.0 []
 
-[85]
+[89]
 Overfull \hbox (11.99927pt too wide) in paragraph at lines 1373--1374
 [][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][
 ][][][][][][][][][][][][] 
@@ -776,7 +795,7 @@ Overfull \hbox (5.69928pt too wide) in paragraph at lines 1482--1483
 
 \hbox(10.14995+4.35004)x366.0 []
 
-[86]
+[90]
 Overfull \hbox (128.01442pt too wide) in paragraph at lines 1531--1543
 [] 
 
@@ -789,7 +808,7 @@ pear-ing in the []
 
 \hbox(8.18385+2.5979)x390.0, glue set - 1.0 []
 
-[87]
+[91]
 Overfull \hbox (5.69928pt too wide) in paragraph at lines 1580--1581
 [][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][] 
 
@@ -813,7 +832,7 @@ Overfull \hbox (11.99927pt too wide) in paragraph at lines 1642--1643
 
 \hbox(10.14995+4.35004)x366.0 []
 
-[88]
+[92]
 Overfull \hbox (30.89923pt too wide) in paragraph at lines 1709--1711
 [][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][] 
 
@@ -827,7 +846,7 @@ Package hyperref Warning: Token not allowed in a PDF string (PDFDocEncoding):
 Package hyperref Warning: Token not allowed in a PDF string (PDFDocEncoding):
 (hyperref)                removing `\lstinline' on input line 1728.
 
-[89]
+[93]
 Overfull \hbox (1.24477pt too wide) in paragraph at lines 1746--1754
 \OT1/ptm/m/n/12 (This has a pos-si-bly sur-pris-ing con-se-quence for the or-de
 r of eval-u-a-tion: in [][][][][][],
@@ -848,7 +867,7 @@ Overfull \hbox (49.7992pt too wide) in paragraph at lines 1768--1769
 
 \hbox(10.14995+4.35004)x366.0 []
 
-[90]
+[94]
 Overfull \hbox (0.5751pt too wide) in paragraph at lines 1836--1839
 []\OT1/ptm/m/n/12 With ev-ery de-fined class, struct, or in-ter-face [] we as-s
 o-ciate a \OT1/ptm/m/it/12 type in-vari-ant $[]\OT1/cmr/m/n/12 ($[]$)$\OT1/ptm/
@@ -876,7 +895,7 @@ Package hyperref Warning: Token not allowed in a PDF string (PDFDocEncoding):
 Package hyperref Warning: Token not allowed in a PDF string (PDFDocEncoding):
 (hyperref)                removing `\lstinline' on input line 1887.
 
-[91]
+[95]
 LaTeX Font Info:    Font shape `OT1/txtt/m/it' in size <12> not available
 (Font)              Font shape `OT1/txtt/m/sl' tried instead on input line 1895
 .
@@ -889,31 +908,31 @@ Overfull \hbox (44.89195pt too wide) in paragraph at lines 1924--1934
 
 \hbox(60.99994+54.99994)x390.0 []
 
-[92]
+[96]
 Overfull \hbox (5.69928pt too wide) in paragraph at lines 1963--1964
 [][][][][][][][][][][][][][][][][][][][][][][][][][][][] 
 
 \hbox(10.14995+4.35004)x366.0 []
 
-[93]) (./Structs.tex [94]
+[97]) (./Structs.tex [98]
 Chapter 9.
 
 Underfull \vbox (badness 10000) has occurred while \output is active
 \vbox(548.5+0.0)x390.0, glue set 4.35 []
 
- [95
+ [99
 
 ]
-[96]
+[100]
 
 Package hyperref Warning: Token not allowed in a PDF string (PDFDocEncoding):
 (hyperref)                removing `\lstinline' on input line 107.
 
-[97] [98]) (./Functions.tex [99]
+[101] [102]) (./Functions.tex [103]
 Chapter 10.
-[100
+[104
 
-] [101]
+] [105]
 Overfull \hbox (8.884pt too wide) in paragraph at lines 145--161
 [][] 
 
@@ -926,7 +945,7 @@ Overfull \hbox (11.99927pt too wide) in paragraph at lines 213--214
 
 \hbox(10.14995+4.35004)x366.0 []
 
-[102] [103]
+[106] [107]
 Overfull \hbox (37.19922pt too wide) in paragraph at lines 289--290
 [][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][
 ][][][][][][][][] 
@@ -937,7 +956,7 @@ Overfull \hbox (37.19922pt too wide) in paragraph at lines 289--290
 Underfull \vbox (badness 10000) has occurred while \output is active
 \vbox(548.5+0.0)x390.0, glue set 5.465 []
 
- [104]
+ [108]
 Overfull \hbox (53.66124pt too wide) in paragraph at lines 377--384
 \OT1/ptm/m/n/12 gu-ment is be-tween zero and nine. It could also be writ-ten []
 [][][][][][][][][][][][][][][]. 
@@ -957,7 +976,7 @@ Overfull \hbox (39.22456pt too wide) in paragraph at lines 398--406
 
 \hbox(8.18385+2.5979)x390.0, glue set - 1.0 []
 
-[105]
+[109]
 Overfull \hbox (27.63261pt too wide) in paragraph at lines 470--471
 [][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][
 ][][] 
@@ -977,7 +996,7 @@ Overfull \hbox (46.53258pt too wide) in paragraph at lines 474--475
 
 \hbox(10.14995+4.35004)x366.0 []
 
-[106]
+[110]
 
 Package hyperref Warning: Token not allowed in a PDF string (PDFDocEncoding):
 (hyperref)                removing `\lstinline' on input line 565.
@@ -989,7 +1008,7 @@ tion-
 
 \hbox(8.20198+2.5979)x390.0, glue set - 1.0 []
 
-) (./Expressions.tex [107]
+) (./Expressions.tex [111]
 Chapter 11.
 
 Overfull \hbox (31.64087pt too wide) in paragraph at lines 9--13
@@ -1002,47 +1021,47 @@ Overfull \hbox (31.64087pt too wide) in paragraph at lines 9--13
 Package hyperref Warning: Token not allowed in a PDF string (PDFDocEncoding):
 (hyperref)                removing `\lstinline' on input line 23.
 
-[108
+[112
 
 ]
 Underfull \vbox (badness 4316) has occurred while \output is active
 \vbox(548.5+0.0)x390.0, glue set 3.50917 []
 
- [109]
-[110]
+ [113]
+[114]
 Overfull \hbox (60.70792pt too wide) in paragraph at lines 174--181
 [] 
 
 \hbox(46.49995+40.49995)x390.0 []
 
-[111] [112]
+[115] [116]
 Overfull \hbox (2.65477pt too wide) in paragraph at lines 284--289
 [][][][][][][][][][][][][][]\OT1/ptm/m/n/12 . Nat-u-rally, it is a static er-ro
 r if no suit-able [] method
 
 \hbox(8.18385+2.5979)x360.6253, glue set - 1.0 []
 
-[113] [114] [115] [116]
+[117] [118] [119] [120]
 Overfull \hbox (1.14836pt too wide) in paragraph at lines 533--537
 \OT1/ptm/m/n/12 the sec-ond subex-pres-sion (the con-se-quent) is eval-u-ated; 
 oth-er-wise, the third subex-
 
 \hbox(8.18385+2.5979)x390.0, glue set - 1.0 []
 
-[117]
+[121]
 Overfull \hbox (53.54373pt too wide) in paragraph at lines 591--597
 [] 
 
 \hbox(17.49998+11.49998)x390.0 []
 
-[118]
+[122]
 Overfull \hbox (83.76868pt too wide) in paragraph at lines 638--642
 \OT1/ptm/m/n/12 run time, and ei-ther a compile-time er-ror or a run-time ex-ce
 p-tion ([][][][][])
 
 \hbox(8.18385+2.5979)x390.0, glue set - 1.0 []
 
-[119]
+[123]
 
 Package hyperref Warning: Token not allowed in a PDF string (PDFDocEncoding):
 (hyperref)                removing `\lstinline' on input line 712.
@@ -1054,22 +1073,22 @@ Overfull \hbox (31.32907pt too wide) in paragraph at lines 723--730
 
 \hbox(8.21388+2.47792)x390.0, glue set - 1.0 []
 
-[120] [121]
+[124] [125]
 Overfull \hbox (27.45207pt too wide) in paragraph at lines 885--886
 []\OT1/ptm/m/n/12 Limitation \OT1/ptm/m/it/12 It is cur-rently a static er-ror,
  rather than the spec-i-fied [],
 
 \hbox(8.21388+2.47792)x390.0, glue set - 1.0 []
 
-[122]
+[126]
 Overfull \hbox (48.49995pt too wide) in paragraph at lines 911--923
 []\OT1/ptm/m/n/12 Casting a [] to a [] nor-mally trun-cates dig-its: [][]
 
 \hbox(8.18385+2.5979)x360.6253, glue set - 1.0 []
 
-[123]) (./Statements.tex [124]
+[127]) (./Statements.tex [128]
 Chapter 12.
-[125
+[129
 
 ]
 Overfull \hbox (37.19922pt too wide) in paragraph at lines 108--109
@@ -1083,20 +1102,20 @@ Overfull \hbox (18.29926pt too wide) in paragraph at lines 109--110
 
 \hbox(10.14995+4.35004)x366.0 []
 
-[126] [127] [128] [129]
+[130] [131] [132] [133]
 Overfull \hbox (38.82277pt too wide) in paragraph at lines 336--352
 [] 
 
 \hbox(60.99994+54.99994)x390.0 []
 
-[130] [131]
+[134] [135]
 Overfull \hbox (67.86899pt too wide) in paragraph at lines 441--443
 []\OT1/ptm/m/n/12 The [] state-ment throws an ex-cep-tion, which must be an in-
 stance of [][][][][]. 
 
 \hbox(8.18385+2.5979)x390.0, glue set - 1.0 []
 
-[132]) (./Places.tex [133]
+[136]) (./Places.tex [137]
 Chapter 13.
 
 Overfull \hbox (26.92383pt too wide) in paragraph at lines 17--21
@@ -1109,7 +1128,7 @@ uilt-in struct, [][][][][].
 Underfull \vbox (badness 1005) has occurred while \output is active
 \vbox(548.5+0.0)x390.0, glue set 2.16125 []
 
- [134
+ [138
 
 ]
 Overfull \hbox (10.95404pt too wide) in paragraph at lines 44--52
@@ -1129,11 +1148,11 @@ Overfull \hbox (18.58539pt too wide) in paragraph at lines 56--61
 Package hyperref Warning: Token not allowed in a PDF string (PDFDocEncoding):
 (hyperref)                removing `\lstinline' on input line 64.
 
-[135]) (./Activities.tex [136]
+[139]) (./Activities.tex [140]
 Chapter 14.
-[137
+[141
 
-] [138]
+] [142]
 
 Package hyperref Warning: Token not allowed in a PDF string (PDFDocEncoding):
 (hyperref)                removing `\lstinline' on input line 108.
@@ -1142,13 +1161,13 @@ Package hyperref Warning: Token not allowed in a PDF string (PDFDocEncoding):
 Package hyperref Warning: Token not allowed in a PDF string (PDFDocEncoding):
 (hyperref)                removing `\lstinline' on input line 171.
 
-[139]
+[143]
 Overfull \hbox (5.21756pt too wide) in paragraph at lines 181--187
 [][] 
 
 \hbox(31.99997+25.99997)x390.0 []
 
-[140]
+[144]
 Overfull \hbox (4.12437pt too wide) in paragraph at lines 267--278
 \OT1/ptm/m/n/12 other asyn-chronous ac-tiv-i-ties (here or at other places). Un
 -caught ex-cep-tions thrown
@@ -1162,7 +1181,7 @@ ted at [][][][]. [][]
 
 \hbox(8.20198+2.5979)x390.0, glue set - 1.0 []
 
-[141]
+[145]
 Overfull \hbox (46.9415pt too wide) in paragraph at lines 282--287
 \OT1/ptm/m/n/12 tions. (If [] throws ex-cep-tions, [][][][] wraps them in one l
 ayer of []
@@ -1176,45 +1195,45 @@ Overfull \hbox (55.8698pt too wide) in paragraph at lines 345--350
 
 \hbox(8.20198+2.124)x390.0, glue set - 1.0 []
 
-[142] [143] [144] [145]
+[146] [147] [148] [149]
 Overfull \hbox (11.99927pt too wide) in paragraph at lines 658--659
 [][][][][][][][][][][][][][][][][][][][][][][][][][] 
 
 \hbox(10.14995+4.35004)x366.0 []
 
-[146]
+[150]
 Overfull \hbox (34.93063pt too wide) in paragraph at lines 708--714
 \OT1/ptm/m/n/12 atomic block. And [][][][][][][][][][][][][][][][][][][][][][][
 ][][][]
 
 \hbox(8.20198+1.63199)x390.0, glue set - 1.0 []
 
-[147] [148]) (./Clocks.tex [149]
+[151] [152]) (./Clocks.tex [153]
 Chapter 15.
-[150
+[154
 
-] [151]
+] [155]
 Overfull \hbox (6.47746pt too wide) in paragraph at lines 142--147
 \OT1/ptm/m/n/12 There are two lan-guage con-structs for work-ing with clocks. [
 ][][][][][][][]
 
 \hbox(8.18385+2.5979)x390.0, glue set - 1.0 []
 
-[152]
+[156]
 Overfull \hbox (31.48465pt too wide) in paragraph at lines 246--249
 []\OT1/ptm/m/n/12 An ac-tiv-ity may check that it is reg-is-tered on a clock []
  by the pred-i-cate [][][][] 
 
 \hbox(8.18385+2.5979)x390.0, glue set - 1.0 []
 
-[153]
+[157]
 Overfull \hbox (26.13211pt too wide) in paragraph at lines 339--342
  \OT1/ptm/m/n/12 The ac-tiv-ity is no longer con-sid-ered reg-is-tered with thi
 s clock. A []
 
 \hbox(8.18385+2.5979)x390.0, glue set - 1.0 []
 
-[154]) (./Arrays.tex [155]
+[158]) (./Arrays.tex [159]
 Chapter 16.
 
 Overfull \hbox (11.40991pt too wide) in paragraph at lines 9--12
@@ -1229,7 +1248,7 @@ Overfull \hbox (18.29926pt too wide) in paragraph at lines 34--35
 
 \hbox(10.14995+4.35004)x366.0 []
 
-[156
+[160
 
 ]
 Overfull \hbox (11.99927pt too wide) in paragraph at lines 81--82
@@ -1270,13 +1289,13 @@ Overfull \hbox (12.66833pt too wide) in paragraph at lines 135--137
 
 \hbox(8.18385+2.5979)x360.6253, glue set - 1.0 []
 
-[157]
+[161]
 Overfull \hbox (36.27322pt too wide) in paragraph at lines 137--140
 [][][][][][][][][][][][][][][] \OT1/ptm/m/n/12 con-structs the banded [][]
 
 \hbox(8.18385+2.124)x360.6253, glue set - 1.0 []
 
-[158] [159]
+[162] [163]
 Overfull \hbox (27.71594pt too wide) in paragraph at lines 281--284
 [][][][]\OT1/ptm/m/n/12 , the rank of the points us-able to sub-script []. Iden
 -ti-cal to [][][][][]. 
@@ -1297,13 +1316,13 @@ Overfull \hbox (17.00171pt too wide) in paragraph at lines 310--318
 
 \hbox(8.18385+2.5979)x390.0, glue set - 1.0 []
 
-[160]
+[164]
 Overfull \hbox (11.99927pt too wide) in paragraph at lines 388--389
 [][][][][][][][][][][][][][][][][][][][][][][][][][][] 
 
 \hbox(10.14995+4.35004)x366.0 []
 
-[161] [162] [163]
+[165] [166] [167]
 Overfull \hbox (68.69916pt too wide) in paragraph at lines 637--638
 [][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][] 
 
@@ -1327,24 +1346,24 @@ Overfull \hbox (5.69928pt too wide) in paragraph at lines 661--662
 
 \hbox(10.14995+4.35004)x366.0 []
 
-[164]
+[168]
 Overfull \hbox (7.32973pt too wide) in paragraph at lines 712--718
 \OT1/ptm/m/n/12 to [][][][] if that is de-fined and to [][][][] oth-er-wise. Th
 e value [][][][][][][][][]
 
 \hbox(8.18385+2.004)x390.0, glue set - 1.0 []
 
-[165]
+[169]
 Overfull \hbox (18.29926pt too wide) in paragraph at lines 749--750
 [][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][] 
 
 \hbox(10.14995+4.35004)x366.0 []
 
-) (./Annotations.tex [166] [167]
+) (./Annotations.tex [170] [171]
 Chapter 17.
-[168
+[172
 
-] [169] [170]
+] [173] [174]
 Overfull \hbox (49.02951pt too wide) in paragraph at lines 174--176
 \OT1/ptm/m/n/12 Most plu-g-ins should im-ple-ment ei-ther \OT1/txtt/m/n/12 Simp
 leOnePassPlugin \OT1/ptm/m/n/12 or \OT1/txtt/m/n/12 SimpleVisitorPlugin\OT1/ptm
@@ -1352,32 +1371,32 @@ leOnePassPlugin \OT1/ptm/m/n/12 or \OT1/txtt/m/n/12 SimpleVisitorPlugin\OT1/ptm
 
 \hbox(8.18385+2.5979)x390.0, glue set - 1.0 []
 
-[171]) (./extern.tex [172]
+[175]) (./extern.tex [176]
 Chapter 18.
 
 Package hyperref Warning: Token not allowed in a PDF string (PDFDocEncoding):
 (hyperref)                removing `\lstinline' on input line 14.
 
-[173
+[177
 
-] [174] [175] [176]
+] [178] [179] [180]
 Overfull \hbox (100.1991pt too wide) in paragraph at lines 243--244
 [][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][
 ][][][] 
 
 \hbox(10.14995+4.35004)x366.0 []
 
-) (./Lost.tex [177]
+) (./Lost.tex [181]
 Chapter 19.
-) (./x10.bbl [178
+) (./x10.bbl [182
 
-] [179
+] [183
 
-]) [180] (./x10.ind [181
+]) [184] (./x10.ind [185
 
 
-] [182] [183] [184] [185])
-[186]
+] [186] [187] [188] [189]
+[190]) [191]
 Appendix A.
 
 Overfull \hbox (3.80113pt too wide) in paragraph at lines 163--168
@@ -1386,7 +1405,7 @@ Overfull \hbox (3.80113pt too wide) in paragraph at lines 163--168
 \hbox(8.18385+2.004)x360.6253, glue set - 1.0 []
 
 
-LaTeX Warning: Reference `ProtoRules' on page 187 undefined on input line 168.
+LaTeX Warning: Reference `ProtoRules' on page 192 undefined on input line 168.
 
 
 Overfull \hbox (3.80113pt too wide) in paragraph at lines 175--180
@@ -1395,11 +1414,11 @@ Overfull \hbox (3.80113pt too wide) in paragraph at lines 175--180
 \hbox(8.18385+2.004)x360.6253, glue set - 1.0 []
 
 
-LaTeX Warning: Reference `ProtoRules' on page 187 undefined on input line 180.
+LaTeX Warning: Reference `ProtoRules' on page 192 undefined on input line 180.
 
-[187
+[192
 
-] [188] [189] [190
+] [193] [194] [195
 
 ] (./x10.aux)
 
@@ -1407,31 +1426,34 @@ LaTeX Warning: There were undefined references.
 
  ) 
 Here is how much of TeX's memory you used:
- 8401 strings out of 493876
- 119396 string characters out of 1150567
- 179896 words of memory out of 3000000
- 9598 multiletter control sequences out of 10000+50000
+ 8475 strings out of 493876
+ 120473 string characters out of 1150567
+ 178964 words of memory out of 3000000
+ 9610 multiletter control sequences out of 10000+50000
  40993 words of font info for 78 fonts, out of 3000000 for 5000
  714 hyphenation exceptions out of 8191
  36i,14n,42p,247b,1772s stack positions out of 5000i,500n,10000p,200000b,50000s
 {/usr/local/texlive/2008/texmf-dist/fonts/enc/dvips/base/8r.enc}</usr/local/t
-exlive/2008/texmf-dist/fonts/type1/bluesky/cm/cmmi10.pfb></usr/local/texlive/20
-08/texmf-dist/fonts/type1/bluesky/cm/cmmi12.pfb></usr/local/texlive/2008/texmf-
-dist/fonts/type1/bluesky/cm/cmmi8.pfb></usr/local/texlive/2008/texmf-dist/fonts
-/type1/bluesky/cm/cmr12.pfb></usr/local/texlive/2008/texmf-dist/fonts/type1/blu
-esky/cm/cmr8.pfb></usr/local/texlive/2008/texmf-dist/fonts/type1/bluesky/cm/cms
-y10.pfb></usr/local/texlive/2008/texmf-dist/fonts/type1/bluesky/cm/cmsy6.pfb></
-usr/local/texlive/2008/texmf-dist/fonts/type1/bluesky/cm/cmsy8.pfb></usr/local/
-texlive/2008/texmf-dist/fonts/type1/bluesky/cm/cmti12.pfb></usr/local/texlive/2
-008/texmf-dist/fonts/type1/public/txfonts/txtt.pfb></usr/local/texlive/2008/tex
-mf-dist/fonts/type1/public/txfonts/txtt.pfb></usr/local/texlive/2008/texmf-dist
-/fonts/type1/urw/times/utmb8a.pfb></usr/local/texlive/2008/texmf-dist/fonts/typ
-e1/urw/times/utmr8a.pfb></usr/local/texlive/2008/texmf-dist/fonts/type1/urw/tim
-es/utmr8a.pfb></usr/local/texlive/2008/texmf-dist/fonts/type1/urw/times/utmri8a
-.pfb>
-Output written on x10.pdf (190 pages, 906649 bytes).
+exlive/2008/texmf-dist/fonts/type1/bluesky/cm/cmex10.pfb></usr/local/texlive/20
+08/texmf-dist/fonts/type1/bluesky/cm/cmmi10.pfb></usr/local/texlive/2008/texmf-
+dist/fonts/type1/bluesky/cm/cmmi12.pfb></usr/local/texlive/2008/texmf-dist/font
+s/type1/bluesky/cm/cmmi7.pfb></usr/local/texlive/2008/texmf-dist/fonts/type1/bl
+uesky/cm/cmmi8.pfb></usr/local/texlive/2008/texmf-dist/fonts/type1/bluesky/cm/c
+mr10.pfb></usr/local/texlive/2008/texmf-dist/fonts/type1/bluesky/cm/cmr12.pfb><
+/usr/local/texlive/2008/texmf-dist/fonts/type1/bluesky/cm/cmr7.pfb></usr/local/
+texlive/2008/texmf-dist/fonts/type1/bluesky/cm/cmr8.pfb></usr/local/texlive/200
+8/texmf-dist/fonts/type1/bluesky/cm/cmsy10.pfb></usr/local/texlive/2008/texmf-d
+ist/fonts/type1/bluesky/cm/cmsy6.pfb></usr/local/texlive/2008/texmf-dist/fonts/
+type1/bluesky/cm/cmsy8.pfb></usr/local/texlive/2008/texmf-dist/fonts/type1/blue
+sky/cm/cmti12.pfb></usr/local/texlive/2008/texmf-dist/fonts/type1/public/txfont
+s/txtt.pfb></usr/local/texlive/2008/texmf-dist/fonts/type1/public/txfonts/txtt.
+pfb></usr/local/texlive/2008/texmf-dist/fonts/type1/urw/times/utmb8a.pfb></usr/
+local/texlive/2008/texmf-dist/fonts/type1/urw/times/utmr8a.pfb></usr/local/texl
+ive/2008/texmf-dist/fonts/type1/urw/times/utmr8a.pfb></usr/local/texlive/2008/t
+exmf-dist/fonts/type1/urw/times/utmri8a.pfb>
+Output written on x10.pdf (195 pages, 938991 bytes).
 PDF statistics:
- 4160 PDF objects out of 4296 (max. 8388607)
- 1930 named destinations out of 2073 (max. 131072)
- 1717 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 4295 PDF objects out of 4296 (max. 8388607)
+ 1992 named destinations out of 2073 (max. 131072)
+ 1757 words of extra memory for PDF output out of 10000 (max. 10000000)
 

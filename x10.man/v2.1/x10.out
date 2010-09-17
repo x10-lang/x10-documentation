@@ -45,6 +45,11 @@
 \BOOKMARK [1][-]{section.5.4}{Formal parameters}{chapter.5}
 \BOOKMARK [1][-]{section.5.5}{Local variables}{chapter.5}
 \BOOKMARK [1][-]{section.5.6}{Fields}{chapter.5}
+\BOOKMARK [1][-]{section.5.7}{Accumulator Variables}{chapter.5}
+\BOOKMARK [2][-]{subsection.5.7.1}{Reducers}{section.5.7}
+\BOOKMARK [2][-]{subsection.5.7.2}{Accumulators}{section.5.7}
+\BOOKMARK [2][-]{subsection.5.7.3}{Sequential Use of Accumulators}{section.5.7}
+\BOOKMARK [2][-]{subsection.5.7.4}{Concurrent Use of Accumulators}{section.5.7}
 \BOOKMARK [0][-]{chapter.6}{Names and packages}{}
 \BOOKMARK [1][-]{section.6.1}{Packages}{chapter.6}
 \BOOKMARK [2][-]{subsection.6.1.1}{Name Collisions}{section.6.1}
@@ -206,7 +211,7 @@
 \BOOKMARK [2][-]{subsection.18.4.2}{C++ System Libraries}{section.18.4}
 \BOOKMARK [0][-]{chapter.19}{Lost Bits}{}
 \BOOKMARK [1][-]{section.19.1}{Visibility of Local Variables and Formals}{chapter.19}
-\BOOKMARK [0][-]{chapter*.51}{Alphabetic index of definitions of concepts, keywords, and procedures}{}
+\BOOKMARK [0][-]{chapter*.52}{Alphabetic index of definitions of concepts, keywords, and procedures}{}
 \BOOKMARK [0][-]{appendix.A}{Change Log}{}
 \BOOKMARK [1][-]{section.A.1}{Changes from X10 v2.0.6}{appendix.A}
 \BOOKMARK [1][-]{section.A.2}{Changes from X10 v2.0}{appendix.A}
