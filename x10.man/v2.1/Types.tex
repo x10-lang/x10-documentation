@@ -76,10 +76,9 @@ Type \: FunctionType \\
     \| ConstrainedType  \\
 
 FunctionType \: TypeParameters\opt \xcd"(" Formals\opt \xcd")"
-Constraint\opt Throws\opt Offers\opt \xcd"=>" TypeOrVoid \\
+Constraint\opt  \xcd"=>" TypeOrVoid \\
 TypeParameters \: \xcd"[" TypeParameter ( \xcd"," TypeParameter )\star \xcd"]" \\
 TypeParameter \: Identifier \\
-Throws \: \xcd"throws" TypeName ( \xcd"," TypeName )\star \\
 
 ConstrainedType \: Annotation\star BaseType Constraint\opt
 PlaceConstraint\opt \\
@@ -167,7 +166,7 @@ class Cell[T] {
   }
   public def emptyOut() { empty = true; }
   public def isEmpty() = empty;
-  public def getOut():T throws Exception {
+  public def getOut():T {
      if (empty) throw new Exception("Empty!");
      return contents ;
   }
@@ -1004,7 +1003,7 @@ type of \xcd`i`:
 %~~gen
 % package Types.Functions;
 % class IncrElEx {
-% static def example() throws DoomExn {
+% static def example()  {
 %~~vis
 \begin{xten}
 val inc = (r:Rail[Int], i: Int{i != r.length}) => {

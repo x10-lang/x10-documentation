@@ -221,7 +221,7 @@ default value, it cannot be marked \Xcd{transient}.
 \begin{xten}
 class Trans { 
    val copied = "copied";
-   transient val transy = "a very long string";
+   transient val transy : String = "a very long string";
    def example() {
       at (here) { // causes copying
          assert(this.copied == "copied");
@@ -698,7 +698,6 @@ There are a number of qualifiers which may be applied to X10 methods.
   MethodModifier \: \xcd"pinned"  \\
   MethodModifier \: \xcd"nonblocking"  \\
   MethodModifier \: \xcd"sequential"  \\
-  MethodModifier \: \xcd"safe"  
 \end{grammar}
 
 
@@ -750,15 +749,15 @@ statement. It must call only \Xcd{sequential} methods.
 
 \Xcd{sequential} methods can be overridden only by methods marked \Xcd{sequential}.
 
-\subsubsection{\Xcd{safe} qualifier}
-\label{SafeAnnotation}
-\label{SafeMethod}
-\index{safe!method}
-
-A method may be declared \xcd"safe", indicating that it is 
-\xcd`pinned`, \xcd`nonblocking`, and \xcd`sequential`.
-Safe methods are the only methods which can be called inside of \xcd`atomic`
-and \xcd`when` statements.
+%(safe)\subsubsection{\Xcd{safe} qualifier}
+%(safe)\label{SafeAnnotation}
+%(safe)\label{SafeMethod}
+%(safe)\index{safe!method}
+%(safe)
+%(safe)A method may be declared \xcd"safe", indicating that it is 
+%(safe)\xcd`pinned`, \xcd`nonblocking`, and \xcd`sequential`.
+%(safe)Safe methods are the only methods which can be called inside of \xcd`atomic`
+%(safe)and \xcd`when` statements.
 
 \section{Instance Initialization}
 
@@ -1174,9 +1173,9 @@ argument \xcd`x`.  We would like to write code thus:
 %   public def degree() = coeff.length()-1;
 %   public  def  a(i:Int) = (i<0 || i>this.degree()) ? 0 : coeff(i);
 % 
-%   public static safe operator (c : Int) as Poly = new Poly([c]);
+%   public static operator (c : Int) as Poly = new Poly([c]);
 % 
-%   public safe def apply(x:Int) {
+%   public def apply(x:Int) {
 %     val d = this.degree();
 %     var s : Int = this.a(d);
 %     for( [i] in 1 .. this.degree() ) {
@@ -1217,7 +1216,7 @@ argument \xcd`x`.  We would like to write code thus:
 %        // x10.io.Console.OUT.println("sumdeg(" + k + "," + a + "," + b + ")=" + s);
 %      return s;
 %      };
-%   public final safe def toString() = {
+%   public final def toString() = {
 %      var allZeroSoFar : Boolean = true;
 %      var s : String ="";
 %      for( [i] in 0..this.degree() ) {
@@ -1235,7 +1234,7 @@ argument \xcd`x`.  We would like to write code thus:
 %      if (allZeroSoFar) s = "0";
 %      return s;
 %   }
-%   private final safe def term(ai: Int, n:Int) = {
+%   private final def term(ai: Int, n:Int) = {
 %      val xpow = (n==0) ? "" : (n==1) ? "x" : "x^" + n ;
 %      return (ai == 1) ? xpow : "" + Math.abs(ai) + xpow;
 %   }
@@ -1272,9 +1271,9 @@ Writing the same code with method calls, while possible, is far less elegant:
 %   public def degree() = coeff.length()-1;
 %   public  def  a(i:Int) = (i<0 || i>this.degree()) ? 0 : coeff(i);
 % 
-%   public static safe operator (c : Int) as UglyPoly = new UglyPoly([c]);
+%   public static operator (c : Int) as UglyPoly = new UglyPoly([c]);
 % 
-%   public safe def apply(x:Int) {
+%   public def apply(x:Int) {
 %     val d = this.degree();
 %     var s : Int = this.a(d);
 %     for( [i] in 1 .. this.degree() ) {
@@ -1315,7 +1314,7 @@ Writing the same code with method calls, while possible, is far less elegant:
 %        // x10.io.Console.OUT.println("sumdeg(" + k + "," + a + "," + b + ")=" + s);
 %      return s;
 %      };
-%   public final safe def toString() = {
+%   public final def toString() = {
 %      var allZeroSoFar : Boolean = true;
 %      var s : String ="";
 %      for( [i] in 0..this.degree() ) {
@@ -1333,7 +1332,7 @@ Writing the same code with method calls, while possible, is far less elegant:
 %      if (allZeroSoFar) s = "0";
 %      return s;
 %   }
-%   private final safe def term(ai: Int, n:Int) = {
+%   private final def term(ai: Int, n:Int) = {
 %      val xpow = (n==0) ? "" : (n==1) ? "x" : "x^" + n ;
 %      return (ai == 1) ? xpow : "" + Math.abs(ai) + xpow;
 %   }
@@ -1681,7 +1680,7 @@ addition to add it to \xcd`x`.
 %   public def this(coeff: ValRail[Int]) { this.coeff = coeff;}
 %   public def degree() = coeff.length()-1;
 %   public def  a(i:Int) = (i<0 || i>this.degree()) ? 0 : coeff(i);
-%   public final safe def toString() = {
+%   public final def toString() = {
 %      var allZeroSoFar : Boolean = true;
 %      var s : String ="";
 %      for( [i] in 0..this.degree() ) {
@@ -1699,14 +1698,14 @@ addition to add it to \xcd`x`.
 %      if (allZeroSoFar) s = "0";
 %      return s;
 %   }
-%   private final safe def term(ai: Int, n:Int) = {
+%   private final def term(ai: Int, n:Int) = {
 %      val xpow = (n==0) ? "" : (n==1) ? "x" : "x^" + n ;
 %      return (ai == 1) ? xpow : "" + Math.abs(ai) + xpow;
 %   }
 
 %~~vis
 \begin{xten}
-  public static safe operator (c : Int) : Poly = new Poly([c]);
+  public static operator (c : Int) : Poly = new Poly([c]);
 
   public static operator (p:Poly) + (q:Poly) = new Poly(
       ValRail.make[Int](

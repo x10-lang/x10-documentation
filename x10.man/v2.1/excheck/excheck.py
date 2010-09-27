@@ -3,6 +3,8 @@ import os;
 clue = "%~~"
 sep="~~"
 files = []
+currentLine = 0
+
 
 texsource = "/Users/bard/x10/manual/x10.man/v2.1"
 gennedFileDir = texsource + "/testcases"
@@ -46,10 +48,11 @@ def parsley(line):
 #       weasel's \xcd`I:Int = a+b;` food
 # OUT:
 #  public class Treebl1 {
-#     def check(a:Int,b:Int) throws Exception {
+#     def check(a:Int,b:Int)  {
 #         I:Int = a+b;
 #     }}
 def doStmt(cmd, args, f, line, basename):
+    global currentLine
     if len(args) != 3 and len(args) != 4:
         doom("'stmt' takes 3 args -- in " + basename  + "\nline="  + line + " ... plus optionally a fourth for imports and such.")
     starter = args[0]
@@ -60,9 +63,10 @@ def doStmt(cmd, args, f, line, basename):
     classname = numberedName(basename)
     code = "\n".join([
           " package stmtsome." + classname + ";",
+          "// file " + basename + " line " + str(currentLine),
           importses, 
           "public class " + classname + "{",
-          "  def check(" + formals + ") throws Exception {",
+          "  def check(" + formals + ")  {",
           "    " + stmt,
           "  }}"])
     writeX10File(classname, code)
@@ -78,6 +82,7 @@ def doExp(cmd, args, f, line, basename):
     if len(args) != 3 and len(args) != 4:
         doom("'exp' takes 3 args -- in " + basename  + "\nline="  + line + " ... plus optionally a fourth for imports and such.")
     starter = args[0]
+    global currentLine
     ender = args[1]
     formals = args[2].strip()
     importses = args[3] if len(args)==4 else ""
@@ -85,9 +90,10 @@ def doExp(cmd, args, f, line, basename):
     classname = numberedName(basename)
     code = "\n".join([
           " package expsome." + classname + ";",
+          "// file " + basename + " line " + str(currentLine),
           importses, 
           "public class " + classname + "{",
-          "  def check(" + formals + ") throws Exception = " + exp + ";"
+          "  def check(" + formals + ")  = " + exp + ";"
           "  }"])
     writeX10File(classname, code)
 
@@ -104,6 +110,7 @@ def doType(cmd, args, f, line, basename):
     if len(args) != 3 and len(args) != 4:
         doom("'type' takes 3 args -- in " + basename  + "\nline="  + line + " ... plus optionally a fourth for imports and such.")
     starter = args[0]
+    global currentLine
     ender = args[1]
     formals = args[2].strip()
     importses = args[3] if len(args)==4 else ""
@@ -111,9 +118,10 @@ def doType(cmd, args, f, line, basename):
     classname = numberedName(basename)
     code = "\n".join([
           "package " + "typesome." + classname + ";",
+          "// file " + basename + " line " + str(currentLine),
           importses, 
           "public class " + classname + "{",
-          "  def check(" + formals + ") throws Exception { ",
+          "  def check(" + formals + ")  { ",
           "     var checkycheck : " + typer + ";"
           "  }}"])
     writeX10File(classname, code)
@@ -149,7 +157,11 @@ def doType(cmd, args, f, line, basename):
 
 def doGen(cmd, args, f, line, basename):
     #print("doGen: " + cmd + " on " + "!".join(args));
-    prelude = readLines(f, "%~~vis", True, False, basename)
+    global currentLine
+    prelude = (
+       ["// file " + basename + " line " + str(currentLine) + "\n"] +
+       readLines(f, "%~~vis", True, False, basename)
+       )
     body = readLines(f, "%~~siv", False, True, basename)
     postlude = readLines(f, "%~~neg", True, False, basename)
     classname = numberedName(basename)
@@ -176,6 +188,7 @@ def doGen(cmd, args, f, line, basename):
 # So it's got the invisible parts like %~~gen, but works on a part of a line like %~~exp
 def doLongexp(cmd, args, f, line, basename):
     # Mirroring exp code to get the delimiters of the exp to check
+    global currentLine
     if len(args) != 2:
         doom("'longexp' takes exactly two args -- in " + basename  + "\nline="  + line)
     starter = args[0].strip()
@@ -197,6 +210,8 @@ def doLongexp(cmd, args, f, line, basename):
 # between 'starter' and 'ender' (exclusive).
 def extract(f, starter, ender, basename):
     L1 = f.readline()
+    global currentLine
+    currentLine += 1
     p1 = L1.find(starter)
     if p1 < 0: doom("Need a '" + starter + "' in " + basename + " on the line currently " + L1 + " pos: " + f.tell())
     S = L1[p1 + len(starter) : len(L1)]
@@ -204,6 +219,7 @@ def extract(f, starter, ender, basename):
         p2 = S.find(ender)
         if p2 < 0:
             L2 = f.readline()
+            currentLine += 1
             S = S + L2
             continue
         extractment = S[0:p2]
@@ -215,8 +231,10 @@ def extract(f, starter, ender, basename):
 # if stripBeginAndEnd==True, strip \begin and \end commands.
 def readLines(f, endMarker, stripLeadingPercents, stripBeginAndEnd, basename):
     L = []
+    global currentLine
     while True:
         line = f.readline()
+        currentLine += 1
         if line == "": doom("End of file (" + basename + ") looking for " + endMarker)
         line = line.rstrip()
         if line.strip() == endMarker:
@@ -261,11 +279,14 @@ def numberedName(basename):
 totalTestCases = 0
 def extractExamplesFrom(tf):
     global totalTestCases
+    global currentLine
+    currentLine = 0
     basename = tf[0:len(tf)-4]
     # print tf + " -> \"" + basename + "\""
     name2number[basename] = 0
     with open(texsource+"/"+tf) as f:
          line = f.readline()
+         currentLine += 1
          while line != "": 
             if line.startswith(clue):
                 dealWithExample(f, line, basename)
@@ -274,6 +295,7 @@ def extractExamplesFrom(tf):
                      "line=" + line + "\n" +
                      "file=" + tf + "\n")
             line = f.readline()
+            currentLine += 1
     print basename.ljust(22) + " = " + str(name2number[basename])
     totalTestCases += name2number[basename]
 

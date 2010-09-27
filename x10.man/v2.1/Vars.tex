@@ -540,11 +540,14 @@ If \Xcd{r} is a  value of type \Xcd{Reducer[T]}, then an accumulator of type
 % static def example (r:Reducer[T]) {
 %~TODO~vis
 \begin{xten}
-acc(r) x;
+acc(r) x : T;
+acc(r) y; 
 \end{xten}
 %~TODO~siv
 %
 %~TODO~neg
+The type declaration \Xcd{T} is optional; if specified, it must be the same
+type that the reducer \Xcd{r} uses.
 
 \subsection{Sequential Use of Accumulators}
 
@@ -702,3 +705,60 @@ def triangle(n:Int) {
 \index{accumulator variables!as parameters}
 \index{parameters!accumulator}
 
+Accumulators can be passed to methods and closures, by giving the keyword 
+\Xcd{acc} instead of \Xcd{var} or \Xcd{val}.  Reducers are not specified; each
+accumulator comes with its own reducer.  However, the type \Xcd{T} of the
+accumulator {\em is} required.
+
+For example, the following method takes a list of numbers, and accumulates
+those that are divisible by 2 in \Xcd{evens}, and those that are divisible by
+3 in \Xcd{triples}: 
+%~TODO~gen
+%package Vars.accumulators.parameters.oscillators.convulsitors.proximators;
+%import x10.util.*;
+%class Whatever {
+%~TODO~vis
+\begin{xten}
+static def split23(L:List[Int], acc evens:Int, acc triples:Int) {
+  for(n in L) {
+     if (n % 2 == 0) evens = n;
+     if (n % 3 == 0) triples = n;
+  }
+}
+static val summer = Reducer[Int](0, Int.+);
+static val producter = Reducer[Int](1, Int.*);
+static def sumEvenPlusProdTriple(L:List[Int]) {
+  acc(summer) sumEven;
+  acc(producter) prodTriple;
+  split23(L, sumEven, prodTriple);
+  return sumEven + prodTriple;
+}
+\end{xten}
+%~TODO~siv
+%}
+%~TODO~neg
+
+\subsection{Indexed Accumulators}
+\index{accumulator!indexed}
+\index{accumulator!array}
+
+
+\noo{Define this!}
+
+%~TODO~gen
+% package Vars.Indexed.Accumulators;
+%~TODO~vis
+\begin{xten}
+class BoolAccum implements SelfAccumulator[Boolean, Int] {
+  var sumTrue = 0, sumFalse = 0;
+  def update(k:Boolean, v:Int) { 
+     if (k) sumTrue += k; else sumFalse += k;
+  }
+  def update(ks:Array[Boolean]{rail}, vs:Array[Int]{ks.size == vs.size}) {
+     for([i] in ks.region) update(ks(i), vs(i));  }
+  
+}
+\end{xten}
+%~TODO~siv
+%
+%~TODO~neg

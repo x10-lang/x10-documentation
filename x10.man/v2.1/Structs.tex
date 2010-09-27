@@ -127,10 +127,10 @@ Structs are required to implement the following methods from \xcd`Any`.
 Programmers need not provide them; X10 will produce them automatically if 
 the program does not include them. 
 \begin{xten}
-  public  safe def equals(Any):Boolean;
-  public  safe def hashCode():Int;
-  public  safe def typeName():String;
-  public  safe def toString():String;  
+  public def equals(Any):Boolean;
+  public def hashCode():Int;
+  public def typeName():String;
+  public def toString():String;  
 \end{xten}
 
 
@@ -198,7 +198,7 @@ struct Pair[T,U] {
         this.first = first;
         this.second = second;
     }
-    public  safe def toString():String {
+    public def toString():String {
         return "(" + first + ", " + second + ")";
     }
 }

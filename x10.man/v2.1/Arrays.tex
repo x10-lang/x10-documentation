@@ -447,7 +447,7 @@ Let \xcd`D` be a distribution.
 denotes the underlying
 region. 
 Given a point \xcd`p`, the expression
-%~~exp~~`~~`~~ D:Dist, p:Point~~
+%~~exp~~`~~`~~ D:Dist, p:Point{p.rank == D.rank}~~
 \xcd`D(p)` represents the application of \xcd`D` to \xcd`p`, that is,
 the place that \xcd`p` is mapped to by \xcd`D`. The evaluation of the
 expression \xcd`D(p)` throws an \xcd`ArrayIndexOutofBoundsException`
