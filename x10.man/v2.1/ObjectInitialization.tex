@@ -1,0 +1,164 @@
+\subsection{Object Initialization}
+
+X10 does object initialization safely.  It avoids a few classes of bad things: 
+\begin{enumerate}
+\item Use of a field before the field has been initialized.
+\item \Xcd{this} escaping from a constructor;
+\end{enumerate}
+
+It should be unsurprising that fields must not be used before they are
+initialized. At best, it is uncertain what value will be in them, as in
+\Xcd{x} below. Worse, the value might not even be an allowable value; \Xcd{y},
+declared to be nonzero in the following example, might be zero before it is
+initialized. 
+\begin{xten}
+// Not correct X10
+class ThisIsWrong {
+  val x : Int;
+  val y : Int{y != 0};
+  def this() {
+    x10.io.Console.OUT.println("x=" + x + "; y=" + y);
+    x = 1; y = 2;
+  }
+}
+\end{xten}
+
+One particularly insidious way to read uninitialized fields is to allow
+\Xcd{this} to escape from a constructor. For example, the constructor could
+put \Xcd{this} into a data structure before initializing it, and another
+activity could read it from the data structure and look at its fields: 
+\begin{xten}
+class Wrong {
+  val shouldBe8 : Int;
+  static Cell[Wrong] wrongCell = new Cell[Wrong]();
+  static def doItWrong() {
+     finish { 
+       async { new Wrong(); } // (A)
+       assert( wrongCell().shouldBe8 == 8); // (B)
+     }
+  }
+  def this() {
+     wrongCell.set(this); // (C) - ILLEGAL 
+     this.shouldBe8 = 8; // (D)
+  }
+}
+\end{xten}
+\noindent
+In this example, the underconstructed \Xcd{Wrong} object is leaked into a
+storage cell at line \Xcd{(C)}, and then initialized.  The \Xcd{doItWrong}
+method constructs a new \Xcd{Wrong} object, and looks at the \Xcd{Wrong}
+object in the storage cell to check on its \Xcd{shouldBe8} field.  One
+possible order of events is the following: 
+\begin{enumerate}
+\item \Xcd{doItWrong()} is called.
+\item \Xcd{(A)} is started.  Space for a new \Xcd{Wrong} object is allocated.
+      Its \Xcd{shouldBe8} field, not yet initialized, contains some garbage
+      value.
+\item \Xcd{(C)} is executed, as part of the process of constructing a new
+      \Xcd{Wrong} object.  The new, uninitialized object is stored in
+      \Xcd{wrongCell}. 
+\item Now, the initialization activity is paused, and execution of the main activity 
+      proceeds from \Xcd{(B)}.
+\item The value in \Xcd{wrongCell} is retrieved, and is \Xcd{shouldBe8} field
+      is read.  This field contains garbage, and the assertion fails.
+\item Now let the initialization activity proceed with \Xcd{(D)},
+      initializing \Xcd{shouldBe8} --- too late.
+\end{enumerate}
+
+X10 must protect against such possibilities.  The rules explaining how
+constructors can be written are somewhat intricate; they are designed to allow
+as much programming as possible without leading to potential problems.
+Ultimately, they simply are elaborations of the fundamental principles that
+uninitialized fields must never be read, and \Xcd{this} must never be leaked.  
+
+
+\subsection{Constructors and NonEscaping Methods}
+
+In general, constructors must not be allowed to call methods with\Xcd{this} as
+an argument or receiver. Such calls could leak references to \Xcd{this},
+either directly from a call to \Xcd{cell.set(this)}, or indirectly because
+\Xcd{toString} leaks \Xcd{this}, and the concatenation 
+\Xcd{"Escaper = "+this} calls \Xcd{toString}.\footnote{This is abominable behavior for 
+\Xcd{toString}, but nonetheless it is allowed.}
+%~WRONG~gen
+%package ObjectInit.CtorAndNonEscaping.One;
+%~WRONG~vis
+\begin{xten}
+class Escaper {
+  static val Cell[Escaper] cell = new Cell[Escaper]();
+  def toString() {
+    cell.set(this);
+    return "Evil!";
+  }
+  def this() {
+    cell.set(this);
+    x10.io.Console.OUT.println("Escaper = " + this);
+  }
+}
+\end{xten}
+%~WRONG~siv
+%
+%~WRONG~neg
+
+However, it is convenient to be able to call methods from constructors; {\em
+e.g.}, a class might have eleven constructors whose common behavior is best
+described by three methods.  Under certain stringent conditions, it {\em is}
+safe to call a method: the method called must not leak references to
+\Xcd{this}, and must not read \Xcd{val}s or \Xcd{var}s which might not have
+been assigned.   
+
+So, X10 performs a static dataflow analysis, sufficient to guarantee that
+method calls in constructors are safe.  This analysis requires having access
+to or guarantees about all the code that could possibly be called.  This can
+be accomplished in two ways: 
+\begin{enumerate}
+\item Ensuring that only code from the class itself can be called, by 
+      forbidding overriding of
+      methods called from the constructor: they can be marked \Xcd{final} or
+      \Xcd{private}, or the whole class can be \Xcd{final}.
+\item Marking the methods called from the constructor by
+      \Xcd{@NonEscaping(...)}. \noo{Fill this in}
+\end{enumerate}
+
+\subsection{Fine Structure of Constructors}
+
+The code of a constructor consists of three segments, all of them optional.  
+\begin{enumerate}
+\item The first segment is an optional call to \Xcd{this(...)} or
+      \Xcd{super(...)}.  If this is supplied, it must be the first statement
+      of the constructor.  If it is not supplied, the compiler treats it as a
+      nullary super-call \Xcd{super()};
+\item If the class or struct has properties, there must be a single
+      \Xcd{property(...)} command in the constructor.  Every execution path
+      through the constructor must go through this \Xcd{property(...)} command
+      precisely once.   The second segment of the constructor is the code
+      following the first segment, up to and including the \Xcd{property()}
+      statement.  
+
+      If the class or struct has no properties, the \Xcd{property()} call is
+      optional. If it is present, the second segment is defined as before.  If
+      it is absent, the second segment is empty.
+\item The third segment is the remainder of the constructor body.
+\end{enumerate}
+
+The segments in the following code are shown in the comments.
+%~~gen
+% package ObjectInitialization.AbjectVacation.IronRation.Enumeration.Ration;
+%~~vis
+\begin{xten}
+class Overlord(x:Int) {
+  def this(x:Int) { property(x); }
+}//Overlord
+class Overdone(y:Int) extends Overlord  {
+  val a : Int;
+  def this(r:Int) {
+    super(r);                      // (1)
+    x10.io.Console.OUT.println(r); // (2)
+    property(r+1);                 // (2)
+    a = r + 2;                     // (3)
+  }
+}//Overdone
+\end{xten}
+%~~siv
+%
+%~~neg
