@@ -68,71 +68,71 @@ language specification -- when it is finished -- for full details.
 
 
 
-\section{Call by Reference}
+%REF> \section{Call by Reference}
+%REF> 
+%REF> A very limited form of call-by-reference is now available.
+%REF> 
+%REF> 
+%REF> \begin{enumerate}
+%REF> 
+%REF> \item Formal parameters to functions and methods may be \Xcd{ref} rather than
+%REF>       \Xcd{var} or \Xcd{val}.  
+%REF> \item Assignment to a \Xcd{ref} parameter \Xcd{x} changes the original
+%REF>       location that the \Xcd{ref} refers to.  \eg, 
+%REF>       \xcd`def inc(ref x:Int) { x ++; }`
+%REF>       allows a call \Xcd{inc(n)} to increment a local \Xcd{var} \Xcd{n}.
+%REF> \item Only local variables or \Xcd{ref} parameters can be passed as actual
+%REF>       \Xcd{ref} parameters.  Fields, array elements, and other variable-like
+%REF>       items cannot be. 
+%REF> \item External \Xcd{ref} variables cannot be captured in closures. However,
+%REF>       closures may have \Xcd{ref} parameters.
+%REF> \item \Xcd{ref}s are {\em not} first-class objects in X10. They cannot be
+%REF>       returned from functions, stored in data structures, etc.
+%REF> \item These restrictions limit the possibilities of aliasing and the need for
+%REF>       boxing of \Xcd{ref} parameters.  \Xcd{ref}s to stack locations cannot,
+%REF>       with these restrictions, live past the death of the location's
+%REF>       containing stack frame.      
+%REF> \item This allows the implementation of many core constructs as syntactic
+%REF>       sugar on library calls.   Programmers may use it, but mutability should
+%REF>       generally be encapsulated inside objects rather than \Xcd{ref}
+%REF>       parameters. 
+%REF> \end{enumerate}
+%REF> 
 
-A very limited form of call-by-reference is now available.
-
-
-\begin{enumerate}
-
-\item Formal parameters to functions and methods may be \Xcd{ref} rather than
-      \Xcd{var} or \Xcd{val}.  
-\item Assignment to a \Xcd{ref} parameter \Xcd{x} changes the original
-      location that the \Xcd{ref} refers to.  \eg, 
-      \xcd`def inc(ref x:Int) { x ++; }`
-      allows a call \Xcd{inc(n)} to increment a local \Xcd{var} \Xcd{n}.
-\item Only local variables or \Xcd{ref} parameters can be passed as actual
-      \Xcd{ref} parameters.  Fields, array elements, and other variable-like
-      items cannot be. 
-\item External \Xcd{ref} variables cannot be captured in closures. However,
-      closures may have \Xcd{ref} parameters.
-\item \Xcd{ref}s are {\em not} first-class objects in X10. They cannot be
-      returned from functions, stored in data structures, etc.
-\item These restrictions limit the possibilities of aliasing and the need for
-      boxing of \Xcd{ref} parameters.  \Xcd{ref}s to stack locations cannot,
-      with these restrictions, live past the death of the location's
-      containing stack frame.      
-\item This allows the implementation of many core constructs as syntactic
-      sugar on library calls.   Programmers may use it, but mutability should
-      generally be encapsulated inside objects rather than \Xcd{ref}
-      parameters. 
-\end{enumerate}
-
-
-\section{Accumulator Variables}
-
-Accumulator variables generalize and make explicit collecting \Xcd{finish} in
-X10 2.0.6.  An \Xcd{acc} variable is declared: 
-\begin{xten}
-acc(r) A;
-\end{xten}
-where \Xcd{r} is a {\em reducer} (much as in 2.0.6): 
-\begin{xten}
-struct Reducer[T](zero:T, apply:global (T,T)=>T){}
-\end{xten}
-
-Usage of \Xcd{A} is restricted in ways that make it determinate in the
-intended case of a pure, associative, commutative \Xcd{apply} with unit
-element \Xcd{zero}.  
-
-\begin{enumerate}
-\item \Xcd{A} is initialized to \Xcd{r.zero}.  
-\item Multiple activities can {\em write} into \Xcd{A}.  In particular, the
-      ``assignment'' \Xcd{A = v} is approximately interpreted as 
-      \xcd`atomic{A = r.apply(A, v)}` --- that is, it accumulates \Xcd{v} into
-      \Xcd{A} using \Xcd{r.apply.}
-\item {\em Reading} of \Xcd{A} is restricted to situations where it makes
-      sense.  Specifically, only the activity in which \Xcd{A} is declared can
-      read from it, and it can only do so when all asyncs which it has spawned
-      have terminated -- \eg, outside of the scope of all \Xcd{async}s and
-      \Xcd{finish}es.  
-\item Formal parameters of functions may be marked \Xcd{acc x:T}.  The reducer
-      \Xcd{r} must not be specified; it is passed as an implicit parameter
-      going with the actual \Xcd{acc} variable.  
-\item X10 provides protocols for indexed collections of \Xcd{acc} variables,
-      presented as objects.
-\end{enumerate}
-
+%ACC> \section{Accumulator Variables}
+%ACC> 
+%ACC> Accumulator variables generalize and make explicit collecting \Xcd{finish} in
+%ACC> X10 2.0.6.  An \Xcd{acc} variable is declared: 
+%ACC> \begin{xten}
+%ACC> acc(r) A;
+%ACC> \end{xten}
+%ACC> where \Xcd{r} is a {\em reducer} (much as in 2.0.6): 
+%ACC> \begin{xten}
+%ACC> struct Reducer[T](zero:T, apply:global (T,T)=>T){}
+%ACC> \end{xten}
+%ACC> 
+%ACC> Usage of \Xcd{A} is restricted in ways that make it determinate in the
+%ACC> intended case of a pure, associative, commutative \Xcd{apply} with unit
+%ACC> element \Xcd{zero}.  
+%ACC> 
+%ACC> \begin{enumerate}
+%ACC> \item \Xcd{A} is initialized to \Xcd{r.zero}.  
+%ACC> \item Multiple activities can {\em write} into \Xcd{A}.  In particular, the
+%ACC>       ``assignment'' \Xcd{A = v} is approximately interpreted as 
+%ACC>       \xcd`atomic{A = r.apply(A, v)}` --- that is, it accumulates \Xcd{v} into
+%ACC>       \Xcd{A} using \Xcd{r.apply.}
+%ACC> \item {\em Reading} of \Xcd{A} is restricted to situations where it makes
+%ACC>       sense.  Specifically, only the activity in which \Xcd{A} is declared can
+%ACC>       read from it, and it can only do so when all asyncs which it has spawned
+%ACC>       have terminated -- \eg, outside of the scope of all \Xcd{async}s and
+%ACC>       \Xcd{finish}es.  
+%ACC> \item Formal parameters of functions may be marked \Xcd{acc x:T}.  The reducer
+%ACC>       \Xcd{r} must not be specified; it is passed as an implicit parameter
+%ACC>       going with the actual \Xcd{acc} variable.  
+%ACC> \item X10 provides protocols for indexed collections of \Xcd{acc} variables,
+%ACC>       presented as objects.
+%ACC> \end{enumerate}
+%ACC> 
 
 
 \section{Implicit clocks for each finish}
