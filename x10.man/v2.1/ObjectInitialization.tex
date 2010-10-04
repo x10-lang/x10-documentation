@@ -102,7 +102,8 @@ class Escaper {
 
 However, it is convenient to be able to call methods from constructors; {\em
 e.g.}, a class might have eleven constructors whose common behavior is best
-described by three methods.  Under certain stringent conditions, it {\em is}
+described by three methods.  
+Under certain stringent conditions, it {\em is}
 safe to call a method: the method called must not leak references to
 \Xcd{this}, and must not read \Xcd{val}s or \Xcd{var}s which might not have
 been assigned.   
@@ -117,12 +118,121 @@ be accomplished in two ways:
       methods called from the constructor: they can be marked \Xcd{final} or
       \Xcd{private}, or the whole class can be \Xcd{final}.
 \item Marking the methods called from the constructor by
-      \Xcd{@NonEscaping(...)}. \noo{Fill this in}
+      \xcd`@NonEscaping("v1,v2")`.
 \end{enumerate}
 
-\subsection{Fine Structure of Constructors}
+\subsubsection{Non-Escaping Methods}
+\index{method!non-escaping}
+\index{method!implicitly non-escaping}
+\index{method!@NonEscaping}
+\index{implicitly non-escaping}
+\index{non-escaping}
+\index{non-escaping!implicitly}
+\index{@NonEscaping}
 
-The code of a constructor consists of three segments, all of them optional.  
+
+A method may be annotated with \xcd`@NonEscaping("v1,v2")`.  This
+imposes several restrictions on the method body, and on all methods overriding
+it.  However, it is the only way that a method can be called from
+constructors, and simultaneously be overridable and non-private.  The
+\Xcd{@NonEscaping} annotation makes explicit all the X10 compiler's needs for
+constructor-safety.  
+
+A method can, however, be safe to call from constructors without being marked
+\Xcd{@NonEscaping}. We call such methods {\em implicitly non-escaping}.
+Implicitly non-escaping methods need to obey the same constraints on
+\Xcd{this}, \Xcd{super}, and variable usage as \Xcd{@NonEscaping} methods. An
+implicitly non-escaping method {\em could} be marked as
+\xcd`@NonEscaping("v1,v2")` for some list of variables; the compiler, in
+effect, infers the annotation. In addition, implicitly non-escaping methods
+must be \Xcd{private} or \Xcd{final} or members of a \Xcd{final} class; this
+corresponds to the hereditary nature of \Xcd{@NonEscaping} (by forbidding
+inheritance of implicitly non-escaping methods).
+
+We say that a method is {\em non-escaping} if it is either implicitly
+non-escaping, or annotated \Xcd{@NonEscaping}.
+
+The first requirement on non-escaping methods is that they do not allow
+\Xcd{this} to escape. Inside of their bodies, \Xcd{this} and \Xcd{super} may
+only be used for field access and assignment, and as the receiver of
+non-escaping methods.
+
+\Xcd{@NonEscaping("v1,v2")} methods specify a list of fields of \Xcd{this}, as
+a string argument of the annotation: in this example, the fields are \Xcd{v1}
+and \Xcd{v2}.  These are the only fields of \Xcd{this} that can be {\em read}
+in the body of the method.  So, \Xcd{x = this.v3} would be forbidden---as
+would a call to a method which reads \Xcd{v3}, even if that method were
+non-escaping. 
+
+For a method to be implicitly non-escaping, there must be {\em some} such list
+of fields.  
+
+Finally, if a method \Xcd{m} in class \Xcd{C} is marked
+\xcd`@NonEscaping("v1,v2")`, then every method which overrides \Xcd{m} in any
+subclass of \Xcd{C} must be annotated with precisely the same annotation,
+\xcd`@NonEscaping("v1,v2")`, as well.  
+
+The following example uses most of the possible variations (leaving out
+\Xcd{final} class).  \Xcd{aplomb()} explicitly forbids reading any field but
+\Xcd{a}. \Xcd{boric()} is called after \Xcd{a} and \Xcd{b} are set, but
+\Xcd{c} is not. \Xcd{cajoled()} is only called after all fields are set, so it
+can read anything.   \Xcd{SeeAlso} is able to override \Xcd{aplomb()}, because
+\Xcd{aplomb()} is \xcd`@NonEscaping("a")`; it cannot override the final method
+\Xcd{boric()} or the private one \Xcd{cajoled()}.  Even for overriding
+\Xcd{aplomb()}, it is crucial that \Xcd{SeeAlso.aplomb()} be 
+declared \xcd`@NonEscaping("a")`, just like \Xcd{C2.aplomb()}.
+%~~gen
+%package ObjInit.C2;
+%~~vis
+\begin{xten}
+import x10.compiler.*;
+
+class C2 {
+  protected val a:Int, b:Int, c:Int;
+  protected var x:Int, y:Int, z:Int;
+  def this() {
+    a = 1;
+    this.aplomb();
+    b = 2;
+    this.boric();
+    c = 3;
+    this.cajoled();
+  }
+  @NonEscaping("a") def aplomb() {
+    x = a;
+    // this.boric(); // not allowed; boric reads b.
+    // z = b; // not allowed -- only 'a' can be read here
+  }
+  final def boric() {
+    y = b;
+    this.aplomb(); // allowed; a is definitely set before boric is called
+    // z = c; // not allowed; c is not definitely written 
+  }
+  private def cajoled() {
+    z = c;
+  }  
+}
+
+class See extends C2 {}
+
+class SeeAlso extends See { 
+  @NonEscaping("a") def aplomb() {
+    x = a + 2;
+  }
+}
+
+\end{xten}
+%~~siv
+%
+%~~neg
+
+
+
+\subsection{Fine Structure of Constructors}
+\label{SFineStructCtors}
+
+The code of a constructor consists of four segments, three of them optional
+and one of them implicit.
 \begin{enumerate}
 \item The first segment is an optional call to \Xcd{this(...)} or
       \Xcd{super(...)}.  If this is supplied, it must be the first statement
@@ -138,7 +248,14 @@ The code of a constructor consists of three segments, all of them optional.
       If the class or struct has no properties, the \Xcd{property()} call is
       optional. If it is present, the second segment is defined as before.  If
       it is absent, the second segment is empty.
-\item The third segment is the remainder of the constructor body.
+\item The third segment is automatically generated.  Fields with initializers
+      are initialized immediately after the \Xcd{property} statement.  
+      In the following example, \Xcd{b} is initialized to \Xcd{y*9000} in
+      segment three.  The initialization makes sense and does the right
+      thing; \Xcd{b} will be \Xcd{y*9000} for every \Xcd{Overdone} object. 
+      (This would not be possible if field initializers were processed
+      earlier, before properties were set.)
+\item The fourth segment is the remainder of the constructor body.
 \end{enumerate}
 
 The segments in the following code are shown in the comments.
@@ -151,14 +268,122 @@ class Overlord(x:Int) {
 }//Overlord
 class Overdone(y:Int) extends Overlord  {
   val a : Int;
+  val b =  y * 9000;
   def this(r:Int) {
     super(r);                      // (1)
     x10.io.Console.OUT.println(r); // (2)
     property(r+1);                 // (2)
-    a = r + 2;                     // (3)
+    // field initializations here  // (3)
+    a = r + 2;                     // (4)
   }
 }//Overdone
 \end{xten}
 %~~siv
 %
 %~~neg
+
+The rules of what is allowed in the three segments are different, though
+unsurprising.  For example, properties of the current class can only be read
+in segment 3 or 4---naturally, because they are set at the end of segment 2.  
+
+\subsubsection{Initialization and Inner Classses}
+\index{constructor!inner classes in}
+
+Constructors of inner classes are tantamount to method calls on \Xcd{this}.  
+For example, the constructor for Inner {\bf is} acceptable.  It does not leak
+\Xcd{this}.  It leaks \Xcd{Outer.this}, which is an utterly different object.  
+So, the call to \Xcd{this.new Inner()} in the \Xcd{Outer} constructor {\em
+is} illegal.  It would leak \Xcd{this}.  There is no special rule in effect
+preventing this; a constructor call of an inner class is no 
+different from a method as far as leaking is concerned.
+%~~gen
+% package ObjInit.InnerClass;
+%~~vis
+\begin{xten}
+class Outer {
+  static val leak : Cell[Outer] = new Cell[Outer]();
+  class Inner {
+     Outer.leak.set(Outer.this);
+  }
+  def /*Outer*/this() {
+     //ILLEGAL: val inner = this.new Inner(); 
+  }
+}
+\end{xten}
+%~~siv
+%
+%~~neg
+
+
+
+\subsubsection{Initialization and Closures}
+\index{constructor!closure in}
+
+Closures in constructors are valid if they were invoked (or inlined) at the
+place of creation. For example, \Xcd{closure} below is acceptable because it
+only refers to fields defined at the point it was written.  \Xcd{badClosure}
+would not be acceptable, because it refers to fields that were not defined at
+that point, although they were defined later.
+%~~gen
+% package ObjectInitialization.Closures;
+%~~vis
+\begin{xten}
+class C {
+  val a = 3;
+  val closure = () => a*10; // This is OK
+  //val badClosure = () => b*10; 
+  val b = 4;
+}
+\end{xten}
+%~~siv
+%
+%~~neg
+
+
+\subsection{Definite Initialization in Constructors}
+
+
+An instance field \Xcd{var x:T}, when \Xcd{T} has a default value, need not be
+explicitly initialized.  In this case, \Xcd{x} will be initialized to the
+default value of type \Xcd{T}.  For example, a \Xcd{Score} object will have
+its \Xcd{currently} field initialized to zero, below:
+%~~gen
+% package ObjectInit.DefaultInit;
+%~~vis
+\begin{xten}
+class Score {
+  public val currently : Int;
+}
+\end{xten}
+%~~siv
+%
+%~~neg
+
+All other sorts of instance fields do need to be initialized before they can
+be used.  \Xcd{val} fields must be initialized, even if their type has a
+default value.  It would be silly to have a field \Xcd{val z : Int} that was
+always given default value of \Xcd{0} and, since it is \Xcd{val}, can never be
+changed.  \Xcd{var} fields whose type has no default value must be initialized
+as well, such as \xcd`var y : Int{y != 0}`, since it cannot be assigned a
+sensible initial value. 
+
+The fundamental principles are: 
+\begin{enumerate}
+\item \Xcd{val} fields must be assigned precisely once in each constructor on every
+possible execution path.  
+\item \Xcd{var} fields of defaultless type must be
+assigned at least once on every possible execution path, but may be assigned
+more than once.  
+\item No variable may be read before it is guaranteed to have been
+assigned.  
+\item Initialization may be by field initialization expressions (\Xcd{val x :
+      Int = y+z}), or by uninitialized fields \Xcd{val x : Int;} plus
+an initializing assignment \Xcd{x = y+z}.  Recall that field initialization
+expressions are performed after the \Xcd{property} statement, in segment 3 in
+the terminology of \Sref{SFineStructCtors}.  
+\end{enumerate}
+
+
+
+
+
