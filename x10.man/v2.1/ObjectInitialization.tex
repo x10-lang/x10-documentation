@@ -385,5 +385,188 @@ the terminology of \Sref{SFineStructCtors}.
 
 
 
+\subsection{Summary of Restrictions on Classes and Constructors}
+
+\begin{tabular}{||l|l|c|c|c|c|c|c||} 
+\hline
+~
+  & {\bf Example}
+  & {\bf Prop.}
+  & {\bf {\tt \small self==this}}\footnote{Top-level {\tt self} only.}
+  & {\bf Prop.Meth.}
+  & {\bf {\tt this}}
+  & {\bf {fields}}
+\\\hline
+Type of property 
+  & (pos) 
+  & %?properties
+    yes\footnote{The type of the {$i^{th}$} property may only mention
+                 properties {$1$} through {$i$}.}  
+  & no %? self==this
+  & no %? property methods
+  & no %? this may be used
+  & no %? fields may be used
+\\\hline
+Class Invariant
+  & (pos) 
+  & yes %?properties
+  & yes %? self==this
+  & yes %? property methods
+  & yes %? this may be used
+  & no %? fields may be used
+\\\hline
+Supertype\footnote{And super-interface}
+  & (pos), (pos)
+  & yes%?properties
+  & yes%? self==this
+  & yes%? property methods
+  & no%? this may be used
+  & no%? fields may be used
+\\\hline
+Property Method Body
+  & (pos) 
+  & yes %?properties
+  & yes %? self==this
+  & yes %? property methods
+  & yes %? this may be used
+  & no %? fields may be used
+\\\hline
+
+Static field\footnote{Type and initializer}
+  & (pos) (pos) 
+  & no %?properties
+  & no %? self==this
+  & no %? property methods
+  & no %? this may be used
+  & no %? fields may be used
+\\\hline
+
+Instance field\footnote{Type and initializer}
+  & (pos), (pos) 
+  & yes %?properties
+  & yes %? self==this
+  & yes %? property methods
+  & yes %? this may be used
+  & yes %? fields may be used
+\\\hline
+
+Constructor arg. type
+  & (pos) 
+  & no %?properties
+  & yes %? self==this
+  & no  %? property methods
+  & yes %? this may be used
+  & no %? fields may be used
+\\\hline
+
+Constructor guard
+  & (pos) 
+  & no %?properties
+  & yes %? self==this
+  & no %? property methods
+  & no %? this may be used
+  & no %? fields may be used
+\\\hline
+
+Constructor ret. type
+  & (pos) 
+  & yes %?properties
+  & yes %? self==this
+  & yes %? property methods
+  & yes %? this may be used
+  & no %? fields may be used
+\\\hline
+
+Constructor segment 1 
+  & (pos) 
+  & no%?properties
+  & yes%? self==this
+  & no%? property methods
+  & no%? this may be used
+  & no%? fields may be used
+\\\hline
 
 
+Constructor segment 2
+  & (pos) 
+  & no%?properties
+  & yes%? self==this
+  & no%? property methods
+  & no%? this may be used
+  & no%? fields may be used
+\\\hline
+
+Constructor segment 4
+  & (pos) 
+  & yes%?properties
+  & yes%? self==this
+  & yes%? property methods
+  & yes%? this may be used
+  & yes%? fields may be used
+\\\hline
+
+Methods
+  & (pos) 
+  & yes %?properties
+  & yes %? self==this
+  & yes %? property methods
+  & yes %? this may be used
+  & yes %? fields may be used
+\\\hline
+
+
+
+\iffalse
+place
+  & (pos) 
+  & %?properties
+  & %? self==this
+  & %? property methods
+  & %? this may be used
+  & %? fields may be used
+\\\hline
+\fi
+\end{tabular}
+
+The example indices refer to the following code: 
+%~~gen
+% package ObjectInit.GrandExample;
+% class Supertype[T]{}
+% interface SuperInterface[T]{}
+%~~vis
+\begin{xten}
+class Example (
+   prop : Int,
+   proq : Int{prop != proq}, // (pos)
+   pror : Int
+   )
+   {prop != 0} // (pos)
+   extends Supertype[Int{self != prop}] // (pos)
+   implements SuperInterface[Int{self != prop}] // (pos)
+{
+   property def propmeth() = (prop == pror); // (pos)
+   static staticField 
+      : Cell[Int{self != 0}] // (pos)
+      = new Cell[Int{self != 0}](1); // (pos)
+   var instanceField 
+      : Int {self != prop}
+      = prop + 1 as Int{self != prop}; 
+   def this(
+      a : Int{a != 0},
+      b : Int{b != a} // (pos)
+      )
+      {a != b} // (pos)
+      : Example{prop == a && proq == b} // (pos)
+   {
+      super(); // (pos)
+      property(a,b,a); // (pos)
+      // fields initialized here
+      instanceField = b; // (pos)
+   }
+
+   def someMethod() = prop + staticField + instanceField;  // (pos)
+}
+\end{xten}
+%~~siv
+%
+%~~neg
