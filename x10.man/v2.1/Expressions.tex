@@ -786,6 +786,7 @@ must be of type \xcd"Collection[T]" and the value \xcd"p" must
 be of type \xcd"T".
 
 \section{Rail constructors}
+\noo{This is now an Array ctor and the text needs revision}
 \label{RailConstructors}
 
 \begin{grammar}
@@ -804,8 +805,8 @@ types of the \xcdmath"a$_i$"'s, as per \Sref{LCA}.
 % def example() {
 %~~vis
 \begin{xten}
-val a : ValRail[Int] = [1,3,5];
-val b : ValRail[Any] = [1, a, "please"];
+val a <: Array[Int] = [1,3,5];
+val b <: Array[Any] = [1, a, "please"];
 \end{xten}
 %~~siv
 % } } 

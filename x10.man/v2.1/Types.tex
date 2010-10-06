@@ -64,6 +64,122 @@ Strengthening is an equally familiar notion from logic.   The instances of
 notions of subtyping.  See \Sref{DepType:Equivalence} for the full definition
 of subtyping in X10.
 
+\subsection{Type System}
+\index{type system}
+The types in X10 are as follows.  These are the {\em semantic} types. Other
+syntactic forms for types exist, but they are simply abbreviations for types
+in the following system.  For example, \xcd`Array[Int](1)` is the type of
+one-dimensional integer-valued arrays; it is an abbreviation for
+\xcd`Array[Int]{rank==1}`.\\
+\begin{grammar}
+
+Type \: TypeName \\
+     \| TypeName \xcd`[` Types\opt \xcd`]` \\
+     \| Type \xcd`{` Constraint \xcd`}` \\
+     \| Type \xcd`.` Type \\
+     \| TypeVar \\
+     \| FunctionType\\
+     \| VoidFunctionType \\
+
+TypeName \: Id \\
+TypeVar \: Id \\
+Types \: Type \\ 
+      \| Type \xcd`,` Types \\
+FunctionType \: \xcd`(` Formals\opt \xcd`) =>`  Type \\
+VoidFunctionType \: \xcd`(` Formals\opt \xcd`) => void` \\
+Formal \: Id \xcd`:` Type \\
+Formals \: Formal \\
+        \| Formal \xcd`,` Formals      
+\end{grammar}
+
+The type {\em TypeName} refers to a defined type.  For example, 
+%~~type~~`~~`~~ ~~
+\xcd`Int`
+is the type of 32-bit integers.
+Given a class declaration 
+%~~gen
+%package Types.Core.TypeName; 
+%~~vis
+\begin{xten}
+class Tripe { /* ... */ }
+\end{xten}
+%~~siv
+%
+%~~neg
+the identifier \xcd`Tripe` may be used as a type.
+
+The type {\em TypeName \xcd`[` Types{$^?$} \xcd`]`} refers to an instance of a
+generic (or parameterized) type.  For example, \xcd`Array[X]` is the built-in
+type of arrays whose elements are some unspecified type \xcd`X`.
+\xcd`Array[Int]` is the type of arrays of integers. 
+
+The type {\em Type \xcd`{` Constraint \xcd`}`} refers to a constrained type.
+{\em Constraint} is a Boolean expression -- written in a {\em very} limited
+subset of X10 -- describing the acceptable values of the constrained type.
+%~~stmt~~`~~`~~ ~~
+For example, \xcd`var n : Int{self != 0};` guarantees that \xcd`n` is always a
+non-zero integer. 
+%~~stmt~~`~~`~~ ~~class Tripe{}
+Similarly, \xcd`var x : Tripe{x != null};` defines a \xcd`Tripe`-valued
+variable \xcd`x` whose value is never null.
+
+The qualified type {\em Type \xcd`.` Type} refers to an instance of an {\em
+inner} type; that is, a class or struct defined inside of another class or
+struct, and holding an implicit reference to the outer.  For example, given
+the type declaration 
+%~~gen
+% package Types.Core.Hardcore.Qualified;
+%~~vis
+\begin{xten}
+class Outer {
+  class Inner { /* ... */ }
+}
+\end{xten}
+%~~siv
+%
+%~~neg
+then 
+%~~exp~~`~~`~~ ~~ class Outer {class Inner { /* ... */ }}
+\xcd`(new Outer()).new Inner()` creates a value of type 
+%~~type~~`~~`~~ ~~class Outer {class Inner { /* ... */ }}
+\xcd`Outer.Inner`.
+
+Type variables, {\em TypeVar}, refer to types that are parameters.  For
+example, the following class defines a cell in a linked list.  
+%~~gen
+% package Types.Core.Bore.Lore;
+%~~vis
+\begin{xten}
+class LinkedList[X] {
+  val head : X;
+  val tail : LinkedList[X];
+  def this(head:X, tail:LinkedList[X]) {
+     this.head = head; this.tail = tail;
+  }
+}
+\end{xten}
+%~~siv
+%
+%~~neg
+It doesn't
+matter what type the cell is, but it has to have {\em some} type.
+\xcd`LinkedList[Int]` is a linked list of integers;
+\xcd`LinkedList[LinkedList[String]]` a list of lists of strings.
+
+The function type 
+{\em \xcd`(` Formals{$^?$} \xcd`) =>`  Type} 
+refers to functions taking the
+listed formal parameters and returning a result of {\em Type}.  
+The closely-related void function type 
+{\em \xcd`(` Formals{$^?$} \xcd`) =>`  \xcd`Void`}  takes the listed
+parameters and returns no value.
+For example, 
+%~~type~~`~~`~~ ~~
+\xcd`(x:Int) => Int{self != x}` 
+is the type of integer-valued functions which have no fixed points.  
+
+
+\noo{Explain the constraint language}
 
 
 

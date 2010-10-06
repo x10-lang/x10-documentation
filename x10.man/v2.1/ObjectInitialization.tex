@@ -352,7 +352,7 @@ its \Xcd{currently} field initialized to zero, below:
 %~~vis
 \begin{xten}
 class Score {
-  public val currently : Int;
+  public var currently : Int;
 }
 \end{xten}
 %~~siv
@@ -561,18 +561,18 @@ class Example (
       = new Cell[Int{self != 0}](1);            // (G)
    var instanceField                            
       : Int {self != prop}                      // (H)
-      = prop + 1 as Int{self != prop};          // (I)
+      = (prop + 1) as Int{self != prop};        // (I)
    def this(
       a : Int{a != 0},
       b : Int{b != a}                           // (J)
       )
       {a != b}                                  // (K)
-      : Example{prop == a && proq == b}         // (L)
+      : Example{self.prop == a && self.proq==b} // (L)
    {
       super();                                  // (M)
       property(a,b,a);                          // (N)
       // fields initialized here
-      instanceField = b;                        // (O)
+      instanceField = b as Int{self != prop};   // (O)
    }
 
    def someMethod() = 
