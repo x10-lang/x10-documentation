@@ -303,7 +303,7 @@ different from a method as far as leaking is concerned.
 class Outer {
   static val leak : Cell[Outer] = new Cell[Outer]();
   class Inner {
-     Outer.leak.set(Outer.this);
+     def this() {Outer.leak.set(Outer.this);}
   }
   def /*Outer*/this() {
      //ILLEGAL: val inner = this.new Inner(); 
@@ -392,31 +392,30 @@ the terminology of \Sref{SFineStructCtors}.
 ~
   & {\bf Example}
   & {\bf Prop.}
-  & {\bf {\tt \small self==this}}\footnote{Top-level {\tt self} only.}
+  & {\bf {\tt \small self==this}(1)}
   & {\bf Prop.Meth.}
   & {\bf {\tt this}}
   & {\bf {fields}}
 \\\hline
 Type of property 
-  & (pos) 
+  & (A) 
   & %?properties
-    yes\footnote{The type of the {$i^{th}$} property may only mention
-                 properties {$1$} through {$i$}.}  
+    yes (2)
   & no %? self==this
   & no %? property methods
   & no %? this may be used
   & no %? fields may be used
 \\\hline
 Class Invariant
-  & (pos) 
+  & (B) 
   & yes %?properties
   & yes %? self==this
   & yes %? property methods
   & yes %? this may be used
   & no %? fields may be used
 \\\hline
-Supertype\footnote{And super-interface}
-  & (pos), (pos)
+Supertype (3)
+  & (C), (D)
   & yes%?properties
   & yes%? self==this
   & yes%? property methods
@@ -424,7 +423,7 @@ Supertype\footnote{And super-interface}
   & no%? fields may be used
 \\\hline
 Property Method Body
-  & (pos) 
+  & (E) 
   & yes %?properties
   & yes %? self==this
   & yes %? property methods
@@ -432,8 +431,8 @@ Property Method Body
   & no %? fields may be used
 \\\hline
 
-Static field\footnote{Type and initializer}
-  & (pos) (pos) 
+Static field (4)
+  & (F) (G) 
   & no %?properties
   & no %? self==this
   & no %? property methods
@@ -441,8 +440,8 @@ Static field\footnote{Type and initializer}
   & no %? fields may be used
 \\\hline
 
-Instance field\footnote{Type and initializer}
-  & (pos), (pos) 
+Instance field (5)
+  & (H), (I) 
   & yes %?properties
   & yes %? self==this
   & yes %? property methods
@@ -451,7 +450,7 @@ Instance field\footnote{Type and initializer}
 \\\hline
 
 Constructor arg. type
-  & (pos) 
+  & (J) 
   & no %?properties
   & yes %? self==this
   & no  %? property methods
@@ -460,7 +459,7 @@ Constructor arg. type
 \\\hline
 
 Constructor guard
-  & (pos) 
+  & (K) 
   & no %?properties
   & yes %? self==this
   & no %? property methods
@@ -469,7 +468,7 @@ Constructor guard
 \\\hline
 
 Constructor ret. type
-  & (pos) 
+  & (L) 
   & yes %?properties
   & yes %? self==this
   & yes %? property methods
@@ -478,7 +477,7 @@ Constructor ret. type
 \\\hline
 
 Constructor segment 1 
-  & (pos) 
+  & (M) 
   & no%?properties
   & yes%? self==this
   & no%? property methods
@@ -488,7 +487,7 @@ Constructor segment 1
 
 
 Constructor segment 2
-  & (pos) 
+  & (N) 
   & no%?properties
   & yes%? self==this
   & no%? property methods
@@ -497,7 +496,7 @@ Constructor segment 2
 \\\hline
 
 Constructor segment 4
-  & (pos) 
+  & (O) 
   & yes%?properties
   & yes%? self==this
   & yes%? property methods
@@ -506,7 +505,7 @@ Constructor segment 4
 \\\hline
 
 Methods
-  & (pos) 
+  & (P) 
   & yes %?properties
   & yes %? self==this
   & yes %? property methods
@@ -528,6 +527,18 @@ place
 \fi
 \end{tabular}
 
+Details:
+
+\begin{itemize}
+\item (1) {Top-level {\tt self} only.}
+\item (2) {The type of the {$i^{th}$} property may only mention
+                 properties {$1$} through {$i$}.}  
+\item (3) Super-interfaces follow the same rules as supertypes.
+\item (4) The same rules apply to types and initializers.
+\end{itemize}
+
+
+
 The example indices refer to the following code: 
 %~~gen
 % package ObjectInit.GrandExample;
@@ -537,34 +548,35 @@ The example indices refer to the following code:
 \begin{xten}
 class Example (
    prop : Int,
-   proq : Int{prop != proq}, // (pos)
+   proq : Int{prop != proq},                    // (A)
    pror : Int
    )
-   {prop != 0} // (pos)
-   extends Supertype[Int{self != prop}] // (pos)
-   implements SuperInterface[Int{self != prop}] // (pos)
+   {prop != 0}                                  // (B)
+   extends Supertype[Int{self != prop}]         // (C)
+   implements SuperInterface[Int{self != prop}] // (D)
 {
-   property def propmeth() = (prop == pror); // (pos)
+   property def propmeth() = (prop == pror);    // (E)
    static staticField 
-      : Cell[Int{self != 0}] // (pos)
-      = new Cell[Int{self != 0}](1); // (pos)
-   var instanceField 
-      : Int {self != prop}
-      = prop + 1 as Int{self != prop}; 
+      : Cell[Int{self != 0}]                    // (F)
+      = new Cell[Int{self != 0}](1);            // (G)
+   var instanceField                            
+      : Int {self != prop}                      // (H)
+      = prop + 1 as Int{self != prop};          // (I)
    def this(
       a : Int{a != 0},
-      b : Int{b != a} // (pos)
+      b : Int{b != a}                           // (J)
       )
-      {a != b} // (pos)
-      : Example{prop == a && proq == b} // (pos)
+      {a != b}                                  // (K)
+      : Example{prop == a && proq == b}         // (L)
    {
-      super(); // (pos)
-      property(a,b,a); // (pos)
+      super();                                  // (M)
+      property(a,b,a);                          // (N)
       // fields initialized here
-      instanceField = b; // (pos)
+      instanceField = b;                        // (O)
    }
 
-   def someMethod() = prop + staticField + instanceField;  // (pos)
+   def someMethod() = 
+        prop + staticField + instanceField;     // (P)
 }
 \end{xten}
 %~~siv

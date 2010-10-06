@@ -374,7 +374,9 @@ AtEachStatement \:
          Statement 
 \end{grammar}
 
-The \xcd"ateach" statement is similar to the \xcd"foreach"
+The \xcd"ateach" statement 
+\noo{Bad desc -- foreach is gone}
+is similar to the \xcd"foreach"
 statement, but it spawns activites at each place of a distribution. 
 In \xcd`ateach(p in D) S`, 
 \xcd`D` must be either of type \xcd"Dist" or of type
@@ -398,13 +400,13 @@ be implemented as the following code, which coordinates with each place of
 %~~gen
 % package Activities.Activities.Activities;
 % class EquivCode {
-% static def S(p:Place) {}
+% static def S(pt:Point) {}
 % static def example(D:Dist) {
 %~~vis
 \begin{xten}
-foreach (p in D.places()) at (p) {
-    foreach (pt in D|here) {
-        S(p);
+for (p in D.places()) async at (p) {
+    for (pt in D|here) async {
+        S(pt);
     }
 }
 \end{xten}
