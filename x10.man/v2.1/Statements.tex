@@ -4,13 +4,10 @@ This chapter describes the statements in the sequential core of
 \Xten{}.  Statements involving concurrency and distribution
 are described in \Sref{XtenActivities}.
 
-\noo{We need to specify \Xcd{assert}.}
+%\noo{We need to specify \Xcd{assert}.}
 
 \section{Empty statement}
 
-\begin{grammar}
-Statement \: \xcd";" \\
-\end{grammar}
 
 The empty statement \xcd";" does nothing.  It is useful when a
 loop header is evaluated for its side effects.  For example,
@@ -86,15 +83,10 @@ if (b) {
 %~~neg
 
 
+
 \section{Expression statement}
 
-\begin{grammar}
-Statement \: ExpressionStatement \\
-ExpressionStatement \: StatementExpression \xcd";" \\
-StatementExpression \: Assignment \\
-          \| NewExpression \\
-          \| Call \\
-\end{grammar}
+
 
 The expression statement evaluates an expression.  The value of the expression
 is not used.

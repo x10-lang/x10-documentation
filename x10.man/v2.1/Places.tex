@@ -1,4 +1,7 @@
-\chapter{Places}\label{XtenPlaces}\index{places}
+
+\chapter{Places}
+\label{XtenPlaces}
+\index{places}
 
 An \Xten{} place is a repository for data and activities, corresponding
 loosely to a process or a processor. Places induce a concept of ``local''. The
@@ -12,25 +15,17 @@ not hard to use non-local data; it's simply hard to to do so accidentally.
 The set of places available to a computation is determined at the time that
 the program is started, and remains fixed through the run of the program. See
 the {\tt README} documentation on how to set command line and configuration
-options to set the number of places.)
+options to set the number of places.
 
 Places are first-class values in X10, as instances of the built-in struct,
 \xcd"x10.lang.Place".   \xcd`Place` provides a number of useful ways to
 query places, such as \xcd`Place.places`, a \xcd`ValRail` of all the places
 available to the current run of the program.
 
-\noo{No! The following is No!}
-
-Every object \xcd`ob` created by the program has a {\em home place}
-\xcd`ob.home`. Accesses to \xcd`ob` from activities located at \xcd`ob.home`
-are privileged.  Mutable fields can only be changed from \xcd`ob.home`, and
-normal fields and methods can only be accessed from there. 
-
-However, objects can be referred to from anywhere.  Places other than
-\xcd`ob.home` may have {\em remote references} to \xcd`ob`.  Remote references
-convey fewer privileges than local ones, but they are far from useless.
-Fields and methods can be defined to be \xcd`global`, usable from anywhere. 
-
+Objects and structs (with one exception) are created in a single place -- the
+place that the constructor call was running in. They cannot change places.
+They can be {\em copied} to other places, and the special library struct
+\Xcd{GlobalRef} allows values at one place to point to values at another.  
 
 \section{The Structure of Places}
 
@@ -57,11 +52,11 @@ Place expressions \index{place expression} (\viz, expressions of type
 \xcd`Place`), such as \xcd`here` 
 %~~exp~~`~~`~~ globRef:GlobalRef[Int]~~
 and \xcd`globRef.home`, are used in \xcd`at` and
-\xcd`asynch` statements.  
+\xcd`async` statements.  
 
 
 
-\section{\Xcd{here}}\index{here}\label{Here}
+\section{{\tt here}}\index{here}\label{Here}
 
 The variable \xcd"here" is always bound to the place at which the current
 computation is running, in the same way that \xcd`this` is always bound to the
@@ -91,33 +86,26 @@ at (here.next()) {
 constraints, and \xcd`this` by inner classes.)
 
 
-\begin{grammar}
-Expression \: \xcd"here" \\
-\end{grammar}
 
-
-
-\begin{example}
-\noo{This needs GlobalPlacing}
-For example, the following method looks through a collection of \xcd`Thing`s
-for ones which belong in the current place \xcd`here`, and deals with the
-things which do.  Note that every object \xcd`thing` has a property
-\xcd`thing.home` giving its home location.
+The following example looks through a list of references to \Xcd{Thing}s.  
+It finds those references to things that are \Xcd{here}, and deals with them.  
 %~~gen
-%package Places.Are.For.Graces;;
+%package Places.Are.For.Graces;
+%import x10.util.*;
 %abstract class Thing {}
 %class DoMine {
 %  static def dealWith(Thing) {}	
 %~~vis
 \begin{xten}
-  public static def dealWithLocal(things: Rail[Thing]) {
-/*
-     THIS EXAMPLE MUST BE UPDATED.
-     for(thing in things) {
-    	 if (thing.home == here) 
-            dealWith(thing);
-     }	  
-*/
+  public static def deal(things: List[GlobalRef[Thing]]) {
+     for(gr in things) {
+        if (gr.home == here) {
+           val grHere = 
+               gr as GlobalRef[Thing]{gr.home == here};
+           val thing <: Thing = grHere();
+           dealWith(thing);
+        }
+     }
   }
 \end{xten}
 %~~siv
@@ -126,28 +114,3 @@ things which do.  Note that every object \xcd`thing` has a property
 
 
 
-\end{example}
-
-\xcd`here` is frequently used in constraints, quite often of the form
-\xcd`ob.home == here`. Such constraints are necessary to check that a
-non-global method can be called on \xcd`ob`: 
-
-
-%TODO~~gen
-% package Places.Are.For.Aces.Of.Spaces;
-% class Thing {
-% def nonGlobalMethod():Void{}
-% static def example() {
-%TODO~~vis
-\begin{xten}
-val ob : Thing{self.home == here} = new Thing();
-ob.nonGlobalMethod();
-\end{xten}
-%TODO~~siv
-%}}
-%TODO~~neg
-
-This idiom is so common and useful that the constraint
-\xcd`T{self.home==here}` can be abbreviated as \xcd`T!`: 
-
-\noo{Example?}

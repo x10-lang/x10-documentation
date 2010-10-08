@@ -798,55 +798,121 @@ The collection \xcd"r"
 must be of type \xcd"Collection[T]" and the value \xcd"p" must
 be of type \xcd"T".
 
-\section{Rail constructors}
-\noo{This is now an Array ctor and the text needs revision}
-\label{RailConstructors}
+\section{Array Constructors}
 
-\begin{grammar}
-RailConstructor \: \xcd"[" Expressions \xcd"]" \\
-Expressions \: Expression ( \xcd"," Expression )\star \\
-\end{grammar}
-
-The rail constructor \xcdmath"[a$_0$, $\dots$, a$_{k-1}$]"
-creates an instance of \xcd"ValRail" with length $k$, 
-whose $i$th element is
-\xcdmath"a$_i$".  The element type of the rail is a common ancestor of the
-types of the \xcdmath"a$_i$"'s, as per \Sref{LCA}.
+X10 includes short syntactic forms for constructing one-dimensional arrays.
+The shortest form is to enclose some expressions in brackets: 
 %~~gen
-% package ex.pre.ssio.nsandrailconstructors;
+% package Expressions.ArrayCtor.Primo;
 % class Example {
 % def example() {
 %~~vis
 \begin{xten}
-val a <: Array[Int] = [1,3,5];
-val b <: Array[Any] = [1, a, "please"];
+val ints <: Array[Int](1) = [1,3,7,21];
 \end{xten}
 %~~siv
-% } } 
+%}}
 %~~neg
 
-Since arrays are subtypes of \xcd"(Point) => T",
-rail constructors can be passed into the \xcd"Array" and
-\xcd"ValArray" constructors as initializer functions.
+The expression \Xcd{[e1,e2,e3, ..., en]} produces an \Xcd{n}-element
+\xcd`Array[T](1)`, where \xcd`T` is the least common supertype of the {\bf
+  base types} of the expressions \xcd`ei`. For example, the type of
+\xcd`[0,1,2]` is \Xcd{Array[Int](1)}.    
 
-Rail constructors of type \xcd"ValRail[Int]" and length \xcd"n" 
-may be implicitly converted to type \xcd"Point{rank==n}".
-Rail constructors of type \xcd"ValRail[Region]" and length \xcd"n" 
-may be implicitly converted to type \xcd"Region{rank==n}".
+More importantly, the type of 
+\xcd`[0]` is also \xcd`Array[Int](1)`.  It is {\em not} 
+\xcd`Array[Int{self==0}](1)`, even though all the elements are all 
+of type \xcd`Int{self==0}`.  This is subtle but important. There are many
+functions that take \xcd`Array[Int](1)`s, such as conversions to \xcd`Point`.
+These functions do {\em not} take
+\xcd`Array[Int{self==0}]`'s.\footnote{
+Suppose that the function took \xcd`a:Array[Int](1)` and did 
+the operation \xcd`a(i)=100`.   This operation is perfectly fine for
+an \xcd`Array[Int](1)`, which is all the compiler knows about \xcd`a`.  
+However, it is invalid for an \xcd`Array[Int{self==0}](1)`, because it assigns
+a non-zero value to an element of the array, violating the type constraint
+which says that all the elements are zero.  So, \xcd`Array[Int{self==0}](1)`
+is not a subtype of \xcd`Array[Int](1)` --- the two types are simply unrelated.
+}
+%~~type~~`~~`~~ ~~
+Since there are far more uses for \xcd`Array[Int](1)` than
+%~~type~~`~~`~~ ~~
+\xcd`Array[Int{self==0}](1)`, the compiler produces the former.
 
+Still, occasionally one does actually need \xcd`Array[Int{self==0}](1)`, 
+or, say, \Xcd{Array[Eel{self != null}](1)}, an array of non-null \xcd`Eel`s.  
+For these cases, X10 provides an array constructor which does allow
+specification of the element type: \xcd`new Array[T][e1...en]`.  Each
+element \xcd`ei` must be of type \xcd`T`.  The resulting array is of type
+\xcd`Array[T](1)`.  
 %~~gen
-% package ex.pre.ssio.nsandrailconstructors;
-% class Exympyl {
-% def example() {
+%package Expressions.ArrayCtor.Details;
+%class Eel{}
+%class Example{
+%def example(){
 %~~vis
 \begin{xten}
-val a : Point{rank==4} = [1,2,3,4];
-val b : Region{rank==2} = (-1 .. 1) * (-2 .. 2);
+val zero <: Array[Int{self == 0}](1) = new Array[Int{self == 0}][0];
+val non1 <: Array[Int{self != 1}](1) = new Array[Int{self != 1}][0];
+val eels <: Array[Eel{self != null}](1) = 
+    new Array[Eel{self != null}][ new Eel() ];
 \end{xten}
 %~~siv
-% } } 
+%}}
 %~~neg
 
+
+
+%%OLD-RAIL%% 
+%%OLD-RAIL%% 
+%%OLD-RAIL%% \noo{This is now an Array ctor and the text needs revision}
+%%OLD-RAIL%% \label{RailConstructors}
+%%OLD-RAIL%% 
+%%OLD-RAIL%% \begin{grammar}
+%%OLD-RAIL%% RailConstructor \: \xcd"[" Expressions \xcd"]" \\
+%%OLD-RAIL%% Expressions \: Expression ( \xcd"," Expression )\star \\
+%%OLD-RAIL%% \end{grammar}
+%%OLD-RAIL%% 
+%%OLD-RAIL%% The rail constructor \xcdmath"[a$_0$, $\dots$, a$_{k-1}$]"
+%%OLD-RAIL%% creates an instance of \xcd"ValRail" with length $k$, 
+%%OLD-RAIL%% whose $i$th element is
+%%OLD-RAIL%% \xcdmath"a$_i$".  The element type of the rail is a common ancestor of the
+%%OLD-RAIL%% types of the \xcdmath"a$_i$"'s, as per \Sref{LCA}.
+%%OLD-RAIL%% %~s~gen
+%%OLD-RAIL%% % package ex.pre.ssio.nsandrailconstructors;
+%%OLD-RAIL%% % class Example {
+%%OLD-RAIL%% % def example() {
+%%OLD-RAIL%% %~s~vis
+%%OLD-RAIL%% \begin{xten}
+%%OLD-RAIL%% val a <: Array[Int] = [1,3,5];
+%%OLD-RAIL%% val b <: Array[Any] = [1, a, "please"];
+%%OLD-RAIL%% \end{xten}
+%%OLD-RAIL%% %~s~siv
+%%OLD-RAIL%% % } } 
+%%OLD-RAIL%% %~s~neg
+%%OLD-RAIL%% 
+%%OLD-RAIL%% Since arrays are subtypes of \xcd"(Point) => T",
+%%OLD-RAIL%% rail constructors can be passed into the \xcd"Array" and
+%%OLD-RAIL%% \xcd"ValArray" constructors as initializer functions.
+%%OLD-RAIL%% 
+%%OLD-RAIL%% Rail constructors of type \xcd"ValRail[Int]" and length \xcd"n" 
+%%OLD-RAIL%% may be implicitly converted to type \xcd"Point{rank==n}".
+%%OLD-RAIL%% Rail constructors of type \xcd"ValRail[Region]" and length \xcd"n" 
+%%OLD-RAIL%% may be implicitly converted to type \xcd"Region{rank==n}".
+%%OLD-RAIL%% 
+%%OLD-RAIL%% %~s~gen
+%%OLD-RAIL%% % package ex.pre.ssio.nsandrailconstructors;
+%%OLD-RAIL%% % class Exympyl {
+%%OLD-RAIL%% % def example() {
+%%OLD-RAIL%% %~s~vis
+%%OLD-RAIL%% \begin{xten}
+%%OLD-RAIL%% val a : Point{rank==4} = [1,2,3,4];
+%%OLD-RAIL%% val b : Region{rank==2} = (-1 .. 1) * (-2 .. 2);
+%%OLD-RAIL%% \end{xten}
+%%OLD-RAIL%% %~s~siv
+%%OLD-RAIL%% % } } 
+%%OLD-RAIL%% %~s~neg
+%%OLD-RAIL%% 
 
 \section{Coercions and conversions}
 \label{XtenConversions}
