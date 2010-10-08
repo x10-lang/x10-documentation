@@ -816,13 +816,18 @@ The collection of type definitions in
 \xcdmath"x10.lang.\_" is automatically imported in every compilation unit.
 \index{import,type definitions}\label{X10LangUnderscore}
 
-\if 0
-All type definitions are members of their enclosing package or
-class.  A compilation unit may have one or more type definitions
-or class or interface declarations with the same name, as long
-as the definitions have distinct parameters according to the
-method overloading rules (\Sref{MethodOverload}).
-\fi
+
+%%MEMBERSHIP%% All type definitions are members of their enclosing package or
+%%MEMBERSHIP%% class.  A compilation unit may have one or more type definitions
+%%MEMBERSHIP%% or class or interface declarations with the same name, as long
+%%MEMBERSHIP%% as the definitions have distinct parameters according to the
+%%MEMBERSHIP%% method overloading rules (\Sref{MethodOverload}).
+
+\limitation{ Unbounded recursive type definitions can cause compiler and
+  programming environment problems. The compiler therefore only expands type
+  definitions a predetermined number of times, 15 by default.  This limit is
+  adjustable by compiler flags if necessary.
+}
 
 
 
@@ -1065,7 +1070,7 @@ when computing the truth or falsehood of a constraint.
 To ensure that type-checking is decidable, we require that property graphs be
 acyclic.  The property graph, at an instant in an X10 execution, is the graph
 whose nodes are all objects in existence at that instance, with an edge from
-{$x$} to {$y$} if {$x$} is an object with a property whose value is {$y$}{. 
+{$x$} to {$y$} if {$x$} is an object with a property whose value is {$y$}. 
 
 \bard{I think that \xcd`proto` handles this now ...? }
 
@@ -1075,54 +1080,54 @@ rules on escaping of \Xcd{this} (\Sref{protorules}) before the invocation of
 \Xcd{property} calls.
 
 
-\subsection{Place constraints}
-\label{PlaceTypes}
-\label{PlaceType}
-\index{place types}
-\label{DepType:PlaceType}\index{placetype}
-
-An \Xten{} computation spans multiple places (\Sref{XtenPlaces}). Much data
-can only be accessed from the proper place, and often it is preferable to
-determine this statically. So, X10 has special syntax for working with places.
-\xcd`T!` is a value of type \xcd`T` located at the right place for the current
-computation, and \xcd`T!p` is one located at place \xcd`p`.
-
-\begin{grammar}
-PlaceConstraint     \: \xcd"!" Place\opt \\
-Place              \:   Expression \\
-\end{grammar}
-
-More specifically, All \Xten{} classes extend the class \xcd"x10.lang.Object",
-which defines a property \xcd"home" of type \xcd"Place".  \xcd`T!p`, when
-\xcd`T` is a class, is \xcd`T{self.home==p}`.  If \xcd`p` is omitted, it
-defaults to \xcd`here`.   \xcd`T!` is far and away the most common usage of
-\xcd`!`. 
-
-Structs don't have \xcd`home`; they are available everywhere.  For structs, 
-\xcd`T!` and \xcd`T!p` are synonyms for \xcd`T`. Since \xcd`T` is available
-everywhere, it is available \xcd`here` and at \xcd`p`. 
-
-\xcd`!` may be combined with other constraints.  \xcd`T{c}!` is the type of
-values of \xcd`T!` which satisfy \xcd`c`; it is \xcd`T{c && self.home==here}`
-for an object type and \xcd`T{c}` for a struct type.  
-\xcd`T{c}!p` is the type of
-values of \xcd`T!p` which satisfy \xcd`c`; it is \xcd`T{c && self.home==p}`
-for an object type and \xcd`T{c}` for a struct type.  
-
-
-
-% The place specifier \xcd"any" specifies that the object can be
-% located anywhere.  Thus, the location is unconstrained; that is,
-% \xcd"C{c}!any" is equivalent to \xcd"C{c}".
-
-% XXX ARRAY
-%The place specifier \xcd"current" on an array base type
-%specifies that an object with that type at point \xcd"p"
-%in the array 
-%is located at \xcd"dist(p)".  The \xcd"current" specifier can be
-%used only with array types.
-
-
+%%PLACE%%\subsection{Place constraints}
+%%PLACE%%\label{PlaceTypes}
+%%PLACE%%\label{PlaceType}
+%%PLACE%%\index{place types}
+%%PLACE%%\label{DepType:PlaceType}\index{placetype}
+%%PLACE%%
+%%PLACE%%An \Xten{} computation spans multiple places (\Sref{XtenPlaces}). Much data
+%%PLACE%%can only be accessed from the proper place, and often it is preferable to
+%%PLACE%%determine this statically. So, X10 has special syntax for working with places.
+%%PLACE%%\xcd`T!` is a value of type \xcd`T` located at the right place for the current
+%%PLACE%%computation, and \xcd`T!p` is one located at place \xcd`p`.
+%%PLACE%%
+%%PLACE%%\begin{grammar}
+%%PLACE%%PlaceConstraint     \: \xcd"!" Place\opt \\
+%%PLACE%%Place              \:   Expression \\
+%%PLACE%%\end{grammar}
+%%PLACE%%
+%%PLACE%%More specifically, All \Xten{} classes extend the class \xcd"x10.lang.Object",
+%%PLACE%%which defines a property \xcd"home" of type \xcd"Place".  \xcd`T!p`, when
+%%PLACE%%\xcd`T` is a class, is \xcd`T{self.home==p}`.  If \xcd`p` is omitted, it
+%%PLACE%%defaults to \xcd`here`.   \xcd`T!` is far and away the most common usage of
+%%PLACE%%\xcd`!`. 
+%%PLACE%%
+%%PLACE%%Structs don't have \xcd`home`; they are available everywhere.  For structs, 
+%%PLACE%%\xcd`T!` and \xcd`T!p` are synonyms for \xcd`T`. Since \xcd`T` is available
+%%PLACE%%everywhere, it is available \xcd`here` and at \xcd`p`. 
+%%PLACE%%
+%%PLACE%%\xcd`!` may be combined with other constraints.  \xcd`T{c}!` is the type of
+%%PLACE%%values of \xcd`T!` which satisfy \xcd`c`; it is \xcd`T{c && self.home==here}`
+%%PLACE%%for an object type and \xcd`T{c}` for a struct type.  
+%%PLACE%%\xcd`T{c}!p` is the type of
+%%PLACE%%values of \xcd`T!p` which satisfy \xcd`c`; it is \xcd`T{c && self.home==p}`
+%%PLACE%%for an object type and \xcd`T{c}` for a struct type.  
+%%PLACE%%
+%%PLACE%%
+%%PLACE%%
+%%PLACE%%% The place specifier \xcd"any" specifies that the object can be
+%%PLACE%%% located anywhere.  Thus, the location is unconstrained; that is,
+%%PLACE%%% \xcd"C{c}!any" is equivalent to \xcd"C{c}".
+%%PLACE%%
+%%PLACE%%% XXX ARRAY
+%%PLACE%%%The place specifier \xcd"current" on an array base type
+%%PLACE%%%specifies that an object with that type at point \xcd"p"
+%%PLACE%%%in the array 
+%%PLACE%%%is located at \xcd"dist(p)".  The \xcd"current" specifier can be
+%%PLACE%%%used only with array types.
+%%PLACE%%
+%%PLACE%%
 
 
 \subsection{Variables in Constraints}
@@ -1151,51 +1156,25 @@ sorted out..}
 %%TYPES-CONSTR-EXP%% \xcd"self" or a property of \xcd"self", is said to be a {\em
 %%TYPES-CONSTR-EXP%% parameter} of \xcd"c".\label{DepType:Parameter} \index{parameter}
 
-\subsection{Operations on Constrained Types}
+\subsection{Membership in Constrained Types}
 
 An instance \xcd"o" of \xcd"C" is said to be of type \xcd"C{c}" (or: {\em
 belong to} \xcd"C{c}") if the constraint \xcd"c" evaluates to \xcd"true" in
 the current lexical environment, augmented with the binding \xcd"self"
 $\mapsto$ \xcd"o".
 
-The \xcd`instanceof` operation lets programs test type membership.  
-\xcd`e instanceof C{c}` returns true if \xcd`e` belongs to \xcd`C{c}`, and
-false otherwise.  
-%~~exp~~`~~`~~ ~~
-\xcd`1 instanceof Int{self != 2}` returns true, 
-and 
-%~~exp~~`~~`~~x:Int ~~
-\xcd`x instanceof Int{self == 1}` returns false if 
-\xcd`x==2`.
-
-However, it is a static error if \xcd`e` cannot possibly be an instance of
-\xcd`C{c}`; the compiler will reject \xcd`1 instanceof Int{self == 2}` because
-\xcd`1` can never satisfy \xcd`Int{self == 2}`. Similarly, \Xcd{1 instanceof
-String} is a static error, rather than an expression always returning false. 
-
-
-\limitation{
-X10 does not currently handle \xcd`instanceof` of generics in the way you
-%~~exp~~`~~`~~r:ValRail[Int] ~~
-might expect.  For example, \xcd`r instanceof ValRail[Int{self != 0}]` does
-not test that every element of \xcd`r` is non-zero.
-}
-
-The \xcd`as` operation attempts to convert a value to a given constrained
-type, as described in \Sref{ClassCast}.   As with \xcd`instanceof`, it may
-succeed, fail with a dynamic error, or, in the case where the cast is
-impossible, fail to compile.
 
 
 \subsection{Example of Constraints}
 
-\begin{example}
+
 
 Constraints can be used to express simple relationships between objects,
 enforcing some class invariants statically.  For example, in geometry, a line
 is determined by two {\em distinct} points; a \xcd`Line` class can specify the
 distinctness in a type constraint:\footnote{We call them
 \xcd`Position` to avoid confusion with the built-in class \xcd`Point`}
+
 
 %~~gen
 % 
@@ -1243,8 +1222,53 @@ class Triangle
 %~~neg
 
 
+\subsection{Entailment of Constraints}
+\index{constraints!entailment}
+\index{constraints!subtyping}
 
-\end{example}
+
+As we will see, \xcd`T{c}` is a subtype of \xcd`T{d}` if every value of type
+\xcd`T{c}` is also a value of type \xcd`T{d}`.  This is true if, whenever
+\xcd`c` is true, \xcd`d` is also true.  Logicians call this concept {\em
+entailment}: in this case, \xcd`c` entails \xcd`d`.  
+
+So, computing subtyping in X10 requires computing entailment of constraints.
+One crucial reason why the constraint language is so limited is that computing
+entailment in richer sets of expressions quickly becomes computationally
+prohibitive, and, with a small number of innocuous-looking operations, becomes
+actually undecidable.  
+
+
+\limitation{X10's Entailment Algorithm is Incomplete}
+
+Even with the restricted constraints available in X10, certain
+constraint entailments are prohibitively expensive to calculate.  The issues
+concern constraints that connect different levels of recursively-defined
+types.  
+%~~gen
+% package Types.Entailment.EntailFail;
+%~~vis
+\begin{xten}
+class Listlike(x:Int) {
+  val kid : Listlike{self.x == this.x};
+  def this(x:Int, kid:Listlike) { 
+     property(x); 
+     this.kid = kid as Listlike{self.x == this.x};}
+}
+\end{xten}
+%~~siv
+%
+%~~neg
+
+The entailment algorithm of X10 2.0 imposes a certain limit on the number of
+times such types will be unwound.   If this limit is exceeded, the compiler
+will print a warning, and type-checking will fail in a situation where it is
+semantically allowed.  In this case, insert a dynamic cast at the point where
+type-checking failed.  
+
+\noo{An example would be nice}
+
+
 
 \section{Function types}
 \label{FunctionTypes}
@@ -1618,7 +1642,7 @@ but neither one is better than the other, and there is no single X10 type
 which is better than both. (Some languages have {\em conjunctive
     types}, and could say that the return type of \xcd`example` was 
 \xcd`I1 && I2`.  This, too, complicates typechecking.)
-}
+
 
 So, when confronted with expressions like this, X10 computes {\em some}
 satisfactory type for the expression, but not necessarily the {\em best} type.  

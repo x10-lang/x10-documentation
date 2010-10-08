@@ -175,8 +175,11 @@ subclass of \Xcd{C} must be annotated with precisely the same annotation,
 The following example uses most of the possible variations (leaving out
 \Xcd{final} class).  \Xcd{aplomb()} explicitly forbids reading any field but
 \Xcd{a}. \Xcd{boric()} is called after \Xcd{a} and \Xcd{b} are set, but
-\Xcd{c} is not. \Xcd{cajoled()} is only called after all fields are set, so it
-can read anything.   \Xcd{SeeAlso} is able to override \Xcd{aplomb()}, because
+\Xcd{c} is not. 
+The \xcd`@NonEscaping` annotation on \xcd`boric()` is optional, but the
+compiler will print a warning if it is left out.
+\Xcd{cajoled()} is only called after all fields are set, so it
+can read anything; its annotation, too, is not required.   \Xcd{SeeAlso} is able to override \Xcd{aplomb()}, because
 \Xcd{aplomb()} is \xcd`@NonEscaping("a")`; it cannot override the final method
 \Xcd{boric()} or the private one \Xcd{cajoled()}.  Even for overriding
 \Xcd{aplomb()}, it is crucial that \Xcd{SeeAlso.aplomb()} be 
@@ -203,12 +206,12 @@ class C2 {
     // this.boric(); // not allowed; boric reads b.
     // z = b; // not allowed -- only 'a' can be read here
   }
-  final def boric() {
+  @NonEscaping("b") final def boric() {
     y = b;
     this.aplomb(); // allowed; a is definitely set before boric is called
     // z = c; // not allowed; c is not definitely written 
   }
-  private def cajoled() {
+  @NonEscaping("c") private def cajoled() {
     z = c;
   }  
 }
@@ -301,7 +304,7 @@ different from a method as far as leaking is concerned.
 %~~vis
 \begin{xten}
 class Outer {
-  static val leak : Cell[Outer] = new Cell[Outer]();
+  static val leak : Cell[Outer] = new Cell[Outer](null);
   class Inner {
      def this() {Outer.leak.set(Outer.this);}
   }

@@ -149,17 +149,13 @@ transporting it back.    If you want to start a new activity, use \xcd`async`;
 if you want to start a new activity at \xcd`p`, use 
 \xcd`at(p) async S`.  
 
-
-
-
 As a consequence of this, \xcd`S` may contain constructs which only make sense
 within a single activity.  
-\noo{Revise this!}
 For example, 
 \begin{xten}
-    for(x in things) 
-    if (at(x.home) x.nice()) 
-        return x;
+    for(x in globalRefsToThings) 
+    if (at(x.home) x().nice()) 
+        return x();
 \end{xten}
 returns the first nice thing in a collection.   If we had used 
 \xcd`async at(x.home)`, this would not be allowed; 
@@ -180,35 +176,15 @@ An activity is created by executing the \xcd`async` statement:
 
 \begin{grammar}
 Statement \: AsyncStatement \\
-AsyncStatement \: \xcd"async" PlaceExpressionSingleList\opt Statement \\
+AsyncStatement \: \xcd"async"  Statement \\
 PlaceExpressionSingleList \: \xcd"(" PlaceExpression \xcd")" \\
 PlaceExpression \: Expression 
 \end{grammar} 
 
-\noo{This has been destroyed}
-The basic form of \xcd`async` is \xcd`async S`, which starts a new activity
-located \xcd`here` executing \xcd`S`.    The form 
-\xcd`async (p) S` is simply shorthand for \xcd`async at(p) S`, covering the
-common case where the activity is to be executed at some other place. 
 
-Note that the array subscript expression \xcd"a(i)", when used as a place
-expression evaluates to \xcd"a(i).home", \viz. the home of the contents of
-\xcd`a(i)` In general, this is not the same place that the array cell itself
-is, \viz. \xcd"a.dist(i)". Accesses to \xcd"a(i)" should typically be guarded
-by the place expression \xcd"a.dist(i)": 
-%~~gen
-% package Activities.For.Tactivities.At.Some.Home;
-% class Example {
-% def example(a:DistArray[Int](1), i:Int) {
-%~~vis
-\begin{xten}
-async at (a.dist(i)) {
-  a(i) += 1;
-}
-\end{xten}
-%~~siv
-%} } 
-%~~neg
+The basic form of \xcd`async` is \xcd`async S`, which starts a new activity
+located \xcd`here` executing \xcd`S`.   
+
 
 \bard{The followingin para is under investigation:}
 In many cases the compiler may infer the unique place at which the
@@ -374,23 +350,21 @@ AtEachStatement \:
          Statement 
 \end{grammar}
 
-The \xcd"ateach" statement 
-\noo{Bad desc -- foreach is gone}
-is similar to the \xcd"foreach"
-statement, but it spawns activites at each place of a distribution. 
+The \xcd"ateach" statement \xcd`ateach (p in D) S`
+spawns an activity \xcd`S` at each place \xcd`p` of a distribution \xcd`D`. 
 In \xcd`ateach(p in D) S`, 
-\xcd`D` must be either of type \xcd"Dist" or of type
-\xcd`DistArray[T]`, 
-and \xcd`p` will be of type \xcd"Point".
+\xcd`D` must be either of type \xcd"Dist" 
+(see \Sref{XtenDistributions})
+or of type
+\xcd`DistArray[T]` (see \Sref{XtenArrays}), 
+and \xcd`p` will be of type \xcd"Point" (see \Sref{point-syntax}).
 
-This statement differs from \xcd"foreach" only in
-that each activity is spawned at the place specified by the
-distribution for the point. That is, if \xcd`D` is a \xcd`Dist`, 
-\xcd"ateach(p in D) S" could be implemented as:
-\begin{xten}
-foreach (p in D.region) 
-  async (D(p)) S(p)
-\end{xten}
+\xcd`ateach(p in D)S` is equivalent to 
+\xcd`for(p in D) at(D(p)) async S`.  That is, the elements of \xcd`D` are all
+points \xcd`p`.  \xcd`D(p)` is a \xcd`Place`.  \xcd`ateach(p in D)S` executes
+the body \xcd`S` at the place \xcd`D(p)` (and may use the point \xcd`p`
+there). 
+
 
 However, the compiler may implement it more efficiently to avoid extraneous
 communications.  In particular, it is recommended that \xcd`ateach(p in D)S`
