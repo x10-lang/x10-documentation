@@ -19,7 +19,7 @@ no means by which one activity can arbitrarily interrupt, block, or resume
 another, no method  \xcd`activity.interrupt()`.
 
 An activity may be {\em running}, {\em blocked} on some condition or {\em
-terminated}. If terminated, it is terminated in the same way that its
+terminated}. If it is terminated, it is terminated in the same way that its
 statement is: in particular, if the statement terminates abruptly, the
 activity terminates abruptly for the same reason.
 (\Sref{ExceptionModel}).
@@ -30,7 +30,7 @@ stacks).  However, activities can also be short-running light-weight entities,
 \eg, it is reasonable to have an activity that simply increments a variable.
 
 An activity may asynchronously and in parallel launch activities at
-other places.  Every activity save the initial \xcd`main` activity is spawned
+other places.  Every activity except the initial \xcd`main` activity is spawned
 by another.  Thus, at any instant, the activities in a program form a tree.
 
 X10 uses this tree in crucial ways.  
@@ -105,7 +105,8 @@ activity. Future versions of the language may introduce more such
 statements.}  In Java, exceptions may be overlooked because there is no good
 place to put a \xcd`try`-\xcd`catch` block; this is never the case in X10.
 
-\section{\xcd`at`: Place changing}\label{AtStatement}
+\section{ {\tt at}: Place Changing and Object Copying}\label{AtStatement}
+\index{at}
 
 An activity may change place using the \xcd"at" statement or
 \xcd"at" expression:
@@ -154,7 +155,7 @@ within a single activity.
 For example, 
 \begin{xten}
     for(x in globalRefsToThings) 
-    if (at(x.home) x().nice()) 
+      if (at(x.home) x().nice()) 
         return x();
 \end{xten}
 returns the first nice thing in a collection.   If we had used 
@@ -162,7 +163,162 @@ returns the first nice thing in a collection.   If we had used
 you can't \xcd`return` from an
 \xcd`async`. 
 
+\subsection{Implicit copying from {\tt at} }
+\index{at!copying}
 
+\xcd`at(p)S` copies nearly all data that \xcd`S` might reference, and sends it
+to place \xcd`p`, before executing \xcd`S` there. The only things that are not
+copied are values only reachable through \xcd`GlobalRef`s.    If \xcd`x` is a
+variable name referring to some object \xcd`ob` outside of \xcd`S`, then the
+same variable name \xcd`x` refers to a deep copy \xcd`ob{$'$}` of \xcd`ob`
+inside of \xcd`S`.  In this way the body \xcd`S` is in a separate block with
+different variable bindings.
+
+For example, consider the following program.
+%~~gen
+% package Activities.implicitcopyfromat;
+% class Example {
+% def example() {
+%~~vis
+\begin{xten}
+val c = new Cell[Int](5); // (1)
+at (here) {               // (2)
+   assert(c() == 5);      // (3)
+   c.set(8);              // (4)
+   assert(c() == 8);      // (5)
+}
+assert(c() == 5);         // (6)
+\end{xten}
+%~~siv
+%}}
+%~~neg
+The \xcd`at` statement implicitly copies the \xcd`Cell` and its contents.  
+After \xcd`(1)`, \xcd`c` is a \xcd`Cell` containing 5; call that cell {$c_1$}
+At \xcd`(2)`, that cell is copied, resulting in another cell {$c_2$} whose
+contents are also 5, as tested at \xcd`(3)`.
+(Note that the copying behavior of \xcd`at` happens {\em even when the
+destination place is the same as the starting place}--- even with
+\xcd`at(here)`.)
+At \xcd`(4)`, the contents of {$c_2$} are changed to 8, as confirmed at \xcd`(5)`; the contents of
+{$c_1$} are of course untouched.    Finally, at \xcd`(c)`, outside the scope
+of the \xcd`at` started at line \xcd`(2)`, \xcd`c` refers to its original
+value {$c_1$} rather than the copy {$c_2$}.  
+
+The \xcd`at` statement induces a {\em deep copy}.  Not only does it copy the
+values of variables, it copies values that they refer to through zero or more
+levels of reference.  Structures are preserved as well: if two fields
+\xcd`x.f` and \xcd`x.g` refer to the same object {$o_1$} in the original, then
+\xcd`x.f` and \xcd`x.g` will both refer to the same object {$o_2$} in the
+copy.  
+
+For example, in the following variation of the preceding example,
+\xcd`a`'s original value {$a_1$} is an array with two references to the same
+\xcd`Cell[Int]` {$c_1$}.  The fact that {$a_1(0)$} and {$a_1(1)$} are both
+identical to {$c_1$} is demonstrated in \xcd`(A)`-\xcd`(C)`, as {$a_1(0)$} is modified
+and {$a_1(1)$} is observed to change.  In \xcd`(D)`-\xcd`(F)`, the copy
+{$a_2$} is tested in the same way, showing that {$a_2(0)$} and {$a_2(1)$} both
+refer to the same \xcd`Cell[Int]` {$c_2$}.  However, the test at \xcd`(G)`
+shows that {$c_2$} is a different cell from {$c_1$}, because changes to
+{$c_2$} did not propagate to {$c_1$}.  
+%~~gen
+%package Activities.AtCopy2;
+%class example {
+%static def Example() {
+%~~vis
+\begin{xten}
+val c = new Cell[Int](5);
+val a = new Array[Cell[Int]][c,c];
+assert(a(0)() == 5 && a(1)() == 5);     // (A)
+c.set(6);                               // (B)
+assert(a(0)() == 6 && a(1)() == 6);     // (C)
+at(here) {
+  assert(a(0)() == 6 && a(1)() == 6);   // (D)
+  c.set(7);                             // (E)
+  assert(a(0)() == 7 && a(1)() == 7);   // (F)
+}
+assert(a(0)() == 6 && a(1)() == 6);     // (G)
+\end{xten}
+%~~siv
+%}}
+%~~neg
+
+
+\subsubsection{Copying and GlobalRef}
+\index{at!GlobalRef}
+\index{at!blocking copying}
+
+The single barrier to the potentially copious copying behavior of \xcd`at`
+is the \xcd`GlobalRef` struct.  A \xcd`GlobalRef[T]` contains a reference to
+a value of type \xcd`T`, in a form which can be transmitted, and a \xcd`Place`
+\xcd`gr.home` indicating where the value lives.
+The \xcd`GlobalRef` itself is copied across
+\xcd`at` boundaries---but the value referred to is {\em not}
+copied.\footnote{Strictly: the reference from the {\tt GlobalRef} does not
+inspire copying.  Copying may be required due to some other, non-Global
+reference.} 
+
+The following example does not copy the value \xcd`huge`.  However, \xcd`huge`
+would have been copied if it had been put into a \xcd`Cell`, or simply used
+directly. 
+%~~gen
+%package Activities.copyingblockingwithglobref;
+% public class GR {
+%  static def use(Any){}
+%  static def example() {
+%~~vis
+\begin{xten}
+val huge = "A potentially big thing";
+val href = GlobalRef(huge);
+at (here) {
+   use(href);
+  }
+}
+\end{xten}
+%~~siv
+%}
+%~~neg
+
+
+Values protected in \xcd`GlobalRef`s can be retrieved by the \xcd`gr.apply()`
+method, often abbreviated simply \xcd`gr()`.  \xcd`gr.apply()` is guarded; it can
+only be called when \xcd`gr.home == here`.  If you  want to do anything other
+than pass a global reference around or compare two of them for equality, you
+need to placeshift back to the home place of the reference, often with
+\xcd`at(gr.home)`.   For example, the following (silly) program modifies the
+command-line argument array.
+
+%~~gen
+% package Activities.Atsome.Globref2;
+% class GR2 {
+%~~vis
+\begin{xten}
+  public static def main(argv: Array[String](1)) {
+    val argref = GlobalRef[Array[String](1)](argv);
+    at(here.next()) use(argref);
+  }
+  static def use(argref : GlobalRef[Array[String](1)]) {
+    at(argref.home) {
+      val argv = argref();
+      argv(0) = "Hi!";
+    }
+  }
+\end{xten}
+%~~siv
+%}
+%~~neg
+
+
+
+
+
+\subsubsection{Warnings about \xcd`at`}
+There are two dangers involved with \xcd`at`: 
+\begin{itemize}
+\item Careless use of \xcd`at` can result in copying and transmission
+of very large data structures.  
+\item As seen in the examples above, changes made to copied objects are not
+      propagated back to the originals.   
+\end{itemize}
 
 \section{\xcd`async`: Spawning an activity}\label{AsynchronousActivity}\label{AsyncActivity}
 

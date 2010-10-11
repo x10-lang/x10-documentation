@@ -400,7 +400,58 @@ once.
 %\notinfouro{\input{clock/clocked-types.tex}}
 %\notinfouro{\input{clock/examples.tex}}
 
-\section{Clocked Fields}
-\index{field!clocked}
-\index{clocked!field}
-\label{ClockedFields}
+\section{Clocked Finish}
+\index{finish!clocked}
+\index{clocked!finish}
+\label{ClockedFinish}
+
+In the most common case of a single clock coordinating a few behaviors, X10
+allows coding with an implicit clock.  \xcd`finish` and \xcd`async` statements
+may be qualified with \xcd`clocked`.  
+
+A \xcd`clocked finish` introduces a new clock.  It executes its body in the
+usual way that a \xcd`finish` does--- except that, when its body completes,
+the activity executing the \xcd`clocked finish` drops the clock, while it
+waits for asynchronous spawned \xcd`async`s to terminate.  
+
+A \xcd`clocked async` registers its async with the implicit clock of
+the surrounding \xcd`clocked finish`.   
+
+Both the \xcd`clocked finish` and \xcd`clocked async` may use the \xcd`next`
+statement to advance implicit clock.  Since the implicit clock is not
+available in a variable, it cannot be manipulated directly. (If you want to
+manipulate the clock directly, use an explicit clock.)
+
+The following code starts two activities, each of which perform their first
+phase, wait for the other to finish phase 1, and then perform their second
+phase.  
+%~~gen
+%package Clocks.ClockedFinish;
+%class Example{
+%static def phase(String, Int) {}
+%def example() {
+%~~vis
+\begin{xten}
+clocked finish {
+  clocked async {
+     phase("A", 1);
+     next;
+     phase("A", 2);
+  }
+  clocked async {
+     phase("B", 1);
+     next;
+     phase("B", 2);
+  }
+}
+\end{xten}
+%~~siv
+%}}
+%~~neg
+
+
+\index{finish!nested clocked}
+\index{clocked finish!nested}
+
+Clocked finishes may be nested.  The inner \xcd`clocked finish` operates in a
+single phase of the outer one.  

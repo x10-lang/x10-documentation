@@ -360,12 +360,6 @@ where \xcd"P" is a place expression and \xcd"S" is a statement.  Such
 a statement is executed by spawning an activity at the place
 \xcd"P"  executing statement \xcd"S".
 
-If the activity needs to return a value, the form \xcd`future (p) E` is often
-convenient. This spawns an activity at \xcd`p` evaluating \xcd`E`, and also
-returns a value called a {\em future} which is capable of accepting the value
-of \xcd`E` when it is ready.  The caller can try to get the value from the
-future, which provides it immediately if it is ready and blocks to wait for it
-if it is not.
 
 
 
