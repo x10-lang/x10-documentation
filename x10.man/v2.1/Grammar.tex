@@ -1,5 +1,622 @@
 \chapter{Grammar}
 
-The following chapter contains the grammar for the \Xten{} language.
 
-\todo{Paste in the grammar}
+{\small
+
+
+\begin{grammar}
+
+ MethodInvo  \: MethodPrimaryPrefix \xcd"(" ArgumentList\opt \xcd")"\\
+    \| MethodSuperPrefix \xcd"(" ArgumentList\opt \xcd")"\\
+    \| MethodClassNameSuperPrefix \xcd"(" ArgumentList\opt \xcd")"\\
+ Mods\opt  \: \\
+    \| Mods\opt Mod\\
+ Mod  \: \xcd"abstract"\\
+    \| Annotation\\
+    \| atomic\\
+    \| \xcd"final"\\
+    \| \xcd"native"\\
+    \| \xcd"private"\\
+    \| \xcd"protected"\\
+    \| \xcd"public"\\
+    \| \xcd"static"\\
+    \| \xcd"transient"\\
+    \| clocked\\
+ MethMods\opt  \: Mods\opt\\
+    \| MethMods\opt \xcd"property" \\
+    \| MethMods\opt Mod\\
+ TypeDefDecl  \: Mods\opt type Id TyPar\opt Formals\opt WhereCl\opt \xcd"=" Type \xcd";"\\
+ Properties  \: \xcd"(" PropertyList \xcd")"\\
+ PropertyList  \: Property\\
+    \| PropertyList \xcd"," Property\\
+ Property  \: Annotations\opt Id ResultType\\
+ MethodDecl  \: MethMods\opt \xcd"def" Id TyPar\opt Formals WhereCl\opt ResType\opt Offers\opt MBody\\
+    \| MethMods\opt \xcd"operator" TyPar\opt \xcd"(" Formal  \xcd")" BinOp \xcd"(" Formal  \xcd")" WhereCl\opt ResType\opt Offers\opt MBody\\
+    \| MethMods\opt \xcd"operator" TyPar\opt PrefixOp \xcd"(" Formal  \xcd")" WhereCl\opt ResType\opt Offers\opt MBody\\
+    \| MethMods\opt \xcd"operator" TyPar\opt \xcd"this" BinOp \xcd"(" Formal  \xcd")" WhereCl\opt ResType\opt Offers\opt MBody\\
+    \| MethMods\opt \xcd"operator" TyPar\opt \xcd"(" Formal  \xcd")" BinOp \xcd"this" WhereCl\opt ResType\opt Offers\opt MBody\\
+    \| MethMods\opt \xcd"operator" TyPar\opt PrefixOp \xcd"this" WhereCl\opt ResType\opt Offers\opt MBody\\
+    \| MethMods\opt \xcd"operator" \xcd"this" TyPar\opt Formals WhereCl\opt ResType\opt Offers\opt MBody\\
+    \| MethMods\opt \xcd"operator" \xcd"this" TyPar\opt Formals \xcd"=" \xcd"(" Formal  \xcd")" WhereCl\opt ResType\opt Offers\opt MBody\\
+    \| MethMods\opt \xcd"operator" TyPar\opt \xcd"(" Formal  \xcd")" \xcd"as" Type WhereCl\opt Offers\opt MBody\\
+    \| MethMods\opt \xcd"operator" TyPar\opt \xcd"(" Formal  \xcd")" \xcd"as" \xcd"?" WhereCl\opt ResType\opt Offers\opt MBody\\
+    \| MethMods\opt \xcd"operator" TyPar\opt \xcd"(" Formal  \xcd")" WhereCl\opt ResType\opt Offers\opt MBody\\
+ PropMethDecl  \: MethMods\opt Id TyPar\opt Formals WhereCl\opt ResType\opt MBody\\
+    \| MethMods\opt Id WhereCl\opt ResType\opt MBody\\
+ ExplCtorInvo  \: \xcd"this" TypeArguments\opt \xcd"(" ArgumentList\opt \xcd")" \xcd";"\\
+    \| \xcd"super" TypeArguments\opt \xcd"(" ArgumentList\opt \xcd")" \xcd";"\\
+    \| Primary \xcd"." \xcd"this" TypeArguments\opt \xcd"(" ArgumentList\opt \xcd")" \xcd";"\\
+    \| Primary \xcd"." \xcd"super" TypeArguments\opt \xcd"(" ArgumentList\opt \xcd")" \xcd";"\\
+\end{grammar}
+
+\begin{grammar}
+
+ NormalInterfaceDecl  \: Mods\opt \xcd"interface" Id TyParWVar\opt Properties\opt WhereCl\opt ExtendsInterfaces\opt InterfaceBody\\
+ ClassInstCreationExp  \: \xcd"new" TypeName TypeArguments\opt \xcd"(" ArgumentList\opt \xcd")" ClassBody\opt\\
+    \| \xcd"new" TypeName \xcd"[" Type \xcd"]" \xcd"[" ArgumentList\opt \xcd"]"\\
+    \| Primary \xcd"." \xcd"new" Id TypeArguments\opt \xcd"(" ArgumentList\opt \xcd")" ClassBody\opt\\
+    \| AmbiguousName \xcd"." \xcd"new" Id TypeArguments\opt \xcd"(" ArgumentList\opt \xcd")" ClassBody\opt\\
+ AssignPropertyCall  \: \xcd"property" TypeArguments\opt \xcd"(" ArgumentList\opt \xcd")" \xcd";"\\
+ Type  \: FunctionType\\
+    \| ConstrainedType\\
+ FunctionType  \: TyPar\opt \xcd"(" FormalList\opt \xcd")" WhereCl\opt Offers\opt \xcd"=>" Type\\
+ ClassType  \: NamedType\\
+ AnnotatedType  \: Type Annotations\\
+ ConstrainedType  \: NamedType\\
+    \| AnnotatedType\\
+    \| \xcd"(" Type \xcd")"\\
+ PlaceType  \: PlaceExp\\
+ SimpleNamedType  \: TypeName\\
+    \| Primary \xcd"." Id\\
+    \| DepNamedType \xcd"." Id\\
+ DepNamedType  \: SimpleNamedType DepParams\\
+    \| SimpleNamedType Arguments\\
+    \| SimpleNamedType Arguments DepParams\\
+    \| SimpleNamedType TypeArguments\\
+    \| SimpleNamedType TypeArguments DepParams\\
+    \| SimpleNamedType TypeArguments Arguments\\
+    \| SimpleNamedType TypeArguments Arguments DepParams\\
+ NamedType  \: SimpleNamedType\\
+    \| DepNamedType\\
+ DepParams  \: \xcd"{" ExistentialList\opt Conjunction\opt \xcd"}"\\
+ TyParWVar  \: \xcd"[" TypeParamWVarList \xcd"]"\\
+ TyPar  \: \xcd"[" TypeParamList \xcd"]"\\
+ Formals  \: \xcd"(" FormalList\opt \xcd")"\\
+ Conjunction  \: Exp\\
+    \| Conjunction \xcd"," Exp\\
+ SubtypeConstraint  \: Type  \xcd"<:" Type \\
+    \| Type  \xcd":>" Type \\
+ WhereCl  \: DepParams\\
+ Conjunction\opt  \: \\
+    \| Conjunction\\
+ ExistentialList\opt  \: \\
+    \| ExistentialList \xcd";"\\
+ ExistentialList  \: Formal\\
+\end{grammar}
+
+\begin{grammar}
+
+    \| ExistentialList \xcd";" Formal\\
+ ClassDecl  \: StructDecl\\
+    \| NormalClassDecl\\
+ NormalClassDecl  \: Mods\opt \xcd"class" Id TyParWVar\opt Properties\opt WhereCl\opt Super\opt Interfaces\opt ClassBody\\
+ StructDecl  \: Mods\opt \xcd"struct" Id TyParWVar\opt Properties\opt WhereCl\opt Interfaces\opt ClassBody\\
+ CtorDecl  \: Mods\opt \xcd"def" \xcd"this" TyPar\opt Formals WhereCl\opt ResType\opt Offers\opt CtorBody\\
+ Super  \: \xcd"extends" ClassType\\
+ FieldKeyword  \: val\\
+    \| \xcd"var"\\
+ VarKeyword  \: val\\
+    \| \xcd"var"\\
+ FieldDecl  \: Mods\opt FieldKeyword FieldDeclarators \xcd";"\\
+    \| Mods\opt FieldDeclarators \xcd";"\\
+ Statement  \: AnnotationStatement\\
+    \| ExpStatement\\
+ AnnotationStatement  \: Annotations\opt NonExpStatement\\
+ NonExpStatement  \: Block\\
+    \| EmptyStatement\\
+    \| AssertStatement\\
+    \| SwitchStatement\\
+    \| DoStatement\\
+    \| BreakStatement\\
+    \| ContinueStatement\\
+    \| ReturnStatement\\
+    \| ThrowStatement\\
+    \| TryStatement\\
+    \| LabeledStatement\\
+    \| IfThenStatement\\
+    \| IfThenElseStatement\\
+    \| WhileStatement\\
+    \| ForStatement\\
+    \| AsyncStatement\\
+    \| AtStatement\\
+    \| AtomicStatement\\
+    \| WhenStatement\\
+    \| AtEachStatement\\
+    \| FinishStatement\\
+    \| NextStatement\\
+    \| ResumeStatement\\
+    \| AssignPropertyCall\\
+    \| OfferStatement\\
+\end{grammar}
+
+\begin{grammar}
+
+ OfferStatement  \: offer Exp \xcd";"\\
+ IfThenStatement  \: \xcd"if" \xcd"(" Exp \xcd")" Statement\\
+ IfThenElseStatement  \: \xcd"if" \xcd"(" Exp \xcd")" Statement  \xcd"else" Statement \\
+ EmptyStatement  \: \xcd";"\\
+ LabeledStatement  \: Id \xcd":" LoopStatement\\
+ LoopStatement  \: ForStatement\\
+    \| WhileStatement\\
+    \| DoStatement\\
+    \| AtEachStatement\\
+ ExpStatement  \: StatementExp \xcd";"\\
+ StatementExp  \: Assignment\\
+    \| PreIncrementExp\\
+    \| PreDecrementExp\\
+    \| PostIncrementExp\\
+    \| PostDecrementExp\\
+    \| MethodInvo\\
+    \| ClassInstCreationExp\\
+ AssertStatement  \: \xcd"assert" Exp \xcd";"\\
+    \| \xcd"assert" Exp  \xcd":" Exp  \xcd";"\\
+ SwitchStatement  \: \xcd"switch" \xcd"(" Exp \xcd")" SwitchBlock\\
+ SwitchBlock  \: \xcd"{" SwitchBlockStatementGroups\opt SwitchLabels\opt \xcd"}"\\
+ SwitchBlockStatementGroups  \: SwitchBlockStatementGroup\\
+    \| SwitchBlockStatementGroups SwitchBlockStatementGroup\\
+ SwitchBlockStatementGroup  \: SwitchLabels BlockStatements\\
+ SwitchLabels  \: SwitchLabel\\
+    \| SwitchLabels SwitchLabel\\
+ SwitchLabel  \: \xcd"case" ConstantExp \xcd":"\\
+    \| \xcd"default" \xcd":"\\
+ WhileStatement  \: \xcd"while" \xcd"(" Exp \xcd")" Statement\\
+ DoStatement  \: \xcd"do" Statement \xcd"while" \xcd"(" Exp \xcd")" \xcd";"\\
+ ForStatement  \: BasicForStatement\\
+    \| EnhancedForStatement\\
+ BasicForStatement  \: \xcd"for" \xcd"(" ForInit\opt \xcd";" Exp\opt \xcd";" ForUpdate\opt \xcd")" Statement\\
+ ForInit  \: StatementExpList\\
+    \| LocalVariableDecl\\
+ ForUpdate  \: StatementExpList\\
+ StatementExpList  \: StatementExp\\
+    \| StatementExpList \xcd"," StatementExp\\
+ BreakStatement  \: \xcd"break" Id\opt \xcd";"\\
+ ContinueStatement  \: \xcd"continue" Id\opt \xcd";"\\
+ ReturnStatement  \: \xcd"return" Exp\opt \xcd";"\\
+\end{grammar}
+
+\begin{grammar}
+
+ ThrowStatement  \: \xcd"throw" Exp \xcd";"\\
+ TryStatement  \: \xcd"try" Block Catches\\
+    \| \xcd"try" Block Catches\opt Finally\\
+ Catches  \: CatchCl\\
+    \| Catches CatchCl\\
+ CatchCl  \: \xcd"catch" \xcd"(" Formal \xcd")" Block\\
+ Finally  \: \xcd"finally" Block\\
+ ClockedCl  \: clocked \xcd"(" ClockList \xcd")"\\
+ AsyncStatement  \: \xcd"async" ClockedCl\opt Statement\\
+    \| clocked \xcd"async" Statement\\
+ AtStatement  \: at PlaceExpSingleList Statement\\
+ AtomicStatement  \: atomic Statement\\
+ WhenStatement  \: \xcd"when" \xcd"(" Exp \xcd")" Statement\\
+ AtEachStatement  \: \xcd"ateach" \xcd"(" LoopIndex \xcd"in" Exp \xcd")" ClockedCl\opt Statement\\
+    \| \xcd"ateach" \xcd"(" Exp \xcd")" Statement\\
+ EnhancedForStatement  \: \xcd"for" \xcd"(" LoopIndex \xcd"in" Exp \xcd")" Statement\\
+    \| \xcd"for" \xcd"(" Exp \xcd")" Statement\\
+ FinishStatement  \: \xcd"finish" Statement\\
+    \| clocked \xcd"finish" Statement\\
+ PlaceExpSingleList  \: \xcd"(" PlaceExp \xcd")"\\
+ PlaceExp  \: Exp\\
+ NextStatement  \: next \xcd";"\\
+ ResumeStatement  \: resume \xcd";"\\
+ ClockList  \: Clock\\
+    \| ClockList \xcd"," Clock\\
+ Clock  \: Exp\\
+ CastExp  \: Primary\\
+    \| ExpName\\
+    \| CastExp \xcd"as" Type\\
+ TypeParamWVarList  \: TypeParamWVar\\
+    \| TypeParamWVarList \xcd"," TypeParamWVar\\
+ TypeParamList  \: TypeParam\\
+    \| TypeParamList \xcd"," TypeParam\\
+ TypeParamWVar  \: Id\\
+    \| \xcd"+" Id\\
+    \| \xcd"-" Id\\
+ TypeParam  \: Id\\
+ AssignmentExp  \: Exp  \xcd"->" Exp \\
+ ClosureExp  \: Formals WhereCl\opt ResType\opt Offers\opt \xcd"=>" ClosureBody\\
+ LastExp  \: Exp\\
+ ClosureBody  \: ConditionalExp\\
+\end{grammar}
+
+\begin{grammar}
+
+    \| Annotations\opt \xcd"{" BlockStatements\opt LastExp \xcd"}"\\
+    \| Annotations\opt Block\\
+ AtExp  \: at PlaceExpSingleList ClosureBody\\
+ FinishExp  \: \xcd"finish" \xcd"(" Exp \xcd")" Block\\
+ WhereCl\opt  \: \\
+    \| WhereCl\\
+ PlaceExpSingleList\opt  \: \\
+    \| PlaceExpSingleList\\
+ ClockedCl\opt  \: \\
+    \| ClockedCl\\
+ identifier  \: \xcd"IDENTIFIER" \\
+ TypeName  \: Id\\
+    \| TypeName \xcd"." Id\\
+ ClassName  \: TypeName\\
+ TypeArguments  \: \xcd"[" TypeArgumentList \xcd"]"\\
+ TypeArgumentList  \: Type\\
+    \| TypeArgumentList \xcd"," Type\\
+ PackageName  \: Id\\
+    \| PackageName \xcd"." Id\\
+ ExpName  \: Id\\
+    \| AmbiguousName \xcd"." Id\\
+ MethodName  \: Id\\
+    \| AmbiguousName \xcd"." Id\\
+ PackageOrTypeName  \: Id\\
+    \| PackageOrTypeName \xcd"." Id\\
+ AmbiguousName  \: Id\\
+    \| AmbiguousName \xcd"." Id\\
+ CompilationUnit  \: PackageDecl\opt TypeDecls\opt\\
+    \| PackageDecl\opt ImportDecls TypeDecls\opt\\
+    \| ImportDecls PackageDecl  ImportDecls\opt  TypeDecls\opt\\
+    \| PackageDecl ImportDecls PackageDecl  ImportDecls\opt  TypeDecls\opt\\
+ ImportDecls  \: ImportDecl\\
+    \| ImportDecls ImportDecl\\
+ TypeDecls  \: TypeDecl\\
+    \| TypeDecls TypeDecl\\
+ PackageDecl  \: Annotations\opt \xcd"package" PackageName \xcd";"\\
+ ImportDecl  \: SingleTypeImportDecl\\
+    \| TypeImportOnDemandDecl\\
+ SingleTypeImportDecl  \: \xcd"import" TypeName \xcd";"\\
+ TypeImportOnDemandDecl  \: \xcd"import" PackageOrTypeName \xcd"." \xcd"*" \xcd";"\\
+ TypeDecl  \: ClassDecl\\
+\end{grammar}
+
+\begin{grammar}
+
+    \| InterfaceDecl\\
+    \| TypeDefDecl\\
+    \| \xcd";"\\
+ Interfaces  \: \xcd"implements" InterfaceTypeList\\
+ InterfaceTypeList  \: Type\\
+    \| InterfaceTypeList \xcd"," Type\\
+ ClassBody  \: \xcd"{" ClassBodyDecls\opt \xcd"}"\\
+ ClassBodyDecls  \: ClassBodyDecl\\
+    \| ClassBodyDecls ClassBodyDecl\\
+ ClassBodyDecl  \: ClassMemberDecl\\
+    \| CtorDecl\\
+ ClassMemberDecl  \: FieldDecl\\
+    \| MethodDecl\\
+    \| PropMethDecl\\
+    \| TypeDefDecl\\
+    \| ClassDecl\\
+    \| InterfaceDecl\\
+    \| \xcd";"\\
+ FormalDeclarators  \: FormalDeclarator\\
+    \| FormalDeclarators \xcd"," FormalDeclarator\\
+ FieldDeclarators  \: FieldDeclarator\\
+    \| FieldDeclarators \xcd"," FieldDeclarator\\
+ VariableDeclaratorsWithType  \: VariableDeclaratorWithType\\
+    \| VariableDeclaratorsWithType \xcd"," VariableDeclaratorWithType\\
+ VariableDeclarators  \: VariableDeclarator\\
+    \| VariableDeclarators \xcd"," VariableDeclarator\\
+ VariableInitializer  \: Exp\\
+ ResultType  \: \xcd":" Type\\
+ ResType  \: \xcd":" Type\\
+    \| \xcd"<:" Type\\
+ FormalList  \: Formal\\
+    \| FormalList \xcd"," Formal\\
+ LoopIndexDeclarator  \: Id ResType\opt\\
+    \| \xcd"[" IdList \xcd"]" ResType\opt\\
+    \| Id \xcd"[" IdList \xcd"]" ResType\opt\\
+ LoopIndex  \: Mods\opt LoopIndexDeclarator\\
+    \| Mods\opt VarKeyword LoopIndexDeclarator\\
+ Formal  \: Mods\opt FormalDeclarator\\
+    \| Mods\opt VarKeyword FormalDeclarator\\
+    \| Type\\
+ Offers  \: \xcd"offers" Type\\
+\end{grammar}
+
+\begin{grammar}
+
+ ExceptionTypeList  \: ExceptionType\\
+    \| ExceptionTypeList \xcd"," ExceptionType\\
+ ExceptionType  \: ClassType\\
+ MBody  \: \xcd"=" LastExp \xcd";"\\
+    \| \xcd"=" Annotations\opt \xcd"{" BlockStatements\opt LastExp \xcd"}"\\
+    \| \xcd"=" Annotations\opt Block\\
+    \| Annotations\opt Block\\
+    \| \xcd";"\\
+ CtorBody  \: \xcd"=" CtorBlock\\
+    \| CtorBlock\\
+    \| \xcd"=" ExplCtorInvo\\
+    \| \xcd"=" AssignPropertyCall\\
+    \| \xcd";"\\
+ CtorBlock  \: \xcd"{" ExplCtorInvo\opt BlockStatements\opt \xcd"}"\\
+ Arguments  \: \xcd"(" ArgumentList\opt \xcd")"\\
+ InterfaceDecl  \: NormalInterfaceDecl\\
+ ExtendsInterfaces  \: \xcd"extends" Type\\
+    \| ExtendsInterfaces \xcd"," Type\\
+ InterfaceBody  \: \xcd"{" InterfaceMemberDecls\opt \xcd"}"\\
+ InterfaceMemberDecls  \: InterfaceMemberDecl\\
+    \| InterfaceMemberDecls InterfaceMemberDecl\\
+ InterfaceMemberDecl  \: MethodDecl\\
+    \| PropMethDecl\\
+    \| FieldDecl\\
+    \| ClassDecl\\
+    \| InterfaceDecl\\
+    \| TypeDefDecl\\
+    \| \xcd";"\\
+ Annotations  \: Annotation\\
+    \| Annotations Annotation\\
+ Annotation  \: \xcd"@" NamedType\\
+ Id  \: identifier\\
+ Block  \: \xcd"{" BlockStatements\opt \xcd"}"\\
+ BlockStatements  \: BlockStatement\\
+    \| BlockStatements BlockStatement\\
+ BlockStatement  \: LocalVariableDeclStatement\\
+    \| ClassDecl\\
+    \| TypeDefDecl\\
+    \| Statement\\
+ IdList  \: Id\\
+    \| IdList \xcd"," Id\\
+\end{grammar}
+
+\begin{grammar}
+
+ FormalDeclarator  \: Id ResultType\\
+    \| \xcd"[" IdList \xcd"]" ResultType\\
+    \| Id \xcd"[" IdList \xcd"]" ResultType\\
+ FieldDeclarator  \: Id ResType\\
+    \| Id ResType\opt \xcd"=" VariableInitializer\\
+ VariableDeclarator  \: Id ResType\opt \xcd"=" VariableInitializer\\
+    \| \xcd"[" IdList \xcd"]" ResType\opt \xcd"=" VariableInitializer\\
+    \| Id \xcd"[" IdList \xcd"]" ResType\opt \xcd"=" VariableInitializer\\
+ VariableDeclaratorWithType  \: Id ResType \xcd"=" VariableInitializer\\
+    \| \xcd"[" IdList \xcd"]" ResType \xcd"=" VariableInitializer\\
+    \| Id \xcd"[" IdList \xcd"]" ResType \xcd"=" VariableInitializer\\
+ LocalVariableDeclStatement  \: LocalVariableDecl \xcd";"\\
+ LocalVariableDecl  \: Mods\opt VarKeyword VariableDeclarators\\
+    \| Mods\opt VariableDeclaratorsWithType\\
+    \| Mods\opt VarKeyword FormalDeclarators\\
+ Primary  \: here\\
+    \| \xcd"[" ArgumentList\opt \xcd"]"\\
+    \| Literal\\
+    \| \xcd"self"\\
+    \| \xcd"this"\\
+    \| ClassName \xcd"." \xcd"this"\\
+    \| \xcd"(" Exp \xcd")"\\
+    \| ClassInstCreationExp\\
+    \| FieldAccess\\
+    \| MethodInvo\\
+    \| MethodSelection\\
+    \| OperatorFunction\\
+ OperatorFunction  \: TypeName \xcd"." \xcd"+"\\
+    \| TypeName \xcd"." \xcd"-"\\
+    \| TypeName \xcd"." \xcd"*"\\
+    \| TypeName \xcd"." \xcd"/"\\
+    \| TypeName \xcd"." \xcd"%"\\
+    \| TypeName \xcd"." \xcd"&"\\
+    \| TypeName \xcd"." \xcd"|"\\
+    \| TypeName \xcd"." \xcd"^"\\
+    \| TypeName \xcd"." \xcd"<<"\\
+    \| TypeName \xcd"." \xcd">>"\\
+    \| TypeName \xcd"." \xcd">>>"\\
+    \| TypeName \xcd"." \xcd"<"\\
+    \| TypeName \xcd"." \xcd"<="\\
+    \| TypeName \xcd"." \xcd">="\\
+\end{grammar}
+
+\begin{grammar}
+
+    \| TypeName \xcd"." \xcd">"\\
+    \| TypeName \xcd"." \xcd"=="\\
+    \| TypeName \xcd"." \xcd"!="\\
+ Literal  \: \xcd"IntegerLiteral" \\
+    \| \xcd"LongLiteral" \\
+    \| \xcd"UnsignedIntegerLiteral" \\
+    \| \xcd"UnsignedLongLiteral" \\
+    \| \xcd"FloatingPointLiteral" \\
+    \| \xcd"DoubleLiteral" \\
+    \| BooleanLiteral\\
+    \| \xcd"CharacterLiteral" \\
+    \| \xcd"StringLiteral" \\
+    \| \xcd"null"\\
+ BooleanLiteral  \: \xcd"true" \\
+    \| \xcd"false" \\
+ ArgumentList  \: Exp\\
+    \| ArgumentList \xcd"," Exp\\
+ FieldAccess  \: Primary \xcd"." Id\\
+    \| \xcd"super" \xcd"." Id\\
+    \| ClassName \xcd"." \xcd"super"  \xcd"." Id\\
+    \| Primary \xcd"." \xcd"class" \\
+    \| \xcd"super" \xcd"." \xcd"class" \\
+    \| ClassName \xcd"." \xcd"super"  \xcd"." \xcd"class" \\
+ MethodInvo  \: MethodName TypeArguments\opt \xcd"(" ArgumentList\opt \xcd")"\\
+    \| Primary \xcd"." Id TypeArguments\opt \xcd"(" ArgumentList\opt \xcd")"\\
+    \| \xcd"super" \xcd"." Id TypeArguments\opt \xcd"(" ArgumentList\opt \xcd")"\\
+    \| ClassName \xcd"." \xcd"super"  \xcd"." Id TypeArguments\opt \xcd"(" ArgumentList\opt \xcd")"\\
+    \| Primary TypeArguments\opt \xcd"(" ArgumentList\opt \xcd")"\\
+ MethodSelection  \: MethodName \xcd"." \xcd"(" FormalList\opt \xcd")"\\
+    \| Primary \xcd"." Id \xcd"." \xcd"(" FormalList\opt \xcd")"\\
+    \| \xcd"super" \xcd"." Id \xcd"." \xcd"(" FormalList\opt \xcd")"\\
+    \| ClassName \xcd"." \xcd"super"  \xcd"." Id \xcd"." \xcd"(" FormalList\opt \xcd")"\\
+ PostfixExp  \: CastExp\\
+    \| PostIncrementExp\\
+    \| PostDecrementExp\\
+ PostIncrementExp  \: PostfixExp \xcd"++"\\
+ PostDecrementExp  \: PostfixExp \xcd"--"\\
+ UnannotatedUnaryExp  \: PreIncrementExp\\
+    \| PreDecrementExp\\
+    \| \xcd"+" UnaryExpNotPlusMinus\\
+    \| \xcd"-" UnaryExpNotPlusMinus\\
+\end{grammar}
+
+\begin{grammar}
+
+    \| UnaryExpNotPlusMinus\\
+ UnaryExp  \: UnannotatedUnaryExp\\
+    \| Annotations UnannotatedUnaryExp\\
+ PreIncrementExp  \: \xcd"++" UnaryExpNotPlusMinus\\
+ PreDecrementExp  \: \xcd"--" UnaryExpNotPlusMinus\\
+ UnaryExpNotPlusMinus  \: PostfixExp\\
+    \| \xcd"~" UnaryExp\\
+    \| \xcd"!" UnaryExp\\
+ MultiplicativeExp  \: UnaryExp\\
+    \| MultiplicativeExp \xcd"*" UnaryExp\\
+    \| MultiplicativeExp \xcd"/" UnaryExp\\
+    \| MultiplicativeExp \xcd"%" UnaryExp\\
+ AdditiveExp  \: MultiplicativeExp\\
+    \| AdditiveExp \xcd"+" MultiplicativeExp\\
+    \| AdditiveExp \xcd"-" MultiplicativeExp\\
+ ShiftExp  \: AdditiveExp\\
+    \| ShiftExp \xcd"<<" AdditiveExp\\
+    \| ShiftExp \xcd">>" AdditiveExp\\
+    \| ShiftExp \xcd">>>" AdditiveExp\\
+ RangeExp  \: ShiftExp\\
+    \| ShiftExp  \xcd".." ShiftExp \\
+ RelationalExp  \: RangeExp\\
+    \| SubtypeConstraint\\
+    \| RelationalExp \xcd"<" RangeExp\\
+    \| RelationalExp \xcd">" RangeExp\\
+    \| RelationalExp \xcd"<=" RangeExp\\
+    \| RelationalExp \xcd">=" RangeExp\\
+    \| RelationalExp \xcd"instanceof" Type\\
+    \| RelationalExp \xcd"in" ShiftExp\\
+ EqualityExp  \: RelationalExp\\
+    \| EqualityExp \xcd"==" RelationalExp\\
+    \| EqualityExp \xcd"!=" RelationalExp\\
+    \| Type  \xcd"==" Type \\
+ AndExp  \: EqualityExp\\
+    \| AndExp \xcd"&" EqualityExp\\
+ ExclusiveOrExp  \: AndExp\\
+    \| ExclusiveOrExp \xcd"^" AndExp\\
+ InclusiveOrExp  \: ExclusiveOrExp\\
+    \| InclusiveOrExp \xcd"|" ExclusiveOrExp\\
+ ConditionalAndExp  \: InclusiveOrExp\\
+    \| ConditionalAndExp \xcd"&&" InclusiveOrExp\\
+\end{grammar}
+
+\begin{grammar}
+
+ ConditionalOrExp  \: ConditionalAndExp\\
+    \| ConditionalOrExp \xcd"||" ConditionalAndExp\\
+ ConditionalExp  \: ConditionalOrExp\\
+    \| ClosureExp\\
+    \| AtExp\\
+    \| FinishExp\\
+    \| ConditionalOrExp \xcd"?" Exp \xcd":" ConditionalExp\\
+ AssignmentExp  \: Assignment\\
+    \| ConditionalExp\\
+ Assignment  \: LeftHandSide AssignmentOperator AssignmentExp\\
+    \| ExpName  \xcd"(" ArgumentList\opt \xcd")" AssignmentOperator AssignmentExp\\
+    \| Primary  \xcd"(" ArgumentList\opt \xcd")" AssignmentOperator AssignmentExp\\
+ LeftHandSide  \: ExpName\\
+    \| FieldAccess\\
+ AssignmentOperator  \: \xcd"="\\
+    \| \xcd"*="\\
+    \| \xcd"/="\\
+    \| \xcd"%="\\
+    \| \xcd"+="\\
+    \| \xcd"-="\\
+    \| \xcd"<<="\\
+    \| \xcd">>="\\
+    \| \xcd">>>="\\
+    \| \xcd"&="\\
+    \| \xcd"^="\\
+    \| \xcd"|="\\
+ Exp  \: AssignmentExp\\
+ ConstantExp  \: Exp\\
+ PrefixOp  \: \xcd"+"\\
+    \| \xcd"-"\\
+    \| \xcd"!"\\
+    \| \xcd"~"\\
+ BinOp  \: \xcd"+"\\
+    \| \xcd"-"\\
+    \| \xcd"*"\\
+    \| \xcd"/"\\
+    \| \xcd"%"\\
+    \| \xcd"&"\\
+    \| \xcd"|"\\
+    \| \xcd"^"\\
+    \| \xcd"&&"\\
+\end{grammar}
+
+\begin{grammar}
+
+    \| \xcd"||"\\
+    \| \xcd"<<"\\
+    \| \xcd">>"\\
+    \| \xcd">>>"\\
+    \| \xcd">="\\
+    \| \xcd"<="\\
+    \| \xcd">"\\
+    \| \xcd"<"\\
+    \| \xcd"=="\\
+    \| \xcd"!="\\
+ Catches\opt  \: \\
+    \| Catches\\
+ Id\opt  \: \\
+    \| Id\\
+ ForUpdate\opt  \: \\
+    \| ForUpdate\\
+ Exp\opt  \: \\
+    \| Exp\\
+ ForInit\opt  \: \\
+    \| ForInit\\
+ SwitchLabels\opt  \: \\
+    \| SwitchLabels\\
+ SwitchBlockStatementGroups\opt  \: \\
+    \| SwitchBlockStatementGroups\\
+ InterfaceMemberDecls\opt  \: \\
+    \| InterfaceMemberDecls\\
+ ExtendsInterfaces\opt  \: \\
+    \| ExtendsInterfaces\\
+ ClassBody\opt  \: \\
+    \| ClassBody\\
+ ArgumentList\opt  \: \\
+    \| ArgumentList\\
+ BlockStatements\opt  \: \\
+    \| BlockStatements\\
+ ExplCtorInvo\opt  \: \\
+    \| ExplCtorInvo\\
+ FormalList\opt  \: \\
+    \| FormalList\\
+ Offers\opt  \: \\
+    \| Offers\\
+ ClassBodyDecls\opt  \: \\
+\end{grammar}
+
+\begin{grammar}
+
+    \| ClassBodyDecls\\
+ Interfaces\opt  \: \\
+    \| Interfaces\\
+ Super\opt  \: \\
+    \| Super\\
+ TyPar\opt  \: \\
+    \| TyPar\\
+ Formals\opt  \: \\
+    \| Formals\\
+ Annotations\opt  \: \\
+    \| Annotations\\
+ TypeDecls\opt  \: \\
+    \| TypeDecls\\
+ ImportDecls\opt  \: \\
+    \| ImportDecls\\
+ PackageDecl\opt  \: \\
+    \| PackageDecl\\
+ ResType\opt  \: \\
+    \| ResType\\
+ TypeArguments\opt  \: \\
+    \| TypeArguments\\
+ TyParWVar\opt  \: \\
+    \| TyParWVar\\
+ Properties\opt  \: \\
+    \| Properties\\
+\end{grammar}
+
+
+}

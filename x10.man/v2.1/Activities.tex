@@ -679,16 +679,16 @@ AtomicStatement \: \xcd"atomic"  Statement \\
 MethodModifier \: \xcd"atomic" \\
 \end{grammar}
 
-For the sake of efficient implementation \XtenCurrVer{} requires
-that the atomic block be {\em analyzable}, that is, the set of
-locations that are read and written by the \grammarrule{BlockStatement} are
-bounded and determined statically.\footnote{A static bound is a constant
-that depends only on the program text, and is independent 
-of any runtime parameters. }
-The exact algorithm to be used by
-the compiler to perform this analysis will be specified in future
-versions of the language.
-\tbd{}
+%%NOW-DYN%% For the sake of efficient implementation \XtenCurrVer{} requires
+%%NOW-DYN%% that the atomic block be {\em analyzable}, that is, the set of
+%%NOW-DYN%% locations that are read and written by the \grammarrule{BlockStatement} are
+%%NOW-DYN%% bounded and determined statically.\footnote{A static bound is a constant
+%%NOW-DYN%% that depends only on the program text, and is independent 
+%%NOW-DYN%% of any runtime parameters. }
+%%NOW-DYN%% The exact algorithm to be used by
+%%NOW-DYN%% the compiler to perform this analysis will be specified in future
+%%NOW-DYN%% versions of the language.
+%%NOW-DYN%% \tbd{}
 
 Such a statement is executed by an activity as if in a single step
 during which all other concurrent activities in the same place are
@@ -703,11 +703,13 @@ We allow methods of an object to be annotated with \xcd"atomic". Such
 a method is taken to stand for a method whose body is wrapped within an
 \xcd"atomic" statement.
 
+\noo{Finish checking this!  Note dynamic checks!}
+
 Atomic blocks are closely related to non-blocking synchronization
 constructs \cite{herlihy91waitfree}, and can be used to implement 
 non-blocking concurrent algorithms.
 
-\begin{staticrule*}
+
 In \xcd"atomic S", \xcd"S" may include calls to \xcd`safe` methods, and use of
 sequential control structures.
 
@@ -721,9 +723,7 @@ operations on clocks, \xcd"finish").
 It may {\em not} include any \xcd`at` expressions or
 statements. (Hence all locations accessed in the atomic block must
 belong to the current place.)
-\index{locality condition}\label{LocalityCondition} 
 
-\end{staticrule*}
 
 The compiler checks for this condition by checking whether the statement
 could be the body of a \xcd"void" method annotated with \xcd"safe" at
