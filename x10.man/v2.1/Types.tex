@@ -179,52 +179,6 @@ For example,
 is the type of integer-valued functions which have no fixed points.  
 
 
-\noo{Explain the constraint language}
-
-
-
-\subsection*{The Grammar of Types}
-
-Types are described by the following grammar: \\
-\bard{Is this still correct?}
-\begin{grammar}
-Type \: FunctionType \\
-    \| ConstrainedType  \\
-
-FunctionType \: TypeParameters\opt \xcd"(" Formals\opt \xcd")"
-Constraint\opt  \xcd"=>" TypeOrVoid \\
-TypeParameters \: \xcd"[" TypeParameter ( \xcd"," TypeParameter )\star \xcd"]" \\
-TypeParameter \: Identifier \\
-
-ConstrainedType \: Annotation\star BaseType Constraint\opt
-PlaceConstraint\opt \\
-
-BaseType \: ClassBaseType \\
-     \| InterfaceBaseType \\
-     \| PathType \\
-     \| \xcd"(" Type \xcd")" \\
-TypeOrVoid \: Type \\
-     \| \xcd`Void`\\
-ClassType \: Annotation\star ClassBaseType Constraint\opt
-PlaceConstraint\opt \\
-InterfaceType \: Annotation\star InterfaceBaseType Constraint\opt
-PlaceConstraint\opt \\
-
-PathType \: Expression \xcd"." Identifier \\
-
-Annotation \: \xcd"@" InterfaceBaseType Constraint\opt \\
-
-ClassOrInterfaceType \: ClassType \\ \| InterfaceType \\
-ClassBaseType \: TypeName \\
-InterfaceBaseType \: TypeName \\
-\end{grammar}
-
-% \section{Type definitions and type constructors}
-% 
-% Types in \Xten{} are specified through declarations and through
-% type constructors:
-
-% \paragraph{Class types.}
 
 
 
@@ -259,7 +213,7 @@ class Position {
 
 Class instances, also called objects, are created via constructor calls. Class
 instances have fields and methods, type members, and value properties bound at
-construction time. In addition, classes have static members: constant fields,
+construction time. In addition, classes have static members: static \xcd`val` fields,
 type definitions, and member classes and member interfaces.
 
 A class with type parameters is {\em generic}. A class type is instantiatable
@@ -708,9 +662,9 @@ var example : LnSn;
 %~~neg
 
 Type definitions can also refer to values, in particular, inside of
-constraints.  The type of \xcd`n`-element \xcd`Rails[Int]s` is 
+constraints.  The type of \xcd`n`-element \xcd`Array[Int](1)`s  is 
 %~~type~~`~~`~~n:Int ~~
-\xcd`Rail[Int]{self.length == n}`
+\xcd`Array[Int]{self.rank==1 && self.size == n}`
 but it is often convenient to give a shorter name: 
 %~~gen
 % package TypeDefs.glip.third;
@@ -718,8 +672,8 @@ but it is often convenient to give a shorter name:
 % def example() {
 %~~vis
 \begin{xten}
-type Rail(n:Int) = Rail[Int]{self.length == n};
-var example : Rail(78); 
+type Vec(n:Int) = Array[Int]{self.rank==1 && self.size == n}; 
+var example : Vec(78); 
 \end{xten}
 %~~siv
 %}}
@@ -813,7 +767,7 @@ legal and if the constructor return type is a subtype of
 \xcd"A".
 
 The collection of type definitions in
-\xcdmath"x10.lang.\_" is automatically imported in every compilation unit.
+\xcdmath"x10.lang._" is automatically imported in every compilation unit.
 \index{import,type definitions}\label{X10LangUnderscore}
 
 
@@ -1072,13 +1026,6 @@ acyclic.  The property graph, at an instant in an X10 execution, is the graph
 whose nodes are all objects in existence at that instance, with an edge from
 {$x$} to {$y$} if {$x$} is an object with a property whose value is {$y$}. 
 
-\bard{I think that \xcd`proto` handles this now ...? }
-
-Currently this restriction is not checked by the compiler. Future
-versions of the compiler will check this restriction by introducing
-rules on escaping of \Xcd{this} (\Sref{protorules}) before the invocation of
-\Xcd{property} calls.
-
 
 %%PLACE%%\subsection{Place constraints}
 %%PLACE%%\label{PlaceTypes}
@@ -1227,7 +1174,7 @@ class Triangle
 \index{constraints!subtyping}
 
 
-As we will see, \xcd`T{c}` is a subtype of \xcd`T{d}` if every value of type
+Recall that \xcd`T{c}` is a subtype of \xcd`T{d}` if every value of type
 \xcd`T{c}` is also a value of type \xcd`T{d}`.  This is true if, whenever
 \xcd`c` is true, \xcd`d` is also true.  Logicians call this concept {\em
 entailment}: in this case, \xcd`c` entails \xcd`d`.  
@@ -1317,17 +1264,10 @@ of all the formal parameters,
 and their distinct names \xcdmath"x$_i$" in case other types refer to them; a
 constraint 
 \xcd"c" on the
-function as a whole; a return type \xcd"T"; and the exceptions \xcdmath"EX$_j$"
-that the function might throw when applied: 
-
-
-\limitation{The \xcd`throws` clause is not currently implemented.  Also,
-some method modifiers (\xcd`safe`, \xcd`atomic`, etc.) will apply to function
-types as well.}
+function as a whole; a return type \xcd"T".
 
 \begin{xtenmath}
 (x$_1$: T$_1$, $\dots$, x$_n$: T$_n$){c} => T
-        throws EX$_1$, $\dots$, EX$_k$
 \end{xtenmath}
 
 
@@ -1511,15 +1451,14 @@ Then:
 
 \item
 {\bf Function types:}
-\xcdmath"(x$_1$: T$_1$, $\dots$, x$_n$: T$_n$){c} => T throws EX$_1$, $\dots$,EX$_k$"
+\xcdmath"(x$_1$: T$_1$, $\dots$, x$_n$: T$_n$){c} => T"
 is a  subtype of 
-\xcdmath"(x$'_1$: T$'_1$, $\dots$, x$'_n$: T$'_n$){c$'$} => T$'$ throws EX$'_1$, $\dots$, EX$'_{k'}$"
+\xcdmath"(x$'_1$: T$'_1$, $\dots$, x$'_n$: T$'_n$){c$'$} => T$'$ "
 if: 
 \begin{enumerate}
 \item Each \xcdmath"T$_i$ <: T$'_i$";
 \item \xcd`c` entails \xcdmath"c$'$";
 \item \xcdmath"T$'$ <: T";
-\item Each  \xcdmath"EX$_j$ <: EX$'_{j'}$".
 \end{enumerate}
 
 \item
@@ -1571,7 +1510,7 @@ a good type to describe:
 %~~exp~~`~~`~~test:Boolean ~~
       \xcd`test ? 0 : 1`;
 %~~exp~~`~~`~~ ~~
-\item ValRail construction, like \xcd`[0, "non-zero"]` and 
+\item Array construction, like \xcd`[0, "non-zero"]` and 
 %~~exp~~`~~`~~ ~~
       \xcd`[0,1]`;
 \item Functions with multiple returns, like
@@ -1660,8 +1599,7 @@ X10 provides certain guarantees about the common type \xcd`V{v}` computed for
       picking \xcd`Int{true}`, \viz, \xcd`Int`. 
 \item X10 preserves place information, because it is so important. If both
       \xcd`t` and \xcd`u` entail \xcd`self.home==p`, then  
-      \xcd`v` will also entail \xcd`self.home==p`.  In particular, the common
-      type for \xcd`T!` and \xcd`U!` has the form \xcd`V!`. 
+      \xcd`v` will also entail \xcd`self.home==p`.  
 \item X10 similarly preserves nullity information.  If \xcd`t` and \xcd`u`
       both entail \xcd`x == null` or \xcd`x != null` for some variable
       \xcd`x`, then \xcd`v` will also entail it as well.
@@ -1685,25 +1623,20 @@ is, a supertype of all types.\footnote{Java, for one, suffers a number of
 \begin{xten}
 package x10.lang;
 public interface Any {
-  property def home():Place;
-  property def at(p:Object):Boolean;
-  property def at(p:Place):Boolean;
-  global safe def toString():String;
-  global safe def typeName():String;
-  global safe def equals(Any):Boolean;
-  global safe def hashCode():Int;
+  def toString():String;
+  def typeName():String;
+  def equals(Any):Boolean;
+  def hashCode():Int;
 }
 \end{xten}
 
 \xcd`Any` provides a handful of essential methods that make sense and are
 useful for everything.\footnote{The behavioral annotation \xcd`property` is
-  explained in \Sref{properties}; \xcd`safe` in \Sref{SafeAnnotation}, and
-  \xcd`global` in \Sref{GlobalAnnotation}.} \xcd`a.toString()` produces a
+  explained in \Sref{properties}.} \xcd`a.toString()` produces a
 string representation of \xcd`a`, and \xcd`a.typeName()` the string
 representation of its type; both are useful for debugging.  \xcd`aequals(b)`
 is the programmer-overridable equality test, and \xcd`a.hashCode()` an integer
-useful for hashing.  \xcd`at()` and \xcd`home()` are used in multi-place
-computing. 
+useful for hashing.  
 
 
 \subsection{The class \Xcd{Object}}
@@ -1713,8 +1646,7 @@ computing.
 
 The class \xcd"x10.lang.Object" is the supertype of all classes.
 A variable of this type can hold a reference to any object.
-\xcd`Object` implements \xcd`Any`. It also has a property \xcd`home:Place`,
-described more in \Sref{XtenPlaces}.
+\xcd`Object` implements \xcd`Any`.
 
 
 
@@ -1741,6 +1673,8 @@ is identical to
 \xcd`val seven: Int{self==7} = 7;`
 Note that type inference gives the most precise X10 type, which might be more
 specific than the type that a programmer would write.
+
+
 
 \limitation{At the moment, only \xcd`val` declarations can have their types
 elided in this way.  
@@ -1854,7 +1788,7 @@ return value can be provided with a dummy return value.
 \subsection{Type arguments}
 
 \limitation{This does not seem to work at all currently.}
-\bard{Is this material even currently under consideration?}
+
 
 A call to a polymorphic method %, closure, or constructor 
 may omit the

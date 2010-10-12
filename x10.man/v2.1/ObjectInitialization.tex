@@ -78,7 +78,7 @@ In general, constructors must not be allowed to call methods with\Xcd{this} as
 an argument or receiver. Such calls could leak references to \Xcd{this},
 either directly from a call to \Xcd{cell.set(this)}, or indirectly because
 \Xcd{toString} leaks \Xcd{this}, and the concatenation 
-\Xcd{"Escaper = "+this} calls \Xcd{toString}.\footnote{This is abominable behavior for 
+\Xcd`"Escaper = "+this` calls \Xcd{toString}.\footnote{This is abominable behavior for 
 \Xcd{toString}, but nonetheless it is allowed.}
 %~WRONG~gen
 %package ObjectInit.CtorAndNonEscaping.One;
@@ -157,7 +157,7 @@ The first requirement on non-escaping methods is that they do not allow
 only be used for field access and assignment, and as the receiver of
 non-escaping methods.
 
-\Xcd{@NonEscaping("v1,v2")} methods specify a list of fields of \Xcd{this}, as
+\xcd`@NonEscaping("v1,v2")` methods specify a list of fields of \Xcd{this}, as
 a string argument of the annotation: in this example, the fields are \Xcd{v1}
 and \Xcd{v2}.  These are the only fields of \Xcd{this} that can be {\em read}
 in the body of the method.  So, \Xcd{x = this.v3} would be forbidden---as

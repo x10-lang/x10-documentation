@@ -123,7 +123,7 @@ complicated way.
 
 
 They are used extensively in X10
-programs.  For example, the normal way to construct a \xcd`Rail[Int]` --
+programs.  For example, the normal way to construct an \xcd`Array[Int](1)` --
 that is, a fixed-length array of numbers, like an \xcd`int[]` in Java -- is to
 pass two arguments to a factory method: the first argument being the length of
 the rail, and the second being a function which computes the initial value of
@@ -136,7 +136,7 @@ initialized to the squares of 0,1,...,9: \xcd`r(0) == 0`, \xcd`r(5)==25`, etc.
 %    val square = (i:Int) => i*i;
 %~~vis
 \begin{xten}
-  val r : Rail[Int] = Rail.make[Int](10, square);
+  val r : Array[Int](1) = new Array[Int](10, square);
 \end{xten}
 %~~siv
 %}}
@@ -313,10 +313,10 @@ hardware threads and a bounded amount of shared memory, uniformly
 accessible by all threads.
 
 
-\bard{The following para is mostly obsolete.}
+
 An \Xten{} computation acts on \emph{values}(\Sref{XtenObjects}) through
 the execution of lightweight threads called
-\emph{activities}(\Sref{XtenActivities}). Values are of three kinds.  
+\emph{activities}(\Sref{XtenActivities}). 
 An {\em object}
  has a small, statically fixed set of fields, each of
 which has a distinct name. A scalar object is located at a single place and
@@ -355,10 +355,9 @@ available.
 
 \paragraph{Asynchronous activities.}
 
-An asynchronous activity is created by a statement \xcd"async (P) S"
-where \xcd"P" is a place expression and \xcd"S" is a statement.  Such
-a statement is executed by spawning an activity at the place
-\xcd"P"  executing statement \xcd"S".
+An asynchronous activity is created by a statement \xcd"async S", which starts
+up a new activity running \xcd`S`.  It does not wait for the new activity to
+finish; there is a separate statement (\xcd`finish`) to do that.
 
 
 
@@ -393,7 +392,7 @@ new clocks or new activities registered on an extant clock, and so on.
 
 Clocks act as {barriers} for a dynamically varying collection of activities.
 They generalize the barriers found in MPI style program in that an activity
-may use multiple clocks simultaneously. Yet programs using clocks are
+may use multiple clocks simultaneously. Yet programs using clocks properly are
 guaranteed not to suffer from deadlock.
 
 %%HERE

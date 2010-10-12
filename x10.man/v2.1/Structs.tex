@@ -44,8 +44,7 @@ $\mbox{\emph{StructBody}}$
 }
 \end{xtenmath}
 
-Each field and method in a struct is implicitly \Xcd{global}, and each field
-is \xcd`val`.
+All fields of a struct must be \xcd`val`.
 
 A struct \Xcd{S} cannot contain a field of type \Xcd{S}, or a field of struct
 type \Xcd{T} which, recursively, contains a field of type \Xcd{S}.  This
@@ -112,17 +111,7 @@ Unlike objects, structs do not have global identity. Instead, two
 structs are equal (\Xcd{==}) if and only if their corresponding fields
 are equal (\Xcd{==}). 
 
-All structs implement \Xcd{x10.lang.Any}. All 
-structs have the following methods implicitly defined on them:
-\begin{xten}
-  property def home()=here;
-  property def at(Place)=true;
-  property def at(Object)=true;
-\end{xten}
-\noindent It is an error for a programmer to attempt to define them.
-Note that the \xcd`home` of a struct evaluated in place \xcd`P` is equal to
-\xcd`P`---a struct, unlike an object, can have different values of \xcd`home`. 
-
+All structs implement \Xcd{x10.lang.Any}. 
 Structs are required to implement the following methods from \xcd`Any`.  
 Programmers need not provide them; X10 will produce them automatically if 
 the program does not include them. 
