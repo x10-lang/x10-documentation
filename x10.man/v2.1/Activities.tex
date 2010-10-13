@@ -102,8 +102,9 @@ the activity terminates (based on the semantics of the statement being
 executed by the activity).\footnote{In \XtenCurrVer{} the \xcd"finish"
 statement is the only statement that marks its activity as a root
 activity. Future versions of the language may introduce more such
-statements.}  In Java, exceptions may be overlooked because there is no good
-place to put a \xcd`try`-\xcd`catch` block; this is never the case in X10.
+statements.}  
+There is always a good place to put a \xcd`try`-\xcd`catch` block to catch
+exceptions thrown by an asynchronous activity.
 
 \section{ {\tt at}: Place Changing and Object Copying}\label{AtStatement}
 \index{at}
