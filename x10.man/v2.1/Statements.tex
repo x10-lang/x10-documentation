@@ -110,8 +110,9 @@ class StmtEx {
 %~~siv
 %
 %~~neg
-Note that only selected forms of expression can appear in expression
-statements.  
+Only selected forms of expression can appear in expression
+statements: assignments, increments, decrements, method invocations, and
+constructor invocations. 
 
 
 \section{Labeled statement}
@@ -256,7 +257,7 @@ and must be compile-time
 constants.  Case labels cannot be duplicated within the
 \xcd"switch" statement.
 
-In the following example, case \xcd`1` falls through to case3 \xcd`2`.  The
+In the following example, case \xcd`1` falls through to case \xcd`2`.  The
 other cases are separated by \xcd`break`s.
 %~~gen
 % package Statement.Case;
@@ -410,12 +411,11 @@ binds the iteration variable to another element of the collection.
 % } } 
 %~~neg
 
+A number of library classes implement \xcd`Iterable`, and thus can be iterated
+over.  For example, iterating over a \xcd`Region` iterates the \xcd`Point`s in
+the region, and iterating over a \xcd`DistArray` iterates over the
+\xcd`Point`s at which the distributed array is defined.
 
-
-Certain common variant cases are accepted.  If collection is of type
-\xcd"Region", the iteration variable may be of type \xcd"Point". 
-If the iteratable \xcd`e` is of type \xcd`Dist` or \xcd`Array`, it is treated
-as if it were \xcd`e.region`.  
 
 
 
