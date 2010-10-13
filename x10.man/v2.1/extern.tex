@@ -222,7 +222,7 @@ import x10.compiler.NativeCPPCompilationUnit;
 @NativeCPPInclude("MyCPPCode.h")
 @NativeCPPCompilationUnit("MyCPPCode.cc")
 public class Test {
-    public static def main (args:Rail[String]!) {
+    public static def main (args:Array[String](1)) {
         { @Native("c++","foo();") {} }
     }
 }

@@ -11,16 +11,16 @@ are described in \Sref{XtenActivities}.
 
 The empty statement \xcd";" does nothing.  It is useful when a
 loop header is evaluated for its side effects.  For example,
-the following code sums the elements of a rail.
+the following code sums the elements of a 1-dimensional array.
 
 %~~gen
 % package statements.should.be.called.commands.but.nobody.ever.does.that;
 % class EmptyStatementExample {
-% def summizmo (a:Rail[Int]){
+% def summizmo (a:Array[Int](1)){
 %~~vis
 \begin{xten}
 var sum: Int = 0;
-for (var i: Int = 0; i < a.length; i++, sum += a(i))
+for (var i: Int = 0; i < a.size; i++, sum += a(i))
     ;
 \end{xten}
 %~~siv

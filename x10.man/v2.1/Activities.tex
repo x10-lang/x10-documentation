@@ -516,7 +516,7 @@ exceptions, \xcd`finish S` wraps them in one layer of
 
 An \Xten{} computation is initiated from the command line on the
 presentation of a classname \xcd"C". The class must have a
-\xcd"public static def main(a: Rail[String]):Void" method, otherwise an
+\xcd"public static def main(a: Array[String](1)):Void" method, otherwise an
 exception is thrown
 and the computation terminates.  The single statement
 \begin{xten}
@@ -524,7 +524,8 @@ finish async (Place.FIRST_PLACE) {
   C.main(s);
 }
 \end{xten} 
-\noindent is executed where \xcd"s" is an Rail of strings created
+\noindent is executed where \xcd"s" is a one-dimensional \xcd`Array` of
+strings created 
 from the command line arguments. This single activity is the root activity
 for the entire computation. (See \Sref{XtenPlaces} for a discussion of
 places.)

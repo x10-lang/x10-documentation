@@ -126,8 +126,9 @@ They are used extensively in X10
 programs.  For example, the normal way to construct an \xcd`Array[Int](1)` --
 that is, a fixed-length array of numbers, like an \xcd`int[]` in Java -- is to
 pass two arguments to a factory method: the first argument being the length of
-the rail, and the second being a function which computes the initial value of
-the \xcd`i`{$^{th}$} element.  The following code constructs a rail
+the array, and the second being a function which computes the initial value of
+the \xcd`i`{$^{th}$} element.  The following code constructs a 1-dimensional
+array 
 initialized to the squares of 0,1,...,9: \xcd`r(0) == 0`, \xcd`r(5)==25`, etc. 
 %~~gen
 % package Overview.of.Functions.two;

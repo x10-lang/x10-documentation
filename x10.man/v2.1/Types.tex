@@ -1368,10 +1368,10 @@ which differ only in the names of formals (following the usual rules for
 renaming of variables, as in {$\alpha$}-renaming in the {$\lambda$} calculus
 \bard{cite something}) are considered equal.  \Eg, 
 %~~type~~`~~`~~ ~~
-\xcd`(a:Int, b:Rail[String]{b.length==a}) => Boolean`
+\xcd`(a:Int, b:Array[String](1){b.size==a}) => Boolean`
 and 
 %~~type~~`~~`~~ ~~
-\xcd`(b:Int, a:Rail[String]{a.length==b}) => Boolean`
+\xcd`(b:Int, a:Array[String](1){a.size==b}) => Boolean`
 are equivalent types.
 
 \limitationx{}
