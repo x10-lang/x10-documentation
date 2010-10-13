@@ -90,10 +90,10 @@ with these limitations; \eg, while they cannot {\em inherit} methods, they can
 have them -- as \xcd`PlanePoint` does.
 
 \Xten{} has no primitive classes per se. However, the standard library
-\xcd"x10.lang" supplies structs \xcd"Boolean", \xcd"Byte", \xcd"Short",
-\xcd"Char", \xcd"Int", \xcd"Long", \xcd"Float", \xcd"Double", \xcd"Complex"
-and \xcd"String". The user may defined additional arithmetic structs using the
-facilities of the language.
+\xcd"x10.lang" supplies structs and objects \xcd"Boolean", \xcd"Byte",
+\xcd"Short", \xcd"Char", \xcd"Int", \xcd"Long", \xcd"Float", \xcd"Double",
+\xcd"Complex" and \xcd"String". The user may defined additional arithmetic
+structs using the facilities of the language.
 
 
 
@@ -159,7 +159,7 @@ properties, and can work with them logically.
 For example, an implementation of matrices \xcd`Mat` might have the numbers of
 rows and columns as properties.  A little bit of care in definitions allows
 the definition of a \xcd`+` operation that works on matrices of the same
-shape, and \xcd`*` that works on matrices with appropriately matching shapes
+shape, and \xcd`*` that works on matrices with appropriately matching shapes.
 The following code typechecks, but an attempt to compute \xcd`axb1 + bxc` or
 \xcd`bxc * axb1` would result in a compile-time type error:
 %~~gen
@@ -307,7 +307,7 @@ An \Xten{} program is intended to run on a wide range of computers,
 from uniprocessors to large clusters of parallel processors supporting
 millions of concurrent operations. To support this scale, \Xten{}
 introduces the central concept of \emph{place} (\Sref{XtenPlaces}).
-A place can be thought of as a virtual shared-memory multi-processor:
+A place can be though of as a virtual shared-memory multi-processor:
 a computational unit with a finite (though perhaps changing) number of
 hardware threads and a bounded amount of shared memory, uniformly
 accessible by all threads.
@@ -443,9 +443,11 @@ computation.
 \Xten{} is designed for scalability, by encouraging working with local data,
 and limiting the ability of events at one place to delay those at another. For
 example, an activity may atomically access only multiple locations in the
-current place. Unconditional atomic blocks are statically guaranteed to be
+current place. Unconditional atomic blocks are dynamically guaranteed to be
 non-blocking, and may be implemented using non-blocking techniques that avoid
-mutual exclusion bottlenecks. Data-flow synchronization permits point-to-point
+mutual exclusion bottlenecks. 
+%TODO: yoav says: ``no idea what [the following] means''
+Data-flow synchronization permits point-to-point
 coordination between reader/writer activities, obviating the need for
 barrier-based or lock-based synchronization in many cases.
 
@@ -468,7 +470,8 @@ providing weaker static correctness guarantees but more programming
 convenience. 
 
 Memory safety guarantees that an object may only access memory within its
-representation, and other objects it has a reference to. \Xten{} supports no
+representation, and other objects it has a reference to. \Xten{} does not
+permit 
 pointer arithmetic, and bound-checks array accesses dynamically if necessary.
 \Xten{} uses garbage collection to collect objects no longer referenced by any
 activity. \Xten{} guarantees that no object can retain a reference to an
@@ -496,6 +499,7 @@ A key issue for any new programming language is how well it can be
 integrated with existing (external) languages, system environments,
 libraries and tools.
 
+%TODO: Yoav asks ``you mean interop''?
 We believe that \Xten{}, like \java{}, will be able to support a large
 number of libraries and tools. An area where we expect future versions
 of \Xten{} to improve on \java{} like languages is \emph{native
@@ -522,8 +526,3 @@ support for generic programming will allow the \Xten{} programmer to
 be highly productive; many of the tedious details of
 distribution-specific code can be handled in a generic fashion.
 
-We expect the next version of the language to be significantly
-informed by experience in implementing and using the language. We
-expect it to have constructs to support continuous program
-optimization, and allow the programmer to provide guidance on
-clustering places to (hardware) nodes. 

@@ -80,30 +80,32 @@ one or more memory locations in the place in which it resides,
 leveraging current symmetric multiprocessor (SMP) technology.  
 To access or update memory at other places, it must 
 spawn activities asynchronously (either explicitly or implicitly).
+%TODO yoav: ``using ``at'' one can update another place synchronously
 \Xten{} provides weaker ordering guarantees for
 inter-place data access, enabling applications to scale.  {\em
 Immutable} data needs no consistency management and may be freely
 copied by the implementation between places.  One or more {\em clocks}
 may be used to order activities running in multiple
-places.  Arrays may be distributed across multiple
-places. Arrays support parallel collective operations. A novel
+places.  \xcd`DistArray`s, distributed arrays,  may be distributed across
+multiple 
+places and  support parallel collective operations. A novel
 exception flow model ensures that exceptions thrown by asynchronous
 activities can be caught at a suitable parent activity.  The type
 system tracks which memory accesses are local. The programmer may
 introduce place casts which verify the access is local at run time.
 Linking with native code is supported.
 
-\XtenCurrVer builds on v1.7 to support the following features: {\em
-  structs} (i.e., ``header-less'', inlinable objects), type rules for
-preventing escape of \xcd{this} from a constructor, 
-the introduction of a global object model, permitting user-specified
-(immutable) fields to be replicated with the object reference.
-\xcd{value} classes are no longer supported; their functionality is
-accomplished by using structs or global fields and methods.
+%%OBSOLETE?%% \XtenCurrVer builds on v1.7 to support the following features: {\em
+%%OBSOLETE?%%   structs} (i.e., ``header-less'', inlinable objects), type rules for
+%%OBSOLETE?%% preventing escape of \xcd{this} from a constructor, 
+%%OBSOLETE?%% the introduction of a global object model, permitting user-specified
+%%OBSOLETE?%% (immutable) fields to be replicated with the object reference.
+%%OBSOLETE?%% \xcd{value} classes are no longer supported; their functionality is
+%%OBSOLETE?%% accomplished by using structs or global fields and methods.
+%%OBSOLETE?%% 
 
-
-Several representative idioms for concurrency and communication have
-already found pleasant expression in \Xten. We intend to develop
-several full-scale applications to get better experience with the
-language, and revisit the design in the light of this experience.
+%%OBSOLETE?%% Several representative idioms for concurrency and communication have
+%%OBSOLETE?%% already found pleasant expression in \Xten. We intend to develop
+%%OBSOLETE?%% several full-scale applications to get better experience with the
+%%OBSOLETE?%% language, and revisit the design in the light of this experience.
 

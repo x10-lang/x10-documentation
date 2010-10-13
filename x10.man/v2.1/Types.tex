@@ -63,7 +63,7 @@ arguments.
 These runtime entities are classified by {\em types}. Types are used in
 variable declarations, explicit coercions and conversions, object creation,
 array creation, class literals, static state and method accessors, and
-\xcd"instanceof" expressions.
+\xcd"instanceof" and \xcd`as` expressions.
 
 %% vj: We cannot use ``instantiation'' because technically it means
 %% something different. instantiation is the relationship between an
@@ -318,6 +318,7 @@ class Cell[T] {
 %~~neg
 
 
+%TODO: Yoav: ``This reasoning is no longer true in the new object model''
 \Xten{} does not permit mutable static state. A fundamental principle of the
 X10 model of computation is that all mutable state be local to some place
 (\Sref{XtenPlaces}), and, as static variables are globally available, they
@@ -358,7 +359,7 @@ properties which must be provided by any class declared to implement the
 interface. 
 
 
-Interfaces can also have static members: constant fields, type definitions,
+Interfaces can also have static members: static fields, type definitions,
 and member classes and interfaces.  However, interfaces cannot specify that
 implementing classes must provide static members.
 
@@ -381,13 +382,14 @@ interface NamedPoint extends Named, Mobile{}
 %~~neg
 
 
-Classes may be declared to implement multiple interfaces.
-Semantically, the interface type is the set of all objects that are
-instances of classes that implement the interface. A class implements
-an interface if it is declared to and if it implements all the methods
-and properties defined in the interface.  For example, \xcd`KimThePoint`
-implements \xcd`Person`, and hence \xcd`Named` and \xcd`Mobile`.  It would be
-a static error if \xcd`KimThePoint` had no \xcd`name` method.
+Classes may be declared to implement multiple interfaces. Semantically, the
+interface type is the set of all objects that are instances of classes that
+implement the interface. A class implements an interface if it is declared to
+and if it concretely or abstractly implements all the methods and properties
+defined in the interface. For example, \xcd`KimThePoint` implements
+\xcd`Person`, and hence \xcd`Named` and \xcd`Mobile`. It would be a static
+error if \xcd`KimThePoint` had no \xcd`name` method, unless it were also
+declared \xcd`abstract`.
 
 %~~gen
 %interface Named {
@@ -611,9 +613,11 @@ class Get[+T] {
 %~~neg
 
 
+%TODO - Yoav points out that the example uses ``var'', which is nonvariant.
 A typical example of contravariance is \xcd`Set`.  As the \xcd`example()`
 method shows,  a variety of objects\footnote{Objects but no structs.  If we
-had wanted structs too, we could have used a \xcd`Cell[Any]`.}  can be put into a
+had wanted structs too, we could have used a \xcd`Cell[Any]`.}  can be put
+into a 
 \xcd`Set[Object]`.  While the object itself cannot be retrieved, some summary
 information about it -- in this case, its \xcd`typeName` -- can be.  
 %~~gen
@@ -669,8 +673,12 @@ is covariant or contravariant is determined by the \Xcd{+} or \Xcd{-} annotation
 at that position in the declaration of \Xcd{C}.
 \end{itemize}
 
+%TODO: Yoav asks ``What are covariant and contravariant values?''
 There are similar restrictions on use of covariant and contravariant values. 
-\bard{Get them!  What are they?}
+
+%TODO: Yoav says ``There are other rules, not implemented or specified,
+%involving fields, inheritance, etc.  There are several JIRAs on it. No idea
+%what is the work around -- maybe just say ``limitation''?'''
 
 
 \section{Function Types}
@@ -686,7 +694,8 @@ For every sequence of types \xcd"T1,..., Tn,T", and \xcd"n" distinct variables
  omitted. Thus the type \xcd"(T1,...,Tn)=>T" is actually shorthand for
  \xcd"(x1:T1,...,xn:Tn){true}=>T", for some variables \xcd"x1,...,xn".
 
-
+\limitationx{}
+Constraints on closures are not supported.  They parse, but are not checked.
 
 
 \section{Type definitions}
@@ -699,7 +708,8 @@ types can often be verbose.
 For example, a non-null list of non-null strings is \\
 %~~type~~`~~`~~ ~~import x10.util.*;
 \xcd`List[String{self!=null}]{self!=null}`.
-\Xten{} provides {\em type definitions}
+\Xten{} provides {\em type definitions} as static members of classes and
+structs, 
 to allow users to give short names to long types, and to commonly-used
 combinations of types. 
 We could name that type: 
@@ -707,10 +717,10 @@ We could name that type:
 % package TypeDefs.glip.first;
 % import x10.util.*;
 % class LnSn {
-% static
+% 
 %~~vis
 \begin{xten}
-type LnSn = List[String{self!=null}]{self!=null};
+static type LnSn = List[String{self!=null}]{self!=null};
 \end{xten}
 %~~siv
 %}
@@ -796,7 +806,7 @@ parameters or with different types of value
 parameters, according to the method overloading rules
 (\Sref{MethodOverload}), define distinct type constructors.
 
-Type definitions may appear as (static) class or interface member or
+Type definitions must appear as static members or, 
 in a block statement.
 
 Type definitions are applicative, not generative; that is, they
@@ -825,6 +835,10 @@ parameters and is an alias for a class type, a \xcd"new"
 expression may be used to create an instance of the class using
 the type definition's name.
 Given the following type definition:
+%TODO: Yoav says ``I just opened a jira on it: [1918].  I don't think you
+% should be able to have {c} on the typedef A if you want to use it in a 'new'
+% expression. If we do allow it, then we should allow: new
+% Array[Int]{rank==1}(0..2) and new Array[Int](1)(0..2).
 \begin{xtenmath}
 type A = C[T$_1$, $\dots$, T$_k$]{c};
 \end{xtenmath}
@@ -1014,7 +1028,7 @@ Only the following forms of expression are allowed in constraints.
 \item Properties of the type being constrained;
 \item Property methods;
 \item \xcd`this`, if the constraint is in a place where \xcd`this` is defined;
-\item \xcd`here`;
+\item \xcd`here`, if the constraint is in a place where \xcd`here` is defined;
 \item \xcd`self`;
 \item Calls to property methods, where the receiver and arguments must be
       value expressions acceptable in constraints.
@@ -1028,7 +1042,8 @@ all value expressions are of the forms which may appear in constraints:
 \item Equalities \xcd`e == f`;
 \item Inequalities of the form \xcd`e != f`;\footnote{Currently inequalities
       of the form \xcd`e < f` are not supported.}
-\item Conjunctions of Boolean expressions that may appear in constraints;
+\item Conjunctions of Boolean expressions that may appear in constraints (but
+      only in top-level constraints, not in Boolean expressions in constraints);
 \item Subtyping and supertyping expressions: \xcd`T <: U` and \xcd`T :> U`; 
 \item Type equalities and inequalities: \xcd`T == U` and \xcd`T != U`; 
 \item Testing a type for a default: \Xcd{hasZero T}.
@@ -1096,7 +1111,7 @@ To ensure that type-checking is decidable, we require that property graphs be
 acyclic.  The property graph, at an instant in an X10 execution, is the graph
 whose nodes are all objects in existence at that instance, with an edge from
 {$x$} to {$y$} if {$x$} is an object with a property whose value is {$y$}. 
-
+The rules for constructors guarantee this.
 
 %%PLACE%%\subsection{Place constraints}
 %%PLACE%%\label{PlaceTypes}
@@ -1228,16 +1243,17 @@ vertices are not collinear.
 class Triangle 
  (a: Line, 
   b: Line{a.end == b.start}, 
-  c: Line{b.end == c.start && c.end == a.start})  {
-   def this(a:Line,
-            b: Line{a.end == b.start}, 
-            c: Line{b.end == c.start && c.end == a.start}) 
-   {property(a,b,c);}
+  c: Line{b.end == c.start && c.end == a.start})  
+ {
  }
 \end{xten}
 %~~siv
 %
 %~~neg
+
+The \xcd`Triangle` class automatically gets a ternary constructor which takes
+suitably constrained \xcd`a`, \xcd`b`, and \xcd`c` and produces a new
+triangle. 
 
 
 \subsection{Entailment of Constraints}
@@ -1262,7 +1278,7 @@ actually undecidable.
 Even with the restricted constraints available in X10, certain
 constraint entailments are prohibitively expensive to calculate.  The issues
 concern constraints that connect different levels of recursively-defined
-types.  
+types, such as the following.  
 %~~gen
 % package Types.Entailment.EntailFail;
 %~~vis
@@ -1277,6 +1293,11 @@ class Listlike(x:Int) {
 %~~siv
 %
 %~~neg
+There is nothing wrong with \xcd`Listlike` itself, or with most uses of it;
+however, a sufficiently complicated use of it could, in principle, cause X10's
+typechecker to fail. 
+It is hard to give a plausible example of when X10's algorithm fails, as we
+have not yet observed such a failure in practice for a correct program.  
 
 The entailment algorithm of X10 2.0 imposes a certain limit on the number of
 times such types will be unwound.   If this limit is exceeded, the compiler
@@ -1284,7 +1305,7 @@ will print a warning, and type-checking will fail in a situation where it is
 semantically allowed.  In this case, insert a dynamic cast at the point where
 type-checking failed.  
 
-\noo{An example would be nice}
+
 
 
 
@@ -1310,7 +1331,7 @@ val recip = (x : Double) => 1/x;
 %~~siv
 %}
 %~~neg
-and a function which increments  element \xcd`i` of a rail \xcd`r`, or throws an exception
+and a function which increments  element \xcd`i` of an array \xcd`r`, or throws an exception
 if there is no such element, where, for the sake of example, we constrain the
 type of \xcd`i`:  
 %~~gen
@@ -1319,8 +1340,8 @@ type of \xcd`i`:
 % static def example()  {
 %~~vis
 \begin{xten}
-val inc = (r:Rail[Int], i: Int{i != r.length}) => {
-  if (i < 0 || i >= r.length) throw new DoomExn();
+val inc = (r:Array[Int](1), i: Int{i != r.size}) => {
+  if (i < 0 || i >= r.size) throw new DoomExn();
   r(i)++;
 };
 \end{xten}
@@ -1353,6 +1374,10 @@ and
 \xcd`(b:Int, a:Rail[String]{a.length==b}) => Boolean`
 are equivalent types.
 
+\limitationx{}
+This is not currently implemented properly; these two types are presently
+considered different.
+
 The formal parameter names are in scope from the point of definition to the
 end of the function type---they may be used in the types of other formal parameters
 and in the return type. 
@@ -1362,14 +1387,14 @@ written as
 %~~type~~`~~`~~ ~~
 \xcd`(Double)=>Double`. 
 
-\begin{grammar}
-FunctionType \: TypeParameters\opt \xcd"(" Formals\opt \xcd")" Constraint\opt
-\xcd"=>" Type Throws\opt \\
-TypeParameters \: \xcd"[" TypeParameter ( \xcd"," TypeParameter
-)\star \xcd"]" \\
-TypeParameter \: Identifier \\
-Formals \: Formal ( \xcd"," Formal )\star \\
-\end{grammar}
+%%GRAMMAR%% \begin{grammar}
+%%GRAMMAR%% FunctionType \: TypeParameters\opt \xcd"(" Formals\opt \xcd")" Constraint\opt
+%%GRAMMAR%% \xcd"=>" Type Throws\opt \\
+%%GRAMMAR%% TypeParameters \: \xcd"[" TypeParameter ( \xcd"," TypeParameter
+%%GRAMMAR%% )\star \xcd"]" \\
+%%GRAMMAR%% TypeParameter \: Identifier \\
+%%GRAMMAR%% Formals \: Formal ( \xcd"," Formal )\star \\
+%%GRAMMAR%% \end{grammar}
 
 
 
