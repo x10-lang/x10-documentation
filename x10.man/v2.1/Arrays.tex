@@ -1,4 +1,4 @@
-\chapter{Local and Distributed Arrays}\label{XtenArrays}\index{arrays}
+f\chapter{Local and Distributed Arrays}\label{XtenArrays}\index{arrays}
 
 \Xcd{Array}s provide indexed access to data at a single \Xcd{Place}, {\em via}
 \Xcd{Point}s---indices of any dimensionality. \Xcd{DistArray}s is similar, but
@@ -610,63 +610,87 @@ into the array.
 
 
 
-\section{Array initializer}\label{ArrayInitializer}\label{array!creation}
+\section{Distributed Array Construction}\label{ArrayInitializer}\label{array!creation}
 
-Arrays are instantiated by invoking one of the \xcd`make` factory
-methods of the \xcd`Array` class.
-
-An array creation 
+\xcd`DistArray`s are instantiated by invoking one of the \xcd`make` factory
+methods of the \xcd`DistArray` class.
+A \xcd`DistArray` creation 
 must take either an \xcd`Int` as an argument or a \xcd`Dist`. In the first
-case an array is created over the distribution \xcd`[0:N-1]->here`;
+case,  a distributed array is created over the distribution \xcd`[0:N-1]->here`;
 in the second over the given distribution. 
 
-An array creation operation may also specify an initializer
+A distributed array creation operation may also specify an initializer
 function.
 The function is applied in parallel
-at all points in the domain of the distribution. The array
-construction operation terminates locally only when the array has been
+at all points in the domain of the distribution. The
+construction operation terminates locally only when the \xcd`DistArray` has been
 fully created and initialized (at all places in the range of the
 distribution).
 
 For instance:
+%~~gen
+% package Arrays.DistArray.Construction.FeralWolf;
+% class Example {
+% def example() {
+%~~vis
 \begin{xten}
-val data : Array[Int]
-    = Array.make[Int](1..1000->here, ((i):Point) => i);
-val data2 : Array[Int]
-    = Array.make[Int]([1..1000,1..1000]->here, ((i,j):Point) => i*j);
+val data : DistArray[Int]
+    = DistArray.make[Int](1..1000->here, ([i]:Point(1)) => i);
+val blocked = Dist.makeBlock((1..1000)*(1..1000));
+val data2 : DistArray[Int]
+    = DistArray.make[Int](blocked, ([i,j]:Point(2)) => i*j);
 \end{xten}
+%~~siv
+% }  }
+%~~neg
+
 
 {}\noindent 
 The first declaration stores in \xcd`data` a reference to a mutable
-array with \xcd`1000` elements each of which is located in the
-same place as the array. Each array component is initialized to \xcd`i`.
+distributed array with \xcd`1000` elements each of which is located in the
+same place as the array. The element at \Xcd{[i]} is initialized to its index
+\xcd`i`. 
 
 The second declaration stores in \xcd`data2` a reference to a mutable
-2-d array over \xcd`[1..1000, 1..1000]` initialized with \xcd`i*j`
+two-dimensional distributed array, whose coordinates both range from 1 to
+1000, distributed in blocks over all \xcd`Place`s, 
+initialized with \xcd`i*j`
 at point \xcd`[i,j]`.
 
-Other examples:
-\begin{xten}
-val D1:Dist(1) = ...; /* An expression that creates a Dist */
-val D2:Dist(2) = ...; /* An expression that creates a Dist */
+%%WHY-THIS-EXAMPLE%% In the following 
+%%WHY-THIS-EXAMPLE%% %~x~gen
+%%WHY-THIS-EXAMPLE%% % package Arrays.DistArrays.FlistArrays.GlistArrays;
+%%WHY-THIS-EXAMPLE%% %~x~vis
+%%WHY-THIS-EXAMPLE%% \begin{xten}
+%%WHY-THIS-EXAMPLE%% val D1:Dist(1) = Dist.makeBlock(1..100);
+%%WHY-THIS-EXAMPLE%% val D2:Dist(2) = Dist.makeBlock((1..100)*(-1..1));
+%%WHY-THIS-EXAMPLE%% val ints : Array[Int]
+%%WHY-THIS-EXAMPLE%%     = Array.make[Int](1000, ((i):Point) => i*i);
+%%WHY-THIS-EXAMPLE%% val floats1 : Array[Float]
+%%WHY-THIS-EXAMPLE%%     = Array.make[Float](D1, ((i):Point) => i*i as Float);
+%%WHY-THIS-EXAMPLE%% val floats2 : Array[Float]
+%%WHY-THIS-EXAMPLE%%    = Array.make[Float](D2, ((i,j):Point) => i+j as Float);;
+%%WHY-THIS-EXAMPLE%% \end{xten}
+%%WHY-THIS-EXAMPLE%% %~x~siv
+%%WHY-THIS-EXAMPLE%% %
+%%WHY-THIS-EXAMPLE%% %~x~neg
 
-val data : Array[Int]
-    = Array.make[Int](1000, ((i):Point) => i*i);
 
-val data2 : Array[Float]
-    = Array.make[Float](D1, ((i):Point) => i*i as Float);
+\section{Operations on Arrays and Distributed Arrays}
 
-val result : Array[Float]
-   = Array.make[Float](D2, ((i,j):Point) => i+j as Float);;
-\end{xten}
+Arrays and distributed arrays share many operations.
+In the following, let \xcd`a` be an array with base type T, and \xcd`da` be an
+array with distribution \xcd`D` and base type \xcd`T`.
 
-\section{Operations on arrays}
-In the following let \xcd`a` be an array with distribution \xcd`D` and
-base type \xcd`T`. 
+
+
 
 \subsection{Element operations}\index{array!access}
 The value of \xcd`a` at a point \xcd`p` in its region of definition is
-obtained by using the indexing operation \xcd`a(p)`. This operation
+%~~exp~~`~~`~~a:Array[Int](3), p:Point(3) ~~
+obtained by using the indexing operation \xcd`a(p)`. 
+The value of 
+This operation
 may be used on the left hand side of an assignment operation to update
 the value. The operator assignments \xcd`a(i) op= e` are also available
 in \Xten{}.
