@@ -1,4 +1,4 @@
-f\chapter{Local and Distributed Arrays}\label{XtenArrays}\index{arrays}
+\chapter{Local and Distributed Arrays}\label{XtenArrays}\index{arrays}
 
 \Xcd{Array}s provide indexed access to data at a single \Xcd{Place}, {\em via}
 \Xcd{Point}s---indices of any dimensionality. \Xcd{DistArray}s is similar, but
@@ -10,18 +10,13 @@ This chapter provides an overview of the \Xcd{x10.array} classes \Xcd{Array}
 and \Xcd{DistArray}, and their supporting classes \Xcd{Point}, \Xcd{Region}
 and \Xcd{Dist}.  
 
-The array library has been under intensive development recently, and
-much of the code examples in the language specification are
-out-of-date.  We will update this section of the language specification
-to match the final set of Array APIs in time for the 2.1.0 release of X10.
-
 
 \section{Points}\label{point-syntax}\index{point syntax}
 
-General arrays are indexed by \xcd`Point`s--$n$-dimensional tuples of
+General arrays are indexed by \xcd`Point`s, which are $n$-dimensional tuples of
 integers.  The \xcd`rank`
 property of a point gives its dimensionality.  Points can be constructed from
-integers or \xcd`ValRail`s by
+integers or \xcd`Array[Int](1)`s by
 the \xcd`Point.make` factory methods:
 %~~gen
 % package Arrays.Points.Example1;
@@ -83,7 +78,7 @@ val R1 = 1..100; // 1-dim region with extent 1..100
 val R2 = (1..100) as Region(1); // same as R1
 val R3 = (0..99) * (-1..MAX_HEIGHT);
 val R4 = Region.makeUpperTriangular(10);
-val R6 = R4 && R3; // intersection of two regions
+val R5 = R4 && R3; // intersection of two regions
 \end{xten}
 %~~siv
 % } } 
@@ -162,7 +157,7 @@ in the region, then so is every point $p_2$ between them (that is, it is {\em co
 The operation
 %~~exp~~`~~`~~R:Region ~~
 \xcd`R.boundingBox()` gives the smallest rectangular region containing
-\xcd`R`.)  
+\xcd`R`.
 
 \subsection{Operations on regions}
 
@@ -279,7 +274,6 @@ An \Xcd{Array[T]} \Xcd{A} has:
 %~~exp~~`~~`~~A:Array[Int] ~~
 \item \xcd`A.rank`, the rank of the points usable to subscript \Xcd{A}.
       Identical to \Xcd{A.region.rank}.
-\item 
 \end{itemize}
 
 \subsection{Array Constructors}
@@ -302,12 +296,13 @@ To construct a multiplication table, call
 %~~exp~~`~~`~~ ~~
 \xcd`new Array[Int]((0..9)*(0..9), (p:Point(2)) => p(0)*p(1))`.
 
-Other constructors are available; see the API documentation.
+Other constructors are available; see the API documentation and
+\Sref{sect:ArrayCtors}. 
 
 \subsection{Array Operations}
 
 The basic operation on \Xcd{Array}s is subscripting.  If \Xcd{A:Array[T]} and 
-\xcd`{p:Point{rank == A.rank}`, then \Xcd{a(p)} is the value of type \Xcd{T}
+\xcd`p:Point{rank == A.rank}`, then \Xcd{a(p)} is the value of type \Xcd{T}
 appearing at position \Xcd{p} in \Xcd{A}.    The syntax is identical to
 function application, and, indeed, arrays may be used as functions.
 \Xcd{A(p)} may be assigned to, as well, by the usual assignment syntax
@@ -350,73 +345,14 @@ for (p in A) A(p) = 2*A(p);
 %}}
 %~~neg
 
-\subsection{Higher-Order Array Operations}
 
-X10 has powerful operations which operation on the entirety of an array. Most
-of these take functions as an argument, explaining what to do to the array.
-
-\Xcd{A.map(f)} applies the function \Xcd{f} to all elements of \Xcd{A},
-collecting the results into a new array.  For example, 
-%~~gen
-%package Arrays.arrays.ginungagap.bakery.treats;
-%class Example{
-%def example() {
-%~~vis
-\begin{xten}
-val A = new Array[Int](1..10, (p:Point(1))=>p(0) );
-// A = 1,2,3,4,5,6,7,8,9,10
-val cube = (i:Int) => i*i;
-val B = A.map(cube);
-// B = 1,8,27,64,216,343,512,729,1000
-\end{xten}
-%~~siv
-%} } 
-%~~neg
-
-A variant operation lets you specify the array \Xcd{B} into which the result
-will be stored.   
-%~~gen
-%package Arrays.arrays.ginungagap.bakery.treats.doomed;
-%class Example{
-%def example() {
-%~~vis
-\begin{xten}
-val A = new Array[Int](1..10, (p:Point(1))=>p(0) );
-// A = 1,2,3,4,5,6,7,8,9,10
-val cube = (i:Int) => i*i;
-val B = new Array[Int](A.region); // B = 0,0,0,0,0,0,0,0,0,0
-A.map(B, cube);
-// B = 1,8,27,64,216,343,512,729,1000
-\end{xten}
-%~~siv
-%} } 
-%~~neg
-\noindent
-This is convenient if you have an already-allocated array lying around unused.
-In particular, it can be used if you don't need \Xcd{A} afterwards and want to
-reuse its space:
-%~~gen
-%package Arrays.arrays.ginungagap.bakery.treats.doomed.spackled;
-%class Example{
-%def example() {
-%~~vis
-\begin{xten}
-val A = new Array[Int](1..10, (p:Point(1))=>p(0) );
-// A = 1,2,3,4,5,6,7,8,9,10
-val cube = (i:Int) => i*i;
-A.map(A, cube);
-// A = 1,8,27,64,216,343,512,729,1000
-\end{xten}
-%~~siv
-%} } 
-%~~neg
-
-\noo{The rest of this has not been revised}
 
 \section{Distributions}\label{XtenDistributions}
 \index{distribution}
 
-A {\em distribution} is a mapping from a region to a set of places.
+Distributed arrays are spread across multiple \xcd`Place`s.  
+A {\em distribution}, a mapping from a region to a set of places, 
+describes where each element of a distributed array is kept.
 Distributions are embodied by the class \Xcd{x10.lang.Dist}.
 This class is \xcd`final` in
 {}\XtenCurrVer; future versions of the language may permit
@@ -608,6 +544,29 @@ into the array.
 %%What-Is-This-Example%% place.
 %%What-Is-This-Example%% 
 
+\section{Distributed Arrays}
+
+Distributed arrays, instances of \xcd`DistArray[T]`, are very much like
+\xcd`Array`s, except that they distribute information among multiple
+\xcd`Place`s according to a \xcd`Dist` value passed in as a constructor
+argument.  For example, the following code creates a distributed array holding
+a thousand cells, each initialized to 0.0, distributed via a block
+distribution over all places.
+%~~gen
+% package Arrays.Distarrays.basic.example;
+% class Example {
+% def example() {
+%~~vis
+\begin{xten}
+val R <: Region = 1..1000;
+val D <: Dist = Dist.makeBlock(R);
+val da <: DistArray[Float] = DistArray.make[Float](D, (Point(1))=>0.0f);
+\end{xten}
+%~~siv
+%}}
+%~~neg
+
+
 
 
 \section{Distributed Array Construction}\label{ArrayInitializer}\label{array!creation}
@@ -689,118 +648,233 @@ array with distribution \xcd`D` and base type \xcd`T`.
 The value of \xcd`a` at a point \xcd`p` in its region of definition is
 %~~exp~~`~~`~~a:Array[Int](3), p:Point(3) ~~
 obtained by using the indexing operation \xcd`a(p)`. 
-The value of 
+The value of \xcd`da` at \xcd`p` is similarly
+%~~exp~~`~~`~~da:DistArray[Int](3), p:Point(3) ~~
+\xcd`da(p)`
 This operation
 may be used on the left hand side of an assignment operation to update
-the value. The operator assignments \xcd`a(i) op= e` are also available
-in \Xten{}.
+the value: 
+%~~stmt~~`~~`~~a:Array[Int](3), p:Point(3), t:Int ~~
+\xcd`a(p)=t;`
+and 
+%~~stmt~~`~~`~~da:DistArray[Int](3), p:Point(3), t:Int ~~
+\xcd`da(p)=t;`
+The operator assignments, \xcd`a(i) += e` and so on,  are also
+available. 
 
-For array variables, the right-hand-side of an assignment must
-have the same distribution \xcd`D` as an array being assigned. This
-assignment involves
-control communication between the sites hosting \xcd`D`. Each
-site performs the assignment(s) of array components locally. The
-assignment terminates when assignment has terminated at all
-sites hosting \xcd`D`.
+It is a runtime error to use either \xcd`da(p)` or \xcd`da(p)=v` at a place
+other than \xcd`da.dist(p)`, \viz{} at the place that the element exists. 
 
-\subsection{Constant promotion}\label{ConstantArray}\index{arrays!constant promotion}
+%%HUH%%  For distributed array variables, the right-hand-side of an assignment must
+%%HUH%%  have the same distribution \xcd`D` as an array being assigned. This
+%%HUH%%  assignment involves
+%%HUH%%  control communication between the sites hosting \xcd`D`. Each
+%%HUH%%  site performs the assignment(s) of array components locally. The
+%%HUH%%  assignment terminates when assignment has terminated at all
+%%HUH%%  sites hosting \xcd`D`.
 
-For a distribution \xcd`D` and a val \xcd`v` of
-type \xcd`T` the expression \xcd`new Array[T](D, (p: Point) => v)`
-denotes the mutable array with
+\subsection{Constant promotion}\label{ConstantArray}\index{arrays!constant
+  promotion}
+
+For a region \xcd`R` and a value \xcd`v` of type \xcd`T`, the expression 
+%~~genexp~~`~~`~~T~~R:Region, v:T ~~
+\xcd`new Array[T](R, v)` 
+produces an array on region \xcd`R` initialized with value \xcd`v`
+Similarly, 
+for a distribution \xcd`D` and a value \xcd`v` of
+type \xcd`T` the expression 
+%~~genexp~~`~~`~~T ~~D:Dist, v:T ~~
+\xcd`DistArray.make[T](D, (Point(D.rank))=>v)`
+constructs a distributed array with
 distribution \xcd`D` and base type \xcd`T` initialized with \xcd`v`
 at every point.
 
+Note that \xcd`Array`s are constructed by constructor calls, but
+\xcd`DistArrays` are constructed by calls to the factory methods
+\xcd`DistArray.make`. This is because \xcd`Array`s are fairly simple objects,
+but \xcd`DistArray`s may be implemented by different classes for different
+distributions. The use of the factory method gives the library writer the
+freedom to select appropriate implementations.
+
+
 \subsection{Restriction of an array}\index{array!restriction}
 
-Let \xcd`D1` be a sub-distribution of \xcd`D`. Then \xcd`a | D1`
-represents the sub-array of \xcd`a` with the distribution \xcd`D1`.
-
+Let \xcd`R` be a sub-region of \xcd`da.region`. Then 
+%~~exp~~`~~`~~da:DistArray[Int](3), p:Point(3), R: Region(da.rank) ~~
+\xcd`da | R`
+represents the sub-\xcd`DistArray` of \xcd`da` on the region \xcd`R`.
+That is, \xcd`da | R` has the same values as \xcd`da` when subscripted by a
+%~~exp~~`~~`~~R:Region, da: DistArray[Int]{da.region.rank == R.rank} ~~
+point in region \xcd`R && da.region`, and is undefined elsewhere.
+`
 Recall that a rich set of operators are available on distributions
 (\Sref{XtenDistributions}) to obtain sub-distributions
 (e.g. restricting to a sub-region, to a specific place etc).
 
-\subsection{Assembling an array}
-Let \xcd`a1,a2` be arrays of the same base type \xcd`T` defined over
-distributions \xcd`D1` and \xcd`D2` respectively. Assume that both
-arrays are value or reference arrays. 
-\paragraph{Assembling arrays over disjoint regions}\index{array!union!disjoint}
-
-If \xcd`D1` and \xcd`D2` are disjoint then the expression \xcd`a1 || a2` denotes the unique array of base type \xcd`T` defined over the
-distribution \xcd`D1 || D2` such that its value at point \xcd`p` is
-\xcd`a1(p)` if \xcd`p` lies in \xcd`D1` and \xcd`a2(p)`
-otherwise. This array is a reference (value) array if \xcd`a1` is.
-
-\paragraph{Overlaying an array on another}\index{array!union!asymmetric}
-The expression
-\xcd`a1.overlay(a2)` (read: the array \xcd`a1` {\em overlaid with} \xcd`a2`)
-represents an array whose underlying region is the union of that of
-\xcd`a1` and \xcd`a2` and whose distribution maps each point \xcd`p`
-in this region to \xcd`D2(p)` if that is defined and to \xcd`D1(p)`
-otherwise. The value \xcd`a1.overlay(a2)(p)` is \xcd`a2(p)` if it is defined and \xcd`a1(p)` otherwise.
-
-This array is a reference (value) array if \xcd`a1` is.
-
-The expression \xcd`a1.update(a2)` updates the array \xcd`a1` in place
-with the result of \xcd`a1.overlay(a2)`.
-
-\oldtodo{Define Flooding of arrays}
-
-\oldtodo{Wrapping an array}
-
-\oldtodo{Extending an array in a given direction.}
-
-\subsection{Global operations }
+%%GONE-AWAY%%  \subsection{Assembling an array}
+%%GONE-AWAY%%  Let \xcd`da1,da2` be distributed arrays of the same base type \xcd`T` defined over
+%%GONE-AWAY%%  distributions \xcd`D1` and \xcd`D2` respectively. 
+%%GONE-AWAY%%  \paragraph{Assembling arrays over disjoint regions}\index{array!union!disjoint}
+%%GONE-AWAY%%  
+%%GONE-AWAY%%  
+%%GONE-AWAY%%  If \xcd`D1` and \xcd`D2` are disjoint then the expression 
+%%GONE-AWAY%%  %~x~genexp~~`~~`~~T ~~ da1: Array[T], da2: Array[T](da1.rank)~~
+%%GONE-AWAY%%  \xcd`da1 || da2` denotes the unique array of base type \xcd`T` defined over the
+%%GONE-AWAY%%  distribution \xcd`D1 || D2` such that its value at point \xcd`p` is
+%%GONE-AWAY%%  \xcd`a1(p)` if \xcd`p` lies in \xcd`D1` and \xcd`a2(p)`
+%%GONE-AWAY%%  otherwise. This array is a reference (value) array if \xcd`a1` is.
+%%GONE-AWAY%%  
+%%GONE-AWAY%%  \paragraph{Overlaying an array on another}\index{array!union!asymmetric}
+%%GONE-AWAY%%  The expression
+%%GONE-AWAY%%  \xcd`a1.overlay(a2)` (read: the array \xcd`a1` {\em overlaid with} \xcd`a2`)
+%%GONE-AWAY%%  represents an array whose underlying region is the union of that of
+%%GONE-AWAY%%  \xcd`a1` and \xcd`a2` and whose distribution maps each point \xcd`p`
+%%GONE-AWAY%%  in this region to \xcd`D2(p)` if that is defined and to \xcd`D1(p)`
+%%GONE-AWAY%%  otherwise. The value \xcd`a1.overlay(a2)(p)` is \xcd`a2(p)` if it is defined and \xcd`a1(p)` otherwise.
+%%GONE-AWAY%%  
+%%GONE-AWAY%%  This array is a reference (value) array if \xcd`a1` is.
+%%GONE-AWAY%%  
+%%GONE-AWAY%%  The expression \xcd`a1.update(a2)` updates the array \xcd`a1` in place
+%%GONE-AWAY%%  with the result of \xcd`a1.overlay(a2)`.
+%%GONE-AWAY%%  
+%%GONE-AWAY%%  \oldtodo{Define Flooding of arrays}
+%%GONE-AWAY%%  
+%%GONE-AWAY%%  \oldtodo{Wrapping an array}
+%%GONE-AWAY%%  
+%%GONE-AWAY%%  \oldtodo{Extending an array in a given direction.}
+%%GONE-AWAY%%  
+\subsection{Operations on Whole Arrays}
 
 \paragraph{Pointwise operations}\label{ArrayPointwise}\index{array!pointwise operations}
-The unary \xcd`lift` operation applies a function to each element of
-an array, returning a new array with the same distribution.
-The \xcd`lift` operation is implemented by the following method
-in \xcd`Array[T]`:
+The unary \xcd`map` operation applies a function to each element of
+a distributed or non-distributed array, returning a new distributed array with
+the same distribution, or a non-distributed array with the same region.
+For example, the following produces an array of cubes: 
+%~~gen
+%package Arrays.arrays.ginungagap.bakery.treats;
+%class Example{
+%def example() {
+%~~vis
 \begin{xten}
-def lift[S](f: (T) => S): Array[S](dist);
+val A = new Array[Int](1..10, (p:Point(1))=>p(0) );
+// A = 1,2,3,4,5,6,7,8,9,10
+val cube = (i:Int) => i*i*i;
+val B = A.map(cube);
+// B = 1,8,27,64,216,343,512,729,1000
 \end{xten}
+%~~siv
+%} } 
+%~~neg
 
-The binary \xcd`lift` operation takes a binary function and
-another
-array over the same distribution and applies the function
-pointwise to corresponding elements of the two arrays, returning
-a new array with the same distribution.
-The \xcd`lift` operation is implemented by the following method
-in \xcd`Array[T]`:
+A variant operation lets you specify the array \Xcd{B} into which the result
+will be stored.   
+%~~gen
+%package Arrays.arrays.ginungagap.bakery.treats.doomed;
+%class Example{
+%def example() {
+%~~vis
 \begin{xten}
-def lift[S,R](f: (T,S) => R, Array[S](dist)): Array[R](dist);
+val A = new Array[Int](1..10, (p:Point(1))=>p(0) );
+// A = 1,2,3,4,5,6,7,8,9,10
+val cube = (i:Int) => i*i*i;
+val B = new Array[Int](A.region); // B = 0,0,0,0,0,0,0,0,0,0
+A.map(B, cube);
+// B = 1,8,27,64,216,343,512,729,1000
 \end{xten}
+%~~siv
+%} } 
+%~~neg
+\noindent
+This is convenient if you have an already-allocated array lying around unused.
+In particular, it can be used if you don't need \Xcd{A} afterwards and want to
+reuse its space:
+%~~gen
+%package Arrays.arrays.ginungagap.bakery.treats.doomed.spackled;
+%class Example{
+%def example() {
+%~~vis
+\begin{xten}
+val A = new Array[Int](1..10, (p:Point(1))=>p(0) );
+// A = 1,2,3,4,5,6,7,8,9,10
+val cube = (i:Int) => i*i*i;
+A.map(A, cube);
+// A = 1,8,27,64,216,343,512,729,1000
+\end{xten}
+%~~siv
+%} } 
+%~~neg
+
+
+The binary \xcd`map` operation takes a binary function and
+another
+array over the same region or distributed array over the same  distribution,
+and applies the function 
+pointwise to corresponding elements of the two arrays, returning
+a new array or distributed array of the same shape.
+The following code adds two distributed arrays: 
+%~~gen
+% package Arrays.Pointwise.Pointless.Map2;
+% class Example{
+%~~vis
+\begin{xten}
+static def add(da:DistArray[Int], db: DistArray[Int]{da.dist==db.dist})
+    = da.map(db, Int.+);
+\end{xten}
+%~~siv
+%}
+%~~neg
+
+
 
 \paragraph{Reductions}\label{ArrayReductions}\index{array!reductions}
 
 Let \xcd`f` be a function of type \xcd`(T,T)=>T`.  Let
-\xcd`a` be a value or reference array over base type \xcd`T`.
+\xcd`a` be an array over base type \xcd`T`.
 Let \xcd`unit` be a value of type \xcd`T`.
 Then the
+%~~genexp~~`~~`~~ T ~~ f:(T,T)=>T, a : Array[T], unit:T ~~
 operation \xcd`a.reduce(f, unit)` returns a value of type \xcd`T` obtained
-by performing \xcd`f` on all points in \xcd`a` in some order, and in
-parallel.  The function \xcd`f` must be associative and
-commutative.  The value \xcd`unit` should satisfy
+by performing \xcd`f` on all points in \xcd`a` in some unspecified order
+(perhaps in parallel).  In order to guarantee that the result is precisely
+determined, the  function \xcd`f` should be associative and
+commutative, and the value \xcd`unit` should satisfy
 \xcd`f(unit,x)` \xcd`==` \xcd`x` \xcd`==` \xcd`f(x,unit)`.
+For example, 
+%~~gen
+% package Arrays.Reductions.And.Emulsions;
+% class Example {
+% def example() {
+%~~vis
+\begin{xten}
+val a = [1,2,3,4];
+val sum = a.reduce(Int.+, 0); 
+assert(sum == 10); // 10 == 1+2+3+4
+\end{xten}
+%~~siv
+%}}
+%~~neg
 
+
+
+\xcd`DistArray`s have the same operation.
 This operation involves communication between the places over which
-the array is distributed. The \Xten{} implementation guarantees that
+the \xcd`DistArray` is distributed. The \Xten{} implementation guarantees that
 only one value of type \xcd`T` is communicated from a place as part of
 this reduction process.
 
 \paragraph{Scans}\label{ArrayScans}\index{array!scans}
 
-Let \xcd`f` be a reduction operator defined on type \xcd`T`. Let
-\xcd`a` be a value or reference array over base type \xcd`T` and
-distribution \xcd`D`. Then the operation \xcd`a||f()` returns an array
-of base type \xcd`T` and distribution \xcd`D` whose $i$th element
-(in canonical order) is obtained by performing the reduction \xcd`f`
-on the first $i$ elements of \xcd`a` (in canonical order).
 
-This operation involves communication between the places over which
-the array is distributed. The \Xten{} implementation will endeavour to
+Let \xcd`f:(T,T)=>T`, \xcd`unit:T`, and \xcd`a` be an \xcd`Array[T]` or
+\xcd`DistArray[T]`.  Then \xcd`a.scan(f,unit)` is the array or distributed
+array of type \xcd`T` whose {$i$}th element in canonical order is the
+reduction by \xcd`f` with unit \xcd`unit` of the first {$i$} elements of
+\xcd`a`. 
+
+
+This operation involves communication between the places over which the
+distributed array is distributed. The \Xten{} implementation will endeavour to
 minimize the communication between places to implement this operation.
 
-Other operations on arrays may be found in \xcd`x10.lang.Array` and
-other related classes.
+Other operations on arrays, distributed arrays, and the related classes may be
+found in the \xcd`x10.array` package.

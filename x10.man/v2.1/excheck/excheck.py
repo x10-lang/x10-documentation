@@ -29,6 +29,7 @@ def dealWithExample(f, line, basename):
     if cmd == "stmt" : doStmt(cmd, args, f, line, basename)
     elif cmd == "gen" : doGen(cmd, args, f, line, basename)
     elif cmd == "exp" : doExp(cmd, args, f, line, basename)
+    elif cmd == "genexp" : doGenExp(cmd, args, f, line, basename)
     elif cmd == "longexp" : doLongexp(cmd, args, f, line, basename)
     elif cmd == "type" : doType(cmd, args, f, line, basename)
     else:
@@ -94,6 +95,33 @@ def doExp(cmd, args, f, line, basename):
           importses, 
           "public class " + classname + "{",
           "  def check(" + formals + ")  = " + exp + ";"
+          "  }"])
+    writeX10File(classname, code)
+
+# IN:
+#   %~~genexp~~xcd`~~`~~T~~a:T, f:(T)=>Int
+#   There should be \xcd`f(a)` potato chips.
+# OUT:
+#   public class Chippie13 {
+#     def check[T](a:T, f:(T)=>Int) = f(a);
+#   }
+def doGenExp(cmd, args, f, line, basename):
+    if len(args) != 4 and len(args) != 5:
+        doom("'genexp' takes 4 args -- in " + basename  + "\nline="  + line + " ... plus optionally a fifth for imports and such.")
+    starter = args[0]
+    global currentLine
+    ender = args[1]
+    generics = args[2]
+    formals = args[3].strip()
+    importses = args[4] if len(args)==5 else ""
+    exp = extract(f, starter, ender, basename)
+    classname = numberedName(basename)
+    code = "\n".join([
+          " package expsome." + classname + ";",
+          "// file " + basename + " line " + str(currentLine),
+          importses, 
+          "public class " + classname + "{",
+          "  def check[" + generics + "](" + formals + ")  = " + exp + ";"
           "  }"])
     writeX10File(classname, code)
 
