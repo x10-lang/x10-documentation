@@ -6,71 +6,121 @@ variable and expression has a type that is known at compile-time.
 Types limit the values that variables can hold and specify the places
 at which these values can lie.
 
-
 {}\Xten{} supports three kinds of runtime entities, {\em objects},
 {\em structs}, and {\em functions}. Objects are instances of {\em
-  classes} (\Sref{ReferenceClasses}). They may contain mutable fields
-and stay resident in the place in which they were
-created. 
-Objects are said to be {\em boxed} in that variables of a
-class type are implemented through a single memory location that
-contains a reference to the memory containing the declared state of
-the object (and other meta-information such as the list of methods of
-the object). Thus objects are represented through an extra level of
-indirection. A consequence of this flexibility is that every class
-type contains the value \Xcd{null} corresponding to the invalid
-reference. \Xcd{null} is often useful as a default value. Further, two
-objects may be compared for identity (\Xcd{==}) in constant time by
-simply containing references to the memory used to represent the
-objects.
+  classes} (\Sref{ReferenceClasses}). They may contain zero or
+more mutable fields, and a reference to the list of methods defined on them.
 
-Structs are instances of {\em struct types} (\Sref{StructClasses}). They are a
-restricted variant of classes, lacking meta-information; this makes them less
-flexible, but in many cases more efficient. When it is semantically
-meaningful, converting a class into a struct or vice-versa is quite easy.
-Structs are immutable and may be freely copied from place to place. Further,
-they may be allocated inline, using only as much memory as necessary to hold
-and align the fields of the struct.
+An object is represented by some (contiguous) memory chunk on the
+heap. Entities (such as variables and fields) contain a {\em
+  reference} to this chunk. That is, objects are represented through
+an extra level of indirection.  A consequence of this flexibility is
+that an entity containing a reference to an object \xcd{o} needs only
+one word of memory to represent that reference, regardess of the
+number of fields in \xcd{o}. An assignment to this entity simply
+overwrites the reference with another reference (thus takes constant
+time). Another consequence is that every class type contains the value
+\Xcd{null} corresponding to the invalid reference. \Xcd{null} is often
+useful as a default value. Further, two objects may be compared for
+identity (\Xcd{==}) in constant time by simply comparing references to
+the memory used to represent the objects. The default hash code for an
+object is based on the value of this reference. A downside of this
+flexibility is that the operations of accessing a field and invoking a
+method are more expensive than simply reading a memory location and
+invoking a function pointer (respectively). 
+
+%% TODO vj: discussion is still somewhat awkward. Need a term like
+%% linking that can be used uniformly for objects nad structs to
+%% represent the connection between the entity and its contained
+%% value. 
+
+Structs are instances of {\em struct types} (\Sref{StructClasses}).  A
+struct is represented without the extra level of indirection, with a
+memory chunk of size $N$ words precisely big enough to store the value
+of every field of the struct (modulo alignment). Thus structs cannot
+be shared. Entities (such as variables and fields) refering to the
+struct must allocate $N$ words to directly contain the chunk.  An
+assignment to this entity must copy the $N$ words representing the
+right hand side into the left hand side. Since there are no references
+to structs, \Xcd{null} is not a legal value for a struct
+type. Comparison for identity (\Xcd{==}) involves examining $N$
+words. Additionally, structs do not have any mutable fields, hence
+they can be freely copied. The payoff for these restrictions lies in
+that field access is implemented by reading a single memory location
+and method invocation is implemented by invoking a function pointer.
 
 Functions, called closures or lambda-expressions in other languages, are
-instances of {\em function types|} (\Sref{Functions}). Functions can refer to
-%~~exp~~`~~`~~y:Int ~~
-variables from the surrounding environment; \eg, \xcd`(x:Int)=>x*y` is a unary
-integer function which multiplies its argument by the variable \xcd`y` from
-the surrounding block.  
-Functions may be freely copied from place to place and may be repeatedly
-applied to a set of arguments.
+instances of {\em function types|} (\Sref{Functions}). 
+%% TODO vj: Check awk English.
+A function has zero or more {\em arguments} and a {\em body}, which is
+an expression that can reference these arguments and also other
+variables in the surrounding block. For instance, \xcd`(x:Int)=>x*y`
+is a unary integer function which multiplies its argument by the
+variable \xcd`y` from the surrounding block.  Functions may be freely
+copied from place to place and may be repeatedly applied to a set of
+arguments.
 
 These runtime entities are classified by {\em types}. Types are used in
 variable declarations, explicit coercions and conversions, object creation,
 array creation, class literals, static state and method accessors, and
 \xcd"instanceof" expressions.
 
-The basic relationship between values and types is {\em instantiation}. For
-example, \xcd`1` is an instance of type of integers, \xcd`Int`. It is also an
-instance of type of all entities \xcd`Any`, and of type of nonzero integers
-\xcd`Int{self != 0}`, and many others.
+%% vj: We cannot use ``instantiation'' because technically it means
+%% something different. instantiation is the relationship between an
+%% object and a type. e.g. null instanceof C fails.
 
-The basic relationship between types is {\em subtyping}: \xcd`T <: U` holds if
-every instance of \xcd`T` is also an instance of \xcd`U`. Two important kinds
-of subtyping are {\em subclassing} and {\em strengthening}.  Subclassing is a
-familiar notion from object-oriented programming.  In a class
-hierarchy with classes \xcd`Animal` and \xcd`Cat` arranged in the usual way,
-every \xcd`Cat` is an \xcd`Animal`, so \xcd`Cat <: Animal` by subclassing.  
-Strengthening is an equally familiar notion from logic.   The instances of
-\xcd`Int{self != 0}` are all elements of \xcd`Int{true}` as well, because
-\xcd`self != 0` logically implies \xcd`true`; so 
-\xcd`Int{self != 0} <: Int{true} == Int` by strengthening.  X10 uses both
-notions of subtyping.  See \Sref{DepType:Equivalence} for the full definition
+The basic relationship between values and types is the {\em is an
+  element of} relation.  We also often say ``$e$ has type $T$'' to
+mean ``$e$ is an element of type $T$''.  For example, \xcd`1` has type
+\xcd`Int` (the type of all integers representible in 32 bits). It also
+has type \xcd`Any` (since all entitites have type \xcd`Any`), type
+\xcd`Int{self != 0}` (the type of nonzero integers), type
+\xcd`Int{self == 1}` (the type of integers which are equal to \xcd`1`,
+this type contains only one element), etc.
+
+%% vj. Bard, the text below is wrong. You have given an extensional
+%% description (i.e. a relation on the sets of values that satisfy a
+%% given type).  Unfortunately that is not accurate. subtyping is an 
+%% intensional notion -- it depends on how the inheritance is
+%% *defined*. This is a consequence of the fact that X10 uses nominal
+%% subtyping, like Java.
+%% I have added the correct text below.
+
+The basic relationship between types is {\em subtyping}: \xcd`T <: U`
+holds if every instance of \xcd`T` is also an instance of \xcd`U`. Two
+important kinds of subtyping are {\em subclassing} and {\em
+  strengthening}. Subclassing is a familiar notion from
+object-oriented programming. Here we use it to refer to the
+relationship between a class and another class it extends, and the
+relationship between a class and another interface it implements. For
+instance, in a class hierarchy with classes \xcd`Animal` and \xcd`Cat`
+such that \xcd`Cat` extends \xcd`Mammal` and \xcd`Mammal` extends
+\xcd`Animal`, every instance of \xcd`Cat` is by definition an instance
+of \xcd`Animal` (and \xcd`Mammal`). We say that \xcd`Cat` is a
+subclass of \xcd`Animal`, or \xcd`Cat <: Animal` by subclassing. If
+\xcd`Animal` implements \xcd`Thing`, then \xcd`Cat` also implements
+\xcd`Thing`, and we say \xcd`Cat <: Thing` by subclassing.
+Strengthening is an equally familiar notion from logic.  The instances
+of \xcd`Int{self == 1}` are all elements of \xcd`Int{self != 0}` as well,
+because \xcd`self == 1` logically implies \xcd`self != 0`; so \xcd`Int{self
+  == 1} <: Int{self !=0}` by strengthening.  X10 uses both notions
+of subtyping.  See \Sref{DepType:Equivalence} for the full definition
 of subtyping in X10.
 
 \subsection{Type System}
 \index{type system}
-The types in X10 are as follows.  These are the {\em semantic} types. Other
+The types in X10 are as follows.  
+%% TODO vj: semantic is  a wonderful but very misused word. Lets use some
+%% other term here -- if we need to. I would actually just prefer not
+%% making a distinction. Lets just define all types here, following
+%% the syntax.
+These are the {\em semantic} types. Other
 syntactic forms for types exist, but they are simply abbreviations for types
 in the following system.  For example, \xcd`Array[Int](1)` is the type of
 one-dimensional integer-valued arrays; it is an abbreviation for
 \xcd`Array[Int]{rank==1}`.\\
+%% vj: Hmm.. where did this grammar come from. Lets make sure we use
+%% the same productions throughout the text.
 \begin{grammar}
 
 Type \: TypeName \\
@@ -101,12 +151,12 @@ Given a class declaration
 %package Types.Core.TypeName; 
 %~~vis
 \begin{xten}
-class Tripe { /* ... */ }
+class Triple { /* ... */ }
 \end{xten}
 %~~siv
 %
 %~~neg
-the identifier \xcd`Tripe` may be used as a type.
+the identifier \xcd`Triple` may be used as a type.
 
 The type {\em TypeName \xcd`[` Types{$^?$} \xcd`]`} refers to an instance of a
 generic (or parameterized) type.  For example, \xcd`Array[X]` is the built-in
@@ -120,7 +170,7 @@ subset of X10 -- describing the acceptable values of the constrained type.
 For example, \xcd`var n : Int{self != 0};` guarantees that \xcd`n` is always a
 non-zero integer. 
 %~~stmt~~`~~`~~ ~~class Tripe{}
-Similarly, \xcd`var x : Tripe{x != null};` defines a \xcd`Tripe`-valued
+Similarly, \xcd`var x : Triple{x != null};` defines a \xcd`Triple`-valued
 variable \xcd`x` whose value is never null.
 
 The qualified type {\em Type \xcd`.` Type} refers to an instance of an {\em
