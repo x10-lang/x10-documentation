@@ -114,13 +114,34 @@ The types in X10 are as follows.
 %% other term here -- if we need to. I would actually just prefer not
 %% making a distinction. Lets just define all types here, following
 %% the syntax.
-These are the {\em semantic} types. Other
+These are the {\em elementary} types. Other
 syntactic forms for types exist, but they are simply abbreviations for types
 in the following system.  For example, \xcd`Array[Int](1)` is the type of
 one-dimensional integer-valued arrays; it is an abbreviation for
 \xcd`Array[Int]{rank==1}`.\\
 %% vj: Hmm.. where did this grammar come from. Lets make sure we use
 %% the same productions throughout the text.
+%%
+%% Bard: I wrote it.  The actual grammar is pretty turgid.
+%% e.g., (13) splits Type into FunctionType and the perplexingly-named 
+%% ConstrainedType, and (17) splits ConstrainedType into three subcategories,
+%% (which might not have explicit constraints despite being ConstrainedType, 
+%% and done of which is simply parenthesized (for grouping I guess)).
+%% It may make for good parsing, but it's not going to make good exposition.
+%% 
+%% We *should* use the same nonterminal names though.
+%%
+%% Here's how I think stuff corresponds when the names are different: 
+%%  [ Types? ] --> TypeArguments  
+%%  Types? --> TypeArgumentList 
+%%  Constraint --> DepParams, only without ExistentialList? 
+%%  TypeVar --> ??  (I don't know that the grammar is phrased this way)
+%%  Formals --> FormalParameterList
+%%  Formal ---> FormalParemeter
+%% 
+%%  The stuff about Void confuses me.  I don't see it in the grammar, 
+%%  but X10 accepts:     val f : (Int)=>Void  = (Int):Void => {};
+%%  but Void is not a type, so WTF?
 \begin{grammar}
 
 Type \: TypeName \\
