@@ -102,8 +102,8 @@ subclass of \xcd`Animal`, or \xcd`Cat <: Animal` by subclassing. If
 \xcd`Thing`, and we say \xcd`Cat <: Thing` by subclassing.
 Strengthening is an equally familiar notion from logic.  The instances
 of \xcd`Int{self == 1}` are all elements of \xcd`Int{self != 0}` as well,
-because \xcd`self == 1` logically implies \xcd`self != 0`; so \xcd`Int{self
-  == 1} <: Int{self !=0}` by strengthening.  X10 uses both notions
+because \xcd`self == 1` logically implies \xcd`self != 0`; so 
+\xcd`Int{self  == 1} <: Int{self !=0}` by strengthening.  X10 uses both notions
 of subtyping.  See \Sref{DepType:Equivalence} for the full definition
 of subtyping in X10.
 
