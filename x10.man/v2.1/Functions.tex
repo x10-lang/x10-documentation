@@ -364,7 +364,7 @@ class Span(low:Int, high:Int) {
   def example() {
     val digit = new Span(0,9);
     val isDigit : (Int) => Boolean = digit.between.(Int);
-    if (isDigit(8)) x10.io.Console.OUT.println("8 is!");
+    if (isDigit(8)) Console.OUT.println("8 is!");
   }
 }
 \end{xten}
@@ -437,9 +437,9 @@ function bound to the static method named \xcd"m", with argument types
 \xcdmath"(T$_1$, $\dots$, T$_n$)" for the type \xcd"T". The return type
 of the function is specified by the declaration of \xcd"T.m".
 
-Users of a function type do not care whether a function was defined
-directly (using the function syntax), or obtained via (static or
-instance) function selectors.
+There is no difference between using a function defined directly 
+directly using the function syntax, or obtained via static or
+instance function selectors.
 
 
 \section{Operator functions}
@@ -452,7 +452,7 @@ Every operator (e.g.,
 \xcd"/",
 \dots) has a family of functions, one for
 each type on which the operator is defined. The function can be
-selected using the "." syntax:
+selected using the ``\xcd`.`'' syntax:
 
 \begin{grammar}
 OperatorFunction
@@ -513,61 +513,61 @@ operations; instead, the operands are coerced individually via implicit
 coercions (\Sref{XtenConversions}), as appropriate.
 
 
-\begin{planned}
-
-{\bf The following is not implemented in version 2.0.3:}
-
-Additionally, for every expression \xcd"e" of a type \xcd"T" at which a binary
-operator \xcd"OP" is defined, the expression \xcd"e.OP" or
-\xcd"e.OP(T)" represents the function
-defined by:
-
-\begin{xten}
-(x: T): T => { e OP x }
-\end{xten}
-
-\begin{grammar}
-Primary \: Expr \xcd"." Operator \xcd"(" Formals\opt \xcd")" \\
-        \| Expr \xcd"." Operator \\
-\end{grammar}
-
-%% For every expression \xcd"e" of a type \xcd"T" at which a unary
-%%operator \xcd"OP" is defined, the expression \xcd"e.OP()"
-%% represents the function defined by:
-
-%% \begin{xten}
-%% (): T => { OP e }
-%% \end{xten}
-
-For example,
-one may write an expression that adds one to each member of a
-list \xcd"xs" by:
-
-%%TODO -- when this topic works, make the example wwork too.
-%~x~gen
-% package Functions2.Wants.A.Dinner.Reservation;
-% import x10.util.*;
-% class Reservation {
-% def smerp() {
-%   val xs = new ArrayList[Int]();
-%~x~vis
-\begin{xten}
-xs.map(1.+);
-\end{xten}
-%~x~siv
-% }
-% }
-%
-%~x~neg
-\end{planned}
-
-
+%%WE-NEVER-GOT-TO-IT%%  \begin{planned}
+%%WE-NEVER-GOT-TO-IT%%  
+%%WE-NEVER-GOT-TO-IT%%  {\bf The following is not implemented in version 2.0.3:}
+%%WE-NEVER-GOT-TO-IT%%  
+%%WE-NEVER-GOT-TO-IT%%  Additionally, for every expression \xcd"e" of a type \xcd"T" at which a binary
+%%WE-NEVER-GOT-TO-IT%%  operator \xcd"OP" is defined, the expression \xcd"e.OP" or
+%%WE-NEVER-GOT-TO-IT%%  \xcd"e.OP(T)" represents the function
+%%WE-NEVER-GOT-TO-IT%%  defined by:
+%%WE-NEVER-GOT-TO-IT%%  
+%%WE-NEVER-GOT-TO-IT%%  \begin{xten}
+%%WE-NEVER-GOT-TO-IT%%  (x: T): T => { e OP x }
+%%WE-NEVER-GOT-TO-IT%%  \end{xten}
+%%WE-NEVER-GOT-TO-IT%%  
+%%WE-NEVER-GOT-TO-IT%%  \begin{grammar}
+%%WE-NEVER-GOT-TO-IT%%  Primary \: Expr \xcd"." Operator \xcd"(" Formals\opt \xcd")" \\
+%%WE-NEVER-GOT-TO-IT%%          \| Expr \xcd"." Operator \\
+%%WE-NEVER-GOT-TO-IT%%  \end{grammar}
+%%WE-NEVER-GOT-TO-IT%%  
+%%WE-NEVER-GOT-TO-IT%%  %% For every expression \xcd"e" of a type \xcd"T" at which a unary
+%%WE-NEVER-GOT-TO-IT%%  %%operator \xcd"OP" is defined, the expression \xcd"e.OP()"
+%%WE-NEVER-GOT-TO-IT%%  %% represents the function defined by:
+%%WE-NEVER-GOT-TO-IT%%  
+%%WE-NEVER-GOT-TO-IT%%  %% \begin{xten}
+%%WE-NEVER-GOT-TO-IT%%  %% (): T => { OP e }
+%%WE-NEVER-GOT-TO-IT%%  %% \end{xten}
+%%WE-NEVER-GOT-TO-IT%%  
+%%WE-NEVER-GOT-TO-IT%%  For example,
+%%WE-NEVER-GOT-TO-IT%%  one may write an expression that adds one to each member of a
+%%WE-NEVER-GOT-TO-IT%%  list \xcd"xs" by:
+%%WE-NEVER-GOT-TO-IT%%  
+%%WE-NEVER-GOT-TO-IT%%  %%TODO -- when this topic works, make the example wwork too.
+%%WE-NEVER-GOT-TO-IT%%  %~x~gen
+%%WE-NEVER-GOT-TO-IT%%  % package Functions2.Wants.A.Dinner.Reservation;
+%%WE-NEVER-GOT-TO-IT%%  % import x10.util.*;
+%%WE-NEVER-GOT-TO-IT%%  % class Reservation {
+%%WE-NEVER-GOT-TO-IT%%  % def smerp() {
+%%WE-NEVER-GOT-TO-IT%%  %   val xs = new ArrayList[Int]();
+%%WE-NEVER-GOT-TO-IT%%  %~x~vis
+%%WE-NEVER-GOT-TO-IT%%  \begin{xten}
+%%WE-NEVER-GOT-TO-IT%%  xs.map(1.+);
+%%WE-NEVER-GOT-TO-IT%%  \end{xten}
+%%WE-NEVER-GOT-TO-IT%%  %~x~siv
+%%WE-NEVER-GOT-TO-IT%%  % }
+%%WE-NEVER-GOT-TO-IT%%  % }
+%%WE-NEVER-GOT-TO-IT%%  %
+%%WE-NEVER-GOT-TO-IT%%  %~x~neg
+%%WE-NEVER-GOT-TO-IT%%  \end{planned}
+%%WE-NEVER-GOT-TO-IT%%  
+%%WE-NEVER-GOT-TO-IT%%  
 \section{Functions as objects of type \Xcd{Any}}
 \label{FunctionAnyMethods}
 
 \label{FunctionEquality}
 \index{function!equality} \index{equality!function} Two functions \Xcd{f} and
-\Xcd{g} are equal (``\Xcd{==}'') if both are instances of classes and the same
+\Xcd{g} are equal, \xcd`f==g` if both are instances of classes and the same
 object, or if both were obtained by the same evaluation of a function
 literal.\footnote{A literal may occur in program text within a loop, and hence
   may be evaluated multiple times.} Further, it is guaranteed that if two
@@ -583,11 +583,9 @@ be a function which returns {$n$} on its {$n^{th}$} invocation. However,
 
 
 Every function type implements all the methods of \Xcd{Any}.
-b\xcd`f.equals(g)` is equivalent to \xcd`f==g`.  \xcd`f.hashCode()`, 
+\xcd`f.equals(g)` is equivalent to \xcd`f==g`.  \xcd`f.hashCode()`, 
 \xcd`f.toString()`, and \xcd`f.typeName()` are implementation-dependent, but
 respect \xcd`equals` and the basic contracts of \xcd`Any`. 
-\xcd`f.home()` returns \xcd`here` and \xcd`f.at(x)`
-always returns true, as for structs.
 
 \index{function!equals}
 \index{function!hashCode}
