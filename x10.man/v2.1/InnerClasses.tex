@@ -1,4 +1,5 @@
-\subsection{Static Nested Classes}
+\section{Static Nested Classes}
+\label{StaticNestedClasses}
 \index{class!static nested}
 \index{class!nested}
 \index{static nested class}
@@ -27,7 +28,8 @@ class Outer {
 %
 %~~neg
 
-\subsection{Inner Classes}
+\section{Inner Classes}
+\label{InnerClasses}
 \index{class!inner}
 \index{inner class}
 
@@ -156,7 +158,7 @@ class Outer {
 %~~neg
 
 
-\subsubsection{Constructors and Inner Classes}
+\subsection{Constructors and Inner Classes}
 \index{inner class!constructor}
 
 If \xcd`IC` is an inner class of \xcd`OC`, then instance code in the body of
@@ -205,4 +207,100 @@ class Elsewhere{
 
 
 
-\noo{Local Classes}
+%%LOCAL-CLASSES%% \section{Local Classes}
+%%LOCAL-CLASSES%% 
+%%LOCAL-CLASSES%% Classes can be defined and instantiated in the middle of methods and other
+%%LOCAL-CLASSES%% code blocks. Local classes are local to the block in which they are defined.
+%%LOCAL-CLASSES%% They have access to almost everything defined at that point in the method; the
+%%LOCAL-CLASSES%% one exception is that they cannot use \xcd`var` variables.  Local classes
+%%LOCAL-CLASSES%% cannot be \xcd`public` or \xcd`protected`, because they are only visible from
+%%LOCAL-CLASSES%% within the block of declaration. They cannot be \xcd`static`.
+%%LOCAL-CLASSES%% 
+%%LOCAL-CLASSES%% 
+
+\section{Anonymous Classes}
+
+It is possible to define a new class and instantiate it as part of an
+expression.  The new class can extend an extant class or interface.  Its body
+can include all of the usual members of a class. It can refer to any
+identifiers available at that point in the expression --- except for \xcd`var`
+variables.  
+
+Anonymous classes are useful when you want to package several pieces of
+behavior together (a single piece of behavior can often be expressed as a
+function, which is syntactically lighter-weight), or if you want to extend and
+vary an extant class without going through the trouble of actually defining a
+whole new class.
+
+The syntax for an anonymous class is a constructor call followed immediately
+by a braced class body: \xcd`new C(1){def foo()=2;}`.
+
+In the following minimalist example, the abstract class \xcd`Choice`
+encapsulates a decision.   A \xcd`Choice` has a \xcd`yes()` and a \xcd`no()`
+method.  The \xcd`choose(b)` method will invoke one of the two.  \xcd`Choice`s
+also have names.
+
+The \xcd`main()` method creates a specific \xcd`Choice`.  \xcd`c` is not a
+immediate instance of \xcd`Choice` --- as an abstract class, \xcd`Choice` has
+no immediate instances. \xcd`c` is an instance of an anonymous class which
+inherits from \xcd`Choice`, but supplies \xcd`yes()` and \xcd`no()` methods.
+These methods modify the contents of the \xcd`Cell[Int]` \xcd`n`.  (Note that,
+as \xcd`n` is a local variable, it would take a few lines more coding to
+extract \xcd`c`'s class, name it, and make it an inner class.)  The call to
+\xcd`c.choose(true)`  will call \xcd`c.yes()`, incrementing \xcd`n()`, in a
+rather roundabout manner.
+
+%~~gen
+% package Class.Innerclass.Anonclass.Ow; 
+%~~vis
+\begin{xten}
+abstract class Choice(name: String) {
+  def this(name:String) {property(name);}
+  def choose(b:Boolean) { if (b) this.yes(); else this.no(); }
+  abstract def yes():void;
+  abstract def no():void;
+}
+
+class Example {
+  static def main(Array[String]) {
+    val n = new Cell[Int](0);
+    val c = new Choice("Inc Or Dec") {
+      def yes() { n() += 1; }
+      def no()  { n() -= 1; }
+      };
+    c.choose(true);
+    Console.OUT.println("n=" + n());
+  }
+}
+
+\end{xten}
+%~~siv
+%
+%~~neg
+
+
+Anonymous classes have many of the features of classes in general.  A few
+features are unavailable because they don't make sense.
+
+\begin{itemize}
+
+\item Anonymous classes don't have constructors.  Since they don't have names,
+      there's no way a constructor could get called in the ordinary way.
+      Instead, the \xcd`new C(...)` expression must match a constructor of the
+      parent class \xcd`C`, which will be called to initialize the
+      newly-created object of the anonymous class.
+
+\item Certain modifiers don't make sense for anonymous classes: \xcd`public`,
+      \xcd`private`, and \xcd`protected.`  Anonymous classes, being anonymous,
+      cannot be referenced at all.
+
+\item Anonymous classes cannot be \xcd`abstract`.  Since they only exist in
+      combination with a constructor call, they must be constructable.  The
+      parent class of the anonymous class may be abstract, or may be an
+      interface; in this case, the anonymous class must provide all the
+      methods that the parent demands.
+
+\item Anonymous classes cannot have explicit \xcd`extends` or \xcd`implements`
+      clauses; there's no place in the syntax for them. They have a single
+      parent and that is that. 
+\end{itemize}
