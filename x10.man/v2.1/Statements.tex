@@ -4,6 +4,9 @@ This chapter describes the statements in the sequential core of
 \Xten{}.  Statements involving concurrency and distribution
 are described in \Sref{XtenActivities}.
 
+
+
+
 %\noo{We need to specify \Xcd{assert}.}
 
 \section{Empty statement}
@@ -417,7 +420,78 @@ the region, and iterating over a \xcd`DistArray` iterates over the
 
 
 
+\section{Return statement}
+\label{ReturnStatement}
+\index{return}
+\begin{grammar}
+Statement \: ReturnStatement \\
+ReturnStatement \: \xcd"return" Expression \xcd";" \\
+             \| \xcd"return" \xcd";" \\
+\end{grammar}
 
+Methods and closures may return values using a return statement.
+If the method's return type is expliclty declared \xcd"void",
+the method must return without a value; otherwise, it must return
+a value of the appropriate type.
+
+
+\section{Assert statement} 
+\index{assert}
+
+The statement \xcd`assert E` checks that the Boolean expression \xcd`E`
+evaluates to true, and, if not, throws an \xcd`x10.lang.Error`  exception.  
+The annotated assertion \xcd`assert E : F;` checks \xcd`E`, and, if it is
+false, throws an \xcd`x10.lang.Error` exception with \xcd`F`'s value attached
+to it. 
+
+For example, 
+%~~gen
+% package Statements.Assert;
+% 
+%~~vis
+\begin{xten}
+public class Example {
+  public static def main(argv:Array[String](1)) {
+    val a = 1;
+    assert a != 1 : "Changed my mind about a";
+  }
+}
+\end{xten}
+%~~siv
+%~~neg
+\noindent
+compiles properly, but prints a stack trace starting with 
+\begin{xten}
+x10.lang.Error: Changed my mind about a
+\end{xten}
+
+
+\section{Exceptions in X10}
+
+X10 programs can throw {\em Exceptions} to indicate unusual or problematic
+situations.  Exceptions, as data values, are objects which which inherit from
+\xcd`x10.lang.Throwable`.    Exceptions may be thrown intentionally with the
+\xcd`throw` statement. Many primitives and library functions throw exceptions
+if they encounter problems; \eg, dividing by zero throws an instance of
+\xcd`x10.lang.ArithmeticException`. 
+
+When an exception is thrown, statically and dynamically enclosing
+\xcd`try`-\xcd`catch` blocks in the same activity can attempt to handle it.   If the throwing
+statement in inside some \xcd`try` clause, and some matching \xcd`catch`
+clause catches that type of exception, the corresponding \xcd`catch` body will
+be executed, and the process of throwing is finished.  
+If no statically-enclosing \xcd`try`-\xcd`catch` block can handle the
+exception, the current method call returns (abnormally), throwing the same
+exception from the point at which the method was called.  
+
+This process continues until the exception is handled or there are no more
+calling methods in the activity. In the latter case, the activity will
+terminate abnormally, and the exception will propagate to the activity's root;
+see \Sref{ExceptionModel} for details.
+
+Unlike some statically-typed languages with exceptions, X10's exceptions are
+all {\em unchecked}. Methods do not declare which exceptions they might throw;
+any method can, potentially, throw any exception.
 
 
 \section{Throw statement}
@@ -429,8 +503,8 @@ ThrowStatement \: \xcd"throw" Expression \xcd";"
 \end{grammar}
 
 \index{Exception}
-The \xcd"throw" statement throws an exception, which 
-must be an instance of \xcd"x10.lang.Throwable". 
+\xcd"throw E" throws an exception whose value is \xcd`E`, which must be an
+instance of a subtype of \xcd`x10.lang.Throwable`. 
 
 For example, the following code checks if an index is in range and
 throws an exception if not.
@@ -485,17 +559,4 @@ exception is rethrown.
 
 
 
-\section{Return statement}
-\label{ReturnStatement}
-\index{ReturnStatement}
-\begin{grammar}
-Statement \: ReturnStatement \\
-ReturnStatement \: \xcd"return" Expression \xcd";" \\
-             \| \xcd"return" \xcd";" \\
-\end{grammar}
-
-Methods and closures may return values using a return statement.
-If the method's return type is expliclty declared \xcd"void",
-the method must return without a value; otherwise, it must return
-a value of the appropriate type.
 
