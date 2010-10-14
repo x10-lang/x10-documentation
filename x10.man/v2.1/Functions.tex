@@ -251,50 +251,43 @@ Specifically, they can access:
 \begin{itemize}
 \item All fields of the enclosing object and class;
 \item All type parameters;
-\item All \xcd`val` variables;
-\item \xcd`var` variables with the \xcd`shared` annotation. 
+\item All \xcd`val` and \xcd`var` variables;
 \end{itemize}
 
 
-\limitation{\xcd`shared` is not currently supported.}
 
 The function body may refer to instances of enclosing classes using
 the syntax \xcd"C.this", where \xcd"C" is the name of the
 enclosing class.  \xcd`this` refers to the instance of the immediately
 enclosing class, as usual.
 
-For example, the following is legal.  However, it would not be legal to add
-\xcd`e` or \xcd`h` to the sum; they are non-\xcd`shared` \xcd`var`s from the
-surrounding scope.
+For example, the following is legal.  
 
-%%TODO -- this example uses 'shared', which is not currently available.
+\noo{The following needs unsharednessing}
+%~~gen
+% package Functions.areLikeGrunctions.fromConjunctionJunctions;
+%~~vis
 \begin{xten}
 class Lambda {
    var a : Int = 0;
    val b = 0;
-   def m(var c : Int, shared var d : Int,  val e : Int) {
-      var f : Int = 0;
-      shared var g : Int = 0;
-      val h : Int = 0;
+   def m(var c : Int, val d : Int) {
+      var e : Int = 0;
+      val f : Int = 0;
       val closure = (var i: Int, val j: Int) => {
-    	  return a + b + d + g + i + j + this.a + Lambda.this.a;
+    	  return a + b + c + d + e + f + i + j + this.a + Lambda.this.a;
       };
       return closure;
    }
 }
 \end{xten}
+%~~siv
+%
+%~~neg
 
 
-{\bf Rationale:} Non-\xcd`shared` \xcd`var`s like \xcd`e` and \xcd`h` are
-excluded in X10, as in many other languages, for practical implementation
-reasons. They are allocated on the stack, which is desirable for efficiency.
-However, the closure may exist for long after the stack frame containing
-\xcd`e` and \xcd`h` has been freed, so those storage locations are no longer
-valid for those variables. \xcd`shared var`s are heap-allocated, which is less
-efficient but allows them to exist after \xcd`m` returns. 
 
-
-\xcd`shared` does not guarantee {\bf atomic} access to the shared variable. As
+Access to variables is not automatically atomic.  As
 with any code that might mutate shared data concurrently, be sure to protect
 references to mutable shared state with \xcd`atomic`. For example, the
 following code returns a pair of closures which operate on the same shared
@@ -302,23 +295,23 @@ variable \xcd`a`, which are concurrency-safe---even if invoked many times
 simultaneously. Without \xcd`atomic`, it would no longer be concurrency-safe.
 
 
-%~fails~gen
+%~~gen
 % package Functions2.Are.All.Too.Much;
 % class Fun2Frivols {
-%~fails~vis
+%~~vis
 \begin{xten}
   def counters() {
-      shared var a : Int = 0;
+      var a : Int = 0;
        return [
           () => {atomic a ++;},
           () => {atomic return a;}
           ];
    }
 \end{xten}
-%~fails~siv
+%~~siv
 %}
 %
-%~fails~neg
+%~~neg
 
 
 %SHARED% \begin{note}

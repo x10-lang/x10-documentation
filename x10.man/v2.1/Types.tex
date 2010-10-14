@@ -1046,7 +1046,7 @@ all value expressions are of the forms which may appear in constraints:
       only in top-level constraints, not in Boolean expressions in constraints);
 \item Subtyping and supertyping expressions: \xcd`T <: U` and \xcd`T :> U`; 
 \item Type equalities and inequalities: \xcd`T == U` and \xcd`T != U`; 
-\item Testing a type for a default: \Xcd{hasZero T}.
+% \item Testing a type for a default: \Xcd{hasZero T}.
 \end{enumerate}
 
 All variables appearing in a constraint expression must be visible wherever
@@ -1058,7 +1058,7 @@ outside of the class. Since \xcd`p` is only visible inside the class, there is
 no way to tell if \xcd`10` is of type \xcd`Int{self != p}` at the call site.)
 
 \limitation{
-Currently \Xcd{hasZero T} is not supported.  
+% Currently \Xcd{hasZero T} is not supported.  
 Certain spurious syntactic forms are accepted by the compiler but treated
 incorrectly. 
 }
