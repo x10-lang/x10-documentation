@@ -347,6 +347,81 @@ command-line argument array.
 %~~neg
 
 
+\subsubsection{{\tt at} and Definite Assignment}
+\label{AtAndDefiniteAssignment}
+
+% TODO I dunno how to justify this, but it's true.
+
+\xcd`at(p)S` is not considered to definitely assign to variables appearing in
+\xcd`S`.  For example, the following code requires initialization of \xcd`a`.
+without the \xcd`= 0` clause, it would fail to compile, as \xcd`a` is used in
+the \xcd`println` without having definitely been assigned.
+%~~gen
+%package Activities.AtAndDefAssignment;
+%class Example{
+%def example(){
+%~~vis
+\begin{xten}
+  var a : Int = 0;
+  at(here) {
+    a = 1;
+  }
+  Console.OUT.println("a=" + a);
+\end{xten}
+%~~siv
+%}}
+%~~neg
+
+
+\subsubsection{{\tt at} and Variables}
+
+\xcd`var` variables can be set at the place that they are declared, but not
+from other places.  This allows a straightforward way to transmit several
+pieces of information back from an \xcd`at(somewhereElse)`, as shown by the
+following example which computes the roots of the quadratic equation 
+{$ax^2 + bx + c = 0$}.  
+For the sake of the example, we assume that 
+{\tt mathProcessor()} returns a Place suitable for calculation.  In practice
+it would rarely if ever make sense to send such a small calculation to another
+place. 
+
+The starting place has local \xcd`var`s \Xcd{r} and \Xcd{s}, which will hold
+the roots.  (They are initialized to {$0+0i$} because \xcd`at` does not
+definitely assign to variables.)
+The computation at the math processor evaluates the roots of the equation.
+These roots are bound to math processor local \xcd`val` variables \xcd`rr` and
+\xcd`ss`.  An inner place-shifting \xcd`at(h)` moves the computation back to
+the initial place, stored for that purpose in \xcd`h`, at which values can be
+assigned to the variables \xcd`r` 
+and \xcd`s` at the starting place.  Note that we take care to send only the
+minimal information across \xcd`at` boundaries; in particular we do not 
+send the discriminant back to \xcd`h`.  When the intermediate results are
+large and the desired data small, the savings can be substantial.
+
+%~~gen
+% package Activities.AtAndVariables; 
+% abstract class Example {
+% abstract def mathProcessor() : Place;
+%~~vis
+\begin{xten}
+def printRootsOfQuadratic(a:Complex, b:Complex, c:Complex) {
+  var r : Complex = Complex(0,0);
+  var s : Complex = Complex(0,0);
+  val h = here;
+  at(mathProcessor()) {
+    val disc = Math.sqrt(b*b - 4*a*c);
+    val rr = (-b + disc) / (2*a);
+    val ss = (-b - disc) / (2*a);
+    at(h) {
+      r = rr; s = ss;
+    }
+  }
+  Console.OUT.println("r = " + r + "; s = " + s);
+}
+\end{xten}
+%~~siv
+%} 
+%~~neg
 
 
 
@@ -536,6 +611,7 @@ places.)
 
 \section{Ateach statements}\index{\Xcd{ateach}}\label{ateach-section}
 \deprecated{} The \xcd`ateach` construct is deprecated.
+
 \begin{grammar}
 Statement \: AtEachStatement \\
 AtEachStatement \:

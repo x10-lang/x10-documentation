@@ -611,7 +611,7 @@ name if they have a different number of type parameters, or
 they have formal parameters of different types.  \Eg, the following is legal: 
 
 %~~gen
-%
+% package Classes.Mful;
 %~~vis
 \begin{xten}
 class Mful{
@@ -1572,38 +1572,36 @@ class Poly {
 %~~neg
 
 
+% TODO
 
-You may define a type conversion to a constrained type, like \xcd`Poly` in
-the previous example.   If you convert to a more specific constraint, X10 will use
-the conversion, but insert a dynamic check to make sure that you have
-satisfied the more specific constraint.  
-For example: 
-%~~gen
-%package Classes.And.Type.Conversions;
-%~~vis
-\begin{xten}
-class Uni(n:Int) {
-/*
-//  LIMITATION: This example should compile, but doesn't.
-
-  public def this(n:Int) : Uni{self.n==n} = {property(n);}
-  static operator (String) as Uni{self.n != 9} = new Uni(3);
-  public static def main(Array[String](1)):void {
-    val u = "" as Uni{self.n != 9 && self.n != 3};
-  }
-*/
-}
-\end{xten}
-%~~siv
-%
-%~~neg
-The string \xcd`""` is converted to \xcd`Uni{self.n != 9}` via the defined
-conversion operator, and that value is checked against the remaining
-constraints \xcd`{self.n != 3}` at runtime.  (In this case it will fail.)
-
-There may be many conversions from different types to \xcd`T`, but there may
-be at most one conversion from any given type to \xcd`T`. 
-
+%%TODO%%  You may define a type conversion to a constrained type, like \xcd`Poly` in
+%%TODO%%  the previous example.   If you convert to a more specific constraint, X10 will use
+%%TODO%%  the conversion, but insert a dynamic check to make sure that you have
+%%TODO%%  satisfied the more specific constraint.  
+%%TODO%%  For example: 
+%%TODO%%  %~x~gen
+%%TODO%%  %package Classes.And.Type.Conversions;
+%%TODO%%  %~x~vis
+%%TODO%%  \begin{xten}
+%%TODO%%  class Uni(n:Int) {
+%%TODO%%  
+%%TODO%%    public def this(n:Int) : Uni{self.n==n} = {property(n);}
+%%TODO%%    static operator (String) as Uni{self.n != 9} = new Uni(3);
+%%TODO%%    public static def main(Array[String](1)):void {
+%%TODO%%      val u = "" as Uni{self.n != 9 && self.n != 3};
+%%TODO%%    }
+%%TODO%%  }
+%%TODO%%  \end{xten}
+%%TODO%%  %~x~siv
+%%TODO%%  %
+%%TODO%%  %~x~neg
+%%TODO%%  The string \xcd`""` is converted to \xcd`Uni{self.n != 9}` via the defined
+%%TODO%%  conversion operator, and that value is checked against the remaining
+%%TODO%%  constraints \xcd`{self.n != 3}` at runtime.  (In this case it will fail.)
+%%TODO%%  
+%%TODO%%  There may be many conversions from different types to \xcd`T`, but there may
+%%TODO%%  be at most one conversion from any given type to \xcd`T`. 
+%%TODO%%  
 \bard{Syntax}
 
 \subsection{Implicit Type Coercions}
