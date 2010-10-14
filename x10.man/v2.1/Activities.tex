@@ -419,8 +419,7 @@ that every activity eventually gets a chance to make forward progress.
 The statement in the body of an \xcd"async" is subject to the
 restriction that it must be acceptable as the body of a \xcd"void"
 method for an anonymous inner class declared at that point in the code. As
-such, it may reference 
-variables in lexically enclosing scopes.
+such, it may reference variables in lexically enclosing scopes.
 \end{staticrule*}
 
 \section{Finish}\index{finish}\label{finish}
@@ -536,7 +535,7 @@ places.)
 
 
 \section{Ateach statements}\index{\Xcd{ateach}}\label{ateach-section}
-
+\deprecated{} The \xcd`ateach` construct is deprecated.
 \begin{grammar}
 Statement \: AtEachStatement \\
 AtEachStatement \:
@@ -546,28 +545,21 @@ AtEachStatement \:
       \xcd"ateach" \xcd"(" Expression \xcd")"
          Statement 
 \end{grammar}
+In \xcd`ateach(p in D) S`, \xcd`D` must be either of type \xcd"Dist"
+(see \Sref{XtenDistributions}) or of type \xcd`DistArray[T]` (see
+\Sref{XtenArrays}), and \xcd`p` will be of type \xcd"Point" (see
+\Sref{point-syntax}). If \xcd`D` is an \xcd`DistArray[T]`, then
+\xcd`ateach (p in D)S` is identical to 
+\xcd`ateach(p in D.dist)S`; the iteration is over the array's underlying
+distribution.   
 
-The \xcd"ateach" statement \xcd`ateach (p in D) S`
-spawns an activity \xcd`S` at each place \xcd`p` of a distribution \xcd`D`. 
-In \xcd`ateach(p in D) S`, 
-\xcd`D` must be either of type \xcd"Dist" 
-(see \Sref{XtenDistributions})
-or of type
-\xcd`DistArray[T]` (see \Sref{XtenArrays}), 
-and \xcd`p` will be of type \xcd"Point" (see \Sref{point-syntax}).
+Instead of writing \xcd`ateach (p in D) S` the programmer should write 
+\xcd`for(p in D) at(D(p)) async S` to get the same effect. 
+For each point \xcd`p` in \xcd`D`, at place \xcd`D(p)`, \xcd`S` is
+executed simultaneously (with \xcd`p` bound to the point). 
 
-\xcd`ateach(p in D)S` is equivalent to 
-\xcd`for(p in D) at(D(p)) async S`.  That is, the elements of \xcd`D` are all
-points \xcd`p`.  \xcd`D(p)` is a \xcd`Place`.  \xcd`ateach(p in D)S` executes
-the body \xcd`S` at the place \xcd`D(p)` (and may use the point \xcd`p`
-there). 
-
-
-However, the compiler may implement it more efficiently to avoid extraneous
-communications.  In particular, it is recommended that \xcd`ateach(p in D)S`
-be implemented as the following code, which coordinates with each place of
-\xcd`D` just once, rather than once per element of \xcd`D` at that place: 
-
+However, this often results in excessive communication and parallelism. Instead the
+programmer may want to write: 
 %~~gen
 % package Activities.Activities.Activities;
 % class EquivCode {
@@ -575,9 +567,9 @@ be implemented as the following code, which coordinates with each place of
 % static def example(D:Dist) {
 %~~vis
 \begin{xten}
-for (p in D.places()) async at (p) {
-    for (pt in D|here) async {
-        S(pt);
+for (place in D.places()) async at (place) {
+    for (p in D|here) {
+        S(p);
     }
 }
 \end{xten}
@@ -585,29 +577,10 @@ for (p in D.places()) async at (p) {
 %}} 
 %~~neg
 
-If \xcd`e` is an \xcd`DistArray[T]`, then \xcd`ateach (p in e)S` is identical to
-\xcd`ateach(p in e.dist)S`; the iteration is over the array's underlying
-distribution.   
-The code below is a common and generally efficient way to work with the
-elements of a distributed array:
-%~~gen
-%package Activities.For.Fnu.And.Pforit;
-%class Example[T]{
-%  def dealWith(T):Void = {}
-% def idiom(A:DistArray[T]){
-%~~vis
-\begin{xten}
-ateach(p in A) 
-  dealWith(A(p));
-\end{xten}
-%~~siv
-%}}
-%~~neg
-
-
-
-
-
+If the programmer wishes to execute \xcd`S` in parallel at each place,
+\xcd`S(p)` may be replaced by 
+\xcd`async S(p)`
+.
 
 
 
@@ -647,8 +620,8 @@ simultaneously by multiple activities running in the same place.
 For example, consider a class \xcd`Redund[T]`, which encapsulates a list
 \xcd`list` and, (redundantly) keeps the size of the list in a second field
 \xcd`size`.  Then \xcd`r:Redund[T]` has the invariant 
-\xcd`r.list.size() == r.size`, which must be true at any point that there are
-no method calls on \xcd`r` active.
+\xcd`r.list.size() == r.size`, which must be true at any point at which
+no method calls on \xcd`r` are active.
 
 If the \xcd`add` method on \xcd`Redund` (which adds an element to the list) 
 were defined as: 
@@ -740,13 +713,14 @@ Atomic blocks are closely related to non-blocking synchronization
 constructs \cite{herlihy91waitfree}, and can be used to implement 
 non-blocking concurrent algorithms.
 
-Code executed inside of \xcd`atomic S` is subject to certain
-restrictions, for semantic or implementation purposes.  These are detected
-dynamically, and will cause an exception to be thrown if they are violated. 
+Code executed inside of \xcd`atomic S` and \xcd`when S` is subject
+to certain restrictions. A violation of these restrictions causes an 
+\xcd`IllegalOperationException` to be thrown at the point of the violation.
+
 \begin{itemize}
 \item \xcd`S` may not spawn another activity.
 \item \xcd`S` may not use any blocking statements; \xcd`when`, \xcd`next`,
-      \xcd`finish`.  
+      \xcd`finish`.  (The use of a nested \xcd`atomic` is permitted.)
 \item \xcd`S` may not \xcd`force()` a \xcd`Future`. 
 \item \xcd`S` may not use \xcd`at` expressions.
 \end{itemize}
