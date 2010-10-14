@@ -1,0 +1,208 @@
+\subsection{Static Nested Classes}
+\index{class!static nested}
+\index{class!nested}
+\index{static nested class}
+
+One class (or struct or interface) may be nested within another.  The simplest
+way to do this is as a \xcd`static` nested class. 
+For most purposes, a static nested class behaves like a top-level class.
+However, a static inner class has access to private static
+fields and methods of its containing class.  
+
+Nested interfaces and static structs are permitted as well.
+
+%~~gen
+% package Classes.StaticNested;
+%~~vis
+\begin{xten}
+class Outer {
+  private static val priv = 1;
+  private static def special(n:Int) = n*n;
+  public static class StaticNested {
+     static def reveal(n:Int) = special(n) + priv;
+  }
+}
+\end{xten}
+%~~siv
+%
+%~~neg
+
+\subsection{Inner Classes}
+\index{class!inner}
+\index{inner class}
+
+
+Non-static nested classes are called {\em inner classes}. An inner class
+instance can be thought of as a very elaborate member of an object --- one
+with a full class structure of its own.   The crucial characteristic of an
+inner class instance is that it has an implicit reference to an instance of
+its containing class.  
+
+
+This feature is particularly useful when an instance of the inner class makes
+no sense without reference to an instance of the outer, and is closely tied to
+it.  For example, consider a range class, describing a span of integers {$m$}
+to {$n$}, and an iterator over the range.  The iterator might as well have
+access to the range object, and there is little point to discussing
+iterators-over-ranges without discussing ranges as well.
+In the following example, the inner class \xcd`RangeIter` iterates over the
+enclosing \xcd`Range`.  
+
+It has its own private cursor field \xcd`n`, telling
+where it is in the iteration; different iterations over the same \xcd`Range`
+can exist, and will each have their own cursor.
+It is perhaps unwise to use the name \xcd`n` for a field of the inner class,
+since it is also a field of the outer class, but it is legal.  (It can happen
+by accident as well -- \eg, if a programmer were to add a field \xcd`n` to a
+superclass of the  outer class, the inner class would still work.)
+It does not even
+interfere with the inner class's ability to refer to the outer class's \xcd`n`
+field: the cursor initialization 
+refers to the \xcd`Range`'s lower bound through a fully qualified name
+\xcd`Range.this.n`.
+Its \xcd`hasNext()` method refers to the outer class's \xcd`m` field, which is
+not shadowed.
+
+
+%~~gen
+% package Classes.InnerClasses.Range.Against.The.Machine;
+%~~vis
+\begin{xten}
+class Range(m:Int, n:Int) implements Iterable[Int]{
+  public def iterator ()  = new RangeIter();
+  private class RangeIter implements Iterator[Int] {
+     private var n : Int = m;
+     public def hasNext() = n <= Range.this.n;
+     public def next() = n++;
+  }
+  public static def main(argv:Array[String](1)) {
+    val r = new Range(3,5);
+    for(i in r) Console.OUT.println("i=" + i);
+  }
+}
+\end{xten}
+%~~siv
+%
+%~~neg
+
+An inner class has full access to the members of its enclosing class, both
+static and instance.  In particular, it can access \xcd`private` information,
+just as methods of the enclosing class can.  
+
+An inner class can have its own members.  
+Inside instance methods of an inner class, \xcd`this` refers to the instance
+of the {\em inner} class.  The instance of the outer class can be accessed as
+{\em Outer}\xcd`.this` (where {\em Outer} is the name of the outer class).
+If, for some dire reason, it is necessary to have an inner class within an inner
+class, the innermost class can refer to the \xcd`this` of either outer class
+by using its name.
+
+An inner class can inherit from any class in scope,
+with no special restrictions. \xcd`super` inside an inner class refers to the
+inner class's superclass. If it is necessary to refer to the outer classes's
+superclass, use a qualified name of the form {\em Outer}\xcd`.super`.
+
+The only restriction placed on the members of inner classes is that static
+fields of an inner class must be compile-time constant expressions. 
+
+\index{inner class!extending}
+An inner class \xcd`IC1` of some outer class \xcd`OC1` can be extended by
+another class \xcd`IC2`. However, since an \xcd`IC1` only exists as a
+dependent of an \xcd`OC1`, each \xcd`IC2` must be associated with an \xcd`OC1`
+--- or a subtype thereof --- as well.   For example, one often extends an
+inner class when one extends its outer class: 
+%~~gen
+% package Classes.Innerclasses.Are.For.Innermasses;
+%~~vis
+\begin{xten}
+class OC1 {
+   class IC1 {}
+}
+class OC2 extends OC1 {
+   class IC2 extends IC1 {} 
+}
+\end{xten}
+%~~siv
+%
+%~~neg
+
+The hiding of method names has one fine point.  If an inner class defines a
+method named \xcd`doit`, then {\em all} methods named \xcd`doit` from the
+outer class are hidden --- even if they have different argument types than the
+one defined in the inner class.
+They are still accessible via
+\xcd`Outer.this.doit()`, but not simply via \xcd`doit()`.  The following code
+is correct, but would not be correct if the ERROR line were uncommented.
+
+%~~gen
+% package Classes.Innerclasses.StupidOverloading;
+%~~vis
+\begin{xten}
+class Outer {
+  def doit() {}
+  def doit(String) {}
+  class Inner { 
+     def doit(Boolean, Outer) {}
+     def example() {
+        doit(true, Outer.this);
+        Outer.this.doit();
+        //ERROR: doit("fails");
+     }
+  }
+}
+\end{xten}
+%~~siv
+%
+%~~neg
+
+
+\subsubsection{Constructors and Inner Classes}
+\index{inner class!constructor}
+
+If \xcd`IC` is an inner class of \xcd`OC`, then instance code in the body of
+\xcd`OC` can create instances of \xcd`IC` simply by calling a constructor
+\xcd`new IC(...)`: 
+%~~gen
+% package Classes.Innerclasses.Constructors.Easy;
+%~~vis
+\begin{xten}
+class OC {
+  class IC {}
+  def method(){
+    val ic = new IC();
+  }
+}
+\end{xten}
+%~~siv
+%
+%~~neg
+
+Instances of \xcd`IC` can be constructed from elsewhere as well.  Since every
+instance of \xcd`IC` is associated with an instance of \xcd`OC`, an \xcd`OC`
+must be supplied to the \xcd`IC` constructor.  The syntax for doing so is: 
+\xcd`oc.new IC()`.  For example: 
+%~~gen
+% package Classes.Innerclasses.Constructors.Whythesnorkisthissocomplicated;
+%~~vis
+\begin{xten}
+class OC {
+  class IC {}
+  static val oc1 = new OC();
+  static val oc2 = new OC();
+  static val ic1 = oc1.new IC();
+  static val ic2 = oc2.new IC();
+}
+class Elsewhere{
+  def method(oc : OC) {
+    val ic = oc.new IC();
+  }
+}
+\end{xten}
+%~~siv
+%
+%~~neg
+
+
+
+
+\noo{Local Classes}
