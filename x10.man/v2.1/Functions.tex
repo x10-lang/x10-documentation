@@ -262,8 +262,10 @@ enclosing class.  \xcd`this` refers to the instance of the immediately
 enclosing class, as usual.
 
 For example, the following is legal.  
-
-\noo{The following needs unsharednessing}
+However, the commented-out line would not be legal.
+Note that \xcd`a` is not a local \xcd`var` variable. It is a field of
+\xcd`this`. A reference to \xcd`a` is simply short for \xcd`this.a`, which is
+a use of a \xcd`val` variable (\xcd`this`).  
 %~~gen
 % package Functions.areLikeGrunctions.fromConjunctionJunctions;
 %~~vis
@@ -275,7 +277,8 @@ class Lambda {
       var e : Int = 0;
       val f : Int = 0;
       val closure = (var i: Int, val j: Int) => {
-    	  return a + b + c + d + e + f + i + j + this.a + Lambda.this.a;
+    	  return a + b + d + f + j + this.a + Lambda.this.a;
+          // ILLEGAL: return c + e + i;
       };
       return closure;
    }
@@ -285,33 +288,33 @@ class Lambda {
 %
 %~~neg
 
-
-
-Access to variables is not automatically atomic.  As
-with any code that might mutate shared data concurrently, be sure to protect
-references to mutable shared state with \xcd`atomic`. For example, the
-following code returns a pair of closures which operate on the same shared
-variable \xcd`a`, which are concurrency-safe---even if invoked many times
-simultaneously. Without \xcd`atomic`, it would no longer be concurrency-safe.
-
-
-%~~gen
-% package Functions2.Are.All.Too.Much;
-% class Fun2Frivols {
-%~~vis
-\begin{xten}
-  def counters() {
-      var a : Int = 0;
-       return [
-          () => {atomic a ++;},
-          () => {atomic return a;}
-          ];
-   }
-\end{xten}
-%~~siv
-%}
-%
-%~~neg
+%%SHARED%% 
+%%SHARED%% 
+%%SHARED%% Access to variables is not automatically atomic.  As
+%%SHARED%% with any code that might mutate shared data concurrently, be sure to protect
+%%SHARED%% references to mutable shared state with \xcd`atomic`. For example, the
+%%SHARED%% following code returns a pair of closures which operate on the same shared
+%%SHARED%% variable \xcd`a`, which are concurrency-safe---even if invoked many times
+%%SHARED%% simultaneously. Without \xcd`atomic`, it would no longer be concurrency-safe.
+%%SHARED%% 
+%%SHARED%% 
+%%SHARED%% %~s~gen
+%%SHARED%% % package Functions2.Are.All.Too.Much;
+%%SHARED%% % class Fun2Frivols {
+%%SHARED%% %~s~vis
+%%SHARED%% \begin{xten}
+%%SHARED%%   def counters() {
+%%SHARED%%       var a : Int = 0;
+%%SHARED%%        return [
+%%SHARED%%           () => {atomic a ++;},
+%%SHARED%%           () => {atomic return a;}
+%%SHARED%%           ];
+%%SHARED%%    }
+%%SHARED%% \end{xten}
+%%SHARED%% %~s~siv
+%%SHARED%% %}
+%%SHARED%% %
+%%SHARED%% %~s~neg
 
 
 %SHARED% \begin{note}
