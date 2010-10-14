@@ -28,7 +28,7 @@ integers.
 Function application is written \xcd`f(a,b,c)`, following common mathematical
 usage. 
 \index{Exception!unchecked}
-Function invocation may throw unchecked exceptions. 
+
 
 The function body may be a block.  To compute integer squares by repeated
 addition (inefficiently), one may write: 
@@ -150,8 +150,6 @@ ClosureExpression \:
 \\ &&
         Guard\opt
         ReturnType\opt
-        Throws\opt
-        Offers\opt
         \xcd"=>" ClosureBody \\
 ClosureBody \:
         Expression \\
@@ -185,7 +183,7 @@ The body of the function is evaluated when the function is
 invoked by a call expression (\Sref{Call}), not at the function's
 place in the program text.
 
-As with methods, a function with return type \xcd"Void" cannot
+As with methods, a function with return type \xcd"void" cannot
 have a terminating expression. 
 If the return type is omitted, it is inferred, as described in
 \Sref{TypeInference}.
@@ -241,10 +239,6 @@ x: Int = find((x: Int) => x>0, xs, 0);
 
 \end{example}
 
-As with a normal method, the function may have a \xcd"throws"
-clause. It is a static error if the body of the function throws a
-checked exception that is not declared in the function's \xcd"throws"
-clause.
 
 
 \subsection{Outer variable access}

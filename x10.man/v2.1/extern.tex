@@ -25,7 +25,7 @@ import x10.compiler.Native;
 class Son {
   @Native("c++", "printf(\"Hi!\")")
   @Native("java", "System.out.println(\"Hi!\")")
-  static def printNatively():Void = {};
+  static def printNatively():void = {};
 }
 \end{xten}
 %~~siv
@@ -41,7 +41,7 @@ remaining back ends:
 import x10.compiler.Native;
 class Land {
   @Native("c++", "printf(\"Hi from C++!\")")
-  static def example():Void = {
+  static def example():void = {
     x10.io.Console.OUT.println("Hi from X10!");
   };
 }
@@ -61,7 +61,7 @@ import x10.compiler.Native;
 class Plants {
   @Native("c++", "printf(\"Hi!\")")
   @Native("java", "System.out.println(\"Hi!\")")
-  static native def printNatively():Void;
+  static native def printNatively():void;
 }
 \end{xten}
 %~~siv
@@ -101,7 +101,7 @@ import x10.compiler.Native;
 class Species {
   @Native("c++", "printf(\"Sum=%d\", ((#1)+(#2)) )")
   @Native("java", "System.out.println(\"\" + ((#1)+(#2)))")
-  static native def printNatively(x:Int, y:Int):Void;
+  static native def printNatively(x:Int, y:Int):void;
 }
 \end{xten}
 %~~siv

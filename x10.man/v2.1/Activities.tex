@@ -47,7 +47,7 @@ For example, consider:
 %~~gen
 % package Activites.Are.For.Whacktivities;
 % class Example {
-% def example( s1:() => Void, s2 : () => Void ) {
+% def example( s1:() => void, s2 : () => void ) {
 %~~vis
 \begin{xten}
 async {s1();}
@@ -133,7 +133,7 @@ used as the place to execute the body:
 %~~gen
 % package Activities.At.A.Standstill;
 % class Example {
-% def example(ob: Object, S: ()=>Void) {
+% def example(ob: Object, S: ()=>void) {
 %~~vis
 \begin{xten}
    at (here.next()) S();
@@ -515,7 +515,7 @@ exceptions, \xcd`finish S` wraps them in one layer of
 
 An \Xten{} computation is initiated from the command line on the
 presentation of a classname \xcd"C". The class must have a
-\xcd"public static def main(a: Array[String](1)):Void" method, otherwise an
+\xcd"public static def main(a: Array[String](1)):void" method, otherwise an
 exception is thrown
 and the computation terminates.  The single statement
 \begin{xten}

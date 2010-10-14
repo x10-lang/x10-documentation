@@ -397,7 +397,7 @@ method to update, as described in \Sref{RefParameters}.
 %%REF%%  % class Example {
 %%REF%%  %~TODO~vis
 %%REF%%  \begin{xten}
-%%REF%%    def incr(ref n:Int):Void {
+%%REF%%    def incr(ref n:Int):void {
 %%REF%%       n += 1;
 %%REF%%    }
 %%REF%%    def caller() {
@@ -523,7 +523,7 @@ class Example(x:Int, y:Int) {
 
 A method declared with the modifier \xcd"property" may be used
 in constraints.  A property method declared in a class must have
-a body and must not be \xcd"Void".  The body of the method must
+a body and must not be \xcd"void".  The body of the method must
 consist of only a single \xcd"return" statement or a single
 expression.  It is a static error if the expression cannot be
 represented in the constraint system. 
@@ -785,7 +785,7 @@ whose guard \xcd"d" is implied by \xcd"c".
 %%OUTDATED%%       //ILLEGAL: all.add(this);
 %%OUTDATED%%       this.fld = "initialized";
 %%OUTDATED%%    }
-%%OUTDATED%%    def Main(Array[String](1)):Void {
+%%OUTDATED%%    def Main(Array[String](1)):void {
 %%OUTDATED%%       finish{
 %%OUTDATED%%         async {new Escaper();}
 %%OUTDATED%%         async {
@@ -1190,7 +1190,7 @@ argument \xcd`x`.  We would like to write code thus:
 
 %~~vis
 \begin{xten}
-  public static def main(Array[String](1)):Void {
+  public static def main(Array[String](1)):void {
      val X = new Poly([0,1]);
      val t <: Poly = 7 * X + 6 * X * X * X; 
      val u <: Poly = 3 + 5*X - 7*X*X;
@@ -1294,7 +1294,7 @@ Writing the same code with method calls, while possible, is far less elegant:
 %   static def const(n:Int) = n as UglyPoly;
 %
 %   public static def Main(x:Rail[String]) = main(x);
-%   public static def main(Rail[String]):Void {
+%   public static def main(Rail[String]):void {
 %      val X = new UglyPoly([0,1]);
 %      val t <: UglyPoly = 7 * X + 6 * X * X * X;
 %
@@ -1480,13 +1480,13 @@ This requires the following syntax:\\
 \begin{grammar}
 MethodHeader \:
   \xcd`operator` TypeParameterList\opt \xcd`this` BinOp \xcd`(`  FormalParameter \xcd")" \\
-  && Guard\opt ReturnType\opt  Throws\opt \\
+  && Guard\opt ReturnType\opt  \\
 MethodHeader \:
   \xcd`operator` TypeParameterList\opt \xcd`(`  FormalParameter \xcd")" BinOp \xcd`this`  \\
-  && Guard\opt ReturnType\opt  Throws\opt \\
+  && Guard\opt ReturnType\opt   \\
 MethodHeader \:
   \xcd`operator` TypeParameterList\opt \xcd`(`  FormalParameter \xcd")" BinOp  \xcd`(`  FormalParameter \xcd")"  \\
-  && Guard\opt ReturnType\opt  Throws\opt \\
+  && Guard\opt ReturnType\opt  \\
 \end{grammar}
 
 When X10 attempts to typecheck a binary operator expression like \xcd`P+Q`, it
@@ -1540,7 +1540,7 @@ The syntax for unary operators is:
 
 \begin{grammar}
 MethodHeader \:
-  \xcd`operator` PrefixOp \xcd`this`    Guard\opt ReturnType\opt  Throws\opt 
+  \xcd`operator` PrefixOp \xcd`this`    Guard\opt ReturnType\opt  
 \end{grammar}
 
 The rules for typechecking a unary operation are the same as for methods; the
@@ -1562,7 +1562,7 @@ class Poly {
   public val coeff : Array[Int](1);
   public def this(coeff: Array[Int](1)) { this.coeff = coeff;}
   public static operator (a:Int) as Poly = new Poly([a]);
-  public static def main(Array[String](1)):Void {
+  public static def main(Array[String](1)):void {
      val three : Poly = 3 as Poly;
   }
 }
@@ -1588,7 +1588,7 @@ class Uni(n:Int) {
 
   public def this(n:Int) : Uni{self.n==n} = {property(n);}
   static operator (String) as Uni{self.n != 9} = new Uni(3);
-  public static def main(Array[String](1)):Void {
+  public static def main(Array[String](1)):void {
     val u = "" as Uni{self.n != 9 && self.n != 3};
   }
 */
@@ -1662,7 +1662,7 @@ addition to add it to \xcd`x`.
         (i:Int) => p.a(i) + q.a(i)
      ));
 
-  public static def main(Array[String](1)):Void {
+  public static def main(Array[String](1)):void {
      val x = new Poly([0,1]);
      x10.io.Console.OUT.println("1+x=" + (1+x));
   }
@@ -1722,7 +1722,7 @@ class Oddvec {
   // ... 
 \end{xten}
 %~~siv
-%  public static def main(argv:Rail[String]):Void {
+%  public static def main(argv:Rail[String]):void {
 %     val a = new Oddvec();
 %     x10.io.Console.OUT.println(a() + " ... " + a(0));
 %     a(1) = 20;

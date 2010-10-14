@@ -186,7 +186,7 @@ The statement
 %~~gen
 %package Clocks.For.Jocks;
 %class Qlocked{
-%static def S():Void{}
+%static def S():void{}
 %static def flock() { 
 % val c1 = Clock.make(), c2 = Clock.make(), c3 = Clock.make();
 %~~vis
@@ -215,9 +215,9 @@ clocked(c) S}), the new activity {$b$} starts out having also resumed
 %~~gen
 % package Clocks.For.Jocks.In.Clicky.Smocks;
 %class Example{
-%static def S():Void{}
-%static def a_phase_two():Void{}
-%static def b_phase_two():Void{}
+%static def S():void{}
+%static def a_phase_two():void{}
+%static def b_phase_two():void{}
 %static def example() {
 %~~vis
 \begin{xten}

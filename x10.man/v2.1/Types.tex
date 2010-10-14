@@ -139,9 +139,9 @@ one-dimensional integer-valued arrays; it is an abbreviation for
 %%  Formals --> FormalParameterList
 %%  Formal ---> FormalParemeter
 %% 
-%%  The stuff about Void confuses me.  I don't see it in the grammar, 
-%%  but X10 accepts:     val f : (Int)=>Void  = (Int):Void => {};
-%%  but Void is not a type, so WTF?
+%%  The stuff about void confuses me.  I don't see it in the grammar, 
+%%  but X10 accepts:     val f : (Int)=>void  = (Int):void => {};
+%%  but void is not a type, so WTF?
 \begin{grammar}
 
 Type \: TypeName \\
@@ -150,14 +150,14 @@ Type \: TypeName \\
      \| Type \xcd`.` Type \\
      \| TypeVar \\
      \| FunctionType\\
-     \| VoidFunctionType \\
+     \| voidFunctionType \\
 
 TypeName \: Id \\
 TypeVar \: Id \\
 Types \: Type \\ 
       \| Type \xcd`,` Types \\
 FunctionType \: \xcd`(` Formals\opt \xcd`) =>`  Type \\
-VoidFunctionType \: \xcd`(` Formals\opt \xcd`) => void` \\
+voidFunctionType \: \xcd`(` Formals\opt \xcd`) => void` \\
 Formal \: Id \xcd`:` Type \\
 Formals \: Formal \\
         \| Formal \xcd`,` Formals      
@@ -242,7 +242,7 @@ The function type
 refers to functions taking the
 listed formal parameters and returning a result of {\em Type}.  
 The closely-related void function type 
-{\em \xcd`(` Formals{$^?$} \xcd`) =>`  \xcd`Void`}  takes the listed
+{\em \xcd`(` Formals{$^?$} \xcd`) =>`  \xcd`void`}  takes the listed
 parameters and returns no value.
 For example, 
 %~~type~~`~~`~~ ~~
@@ -372,7 +372,7 @@ interface Named {
   def name():String;
 }
 interface Mobile {
-  def move(howFar:Int):Void;
+  def move(howFar:Int):void;
 }
 interface Person extends Named, Mobile {}
 interface NamedPoint extends Named, Mobile{} 
@@ -396,7 +396,7 @@ declared \xcd`abstract`.
 %   def name():String;
 % }
 % interface Mobile {
-%   def move(howFar:Int):Void;
+%   def move(howFar:Int):void;
 % }
 % interface Person extends Named, Mobile {}
 % interface NamedPoint extends Named, Mobile{} 
@@ -1838,34 +1838,34 @@ class Spot(x:Int) {
 %~~neg
 
 
-\index{Void}
+\index{void}
 
 A method or closure that has expression-free \xcd`return` statements
-(\xcd`return;` rather than \xcd`return e;`) is said to return \xcd`Void`.
-\xcd`Void` is not a type; there are no \xcd`Void` values, nor can \xcd`Void`
-be used as the argument of a generic type. However, \xcd`Void` takes the
-syntactic place of a type. A method returning \xcd`Void` can be specified by
-\xcd`def m():Void`: 
+(\xcd`return;` rather than \xcd`return e;`) is said to return \xcd`void`.
+\xcd`void` is not a type; there are no \xcd`void` values, nor can \xcd`void`
+be used as the argument of a generic type. However, \xcd`void` takes the
+syntactic place of a type. A method returning \xcd`void` can be specified by
+\xcd`def m():void`: 
 
 %~~gen
-% package Types.Voidd;
-% class Voidddd {
+% package Types.voidd;
+% class voidddd {
 % static 
 %~~vis
 \begin{xten}
-val f : () => Void = () => {return;};
+val f : () => void = () => {return;};
 \end{xten}
 %~~siv
 %}
 %~~neg
 
-By a convenient abuse of language, \xcd`Void` is sometimes
+By a convenient abuse of language, \xcd`void` is sometimes
 lumped in with types; \eg, we may say ``return type of a method'' rather than
 the formally correct but rather more awkward ``return type of a method, or
-\xcd`Void`''.   Despite this informal usage, \xcd`Void` is not a type.  For
+\xcd`void`''.   Despite this informal usage, \xcd`void` is not a type.  For
 example, given 
 %~~gen
-% package Types.Voidd;
+% package Types.voidd;
 % class EEEEVil {
 %~~vis
 \begin{xten}
@@ -1875,7 +1875,7 @@ example, given
 % }
 %~~neg
 \noindent
-The call \xcd`eval[Void](f)` does {\em not} typecheck; \xcd`Void` is not a
+The call \xcd`eval[void](f)` does {\em not} typecheck; \xcd`void` is not a
 type and thus cannot be used as a type argument.  There is no way in X10 to
 write a generic function which works with both functions which return a value
 and functions which do not.  In most cases, functions which have no sensible

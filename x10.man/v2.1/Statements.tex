@@ -68,7 +68,7 @@ of an \xcd`if`, and for limiting the scope of local variables.
 %~~gen
 % package statements.FOR.block.heads;
 % class Example {
-% def example(b:Boolean, S1:(Int)=>Void, S2:(Int)=>Void ) {
+% def example(b:Boolean, S1:(Int)=>void, S2:(Int)=>void ) {
 %~~vis
 \begin{xten}
 if (b) {
@@ -261,7 +261,7 @@ other cases are separated by \xcd`break`s.
 %~~gen
 % package Statement.Case;
 % class Example {
-% def example(i : Int, println: (String)=>Void) {
+% def example(i : Int, println: (String)=>void) {
 %~~vis
 \begin{xten}
 switch (i) {
@@ -483,8 +483,7 @@ exceptionally, the \xcd"finally" block is evaluated after the
 matching \xcd"catch" block, if any, and then the
 exception is rethrown.
 
-It is a static error to attempt to catch an exception type which is not
-throwable by the block.  
+
 
 \section{Return statement}
 \label{ReturnStatement}
@@ -496,7 +495,7 @@ ReturnStatement \: \xcd"return" Expression \xcd";" \\
 \end{grammar}
 
 Methods and closures may return values using a return statement.
-If the method's return type is expliclty declared \xcd"Void",
+If the method's return type is expliclty declared \xcd"void",
 the method must return without a value; otherwise, it must return
 a value of the appropriate type.
 

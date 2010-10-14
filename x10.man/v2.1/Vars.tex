@@ -227,7 +227,7 @@ Or, for mutable variables, it may be done by a later assignment.
 
 
 Every class variable must be initialized before it is read, through
-the execution of an explicit initializer or a static block. Every
+the execution of an explicit initializer. Every
 instance variable must be initialized before it is read, through the
 execution of an explicit initializer or a constructor.
 \bard{Revise this in light of initial values}
@@ -306,7 +306,7 @@ They are always declared with a type.  (Type inference is not
 advisable, because there is no single expression to deduce a type from.)
 The variable name can be omitted if it is not to be used in the
 scope of the declaration, as in the type of the method 
-\xcd`static def main(Rail[String]):Void` executed at the start of a program that
+\xcd`static def main(Rail[String]):void` executed at the start of a program that
 does not use its command-line arguments.
 
 %%GRAMMAR%%  \begin{grammar}
@@ -405,7 +405,7 @@ this restriction. The following is correct, albeit obtuse:
 % class NotInitVal {
 %~~vis
 \begin{xten}
-static def main(r: Array[String](1)):Void {
+static def main(r: Array[String](1)):void {
   val a : Int;
   a = r.size;
   val b : String;
