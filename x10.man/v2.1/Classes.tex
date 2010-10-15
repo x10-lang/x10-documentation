@@ -16,8 +16,10 @@ from it, directly or indirectly.
 Classes are structured in a single-inheritance code
 hierarchy, may implement multiple interfaces, may have static and
 instance fields, may have static and instance methods, may have
-constructors, may have static and instance initializers, may have
-static and instance nested classes and interfaces. \Xten{} does not
+constructors, 
+%% vj: We dont support initializers.
+% may have static and instance initializers, 
+may have static and instance nested classes and interfaces. \Xten{} does not
 permit mutable static state.
 
 \Xten{} objects do not have locks associated with them.
@@ -99,7 +101,7 @@ class type (\Sref{ReferenceTypes}).
 
 Objects may have {\em instance fields}, or simply {\em fields}: places to
 store data that is pertinent to the object. Fields, like variables, may be
-mutable (\xcd`val`), immutable (\xcd`var`)
+mutable (\xcd`var`) or immutable (\xcd`val`)
 %%ACC%% , or accumulator (\Xcd{acc})
 .
 
