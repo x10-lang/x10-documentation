@@ -4,8 +4,8 @@
 Larger computational problems require more powerful computers capable of
 performing a larger number of operations per second. The era of
 increasing performance by simply increasing clocking frequency now
-seems to be behind us. It is becoming increasingly difficult
-to mange chip power and heat.  Instead, computer
+seems to be behind us. It has become increasingly difficult
+to manage chip power and heat.  Instead, computer
 designers are starting to look at {\em scale out} systems in which the
 system's computational capacity is increased by adding additional
 nodes of comparable power to existing nodes, and connecting nodes with
@@ -78,11 +78,12 @@ activities}. Activities are extremely lightweight threads of
 execution. An activity may synchronously (and {\em atomically}) use
 one or more memory locations in the place in which it resides,
 leveraging current symmetric multiprocessor (SMP) technology.  
-To access or update memory at other places, it must 
-spawn activities asynchronously (either explicitly or implicitly).
+An activity may shift to another place to execute a statement block.
 %TODO yoav: ``using ``at'' one can update another place synchronously
 \Xten{} provides weaker ordering guarantees for
-inter-place data access, enabling applications to scale.  {\em
+inter-place data access, enabling applications to scale.  
+Multiple memory locations in multiple places cannot be
+accessed atomically.  {\em
 Immutable} data needs no consistency management and may be freely
 copied by the implementation between places.  One or more {\em clocks}
 may be used to order activities running in multiple
