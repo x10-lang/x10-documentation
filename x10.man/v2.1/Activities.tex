@@ -150,7 +150,7 @@ constructs such as \xcd`break`, \xcd`continue`, \xcd`return` and
 constructs -- \xcd`async`, \xcd`finish`, \xcd`atomic, \xcd`when` are
 also permitted.
 
-\Limitation{} In \xcd`at(e) S`, \xcd`S` is permitted to access only
+\limitationx{} In \xcd`at(e) S`, \xcd`S` is permitted to access only
 those immutable variables in the surrounding scope that are definitely
 initialized.
 
@@ -227,7 +227,7 @@ of the following makes sense:
 (1)~\xcd`async at(p) S` (spawn an activity locally to execute \xcd`S` at
 \xcd`p`; here \xcd`p` is evaluated by the spawned activity) , 
 (2)~\xcd`at(p) async S` (evaluate \xcd`p` and then at \xcd`p` spawn an
-activity to execute \xcsd`S`), and,
+activity to execute \xcd`S`), and,
 (3)~\xcd`async at(p) async S`. 
 
 As a consequence of this, \xcd`S` may contain constructs which only make sense
