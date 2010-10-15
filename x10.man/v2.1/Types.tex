@@ -119,49 +119,17 @@ syntactic forms for types exist, but they are simply abbreviations for types
 in the following system.  For example, \xcd`Array[Int](1)` is the type of
 one-dimensional integer-valued arrays; it is an abbreviation for
 \xcd`Array[Int]{rank==1}`.\\
-%% vj: Hmm.. where did this grammar come from. Lets make sure we use
-%% the same productions throughout the text.
-%%
-%% Bard: I wrote it.  The actual grammar is pretty turgid.
-%% e.g., (13) splits Type into FunctionType and the perplexingly-named 
-%% ConstrainedType, and (17) splits ConstrainedType into three subcategories,
-%% (which might not have explicit constraints despite being ConstrainedType, 
-%% and done of which is simply parenthesized (for grouping I guess)).
-%% It may make for good parsing, but it's not going to make good exposition.
-%% 
-%% We *should* use the same nonterminal names though.
-%%
-%% Here's how I think stuff corresponds when the names are different: 
-%%  [ Types? ] --> TypeArguments  
-%%  Types? --> TypeArgumentList 
-%%  Constraint --> DepParams, only without ExistentialList? 
-%%  TypeVar --> ??  (I don't know that the grammar is phrased this way)
-%%  Formals --> FormalParameterList
-%%  Formal ---> FormalParemeter
-%% 
-%%  The stuff about void confuses me.  I don't see it in the grammar, 
-%%  but X10 accepts:     val f : (Int)=>void  = (Int):void => {};
-%%  but void is not a type, so WTF?
-\begin{grammar}
 
-Type \: TypeName \\
-     \| TypeName \xcd`[` Types\opt \xcd`]` \\
-     \| Type \xcd`{` Constraint \xcd`}` \\
-     \| Type \xcd`.` Type \\
-     \| TypeVar \\
-     \| FunctionType\\
-     \| voidFunctionType \\
+% remove \refstepcounter{equation}
+% snag the argument of \label{X}
+% change the (\arabic{equation}) into (\ref{X})
 
-TypeName \: Id \\
-TypeVar \: Id \\
-Types \: Type \\ 
-      \| Type \xcd`,` Types \\
-FunctionType \: \xcd`(` Formals\opt \xcd`) =>`  Type \\
-voidFunctionType \: \xcd`(` Formals\opt \xcd`) => void` \\
-Formal \: Id \xcd`:` Type \\
-Formals \: Formal \\
-        \| Formal \xcd`,` Formals      
-\end{grammar}
+\begin{bbgrammar}
+ Type   \: FunctionType & (\ref{prod:Type})\\
+    \| ConstrainedType\\
+ FunctionType   \: TypeParams\opt \xcd"(" FormalParamList\opt \xcd")" WhereClause\opt Offers\opt \xcd"=>" Type & (\ref{prod:FunctionType})\\
+
+\end{bbgrammar}
 
 The type {\em TypeName} refers to a defined type.  For example, 
 %~~type~~`~~`~~ ~~
