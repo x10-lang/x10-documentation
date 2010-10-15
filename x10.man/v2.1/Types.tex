@@ -1346,12 +1346,14 @@ allowed if \xcd`T` has a default value.
 Default values are: 
 \begin{itemize}
 \item The fundamental numeric type (\xcd`Int`, \xcd`UInt`,
-      \xcd`Long`, \xcd`ULong`, \xcd`Short`, \xcd`UShort`, \xcd`Byte`,
-      \xcd`UByte`, \xcd`Float`, \xcd`Double`) all have default value 0.
+      \xcd`Long`, \xcd`ULong`, 
+%%limitation%%       \xcd`Short`, \xcd`UShort`, \xcd`Byte`,
+%%limitation%%       \xcd`UByte`, 
+      \xcd`Float`, \xcd`Double`) all have default value 0.
 \item \xcd`Boolean` has default value \xcd`false`.
 \item \xcd`Char` has default value \xcd`'\0'`.
 \item Struct other than those listed above have no default value.
-\item Function types have no default value.
+\item A function type has a default value of \xcd`null`.
 \item A class type has a default value of \xcd`null`.
 \item The constrained type \xcd`T{c}` has the same default value as \xcd`T` if
       that default value satisfies \xcd`c`.  If the default value of \xcd`T`
