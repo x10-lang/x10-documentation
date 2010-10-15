@@ -121,10 +121,10 @@ Expression \: AtExpression \\
 AtExpression \: \xcd"at" PlaceExpressionSingleList ClosureBody 
 \end{grammar}
 
-An activity executing the statement \xcd"at (q) S" at a place \xcd`p`
+An activity executing statement \xcd"at (q) S" at a place \xcd`p`
 evaluates \xcd`q` at \xcd`p` and then moves to \xcd`q` to execute
 \xcd`S` as follows. Note that the value obtained by evaluating \xcd`q`
-is not necessarily distinct from \xcd`p` (\eg, \xcd`q` may be
+is not necessarily distinct from \xcd`p` (e.g.{} \xcd`q` may be
 \xcd`here`).
 
 First, the runtime identifies the object graph at \xcd`p` reachable
@@ -144,13 +144,13 @@ serialized into a buffer, the buffer is communicated to \xcd`p` where
 it is deserialized into an exception \xcd`E1` and \xcd`at (e) S`
 throws \xcd`E1`.
 
-Since \xcd`at(e) S` is synchronous, the  usual control-flow
+Since \xcd`at(e) S` is a synchronous constructs usual control-flow
 constructs such as \xcd`break`, \xcd`continue`, \xcd`return` and 
-\xcd`throw` are permitted in \xcd`S`.  All concurrency-related
-constructs -- \xcd`async`, \xcd`finish`, \xcd`atomic`, \xcd`when` -- are
+\xcd`throw` are permitted in \xcd`S`.  All concurrency related
+constructs -- \xcd`async`, \xcd`finish`, \xcd`atomic, \xcd`when` are
 also permitted.
 
-\limitationx{} In \xcd`at(e) S`, \xcd`S` is permitted to access only
+\Limitation{} In \xcd`at(e) S`, \xcd`S` is permitted to access only
 those immutable variables in the surrounding scope that are definitely
 initialized.
 
@@ -165,19 +165,18 @@ the struct \xcd`x10.lang.GlobalRef[T]` is often useful.
 \paragraph{Serialization and deserialization.}
 The X10 runtime provides a default mechanism for
 serializing/deserializing an object graph with a given set of roots.
-This mechanism may be overridden for individual 
-classes or
-structs as described in \xcd`x10.io.CustomSerialization`. 
+This mechanism may be overridden by the programmer on a per class or
+struct basiss as described in \xcd`x10.io.CustomSerialization`. 
 The default mechanism performs a
 deep copy of the object graph (that is, it copies the object or struct
 and, recursively, the values contained in its fields), but does not
 traverse \xcd`transient` fields. Instead on serialization the default
 value \ref{default-value} for the type of the field is used.
 
-A struct  of type \xcd`x10.lang.GlobalRef[T]` \ref{GlobalRef}
+A struct \xcd`s` of type \xcd`x10.lang.GlobalRef[T]` \ref{GlobalRef}
 is serialized as a unique global reference to its contained object
-(of type \xcd`T`).   Further details may be found in the documentation 
-of \xcd`x10.lang.GlobalRef[T]`.
+\xcd`o` (of type \xcd`T`).  Please see the documentation
+of \xcd`x10.lang.GlobalRef[T]` for more details.
 
 %%Such a struct \xcd`s` can only be created by a constructor call that
 %%is passed an object \xcd`o` of type \xcd`T`. The struct has a
@@ -205,38 +204,35 @@ of \xcd`x10.lang.GlobalRef[T]`.
 
 %%\xcd`p` may be an expression of type \xcd`Place`, in which case its value is
 %%used as the place to execute the body: 
-%%%~x~gen
+%%%~~gen
 %%%% package Activities.At.A.Standstill;
 %%% class Example {
 %%% def example(ob: Object, S: ()=>Void) {
-%%%~x~vis
+%%%~~vis
 %%\begin{xten}
 %%   at (here.next()) S();
 %%\end{xten}
-%%%~x~siv
+%%%~~siv
 %%% } } 
-%%%~x~neg
+%%%~~neg
 %%\noindent
 
 
 \subsection{Discussion}
 \xcd`at(p)S` does {\em not} start a new activity.  It should be thought of as
 transporting the current activity to \xcd`p`, running \xcd`S` there, and then
-transporting it back.  (\xcd`async` is the only construct in the
-language that starts a new activity.)  \xcd`at` and \xcd`async` may be
-combined as needed.  Commonly useful variations include: 
-\begin{enumerate}
-\item \xcd`async at(p) S`, which spawns an activity locally to execute \xcd`S` at
-      \xcd`p`; here \xcd`p` is evaluated by the spawned activity;
-\item \xcd`at(p) async S`, which evaluates \xcd`p` and then,  at \xcd`p`, spawns an
-      activity to execute \xcd`S`;
-\item \xcd`async at(p) async S`, which spawns an activity locally to  evaluate
-      \xcd`p` and then, at \xcd`p`, spawns a second activity to execute \xcd`S`.
-\end{enumerate}
+transporting it back.  \xcd`async` is the only construct in the
+language that starts a new activity. In different contexts, each one
+of the following makes sense:
+(1)~\xcd`async at(p) S` (spawn an activity locally to execute \xcd`S` at
+\xcd`p`; here \xcd`p` is evaluated by the spawned activity) , 
+(2)~\xcd`at(p) async S` (evaluate \xcd`p` and then at \xcd`p` spawn an
+activity to execute \xcsd`S`), and,
+(3)~\xcd`async at(p) async S`. 
 
-
-As a consequence of this, \xcd`S` in \xcd`at(p)S` may contain constructs which
-only make sense within a single activity.  For example, 
+As a consequence of this, \xcd`S` may contain constructs which only make sense
+within a single activity.  
+For example, 
 \begin{xten}
     for(x in globalRefsToThings) 
       if (at(x.home) x().nice()) 
@@ -251,11 +247,11 @@ you can't \xcd`return` from an
 \index{at!copying}
 
 \xcd`at(p)S` copies nearly all data that \xcd`S` might reference, and sends it
-to place \xcd`p`, before executing \xcd`S` there. Values are copied unless
-they are  only reachable through \xcd`GlobalRef`s and \xcd`transient`
+to place \xcd`p`, before executing \xcd`S` there. The only things that are not
+copied are values only reachable through \xcd`GlobalRef`s and \xcd`transient`
 fields.    If \xcd`x` is a
 variable name referring to some object \xcd`ob` outside of \xcd`S`, then the
-same variable name \xcd`x` refers to a deep copy \xcdmath`ob$'$` of \xcd`ob`
+same variable name \xcd`x` refers to a deep copy \xcd`ob{$'$}` of \xcd`ob`
 inside of \xcd`S`.  In this way the body \xcd`S` is in a separate block with
 different variable bindings.
 
@@ -291,8 +287,7 @@ value {$c_1$} rather than the copy {$c_2$}.
 
 The \xcd`at` statement induces a {\em deep copy}.  Not only does it copy the
 values of variables, it copies values that they refer to through zero or more
-levels of reference --- except if the reference involves a \xcd`transient`
-field, or a field of type \xcd`GlobalRef`.  Structures are preserved as well: if two fields
+levels of reference.  Structures are preserved as well: if two fields
 \xcd`x.f` and \xcd`x.g` refer to the same object {$o_1$} in the original, then
 \xcd`x.f` and \xcd`x.g` will both refer to the same object {$o_2$} in the
 copy.  
@@ -329,9 +324,6 @@ assert(a(0)() == 6 && a(1)() == 6);     // (G)
 %~~neg
 
 \subsubsection{Copying and Transient Fields}
-\index{field!transient}
-\index{transient}
-\label{TransientFields}
 
 Recall that fields of classes and structs marked \xcd`transient` are not copied by
 \xcd`at`.  Instead, they are set to the default values for their types. Types
@@ -370,14 +362,13 @@ class Trans {
 \subsubsection{Copying and GlobalRef}
 \index{at!GlobalRef}
 \index{at!blocking copying}
-\label{GlobalRef}
 
 %%The other barrier to the potentially copious copying behavior of \xcd`at`
 %%is the \xcd`GlobalRef` struct.  
-A \xcd`GlobalRef[T]`  \xcd`g` contains a reference to
-a value \xcd`o` of type \xcd`T`, in a form which can be transmitted, and a \xcd`Place`
+A \xcd`GlobalRef[T]` (say \xcd`g`) contains a reference to
+a value of type \xcd`T`, in a form which can be transmitted, and a \xcd`Place`
 \xcd`g.home` indicating where the value lives. When a 
-\xcd`GlobalRef` is serialized, an opaque, globally unique handle to
+\xcd`GlobalRef` is serialized an opaque, globally uniqe handle to
 the enclosed value \xcd`o` is passed. 
 
 The following example does not copy the value \xcd`huge`.  However, \xcd`huge`
@@ -454,12 +445,13 @@ pieces of information back from an \xcd`at(somewhereElse)`, as shown by the
 following example which computes the roots of the quadratic equation 
 {$ax^2 + bx + c = 0$}.  
 For the sake of the example, we assume that 
-{\tt mathProcessor()} returns a \xcd`Place` suitable for calculation.  In practice
+{\tt mathProcessor()} returns a Place suitable for calculation.  In practice
 it would rarely if ever make sense to send such a small calculation to another
 place. 
 
 The starting place has local \xcd`var`s \Xcd{r} and \Xcd{s}, which will hold
-the roots.  
+the roots.  (They are initialized to {$0+0i$} because of
+\Sref{AtAndDefAssignment}.) 
 The computation at the math processor evaluates the roots of the equation.
 These roots are bound to math processor local \xcd`val` variables \xcd`rr` and
 \xcd`ss`.  An inner place-shifting \xcd`at(h)` moves the computation back to
