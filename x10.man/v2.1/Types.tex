@@ -531,6 +531,24 @@ class NonGeneric {
 \index{type parameter!contravariant}
 \index{type parameter!invariant}
 
+%TODO - examples courtesy of Nate
+% 
+% class OutputStream[-A] {
+%    def write(a: A) = /* implementation left as an exercise for the reader */
+% }
+% 
+% Also:
+% 
+% interface Comparator[-A] {
+%    def compare(A): Int;
+% }
+% 
+% and:
+% 
+% class HashMap[-K,+V] { ... }
+% 
+% 
+
 Consider classes \xcd`Person :> Child`.  Every child is a person, but there
 are people who are not children.  What is the relationship between
 \xcd`Cell[Person]` and \xcd`Cell[Child]`?  
