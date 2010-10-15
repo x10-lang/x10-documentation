@@ -1224,18 +1224,21 @@ Constraints can be used to express simple relationships between objects,
 enforcing some class invariants statically.  For example, in geometry, a line
 is determined by two {\em distinct} points; a \xcd`Line` class can specify the
 distinctness in a type constraint:\footnote{We call them
-\xcd`Position` to avoid confusion with the built-in class \xcd`Point`}
+\xcd`Position` to avoid confusion with the built-in class \xcd`Point`. 
+Also, \xcd`Position` is a struct rather than a class so that the non-equality
+test \xcd`start != end` compares the coordinates.  If \xcd`Position` were a
+class, \xcd`start != end` would check for different \xcd`Position` objects,
+which might have the same coordinates.
+}
 
 
 %~~gen
-% 
+% package triangleExample.partOne;
 %~~vis
 \begin{xten}
-class Position(x: Int, y: Int) {
-   def this(x:Int,y:Int){property(x,y);}
-   }
-class Line(start: Position, 
-           end: Position{self != start}) {}
+struct Position(x: Int, y: Int) {}
+
+class Line(start: Position, end: Position){start != end} {}
 \end{xten}
 
 %~~siv
@@ -1249,8 +1252,8 @@ by the type system; in particular, it is impossible to check that the three
 vertices are not collinear. 
 
 %~~gen
-%package triangleExample;
-% class Position(x: Int, y: Int) {
+%package triangleExample.partTwo;
+% struct Position(x: Int, y: Int) {
 %    def this(x:Int,y:Int){property(x,y);}
 %    }
 % class Line(start: Position, 
