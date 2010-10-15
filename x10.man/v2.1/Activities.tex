@@ -113,13 +113,12 @@ An activity may change place synchronously using the \xcd"at" statement or
 \xcd"at" expression. This is an expensive operation and must be used
 with care.
 
-%% TODO: Check grammar.
-\begin{grammar}
-Statement \: AtStatement \\
-AtStatement \: \xcd"at" PlaceExpressionSingleList Statement \\
-Expression \: AtExpression \\
-AtExpression \: \xcd"at" PlaceExpressionSingleList ClosureBody 
-\end{grammar}
+\begin{bbgrammar}
+ AtStatement    \: at PlaceExpSingleList Statement & (\ref{prod:AtStatement})\\%<FROM #(prod:AtStatement)#
+ AtExp    \: at PlaceExpSingleList ClosureBody & (\ref{prod:AtExp})\\%<FROM #(prod:AtExp)#
+\end{bbgrammar}
+
+
 
 An activity executing statement \xcd"at (q) S" at a place \xcd`p`
 evaluates \xcd`q` at \xcd`p` and then moves to \xcd`q` to execute
@@ -495,6 +494,12 @@ are better suited for supporting scalability than synchronous
 operations.)
 
 An activity is created by executing the \xcd`async` statement: 
+
+\begin{bbgrammar}
+ AsyncStatement    \: \xcd"async" ClockedClause\opt Statement & (\ref{prod:AsyncStatement})\\%<FROM #(prod:AsyncStatement)#
+    \| clocked \xcd"async" Statement\\
+ ClockedClause    \: clocked \xcd"(" ClockList \xcd")" & (\ref{prod:ClockedClause})\\%<FROM #(prod:ClockedClause)#
+\end{bbgrammar}
 
 %%GRAMMAR%% \begin{grammar}
 %%GRAMMAR%% Statement \: AsyncStatement \\
