@@ -106,12 +106,14 @@ statements.}
 There is always a good place to put a \xcd`try`-\xcd`catch` block to catch
 exceptions thrown by an asynchronous activity.
 
-\section{ {\tt at}: Place Changing and Object Copying}\label{AtStatement}
+\section{ {\tt at}: Place Changing}\label{AtStatement}
 \index{at}
 
-An activity may change place using the \xcd"at" statement or
-\xcd"at" expression:
+An activity may change place synchronously using the \xcd"at" statement or
+\xcd"at" expression. This is an expensive operation and must be used
+with care.
 
+%% TODO: Check grammar.
 \begin{grammar}
 Statement \: AtStatement \\
 AtStatement \: \xcd"at" PlaceExpressionSingleList Statement \\
@@ -119,37 +121,114 @@ Expression \: AtExpression \\
 AtExpression \: \xcd"at" PlaceExpressionSingleList ClosureBody 
 \end{grammar}
 
-The statement \xcd"at (p) S" executes the statement \xcd"S"
-synchronously at a place described by \xcd"p".
-The expression \xcd"at (p) E" executes the statement \xcd"E"
-synchronously at place \xcd"p", returning the result to the
-originating place.  
+An activity executing statement \xcd"at (q) S" at a place \xcd`p`
+evaluates \xcd`q` at \xcd`p` and then moves to \xcd`q` to execute
+\xcd`S` as follows. Note that the value obtained by evaluating \xcd`q`
+is not necessarily distinct from \xcd`p` (e.g.{} \xcd`q` may be
+\xcd`here`).
+
+First, the runtime identifies the object graph at \xcd`p` reachable
+from lexically scoped initialized variables (say, \xcd`v1`,\ldots,
+\xcd`vn`) referenced in \xcd`S`.  Second this graph is {\em
+  serialized} into a buffer and transmitted to place \xcd`q`.  Third,
+the variables \xcd`v1`,\ldots, \xcd`vn` are re-created at \xcd`q` and
+initialized with the objects obtained by deserializing the buffer at
+\xcd`q`. Fourth, \xcd`S` is executed at \xcd`q` (in an environment in
+which the variable \xcd`vi` refers to the re-created variable at
+\xcd`q`).
+
+On normal termination of \xcd`S` control returns to \xcd`p` and
+execution is continued with the statement following \xcd`at (q) S`. If
+\xcd`S` terminates abruptly with exception \xcd`E`, \xcd`E` is
+serialized into a buffer, the buffer is communicated to \xcd`p` where
+it is deserialized into an exception \xcd`E1` and \xcd`at (e) S`
+throws \xcd`E1`.
+
+Since \xcd`at(e) S` is a synchronous constructs usual control-flow
+constructs such as \xcd`break`, \xcd`continue`, \xcd`return` and 
+\xcd`throw` are permitted in \xcd`S`.  All concurrency related
+constructs -- \xcd`async`, \xcd`finish`, \xcd`atomic, \xcd`when` are
+also permitted.
+
+\Limitation{} In \xcd`at(e) S`, \xcd`S` is permitted to access only
+those immutable variables in the surrounding scope that are definitely
+initialized.
+
+Note that since values accessed across an \xcd`at` boundary are
+copied, the programmer may wish to adopt the discipline that either
+variables accessed across an \xcd`at` boundary  contain only structs 
+or stateless objects, or the methods invoked on them do not access any
+mutable state on the objects. Otheriwse the programmer has to ensure
+that sideeffects are made to the correct copy of the object. For this
+the struct \xcd`x10.lang.GlobalRef[T]` is often useful.
+
+\paragraph{Serialization and deserialization.}
+The X10 runtime provides a default mechanism for
+serializing/deserializing an object graph with a given set of roots.
+This mechanism may be overridden by the programmer on a per class or
+struct basiss as described in \xcd`x10.io.CustomSerialization`. 
+The default mechanism performs a
+deep copy of the object graph (that is, it copies the object or struct
+and, recursively, the values contained in its fields), but does not
+traverse \xcd`transient` fields. Instead on serialization the default
+value \ref{default-value} for the type of the field is used.
+
+A struct \xcd`s` of type \xcd`x10.lang.GlobalRef[T]` \ref{GlobalRef}
+is serialized as a unique global reference to its contained object
+\xcd`o` (of type \xcd`T`).  Please see the documentation
+of \xcd`x10.lang.GlobalRef[T]` for more details.
+
+%%Such a struct \xcd`s` can only be created by a constructor call that
+%%is passed an object \xcd`o` of type \xcd`T`. The struct has a
+%%\xcd`home` field (of type \xcd`Place`) whose value is set to the place
+%%\xcd`z` at which the instance was created.  \xcd`s` maintains a hidden
+%%reference to \xcd`o` and on serialization returns a globally unique,
+%%system-defined opaque handle $h$ of fixed size (independent of
+%%\xcd`T`). This handle contains enough information for the system to
+%%recover \xcd`z`, and (at \xcd`z`) obtain a reference to \xcd`o`.  $h$
+%%can be transported to any place. When $h$ is deserialized at \xcd`z`
+%%the result of a constructor invocation of \xcd`x10.lang.GlobalRef[T]`
+%%with argument \xcd`o` is returned. When it is deserialized at a place
+%%other than \xcd`z` a special implementation of
+%%\xcd`x10.lang.GlobalRef[T]` is returned which has the property that
+%%its \xcd`home` field is \xcd`z` and on serialization it returns
+%%$h$. Thus a \xcd`GlobalRef(o)` (created at \xcd`z`) serves as a way to
+%%communicate globally a reference to the unique object \xcd`o` in such
+%%a way that the object \xcd`o` can be recovered from it at place
+%%\xcd`z`.
+
+%%TODO. Provide details of how the programmer may override default
+%%serialization for programmer defined classes. 
 
 
 
-
-\xcd`p` may be an expression of type \xcd`Place`, in which case its value is
-used as the place to execute the body: 
-%~~gen
-% package Activities.At.A.Standstill;
-% class Example {
-% def example(ob: Object, S: ()=>void) {
-%~~vis
-\begin{xten}
-   at (here.next()) S();
-\end{xten}
-%~~siv
-% } } 
-%~~neg
-\noindent
-
+%%\xcd`p` may be an expression of type \xcd`Place`, in which case its value is
+%%used as the place to execute the body: 
+%%%~~gen
+%%%% package Activities.At.A.Standstill;
+%%% class Example {
+%%% def example(ob: Object, S: ()=>Void) {
+%%%~~vis
+%%\begin{xten}
+%%   at (here.next()) S();
+%%\end{xten}
+%%%~~siv
+%%% } } 
+%%%~~neg
+%%\noindent
 
 
+\subsection{Discussion}
 \xcd`at(p)S` does {\em not} start a new activity.  It should be thought of as
 transporting the current activity to \xcd`p`, running \xcd`S` there, and then
-transporting it back.    If you want to start a new activity, use \xcd`async`;
-if you want to start a new activity at \xcd`p`, use 
-\xcd`at(p) async S`.  
+transporting it back.  \xcd`async` is the only construct in the
+language that starts a new activity. In different contexts, each one
+of the following makes sense:
+(1)~\xcd`async at(p) S` (spawn an activity locally to execute \xcd`S` at
+\xcd`p`; here \xcd`p` is evaluated by the spawned activity) , 
+(2)~\xcd`at(p) async S` (evaluate \xcd`p` and then at \xcd`p` spawn an
+activity to execute \xcsd`S`), and,
+(3)~\xcd`async at(p) async S`. 
 
 As a consequence of this, \xcd`S` may contain constructs which only make sense
 within a single activity.  
@@ -246,7 +325,7 @@ assert(a(0)() == 6 && a(1)() == 6);     // (G)
 
 \subsubsection{Copying and Transient Fields}
 
-Fields of classes and structs marked \xcd`transient` are not copied by
+Recall that fields of classes and structs marked \xcd`transient` are not copied by
 \xcd`at`.  Instead, they are set to the default values for their types. Types
 that do not have default values cannot be used in \xcd`transient` fields.
 
@@ -284,17 +363,13 @@ class Trans {
 \index{at!GlobalRef}
 \index{at!blocking copying}
 
-The other barrier to the potentially copious copying behavior of \xcd`at`
-is the \xcd`GlobalRef` struct.  A \xcd`GlobalRef[T]` contains a reference to
+%%The other barrier to the potentially copious copying behavior of \xcd`at`
+%%is the \xcd`GlobalRef` struct.  
+A \xcd`GlobalRef[T]` (say \xcd`g`) contains a reference to
 a value of type \xcd`T`, in a form which can be transmitted, and a \xcd`Place`
-\xcd`gr.home` indicating where the value lives.
-The \xcd`GlobalRef` itself is copied across
-\xcd`at` boundaries---but the value referred to is {\em not}
-copied.\footnote{Strictly: the reference from the {\tt GlobalRef}, or a
-transient reference, does not
-inspire copying.  Copying may be required due to some other, non-Global,
-non-transient 
-reference.} 
+\xcd`g.home` indicating where the value lives. When a 
+\xcd`GlobalRef` is serialized an opaque, globally uniqe handle to
+the enclosed value \xcd`o` is passed. 
 
 The following example does not copy the value \xcd`huge`.  However, \xcd`huge`
 would have been copied if it had been put into a \xcd`Cell`, or simply used
@@ -318,12 +393,12 @@ at (here) {
 %~~neg
 
 
-Values protected in \xcd`GlobalRef`s can be retrieved by the \xcd`gr.apply()`
-method, often abbreviated simply \xcd`gr()`.  \xcd`gr.apply()` is guarded; it can
-only be called when \xcd`gr.home == here`.  If you  want to do anything other
+Values protected in \xcd`GlobalRef`s can be retrieved by the \xcd`g.apply()`
+method, often abbreviated simply \xcd`g()`.  \xcd`g.apply()` is guarded; it can
+only be called when \xcd`g.home == here`.  If you  want to do anything other
 than pass a global reference around or compare two of them for equality, you
 need to placeshift back to the home place of the reference, often with
-\xcd`at(gr.home)`.   For example, the following (silly) program modifies the
+\xcd`at(g.home)`.   For example, the following  program modifies the
 command-line argument array.
 
 %~~gen
@@ -347,31 +422,20 @@ command-line argument array.
 %~~neg
 
 
-\subsubsection{{\tt at} and Definite Assignment}
-\label{AtAndDefiniteAssignment}
 
-% TODO I dunno how to justify this, but it's true.
 
-\xcd`at(p)S` is not considered to definitely assign to variables appearing in
-\xcd`S`.  For example, the following code requires initialization of \xcd`a`.
-without the \xcd`= 0` clause, it would fail to compile, as \xcd`a` is used in
-the \xcd`println` without having definitely been assigned.
-%~~gen
-%package Activities.AtAndDefAssignment;
-%class Example{
-%def example(){
-%~~vis
-\begin{xten}
-  var a : Int = 0;
-  at(here) {
-    a = 1;
-  }
-  Console.OUT.println("a=" + a);
-\end{xten}
-%~~siv
-%}}
-%~~neg
 
+\subsubsection{Warnings about \xcd`at`}
+There are two dangers involved with \xcd`at`: 
+\begin{itemize}
+\item Careless use of \xcd`at` can result in copying and transmission
+of very large data structures.  
+\item As seen in the examples above, a local variable reference
+  \xcd`x` may refer to different objects in different nested \xcd`at`
+  scopes The programmer must either ensure that a variable accessed
+  across an \xcd`at` boundary has no mutable state or be prepared to
+  reason about which copy gets modified. 
+\end{itemize}
 
 \subsubsection{{\tt at} and Variables}
 
@@ -386,8 +450,8 @@ it would rarely if ever make sense to send such a small calculation to another
 place. 
 
 The starting place has local \xcd`var`s \Xcd{r} and \Xcd{s}, which will hold
-the roots.  (They are initialized to {$0+0i$} because \xcd`at` does not
-definitely assign to variables.)
+the roots.  (They are initialized to {$0+0i$} because of
+\Sref{AtAndDefAssignment}.) 
 The computation at the math processor evaluates the roots of the equation.
 These roots are bound to math processor local \xcd`val` variables \xcd`rr` and
 \xcd`ss`.  An inner place-shifting \xcd`at(h)` moves the computation back to
@@ -422,18 +486,6 @@ def printRootsOfQuadratic(a:Complex, b:Complex, c:Complex) {
 %~~siv
 %} 
 %~~neg
-
-
-
-\subsubsection{Warnings about \xcd`at`}
-There are two dangers involved with \xcd`at`: 
-\begin{itemize}
-\item Careless use of \xcd`at` can result in copying and transmission
-of very large data structures.  
-\item As seen in the examples above, changes made to copied objects are not
-      propagated back to the originals.   
-\end{itemize}
-
 \section{\xcd`async`: Spawning an activity}\label{AsynchronousActivity}\label{AsyncActivity}
 
 Asynchronous activities serve as a single abstraction for supporting a
@@ -499,31 +551,32 @@ such, it may reference variables in lexically enclosing scopes.
 
 \section{Finish}\index{finish}\label{finish}
 The statement \xcd"finish S" converts global termination to local
-termination and introduces a root activity.   It executes \xcd`S`, and then
-waits for all activities spawned by \xcd`S`, directly or indirectly, to
-finish. It also collects exceptions thrown by those activities.
+termination.
 
+%%TODO: Check against current grammar
 \begin{grammar}
 Statement \: FinishStatement \\
 FinishStatement \: \xcd"finish" Statement 
 \end{grammar}
 
-An activity $A$ executes \xcd"finish S" by executing \xcd"S".  The
-execution of \xcd"S" may spawn other asynchronous activities (here or
-at other places).  
+An activity $A$ executes \xcd"finish S" by executing \xcd"S" and
+then waiting for all activities spawned by \xcd`S` (directly or
+indirectly, here or at other places) to terminate. An activity may
+terminate normally, or abruptly, i.e. by throwing an exception.
+All exceptions thrown by spawned activities are caught and
+accumulated. 
 
-A \xcd"finish S" statement serves as a collection point for
-uncaught exceptions generated during the execution of \xcd"S".
-Uncaught exceptions thrown or propagated by any
-activity spawned by \xcd"S" are accumulated at \xcd"finish S".
 \xcd"finish S" terminates locally when all activities spawned by
 \xcd"S" terminate globally (either abruptly or normally). If \xcd"S"
 terminates normally, then \xcd"finish S" terminates normally and $A$
 continues execution with the next statement after \xcd"finish S".  If
-\xcd"S" terminates abruptly, then \xcd"finish S" terminates abruptly
-and throws a single exception, \Xcd{x10.lang.MultipleExceptions}
-formed from the collection of exceptions accumulated at \xcd"finish S".
+\xcd"S" or one of the activities spawned by it terminate abruptly,
+then \xcd"finish S" terminates abruptly and throws a single exception,
+\Xcd{x10.lang.MultipleExceptions} formed from the collection of
+exceptions accumulated at \xcd"finish S".
 
+Thus \xcd"finish S" statement serves as a collection point for
+uncaught exceptions generated during the execution of \xcd"S".
 
 Note that repeatedly \xcd"finish"ing a statement has little effect after
 the first \xcd"finish": \xcd"finish finish S" is indistinguishable
@@ -584,14 +637,13 @@ exceptions, \xcd`finish S` wraps them in one layer of
 %%OLIVIER-DENIES%% }
 %%OLIVIER-DENIES%% 
 
-
-
 \section{Initial activity}\label{initial-computation}\index{initial activity}
 
 An \Xten{} computation is initiated from the command line on the
-presentation of a classname \xcd"C". The class must have a
-\xcd"public static def main(a: Array[String](1)):void" method, otherwise an
-exception is thrown
+presentation of a class or struct name \xcd"C". The class must have a
+\xcd"public static def main(a: Array[String](1)):void" method, 
+or a \xcd"public static def main(a: Array[String]):void" method, 
+otherwise an exception is thrown
 and the computation terminates.  The single statement
 \begin{xten}
 finish async (Place.FIRST_PLACE) {
@@ -606,12 +658,8 @@ places.)
 
 %% Say something about configuration information? 
 
-
-
-
 \section{Ateach statements}\index{\Xcd{ateach}}\label{ateach-section}
 \deprecated{} The \xcd`ateach` construct is deprecated.
-
 \begin{grammar}
 Statement \: AtEachStatement \\
 AtEachStatement \:
@@ -632,7 +680,7 @@ distribution.
 Instead of writing \xcd`ateach (p in D) S` the programmer should write 
 \xcd`for(p in D) at(D(p)) async S` to get the same effect. 
 For each point \xcd`p` in \xcd`D`, at place \xcd`D(p)`, \xcd`S` is
-executed simultaneously (with \xcd`p` bound to the point). 
+executed simultaneously.
 
 However, this often results in excessive communication and parallelism. Instead the
 programmer may want to write: 
@@ -754,8 +802,6 @@ def add(x:T) {
 %~~siv
 %}
 %~~neg
-
-
 
 \subsection{Unconditional atomic blocks}
 The simplest form of an atomic block is the {\em unconditional
