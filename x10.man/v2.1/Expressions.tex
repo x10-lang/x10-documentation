@@ -6,10 +6,10 @@ Expression evaluation may have side effects, such as change of the value of a
 \xcd`var` variable or a data structure, allocation of new values, or throwing
 an exception. 
 
-Evaluation is performed left to right, wherever possible.  For example, in 
-%~~exp~~`~~`~~f:() => ((Int,Int)=>Int), a:()=>Int, b:()=>Int ~~
-\xcd`f()(a(),b())`, \xcd`f()` is evaluated, then \xcd`a()`, then \xcd`b()`,
-and then the application.  
+%%WRONG%% Evaluation is performed left to right, wherever possible.  For example, in 
+%%WRONG%% %~x~exp~~`~~`~~f:() => ((Int,Int)=>Int), a:()=>Int, b:()=>Int ~~
+%%WRONG%% \xcd`f()(a(),b())`, \xcd`f()` is evaluated, then \xcd`a()`, then \xcd`b()`,
+%%WRONG%% and then the application.  
 
 \section{Literals}
 
@@ -124,7 +124,7 @@ the superclass of the enclosing class.  This form is used to access fields of
 the parent class shadowed by same-named fields of the current class.
 
 If the field target is \xcd`Cls.super`, then the target's type is \xcd`Cls`,
-which must be an ancestor class of the enclosing class.  This (admittedly
+which must be an  enclosing class.  This (admittedly
 obscure) form is used to access fields of an ancestor class which are shadowed
 by same-named fields of some more recent ancestor.  The following example
 illustrates all four cases:
@@ -416,7 +416,7 @@ On integers, the operands are coerced to the longer of their two types, and
 then operated upon.  
 Floating point operations are determined by the IEEE 754
 standard. 
-The integer \xcd"/" and \xcd"%" throw a \xcd"DivideByZeroException"
+The integer \xcd"/" and \xcd"%" throw an exception 
 if the right operand is zero.
 
 \section{Binary shift operations}

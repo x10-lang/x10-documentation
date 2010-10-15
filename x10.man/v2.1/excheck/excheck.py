@@ -276,7 +276,7 @@ def readLines(f, endMarker, stripLeadingPercents, stripBeginAndEnd, basename):
         
 
 def doom(msg):
-    raise msg
+    raise Exception(msg);
 
 
 

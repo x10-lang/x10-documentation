@@ -136,7 +136,7 @@ lbl : for ([i] in 1..10) {
    for ([j] in i..10) {  
       if (a(i,j) == 0) break lbl;
       if (a(i,j) == 1) continue lbl;
-      do_things_to(a(i,j)); 
+      if (a(i,j) == a(j,i)) break lbl;
    }
 }
 \end{xten}
