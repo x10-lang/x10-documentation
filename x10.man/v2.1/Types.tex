@@ -1327,6 +1327,41 @@ type-checking failed.
 
 
 
+\section{Default Values}
+\index{default value}
+\index{type!default value}
+\label{DefaultValues}
+
+Some types have default values, and some do not. Default values are used in
+situations where variables can legitimately be used without having been
+initialized; types without default values cannot be used in such situations.
+For example, a field of an object \xcd`var x:T` can be left uninitialized if
+\xcd`T` has a default value; it cannot be if \xcd`T` does not. Similarly, a
+transient (\Sref{TransientFields}) field \xcd`transient val x:T` is only
+allowed if \xcd`T` has a default value.
+
+Default values are: 
+\begin{itemize}
+\item The fundamental numeric type (\xcd`Int`, \xcd`UInt`,
+      \xcd`Long`, \xcd`ULong`, \xcd`Short`, \xcd`UShort`, \xcd`Byte`,
+      \xcd`UByte`, \xcd`Float`, \xcd`Double`) all have default value 0.
+\item \xcd`Boolean` has default value \xcd`false`.
+\item \xcd`Char` has default value \xcd`'\0'`.
+\item Struct other than those listed above have no default value.
+\item Function types have no default value.
+\item A class type has a default value of \xcd`null`.
+\item The constrained type \xcd`T{c}` has the same default value as \xcd`T` if
+      that default value satisfies \xcd`c`.  If the default value of \xcd`T`
+      doesn't satisfy \xcd`c`, then \xcd`T{c}` has no default value.
+\end{itemize}
+
+For example, \xcd`var x: Int{x != 4}` has default value 0, which is allowed
+because \xcd`0 != 4` satisfies the constraint on \xcd`x`. 
+\xcd`var y : Int{y==4}` has no default value, because \xcd`0` does not satisfy \xcd`y==4`.
+The fact that \xcd`Int{y==4}` has precisely one value, \viz{} 4, doesn't
+matter; the only candidate for its default value, as for any subtype of
+\xcd`Int`, is 0. \xcd`y` must be initialized before it is used.
+
 \section{Function types}
 \label{FunctionTypes}
 \label{FunctionType}

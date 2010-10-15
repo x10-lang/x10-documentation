@@ -329,6 +329,9 @@ assert(a(0)() == 6 && a(1)() == 6);     // (G)
 %~~neg
 
 \subsubsection{Copying and Transient Fields}
+\index{field!transient}
+\index{transient}
+\label{TransientFields}
 
 Recall that fields of classes and structs marked \xcd`transient` are not copied by
 \xcd`at`.  Instead, they are set to the default values for their types. Types
@@ -456,8 +459,7 @@ it would rarely if ever make sense to send such a small calculation to another
 place. 
 
 The starting place has local \xcd`var`s \Xcd{r} and \Xcd{s}, which will hold
-the roots.  (They are initialized to {$0+0i$} because of
-\Sref{AtAndDefAssignment}.) 
+the roots.  
 The computation at the math processor evaluates the roots of the equation.
 These roots are bound to math processor local \xcd`val` variables \xcd`rr` and
 \xcd`ss`.  An inner place-shifting \xcd`at(h)` moves the computation back to
