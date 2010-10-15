@@ -142,105 +142,10 @@ urlcolor=blue
 
 \appendix
 
-\chapter{Change Log}
-\section{Changes from \Xten{} v2.0.6}
+\input{ChangeLog.tex}
 
-The global object model has been simplified. Classes are now local by
-default and are copied on reference across an \Xcd{at} boundary.
- \Xcd{Any} defines only \Xcd{toString}, \Xcd{typeName},
-\Xcd{equals} and \Xcd{hashCode}. It no longer defines \Xcd{home},
-\Xcd{at}.  The new struct \Xcd{x10.lang.GlobalRef[T]} is the only
-mechanism for creating a globally usable reference to an
-object. \Xcd{GlobalRef} has a \Xcd{home} property.
 
-The type modifier \Xcd{!} is no longer used. (It is not needed for
-user-defined classes. The typedef \Xcd{GlobalRef[T](p:Place)} can
-be used for specifying a constraint  on the \Xcd{home} property of a
-\Xcd{GlobalRef}.)
 
-\begin{itemize}
-\item \Xcd{Any} is now the top of the type hierarchy (every object,
-  struct and function has a type that is a subtype of
-  \Xcd{Any}). \Xcd{Any} defines \Xcd{home}, \Xcd{at}, \Xcd{toString},
-  \Xcd{typeName}, \Xcd{equals} and \Xcd{hashCode}. \Xcd{Any} also defines the methods
-  of \Xcd{Equals}, so \Xcd{Equals} is not needed any more.
-\item Revised discussion of incomplete types (\Sref{ProtoRules}).
-\item The manual has been revised and brought into line with the current implementation. 
-\end{itemize}
-
-\section{Changes from \Xten{} v2.0}
-
-\begin{itemize}
-\item \Xcd{Any} is now the top of the type hierarchy (every object,
-  struct and function has a type that is a subtype of
-  \Xcd{Any}). \Xcd{Any} defines \Xcd{home}, \Xcd{at}, \Xcd{toString},
-  \Xcd{typeName}, \Xcd{equals} and \Xcd{hashCode}. \Xcd{Any} also defines the methods
-  of \Xcd{Equals}, so \Xcd{Equals} is not needed any more.
-\item Revised discussion of incomplete types (\Sref{ProtoRules}).
-\item The manual has been revised and brought into line with the current implementation. 
-\end{itemize}
-\section{Changes from \Xten{} v1.7}
-
-The language has changed in the following way:
-\begin{itemize}
-
-\item {\bf Type system changes}: There are now three kinds of entities
-  in an \Xten{} computation: objects, structs and functions. Their
-  associated types are class types, struct types and function
-  types. 
-
-  Class and struct types are called {\em container types} in that they
-  specify a collection of fields and methods. Container types have a
-  name and a signature (the collection of members accessible on that
-  type). Collection types support primitive equality \Xcd{==} and may
-  support user-defined equality if they implement the {\tt
-    x10.lang.Equals} interface. 
-
-  Container types (and interface types) may be further qualified with
-  constraints.
-
-  A function type specifies a set of arguments and their type, the
-  result type, and (optionally) a guard. A function application
-  type-checks if the arguments are of the given type and the guard is
-  satisfied, and the return value is of the given type.  A function
-  type does not permit \Xcd{==} checks. Closure literals create
-  instances of the corresponding function type.
-
-  Container types may implement interfaces and zero or more function
-  types.
-
-  All types support a basic set of operations that return a string
-  representation, a type name, and specify the home place of the entity.
-
-  The type system is not unitary. However, any type may be used to
-  instantiate a generic type. 
-
-  There is no longer any notion of \Xcd{value} classes. \Xcd{value}
-  classes must be re-written into structs or (reference) classes. 
-
-\item {\bf Global object model}: Objects are instances of
-  classes. Each object is associated with a globally unique
-  identifier. Two objects are considered identical \Xcd{==} if their
-  ids are identical. Classes may specify \Xcd{global} fields and
-  methods. These can be accessed at any place. (\Xcd{global} fields
-  must be immutable.)
-
-\item{\bf Proto types.} For the decidability of dependent type
-  checking it is necessary that the property graph is acyclic. This is
-  ensured by enforcing rules on the leakage of \Xcd{this} in
-  constructors. The rules are flexible enough to permit cycles to be
-  created with normal fields, but not with properties.
-
-\item{Place types.} Place types are now implemented. This means that
-  non-global methods can be invoked on a variable, only if the
-  variable's type is either a struct type or a function type, or a
-  class type whose constraint specifies that the object is located in
-  the current place.
-
-  There is still no support for statically checking array access
-  bounds, or performing place checks on array accesses.
-
-\end{itemize}
 {\em The \Xten{} language has been developed as part of the IBM PERCS
 Project, which is supported in part by the Defense Advanced Research
 Projects Agency (DARPA) under contract No. NBCH30390004.}
