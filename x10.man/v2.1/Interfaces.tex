@@ -56,10 +56,10 @@ The invariant associated with an interface is the conjunction of the
 invariants associated with its superinterfaces and the invariant
 defined at the interface. 
 
-\begin{staticrule*}
-The compiler declares an error if this constraint
-is not consistent.  
-\end{staticrule*}
+%%WRONG%% \begin{staticrule*}
+%%WRONG%% The compiler declares an error if this constraint
+%%WRONG%% is not consistent.  
+%%WRONG%% \end{staticrule*}
 
 Each interface implicitly defines a nullary getter method
 \xcd"def p(): T" for each property \xcd"p: T". The interface may not have
@@ -72,12 +72,15 @@ A class \xcd"C" is said to implement an interface \xcd"I" if
 \item \xcd`I`, or a subtype of \xcd`I`, appears in the \xcd`implements` list
       of \xcd`C`, 
 \item \xcd`C`'s properties include all the properties of \xcd"I",
-\item \xcd`C`'s class invariant $\mathit{inv}($\xcd"C"$)$ implies
-$\mathit{inv}($\xcd"I"$)$.
+%%IMPLIED%% \item \xcd`C`'s class invariant $\mathit{inv}($\xcd"C"$)$ implies
+%%IMPLIED%% $\mathit{inv}($\xcd"I"$)$.
 \item Each method \xcd`m` defined by \xcd`I` is also a method of \xcd`C` --
       with the {\em  \xcd`public`} modifier added.   These methods may be
       \xcd`abstract` if \xcd`C` is \xcd`abstract`.
 \end{itemize}
+
+Note that, by definition of $\mathit{inv}(\cdot)$, \xcd`C`'s class invariant $\mathit{inv}($\xcd"C"$)$ implies
+$\mathit{inv}($\xcd"I"$)$.
 
 \section{Field Definitions}
 

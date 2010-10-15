@@ -1693,7 +1693,7 @@ X10 provides certain guarantees about the common type \xcd`V{v}` computed for
       X10 will compute the type of \xcd`b ? 0 : 1` as 
       \xcd`Int{c}` for some constraint \xcd`c`---perhaps simply 
       picking \xcd`Int{true}`, \viz, \xcd`Int`. 
-\item X10 preserves place information, because it is so important. If both
+\item X10 preserves place information about \xcd`GlobalRef`s, because it is so important. If both
       \xcd`t` and \xcd`u` entail \xcd`self.home==p`, then  
       \xcd`v` will also entail \xcd`self.home==p`.  
 \item X10 similarly preserves nullity information.  If \xcd`t` and \xcd`u`
@@ -1730,7 +1730,7 @@ public interface Any {
 useful for everything.\footnote{The behavioral annotation \xcd`property` is
   explained in \Sref{properties}.} \xcd`a.toString()` produces a
 string representation of \xcd`a`, and \xcd`a.typeName()` the string
-representation of its type; both are useful for debugging.  \xcd`aequals(b)`
+representation of its type; both are useful for debugging.  \xcd`a.equals(b)`
 is the programmer-overridable equality test, and \xcd`a.hashCode()` an integer
 useful for hashing.  
 
