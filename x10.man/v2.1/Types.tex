@@ -109,6 +109,8 @@ of subtyping in X10.
 
 \subsection{Type System}
 \index{type system}
+\index{elementary type}
+\index{type!elementary}
 The types in X10 are as follows.  
 %% TODO vj: semantic is  a wonderful but very misused word. Lets use some
 %% other term here -- if we need to. I would actually just prefer not
@@ -224,7 +226,10 @@ is the type of integer-valued functions which have no fixed points.
 \section{Classes and interfaces}
 \label{ReferenceTypes}
 
+
 \subsection{Class types}
+\index{interface type}
+\index{type!interface}
 
 \index{types!class types}
 \index{class}
@@ -315,7 +320,8 @@ Variables of class  type may contain the value \xcd"null".
 
 \subsection{Interface types}
 \label{InterfaceTypes}
-
+\index{interface type}
+\index{type!interface}
 \index{types!interface types}
 \index{interface}
 \index{interface declaration}
@@ -383,6 +389,7 @@ class KimThePoint implements Person {
 
 \subsection{Properties}
 \index{properties}
+\index{property}
 \label{properties}
 
 Classes, interfaces, and structs may have {\em properties}, public \xcd`val` instance
@@ -982,6 +989,9 @@ For example:
 
 
 \subsection{Constraint Expressions}
+\index{constraint}
+\index{expression!allowed in constraint}
+\index{expression!constraint}
 
 
 
@@ -1146,6 +1156,8 @@ The rules for constructors guarantee this.
 
 
 \subsection{Variables in Constraints}
+\index{constraint!variables in}
+
 
 X10 permits a \xcd`val` variable to appear in constraints on its own type as
 %~~stmt~~`~~`~~ ~~
@@ -1154,6 +1166,7 @@ non-zero variable \xcd`nz`.
 
 
 \subsection{Properties in Constraints}
+\index{constraint!properties in}
 
 If \xcd`pr` is a property of either \xcd`self`, the value being constrained,
 or  \xcd`this`, the subject of the current class, interface, or struct, the
@@ -1176,7 +1189,7 @@ in general can be different.
 class A(a:Int, z:Int){}
 class B(b:Int, z:Int){
   def this(b:Int,z:Int){property(b,z);}
-  def be() : A{a == 1} = new A(1,1);
+  def be() : A{a == 1}    = new A(1,1);
   def bea(): A{self.z==1} = new A(1,1);
   def bee(): B{self.b==1} = new B(1,1);
 }
@@ -1232,8 +1245,7 @@ which might have the same coordinates.
 %~~vis
 \begin{xten}
 struct Position(x: Int, y: Int) {}
-
-class Line(start: Position, end: Position){start != end} {}
+struct Line(start: Position, end: Position){start != end} {}
 \end{xten}
 
 %~~siv
@@ -1251,23 +1263,22 @@ vertices are not collinear.
 % struct Position(x: Int, y: Int) {
 %    def this(x:Int,y:Int){property(x,y);}
 %    }
-% class Line(start: Position, 
+% struct Line(start: Position, 
 %            end: Position{self != start}) {}
 % 
 %~~vis
 \begin{xten}
-class Triangle 
+struct Triangle 
  (a: Line, 
   b: Line{a.end == b.start}, 
   c: Line{b.end == c.start && c.end == a.start})  
- {
- }
+ {}
 \end{xten}
 %~~siv
 %
 %~~neg
 
-The \xcd`Triangle` class automatically gets a ternary constructor which takes
+The \xcd`Triangle` struct automatically gets a ternary constructor which takes
 suitably constrained \xcd`a`, \xcd`b`, and \xcd`c` and produces a new
 triangle. 
 
@@ -1275,7 +1286,7 @@ triangle.
 \subsection{Entailment of Constraints}
 \index{constraints!entailment}
 \index{constraints!subtyping}
-
+\index{entailment}
 
 Recall that \xcd`T{c}` is a subtype of \xcd`T{d}` if every value of type
 \xcd`T{c}` is also a value of type \xcd`T{d}`.  This is true if, whenever
@@ -1289,7 +1300,7 @@ prohibitive, and, with a small number of innocuous-looking operations, becomes
 actually undecidable.  
 
 
-\limitation{X10's Entailment Algorithm is Incomplete}
+\limitation{X10's entailment algorithm is incomplete.}
 
 Even with the restricted constraints available in X10, certain
 constraint entailments are prohibitively expensive to calculate.  The issues
@@ -1328,6 +1339,7 @@ type-checking failed.
 \section{Default Values}
 \index{default value}
 \index{type!default value}
+\index{value!default}
 \label{DefaultValues}
 
 Some types have default values, and some do not. Default values are used in
@@ -1520,7 +1532,7 @@ Nor is it a struct type, for it has no predefined notion of equality.
 
 \section{Subtyping and type equivalence}\label{DepType:Equivalence}
 \index{type equivalence}
-\index{subtyping}
+\index{subtype}
 
 Intuitively, type \xcdmath"T$_1$" is a subtype of type \xcdmath"T$_2$", 
 written \xcdmath"T$_1$ <: T$_2$", 
@@ -1662,6 +1674,8 @@ Two types are {\em equivalent}, \xcd`T == U`, if \xcd`T <: U` and \xcd`U <: T`.
 
 \section{Common ancestors of types}
 \label{LCA}
+\index{type!common ancestor}
+\index{type!upper bound}
 
 There are several situations where X10 must find a type \xcd`T` that describes
 values of two or more different types.  This arises when X10 is trying to find
@@ -1775,6 +1789,8 @@ X10 provides certain guarantees about the common type \xcd`V{v}` computed for
 Certain types are used in fundamental ways by X10.  
 
 \subsection{The interface \xcd`Any`}
+\index{Any}
+\index{x10.lang.Any}
 
 It is quite convenient to have a type which all values are instances of; that
 is, a supertype of all types.\footnote{Java, for one, suffers a number of
@@ -1822,6 +1838,8 @@ It is a static error if an omitted type cannot be inferred or
 uniquely determined. Type inference does not consider coercions.
 
 \subsection{Variable declarations}
+\index{val!type inference}
+\index{type inference!val}
 
 The type of a \xcd`val` variable declaration can be omitted if the
 declaration has an initializer.  The inferred type of the

@@ -1,4 +1,6 @@
 \chapter{Activities}\label{XtenActivities}
+\index{activity}
+
 
 An {\em activity} is a statement being executed, independently, with its own
 local variables; it may be thought of as a very light-weight thread. An
@@ -18,6 +20,10 @@ may be blocked and resumed, by \xcd`when` and similar constructs.  There are
 no means by which one activity can arbitrarily interrupt, block, or resume
 another, no method  \xcd`activity.interrupt()`.
 
+
+\index{activity!running}
+\index{activity!blocked}
+\index{activity!terminated}
 An activity may be {\em running}, {\em blocked} on some condition or {\em
 terminated}. If it is terminated, it is terminated in the same way that its
 statement is: in particular, if the statement terminates abruptly, the
@@ -33,6 +39,9 @@ An activity may asynchronously and in parallel launch activities at
 other places.  Every activity except the initial \xcd`main` activity is spawned
 by another.  Thus, at any instant, the activities in a program form a tree.
 
+\index{termination}
+\index{termination!local}
+\index{termination!global}
 X10 uses this tree in crucial ways.  
 First is the distinction 
 between {\em local} termination and {\em global}
@@ -74,7 +83,10 @@ terminate.}
 
 \section{The \Xten{} rooted exception model}
 \label{ExceptionModel}
-\index{Exception!model}
+\index{exception!model}
+\index{exception!rooted}
+\index{exception}
+
 
 The rooted nature of \Xten{} computations permits the definition of a
 {\em rooted exception model.} In multi-threaded programming languages
@@ -108,6 +120,7 @@ exceptions thrown by an asynchronous activity.
 
 \section{ {\tt at}: Place Changing}\label{AtStatement}
 \index{at}
+\index{place!changing}
 
 An activity may change place synchronously using the \xcd"at" statement or
 \xcd"at" expression. This is an expensive operation and must be used
@@ -323,6 +336,7 @@ assert(a(0)() == 6 && a(1)() == 6);     // (G)
 %~~neg
 
 \subsubsection{Copying and Transient Fields}
+\index{at!transient fields and}
 
 Recall that fields of classes and structs marked \xcd`transient` are not copied by
 \xcd`at`.  Instead, they are set to the default values for their types. Types
@@ -441,6 +455,7 @@ that \xcd`this` refers to, which can be very large.
 \end{itemize}
 
 \subsubsection{{\tt at} and Variables}
+\index{at!variables and}
 
 \xcd`var` variables can be set at the place that they are declared, but not
 from other places.  This allows a straightforward way to transmit several
@@ -490,6 +505,8 @@ def printRootsOfQuadratic(a:Complex, b:Complex, c:Complex) {
 %} 
 %~~neg
 \section{\xcd`async`: Spawning an activity}\label{AsynchronousActivity}\label{AsyncActivity}
+\index{async}
+\index{activity!creating}
 
 Asynchronous activities serve as a single abstraction for supporting a
 wide range of concurrency constructs such as message passing, threads,
@@ -640,7 +657,9 @@ exceptions, \xcd`finish S` wraps them in one layer of
 %%OLIVIER-DENIES%% }
 %%OLIVIER-DENIES%% 
 
-\section{Initial activity}\label{initial-computation}\index{initial activity}
+\section{Initial activity}\label{initial-computation}
+\index{initial activity}
+\index{activity!initial}
 
 An \Xten{} computation is initiated from the command line on the
 presentation of a class or struct name \xcd"C". The class or struct must have a
@@ -662,6 +681,7 @@ places.)
 %% Say something about configuration information? 
 
 \section{Ateach statements}\index{\Xcd{ateach}}\label{ateach-section}
+\index{ateach}
 \deprecated{} The \xcd`ateach` construct is deprecated.
 
 \begin{bbgrammar}
@@ -714,6 +734,7 @@ If the programmer wishes to execute \xcd`S` in parallel at each place,
 
 
 \section{Atomic blocks}\label{AtomicBlocks}\index{atomic blocks}
+\index{atomic}
 
 X10's \xcd`atomic` blocks provide a high-level construct for coordinating
 the mutation of shared data. 
@@ -885,6 +906,10 @@ public atomic def CAS(old1: Object, new1: Object): Boolean {
 %~~neg
 
 \subsection{Conditional atomic blocks}
+\index{atomic!conditional}
+\index{when}
+
+
 
 Conditional atomic blocks allow the activity to wait for some condition to be
 satisfied before executing an atomic block. For example, consider a
