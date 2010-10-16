@@ -1903,7 +1903,7 @@ has the type that a true \xcd`union` method would have.
 %~~vis
 \begin{xten}
 class MyRegion(rank:Int) {
-  static type MyRegion(n:Int)=MyRegion{self.rank==n};
+  static type MyRegion(n:Int)=MyRegion{rank==n};
   def this(r:Int):MyRegion(r) {
     property(r);
   }

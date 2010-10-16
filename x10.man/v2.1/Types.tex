@@ -770,8 +770,8 @@ The following examples are legal type definitions, given \xcd`import x10.util.*`
 type StringSet = Set[String];
 type MapToList[K,V] = Map[K,List[V]];
 type Int(x: Int) = Int{self==x};
-type Dist(r: Int) = Dist{self.rank==r};
-type Dist(r: Region) = Dist{self.region==r};
+type Dist(r: Int) = Dist{rank==r};
+type Dist(r: Region) = Dist{region==r};
 type Redund(n:Int, r:Region){r.rank==n} = Dist{rank==n && region==r};
 \end{xten}
 %~~siv
@@ -1151,8 +1151,39 @@ X10 permits a \xcd`val` variable to appear in constraints on its own type as
 %~~stmt~~`~~`~~ ~~
 it is being declared.  For example, \xcd`val nz: Int{nz != 0} = 1;` declares a
 non-zero variable \xcd`nz`.
-\bard{This will need to be explained further once the language issues are
-sorted out..}
+
+
+\subsection{Properties in Constraints}
+
+If \xcd`pr` is a property of either \xcd`self`, the value being constrained,
+or  \xcd`this`, the subject of the current class, interface, or struct, the
+expression \xcd`pr` in a constraint refers to \xcd`self.pr` or \xcd`this.pr`
+as appropriate.  If it is ambiguous -- that is, if \xcd`self` and \xcd`this`
+both have \xcd`pr` properties -- \xcd`pr` must be qualified, \xcd`self.pr` or
+\xcd`this.pr`.
+
+In the example below, \xcd`A`'s property \xcd`a` can be used with need for
+qualification in the type \xcd`A{a == 1}`.  Since both \xcd`A` and \xcd`B`
+have a \xcd`z` property, \xcd`z` in \xcd`A{self.z==1}` must be qualified to
+disambiguate it from \xcd`this.z`.  
+\xcd`z` in \xcd`B{self.b==1}` must be qualified as well, as it could mean
+either \xcd`self.b` or \xcd`this.b` --- which in this case are the same, but
+in general can be different.
+%~~gen
+% package Types.PropertiesInConstraints.OhYeah;
+%~~vis
+\begin{xten}
+class A(a:Int, z:Int){}
+class B(b:Int, z:Int){
+  def this(b:Int,z:Int){property(b,z);}
+  def be() : A{a == 1} = new A(1,1);
+  def bea(): A{self.z==1} = new A(1,1);
+  def bee(): B{self.b==1} = new B(1,1);
+}
+\end{xten}
+%~~siv
+%
+%~~neg
 
 
 
