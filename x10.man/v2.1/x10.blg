@@ -1,45 +1,57 @@
 This is BibTeX, Version 0.99c (Web2C 7.5.7)
 The top-level auxiliary file: x10.aux
+Case mismatch error between cite keys zpl and ZPL
+---line 26 of file x10.aux
+ : \citation{zpl
+ :              }
+I'm skipping whatever remains of this command
+Case mismatch error between cite keys zpl and ZPL
+---line 49 of file x10.aux
+ : \citation{zpl
+ :              }
+I'm skipping whatever remains of this command
 The style file: plain.bst
 Database file #1: master.bib
-You've used 10 entries,
+Warning--I didn't find a database entry for "scala"
+You've used 9 entries,
             2118 wiz_defined-function locations,
-            561 strings with 5833 characters,
-and the built_in function-call counts, 3879 in all, are:
-= -- 359
-> -- 232
-< -- 3
-+ -- 93
-- -- 81
-* -- 294
-:= -- 652
-add.period$ -- 31
-call.type$ -- 10
-change.case$ -- 68
+            555 strings with 5620 characters,
+and the built_in function-call counts, 3343 in all, are:
+= -- 302
+> -- 210
+< -- 1
++ -- 85
+- -- 74
+* -- 253
+:= -- 571
+add.period$ -- 27
+call.type$ -- 9
+change.case$ -- 62
 chr.to.int$ -- 0
-cite$ -- 10
-duplicate$ -- 135
-empty$ -- 279
-format.name$ -- 81
-if$ -- 799
+cite$ -- 9
+duplicate$ -- 112
+empty$ -- 239
+format.name$ -- 74
+if$ -- 678
 int.to.chr$ -- 0
-int.to.str$ -- 10
-missing$ -- 11
-newline$ -- 53
-num.names$ -- 22
-pop$ -- 82
+int.to.str$ -- 9
+missing$ -- 10
+newline$ -- 48
+num.names$ -- 18
+pop$ -- 76
 preamble$ -- 1
-purify$ -- 60
+purify$ -- 55
 quote$ -- 0
-skip$ -- 91
+skip$ -- 74
 stack$ -- 0
-substring$ -- 196
-swap$ -- 31
-text.length$ -- 3
+substring$ -- 159
+swap$ -- 20
+text.length$ -- 1
 text.prefix$ -- 0
 top$ -- 0
-type$ -- 36
+type$ -- 32
 warning$ -- 0
-while$ -- 33
-width$ -- 12
-write$ -- 111
+while$ -- 27
+width$ -- 10
+write$ -- 97
+(There were 2 error messages)

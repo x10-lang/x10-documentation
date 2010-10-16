@@ -1,4 +1,4 @@
-\begin{thebibliography}{10}
+\begin{thebibliography}{1}
 
 \bibitem{kava}
 David Bacon.
@@ -18,7 +18,7 @@ William Carlson, Tarek El-Ghazawi, Bob Numrich, and Kathy Yelick.
   {M}odel, 2003.
 \newblock Presentation at SC 2003, http://www.gwu.edu/{~}upc/tutorials.html.
 
-\bibitem{zpl}
+\bibitem{ZPL}
 Bradford~L.{} Chamberlain, Sung-Eun Choi, Steven~J. Deitz, and Lawrence Snyder.
 \newblock The high-level parallel language {ZPL} improves productivity and
   performance.
@@ -41,13 +41,6 @@ Jose~E. Moreira, Samuel~P. Midkiff, Manish Gupta, Pedro~V. Artigas, Marc Snir,
   and Richard~D. Lawrence.
 \newblock Java programming for high-performance numerical computing.
 \newblock {\em IBM Systems Journal}, 39(1):21--, 2000.
-
-\bibitem{ncm03}
-Nathaniel Nystrom, Michael~R. Clarkson, and Andrew~C. Myers.
-\newblock Polyglot: An extensible compiler framework for {J}ava.
-\newblock In G{\"o}rel Hedin, editor, {\em Compiler Construction, 12th
-  International Conference, CC 2003}, number 2622 in LNCS, pages 138--152,
-  Warsaw, Poland, April 2003. Springer-Verlag.
 
 \bibitem{mpi}
 A.~Skjellum, E.~Lusk, and W.~Gropp.

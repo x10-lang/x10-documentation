@@ -295,25 +295,29 @@ also binds \xcd`p` to the point.
 
 \section{Formal parameters}
 
+\begin{bbgrammar}
+ FormalParams    \: \xcd"(" FormalParamList\opt \xcd")" & (\ref{prod:FormalParams})\\%<FROM #(prod:FormalParams)#
+ FormalParamList    \: FormalParam & (\ref{prod:FormalParamList})\\%<FROM #(prod:FormalParamList)#
+    \| FormalParamList \xcd"," FormalParam\\
+ FormalParam    \: Mods\opt FormalDeclarator & (\ref{prod:FormalParam})\\%<FROM #(prod:FormalParam)#
+    \| Mods\opt VarKeyword FormalDeclarator\\
+    \| Type\\
+ FormalDeclarators    \: FormalDeclarator & (\ref{prod:FormalDeclarators})\\%<FROM #(prod:FormalDeclarators)#
+    \| FormalDeclarators \xcd"," FormalDeclarator\\
+ FormalDeclarator    \: Id ResultType & (\ref{prod:FormalDeclarator})\\%<FROM #(prod:FormalDeclarator)#
+    \| \xcd"[" IdList \xcd"]" ResultType\\
+    \| Id \xcd"[" IdList \xcd"]" ResultType\\
+ ResultType    \: \xcd":" Type & (\ref{prod:ResultType})\\%<FROM #(prod:ResultType)#
+\end{bbgrammar}
+
 Formal parameters are the variables which hold values transmitted into a
 method or function.  
 They are always declared with a type.  (Type inference is not
-advisable, because there is no single expression to deduce a type from.)
+available, because there is no single expression to deduce a type from.)
 The variable name can be omitted if it is not to be used in the
 scope of the declaration, as in the type of the method 
 \xcd`static def main(Array[String]):void` executed at the start of a program that
 does not use its command-line arguments.
-
-%%GRAMMAR%%  \begin{grammar}
-%%GRAMMAR%%  Formal
-%%GRAMMAR%%          \: FormalModifier\star \xcd"var" VarDeclaratorWithType \\
-%%GRAMMAR%%          \| FormalModifier\star \xcd"val" VarDeclaratorWithType \\
-%%GRAMMAR%%          \| FormalModifier\star VarDeclaratorWithType \\
-%%GRAMMAR%%          \| Type \\
-%%GRAMMAR%%  FormalModifier \: Annotation \\
-%%GRAMMAR%%  
-%%GRAMMAR%%  \end{grammar}
-%%GRAMMAR%%  
 
 \xcd`var` and \xcd`val` behave just as they do for local
 variables, \Sref{local-variables}.  In particular, the following \xcd`inc`
@@ -415,6 +419,31 @@ static def main(r: Array[String](1)):void {
 
 \section{Fields}
 
+\begin{bbgrammar}
+ FieldDeclarators    \: FieldDeclarator & (\ref{prod:FieldDeclarators})\\%<FROM #(prod:FieldDeclarators)#
+    \| FieldDeclarators \xcd"," FieldDeclarator\\
+ FieldDecl    \: Mods\opt FieldKeyword FieldDeclarators \xcd";" & (\ref{prod:FieldDecl})\\%<FROM #(prod:FieldDecl)#
+    \| Mods\opt FieldDeclarators \xcd";"\\
+ FieldDeclarator    \: Id HasResultType & (\ref{prod:FieldDeclarator})\\%<FROM #(prod:FieldDeclarator)#
+    \| Id HasResultType\opt \xcd"=" VariableInitializer\\
+ HasResultType    \: \xcd":" Type & (\ref{prod:HasResultType})\\%<FROM #(prod:HasResultType)#
+    \| \xcd"<:" Type\\
+ FieldKeyword    \: \xcd"val" & (\ref{prod:FieldKeyword})\\%<FROM #(prod:FieldKeyword)#
+    \| \xcd"var"\\
+ Mod    \: \xcd"abstract" & (\ref{prod:Mod})\\%<FROM #(prod:Mod)#
+    \| Annotation\\
+    \| \xcd"atomic"\\
+    \| \xcd"final"\\
+    \| \xcd"native"\\
+    \| \xcd"private"\\
+    \| \xcd"protected"\\
+    \| \xcd"public"\\
+    \| \xcd"static"\\
+    \| \xcd"transient"\\
+    \| \xcd"clocked"\\
+
+\end{bbgrammar}
+
 Like most other kinds of variables in X10, 
 the fields of an object can be either \xcd`val` or \xcd`var`. 
 Fields can be \xcd`static`,\xcd`global`, or \xcd`property`; see
@@ -429,6 +458,8 @@ each constructor.
 For \xcd`val` fields, as for \xcd`val` local variables, the type may be
 omitted and inferred from the initializer type (\Sref{TypeInference}).
 \xcd`var` files, like \xcd`var` local variables, must be declared with a type.
+
+
 
 %%GRAM%% \begin{grammar}
 %%GRAM%% FieldDeclaration

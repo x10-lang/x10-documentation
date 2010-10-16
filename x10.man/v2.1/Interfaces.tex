@@ -44,13 +44,29 @@ implement the interface may be stored in the variable.
 
 \label{DepType:Interface}
 
+\begin{bbgrammar}
+ NormalInterfaceDecl    \: Mods\opt \xcd"interface" Id TypeParamsWithVariance\opt Properties\opt WhereClause\opt ExtendsInterfaces\opt InterfaceBody & (\ref{prod:NormalInterfaceDecl})\\%<FROM #(prod:NormalInterfaceDecl)#
+ TypeParamsWithVariance    \: \xcd"[" TypeParamWithVarianceList \xcd"]" & (\ref{prod:TypeParamsWithVariance})\\%<FROM #(prod:TypeParamsWithVariance)#
+ Properties    \: \xcd"(" PropertyList \xcd")" & (\ref{prod:Properties})\\%<FROM #(prod:Properties)#
+ PropertyList    \: Property & (\ref{prod:PropertyList})\\%<FROM #(prod:PropertyList)#
+    \| PropertyList \xcd"," Property\\
+ Property    \: Annotations\opt Id ResultType & (\ref{prod:Property})\\%<FROM #(prod:Property)#
+ WhereClause    \: DepParams & (\ref{prod:WhereClause})\\%<FROM #(prod:WhereClause)#
+ ExtendsInterfaces    \: \xcd"extends" Type & (\ref{prod:ExtendsInterfaces})\\%<FROM #(prod:ExtendsInterfaces)#
+    \| ExtendsInterfaces \xcd"," Type\\
+ InterfaceBody    \: \xcd"{" InterfaceMemberDecls\opt \xcd"}" & (\ref{prod:InterfaceBody})\\%<FROM #(prod:InterfaceBody)#
+ InterfaceMemberDecls    \: InterfaceMemberDecl & (\ref{prod:InterfaceMemberDecls})\\%<FROM #(prod:InterfaceMemberDecls)#
+    \| InterfaceMemberDecls InterfaceMemberDecl\\
+ InterfaceMemberDecl    \: MethodDecl & (\ref{prod:InterfaceMemberDecl})\\%<FROM #(prod:InterfaceMemberDecl)#
+    \| PropertyMethodDecl\\
+    \| FieldDecl\\
+    \| ClassDecl\\
+    \| InterfaceDecl\\
+    \| TypeDefDecl\\
 
-\begin{grammar}
-NormalInterfaceDeclaration \:
-      InterfaceModifiers\opt \xcd"interface" Identifier  \\
-   && TypePropertyList\opt PropertyList\opt Constraint\opt \\
-   && ExtendsInterfaces\opt InterfaceBody \\
-\end{grammar}
+
+\end{bbgrammar}
+
 \noindent
 The invariant associated with an interface is the conjunction of the
 invariants associated with its superinterfaces and the invariant

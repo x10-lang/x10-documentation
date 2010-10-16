@@ -100,13 +100,13 @@ without need for further specification.
 
 \section{Conventions on Type Names}
 
-\begin{grammar}
-TypeName   \: Identifier \\
-        \| TypeName \xcd"." Identifier \\
-        \| PackageName \xcd"." Identifier \\
-PackageName   \: Identifier \\
-        \| PackageName \xcd"." Identifier \\
-\end{grammar}
+\begin{bbgrammar}
+ TypeName    \: Id & (\ref{prod:TypeName})\\%<FROM #(prod:TypeName)#
+    \| TypeName \xcd"." Id\\
+ PackageName    \: Id & (\ref{prod:PackageName})\\%<FROM #(prod:PackageName)#
+    \| PackageName \xcd"." Id\\
+\end{bbgrammar}
+
 
 
 While not enforced by the compiler, classes and interfaces

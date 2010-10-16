@@ -674,21 +674,6 @@ with great caution.
 %what is the work around -- maybe just say ``limitation''?'''
 
 
-\section{Function Types}
-
-For every sequence of types \xcd"T1,..., Tn,T", and \xcd"n" distinct variables
-\xcd"x1,...,xn" and constraint \xcd"c", the expression
-\xcd"(x1:T1,...,xn:Tn){c}=>T" is a \emph{function type}. It stands for
- the set of all functions \xcd"f" which can be applied to a
- list of values \xcd"(v1,...,vn)" provided that the constraint
- \xcd"c[v1,...,vn,p/x1,...,xn]" is true, and which returns a value of
- type \xcd"T[v1,...vn/x1,...,xn]". When \xcd"c" is true, the clause \xcd"{c}" can be
- omitted. When \xcd"x1,...,xn" do not occur in \xcd"c" or \xcd"T", they can be
- omitted. Thus the type \xcd"(T1,...,Tn)=>T" is actually shorthand for
- \xcd"(x1:T1,...,xn:Tn){true}=>T", for some variables \xcd"x1,...,xn".
-
-\limitationx{}
-Constraints on closures are not supported.  They parse, but are not checked.
 
 
 \section{Type definitions}
@@ -763,13 +748,13 @@ their use.
 
 Type definitions have the following syntax:
 
-\begin{grammar}
-TypeDefinition \: 
-                \xcd"type"~Identifier
-                           ( \xcd"[" TypeParameters \xcd"]" )\opt \\
-                        && ( \xcd"(" Formals \xcd")" )\opt
-                            Constraint\opt \xcd"=" Type \\
-\end{grammar}
+\begin{bbgrammar}
+ TypeDefDecl    \: Mods\opt \xcd"type" Id TypeParams\opt FormalParams\opt WhereClause\opt \xcd"=" Type \xcd";" & (\ref{prod:TypeDefDecl})\\%<FROM #(prod:TypeDefDecl)#
+ TypeParams    \: \xcd"[" TypeParamList \xcd"]" & (\ref{prod:TypeParams})\\%<FROM #(prod:TypeParams)#
+ FormalParams    \: \xcd"(" FormalParamList\opt \xcd")" & (\ref{prod:FormalParams})\\%<FROM #(prod:FormalParams)#
+ WhereClause    \: DepParams & (\ref{prod:WhereClause})\\%<FROM #(prod:WhereClause)#
+\end{bbgrammar}
+
 
 \noindent
 A type definition can be thought of as a type-valued function,
@@ -1352,6 +1337,22 @@ matter; the only candidate for its default value, as for any subtype of
 \index{function!types}
 \index{types!function types}
 
+
+For every sequence of types \xcd"T1,..., Tn,T", and \xcd"n" distinct variables
+\xcd"x1,...,xn" and constraint \xcd"c", the expression
+\xcd"(x1:T1,...,xn:Tn){c}=>T" is a \emph{function type}. It stands for
+ the set of all functions \xcd"f" which can be applied to a
+ list of values \xcd"(v1,...,vn)" provided that the constraint
+ \xcd"c[v1,...,vn,p/x1,...,xn]" is true, and which returns a value of
+ type \xcd"T[v1,...vn/x1,...,xn]". When \xcd"c" is true, the clause \xcd"{c}" can be
+ omitted. When \xcd"x1,...,xn" do not occur in \xcd"c" or \xcd"T", they can be
+ omitted. Thus the type \xcd"(T1,...,Tn)=>T" is actually shorthand for
+ \xcd"(x1:T1,...,xn:Tn){true}=>T", for some variables \xcd"x1,...,xn".
+
+\limitationx{}
+Constraints on closures are not supported.  They parse, but are not checked.
+
+
 X10 functions, like mathematical functions, take some arguments and produce a
 result.  X10 functions, like other X10 code, can change mutable state and
 throw exceptions.  Closures (\Sref{Closures}) and method
@@ -1425,14 +1426,10 @@ written as
 %~~type~~`~~`~~ ~~
 \xcd`(Double)=>Double`. 
 
-%%GRAMMAR%% \begin{grammar}
-%%GRAMMAR%% FunctionType \: TypeParameters\opt \xcd"(" Formals\opt \xcd")" Constraint\opt
-%%GRAMMAR%% \xcd"=>" Type Throws\opt \\
-%%GRAMMAR%% TypeParameters \: \xcd"[" TypeParameter ( \xcd"," TypeParameter
-%%GRAMMAR%% )\star \xcd"]" \\
-%%GRAMMAR%% TypeParameter \: Identifier \\
-%%GRAMMAR%% Formals \: Formal ( \xcd"," Formal )\star \\
-%%GRAMMAR%% \end{grammar}
+\begin{bbgrammar}
+ FunctionType    \: TypeParams\opt \xcd"(" FormalParamList\opt \xcd")" WhereClause\opt Offers\opt \xcd"=>" Type & (\ref{prod:FunctionType})\\%<FROM #(prod:FunctionType)#
+\end{bbgrammar}
+
 
 
 
