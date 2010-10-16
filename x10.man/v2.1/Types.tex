@@ -224,7 +224,7 @@ An example of such a function is \xcd`(x:Int) => x+1`.
 
 \subsection{Class types}
 
-\index{types!class types}
+\index{type!class}
 \index{class}
 \index{class declaration}
 \index{declaration!class declaration}
@@ -307,7 +307,7 @@ all instances of \xcd`C` but not
 \subsection{Interface types}
 \label{InterfaceTypes}
 
-\index{types!interface types}
+\index{type!interface}
 \index{interface}
 \index{interface declaration}
 \index{declaration!interface declaration}
@@ -376,7 +376,7 @@ class KimThePoint implements Person {
 
 
 \subsection{Properties}
-\index{properties}
+\index{property}
 \label{properties}
 
 Classes, interfaces, and structs may have {\em properties}, public
@@ -415,12 +415,12 @@ found in \Sref{ConstrainedTypes}.
 \section{Type Parameters and Generic Types}
 \label{TypeParameters}
 
-\index{types!type parameters}
-\index{methods!parametrized methods}
-\index{constructors!parametrized constructors}
-\index{closures!parametrized closures}
+\index{type!parameter}
+\index{method!parametrized}
+\index{constructor!parametrized}
+\index{closure!parametrized}
 \label{Generics}
-\index{types!generic types}
+\index{type!generic}
 
 A class, interface, method, or type definition  may have type
 parameters.  Type parameters can be used as types, and will be bound to types
@@ -436,7 +436,7 @@ Type parameters may be constrained by a guard on the declaration
 (\Sref{TypeDefGuard},
 \Sref{MethodGuard},\Sref{ClosureGuard}).
 
-\index{types!concrete types}
+\index{type!concrete}
 \index{concrete type}
 A {\em generic class} (or struct, interface, or type definition) 
 is a class (resp. struct, interface, or type definition) 
@@ -535,32 +535,33 @@ There are three variance specifications:
  interface) \xcd`S` specifying that a particular parameter position
  (say, \xcd`i`) is covariant means that 
 if \xcd`Si <: Ti` then
-\xcdmath"S[S1,$\ldots$,Sn] <: S[S1,$\ldots$, Si-1,Ti,Si+1,$\ldots$ Sn]`"
+\xcdmath"S[S1,$\ldots$,Sn] <: S[S1,$\ldots$, Si-1,Ti,Si+1,$\ldots$ Sn]".
 Similarly, saying that position \xcd`i` is is contravariant means
 that 
 if \xcd`Si <: Ti` then
-\xcdmath"S[S1,$\ldots$, Si-1,Ti,Si+1,\$ldots$ Sn] <: S[S1,$\ldots$,Sn]`" If the
+\xcdmath"S[S1,$\ldots$, Si-1,Ti,Si+1,$\ldots$ Sn] <: S[S1,$\ldots$,Sn]". If the
 position is invariant, then no such relationship is asserted between
 \xcd`Si <: Ti` 
 and
-\xcdmath"S[S1,$\ldots$, Si-1,Ti,Si+1,$\ldots$ Sn]`" The compiler must perform
+\xcdmath"S[S1,$\ldots$, Si-1,Ti,Si+1,$\ldots$ Sn]". The compiler must perform
 several checks on the body of the class (or struct or interface) to
 establish that type parameters with a variance are used in a manner
 that is consistent with their semantics.
 
 \limitation{} The implementation of variance specifications  suffers from
 various limitations in \XtenCurrVer. Users are strongly encouraged not
-to use variance. (Some classes/structs/interfaces in the standard
+to use variance. (Some classes, structs, and interfaces in the standard
 libraries use variance specifications in a careful way that
 circumvents these limitations.)
 
 \section{Type definitions}
 \label{TypeDefs}
 
-\index{types!type definitions}
-\index{declarations!type definitions}
+\index{type!definitions}
+\index{declaration!type}
 A type definition can be thought of as a type-valued function,
 mapping type parameters and value parameters to a concrete type.
+
 \begin{bbgrammar}
  TypeDefDecl    \: Mods\opt \xcd"type" Id TypeParams\opt FormalParams\opt WhereClause\opt \xcd"=" Type \xcd";" & (\ref{prod:TypeDefDecl})\\%<FROM #(prod:TypeDefDecl)#
  TypeParams    \: \xcd"[" TypeParamList \xcd"]" & (\ref{prod:TypeParams})\\%<FROM #(prod:TypeParams)#
@@ -582,7 +583,7 @@ they do not define new types, only aliases for existing types.
 \label{TypeDefGuard}
 Type definitions may have guards: an invocation of a type definition
 is illegal unless the guard is satisified when formal types and values
-are replaced by actuals.
+are replaced by the actual parameters.
 
 Type definitions may be overloaded: two type definitions with
 the same name are permitted provided that they have a different number
@@ -590,7 +591,7 @@ of type parameters or different number or type of value parameters.
 
 Type definitions must appear as static members or in a block statement.
 
-\paragraph{Use of type definitions in constrctor invocations}
+\paragraph{Use of type definitions in constructor invocations}
 If a type definition has no type parameters and no value
 parameters and is an alias for a class type, a \xcd"new"
 expression may be used to create an instance of the class using
@@ -697,8 +698,10 @@ type Redund(n:Int, r:Region){r.rank==n} = Dist{rank==n && region==r};
 % }}
 %~~neg
 
-To illstrate the applicative rather than generative nature of type
-definitions, consider that the following code is legal.
+The following code illustrates that type definitions are applicative rather
+than generative.  \xcd`B` and \xcd`C` are both aliases for \xcd`String`,
+rather than new types, and so are interchangeable with each other and with
+\xcd`String`. Similarly, \xcd`A` and \xcd`Int` are equivalent.
 %~~gen
 % import x10.util.*;
 % class TypeDefNonGenerative {
@@ -731,12 +734,12 @@ c: C = b + ", Mom!";
 \label{DepType:DepType}
 \label{DepTypes}
 
-\index{dependent types}
-\index{constrained types}
-\index{generic types}
-\index{types!constrained types}
-\index{types!dependent types}
-\index{types!generic types}
+\index{dependent type}
+\index{type!dependent}
+\index{constrained type}
+\index{generic type}
+\index{type!constrained}
+\index{type!generic}
 
 
 Basic types, like \xcd`Int` and \xcd`List[String]`, provide useful
@@ -832,11 +835,12 @@ sorted out..}
 %%TYPES-CONSTR-EXP%% parameter} of \xcd"c".\label{DepType:Parameter} \index{parameter}
 
 A constrained type may be constrained further: the type \xcd`S{c}{d}`
-is the same as the type \xcd`S{c,d}`.
+is the same as the type \xcd`S{c,d}`.  Multiple constraints are equivalent to
+conjoined constraints: \xcd`S{c,d}` in turn is the same as \xcd`S{c && d}`.
 
 \subsection{Syntax of constraints}
-\index{constraints!permitted}
-\index{constraints!syntax}
+\index{constraint!permitted}
+\index{constraint!syntax}
 \label{PermittedConstraints}
 \index{constraint}
 \index{expression!allowed in constraint}
@@ -865,8 +869,9 @@ Only the following forms of expression are allowed in constraints.
 \item Calls to property methods, where the receiver and arguments must be
       value expressions acceptable in constraints.
 \end{enumerate}
-For an expression \xcd`self.p` to be legal in a constraint, it must be
-the case that \xcd`p` is a property. However terms \xcd`t.f` may be
+For an expression \xcd`self.p` to be legal in a constraint, 
+\xcd`p` must be 
+a property. However terms \xcd`t.f` may be
 used in constraints (where \xcd`t` is a term other than \xcd`self` and
 \xcd`f` is an immutable field.
 
@@ -891,6 +896,7 @@ members.  (Consider a class \xcd`PriVio` with a private field \xcd`p` and a
 public method \xcd`m(x: Int{self != p})`, and a call \xcd`ob.m(10)` made
 outside of the class. Since \xcd`p` is only visible inside the class, there is
 no way to tell if \xcd`10` is of type \xcd`Int{self != p}` at the call site.)
+
 \limitation{
 % Currently \Xcd{hasZero T} is not supported.  
 Certain spurious syntactic forms -- such as \xcd`a+b,a*b,(c==a&&b),a <b` --
@@ -900,17 +906,17 @@ are accepted by the compiler but treated incorrectly.
 
 
 \subsubsection{Semantics of constraints}
-\index{constraints!semantics}
+\index{constraint!semantics}
 \label{SemanticsOfConstraints}
 An assignment of values to variables is said to be a {\em solution} for a
 constraint \xcd`c` if under this assignment \xcd`c` evaluates to
-\xcd`true`. For instance, the asignment that maps 
+\xcd`true`. For instance, the assignment that maps 
 the variables \xcd`a` and \xcd`b` to a value \xcd`t` is a solution for
 the constraint \xcd`a==b`. An assignment that maps \xcd`a` to 
 \xcd`s` and \xcd`b` to a distinct value \xcd`t` is a solution for 
 \xcd`a != b`. 
 
-An instance \xcd"o" of \xcd"C" is said to be of type \xcd"C{c}" (or: {\em
+An instance \xcd"o" of \xcd"C" is said to be of type \xcd"C{c}" (or {\em
 belong to} \xcd"C{c}") if the constraint \xcd"c" evaluates to \xcd"true" in
 the current lexical environment augmented with the binding \xcd"self"
 $\mapsto$ \xcd"o".
@@ -918,7 +924,7 @@ $\mapsto$ \xcd"o".
 A constraint \xcd`c` is said to {\em entail} a
 constraint \xcd`d` if every solution for \xcd`c` is also a solution
 for \xcd`d`. For instance the constraint
-\xcd`x==y, y==z, z !=a` entails \xcd`x != a`.
+\xcd`x==y && y==z && z !=a` entails \xcd`x != a`.
 
 The constraint solver considers the assignment \xcd`a` to \xcd`null`
 to  satisfy any constraint of the form \xcd`a.f==t`. Thus, for
@@ -932,10 +938,10 @@ whose nodes are all objects in existence at that instance, with an edge from
 The rules for constructors guarantee this.
 
 Constraints participate in the subtyping relationship in a natural way:
-\xcd"S[S1,\ldots, Sm]{c}" 
+\xcdmath"S[S1,$\ldots$, Sm]{c}" 
 is a subtype of 
-\xcd"T[T1,\ldots, Tn]{d}" 
-if \xcd"S[S1,\ldots,Sm]" is a subtype of \xcd"T[T1,\ldts,Tn]" and
+\xcdmath"T[T1,$\ldots$, Tn]{d}" 
+if \xcdmath"S[S1,$\ldots$,Sm]" is a subtype of \xcdmath"T[T1,$\ldots$,Tn]" and
 \xcd"c" entails \xcd"d".
 
 For examples of constraints and entailment, see (\Sref{ConstraintExamples})
@@ -964,25 +970,25 @@ For examples of constraints and entailment, see (\Sref{ConstraintExamples})
 
 \subsection{Constraint solver: incompleteness and approximation}
 \index{constraint solver!incompleteness}
-\index{constraints!entailment}
-\index{constraints!subtyping}
+\index{constraint!entailment}
+\index{constraint!subtyping}
 
 
 The constraint solver assumes all built-in types have an infinite
 number of values. Therefore it does not realize that 
-\xcd`a != b && a != c && b != c` is not satisfiable.
+\xcd`a != b && a != c && b != c` is not satisfiable when \xcd`a`, \xcd`b`, and
+\xcd`c` are \xcd`Boolean` (since the \xcd`Boolean` type has only two values). 
 
 The constraint solver is sound in that if it claims that \xcd`c` entails \xcd`d`
 then in fact it is the case that every value that satisfies \xcd`c`
 satisfies \xcd`d`. 
 
 \limitation{X10's Entailment Algorithm is Incomplete}
-However, X10's constraint sovler is incomplete. There are situations
+However, X10's constraint solver is incomplete. There are situations
 in which \xcd`c` entails \xcd`d` but the solver cannot establish it. For
 instance it cannot establish that \xcd`a != b && a != c && b != c`
 entails \xcd`false` if \xcd`a`, \xcd`b`, and \xcd`c` are of type
-\xcd`Boolean` (since the type \xcd`Boolean` has only two distinct
-values).
+\xcd`Boolean`.
 
 Certain other constraint entailments are prohibitively expensive to calculate.  The issues
 concern constraints that connect different levels of recursively-defined
@@ -1107,7 +1113,7 @@ Example of entailment and subtyping involving constraints.
 
 Constraints can be used to express simple relationships between objects,
 enforcing some class invariants statically.  For example, in geometry, a line
-is determined by two {\em distinct} points; a \xcd`Line` class can specify the
+is determined by two {\em distinct} points; a \xcd`Line` struct can specify the
 distinctness in a type constraint:\footnote{We call them
 \xcd`Position` to avoid confusion with the built-in class \xcd`Point`. 
 Also, \xcd`Position` is a struct rather than a class so that the non-equality
@@ -1122,8 +1128,7 @@ which might have the same coordinates.
 %~~vis
 \begin{xten}
 struct Position(x: Int, y: Int) {}
-
-class Line(start: Position, end: Position){start != end} {}
+struct Line(start: Position, end: Position){start != end} {}
 \end{xten}
 
 %~~siv
@@ -1146,12 +1151,11 @@ vertices are not collinear.
 % 
 %~~vis
 \begin{xten}
-class Triangle 
+struct Triangle 
  (a: Line, 
   b: Line{a.end == b.start}, 
   c: Line{b.end == c.start && c.end == a.start})  
- {
- }
+ {}
 \end{xten}
 %~~siv
 %
@@ -1174,7 +1178,7 @@ For example, a field of an object \xcd`var x:T` can be left uninitialized if
 transient (\Sref{TransientFields}) field \xcd`transient val x:T` is only
 allowed if \xcd`T` has a default value.
 
-The following types have default values:
+Default values, or lack of them, is defined thus:
 \begin{itemize}
 \item The fundamental numeric types (\xcd`Int`, \xcd`UInt`,
       \xcd`Long`, \xcd`ULong`, 
@@ -1202,7 +1206,7 @@ matter; the only candidate for its default value, as for any subtype of
 \label{FunctionTypes}
 \label{FunctionType}
 \index{function!types}
-\index{types!function types}
+\index{type!function}
 
 \begin{bbgrammar}
  FunctionType    \: TypeParams\opt \xcd"(" FormalParamList\opt \xcd")" WhereClause\opt Offers\opt \xcd"=>" Type & (\ref{prod:FunctionType})\\%<FROM #(prod:FunctionType)#
@@ -1274,13 +1278,13 @@ function as a whole; a return type \xcd"T".
 The names \xcdmath"x$_i$" of the formal parameters are not relevant.  Types
 which differ only in the names of formals (following the usual rules for
 renaming of variables, as in {$\alpha$}-renaming in the {$\lambda$} calculus
-\bard{cite something}) are considered equal.  \Eg, 
+\bard{cite something}) are considered equal.  \Eg, the two function types
 %~~type~~`~~`~~ ~~
 \xcd`(a:Int, b:Array[String](1){b.size==a}) => Boolean`
-and 
+and \\
 %~~type~~`~~`~~ ~~
 \xcd`(b:Int, a:Array[String](1){a.size==b}) => Boolean`
-are equivalent types.
+are equivalent.
 
 \limitation{
 This is not currently implemented properly; these two types are presently
@@ -1329,7 +1333,7 @@ Nor is it a struct type, for it has no predefined notion of equality.
 \section{Annotated types}
 \label{AnnotatedTypes}
 
-\index{types!annotated types}
+\index{type!annotated}
 \index{annotations!type annotations}
 
         Any \Xten{} type may be annotated with zero or more
@@ -1641,7 +1645,7 @@ A variable of this type can hold a reference to any object.
 
 \section{Type inference}
 \label{TypeInference}
-\index{types!inference}
+\index{type!inference}
 \index{type inference}
 
 \XtenCurrVer{} supports limited local type inference, permitting
