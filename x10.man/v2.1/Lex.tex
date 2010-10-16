@@ -30,18 +30,21 @@ Digits are defined as the ASCII characters \xcd"0" through \xcd"9".
 \paragraph{Keywords}
 \Xten{} reserves the following keywords:
 \begin{xten}
-abstract       do             in             public         
-as             else           instanceof     return         
-assert         extends        interface      self           
-async          false          native         static         
-ateach         final          new            struct         
-break          finally        null           super          
-case           finish         offers         switch         
-catch          for            operator       this           
-class          goto           package        throw          
-continue       if             private        transient      
-def            implements     property       true           
-default        import         protected      try            
+abstract       false          offers         transient      
+as             final          operator       true           
+assert         finally        package        try            
+async          finish         private        var            
+ateach         for            property       when           
+break          goto           protected      while          
+case           if             public         at             
+catch          implements     return         atomic         
+class          import         self           await          
+continue       in             static         clocked        
+def            instanceof     struct         here           
+default        interface      super          next           
+do             native         switch         offer          
+else           new            this           resume         
+extends        null           throw          type           
 \end{xten}
 Note that the primitive types are not considered keywords.
 
@@ -114,7 +117,7 @@ f &=& b x
       point, an exponent, or the \xcd`d` marker.
       }, {$s f {\tt
       D}$}, and {$s f {\tt d}$}.  
-      \Eg, \xcd`0.0`, \xcd`0e100`, \xcd`229792458d`, and \xcd`314159265e-8`
+      \Eg, \xcd`0.0`, \xcd`0e100`, \xcd`1.3D`,  \xcd`229792458d`, and \xcd`314159265e-8`
       are \xcd`Double` literals.
 
 \item \xcd`Char` literals have one of the following forms: 
@@ -133,7 +136,7 @@ f &=& b x
       \item \xcd`'\\'`, representing backslash;
       \item \xcd`'\`{\em dd}\xcd`'`, where {\em dd} is one or more octal
             digits, representing the one-byte character numbered {\em dd}; it
-            is an error if {\em dd}{$>255$}.      
+            is an error if {\em dd}{$>0377$}.      
       \end{itemize}
 
 \item \xcd`String` literals consist of a double-quote \xcd`"`, followed by
@@ -154,7 +157,8 @@ f &=& b x
 \end{xten}
 
 \paragraph{Operators}
-\Xten{} has the following operators:
+\Xten{} has the following operator,  type constructor, and miscellaneous symbols.  (\xcd`?` and
+\xcd`:` comprise a single ternary operator, but are written separately.)
 \begin{xten}
 ==  !=  <   >   <=  >=
 &&  ||  &   |   ^
@@ -164,7 +168,7 @@ f &=& b x
 &=  |=  ^=
 <<= >>= >>>=
 +=  -=  *=  /=  %=
-=   ?   :   =>  ->
+=   ?   :  =>  ->
 <:  :>  @   ..
 \end{xten}
 

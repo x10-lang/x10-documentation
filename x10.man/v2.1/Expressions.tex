@@ -22,10 +22,10 @@ is of type \xcd`Int{self==1}`, and \xcd`true` is of type
 
 \section{\Xcd{this}}
 
-\begin{grammar}
-ThisExpression \: \xcd"this" \\
-\| ClassName \xcd"." \xcd"this" \\
-\end{grammar}
+\begin{bbgrammar}
+ Primary    \:      \xcd"this" & (\ref{prod:Primary})\\%<FROM #(prod:Primary)#
+    \| ClassName \xcd"." \xcd"this"\\
+\end{bbgrammar}
 
 The expression \xcd"this" is a  local \xcd`val` containing a reference
 to an instance of the lexically enclosing class.
@@ -73,9 +73,9 @@ body or in supertypes, are accessible through \xcd"this".
 
 \section{Local variables}
 
-\begin{grammar}
-LocalExpression \: Identifier \\
-\end{grammar}
+\begin{bbgrammar}
+ Id    \: identifier & (\ref{prod:Id})\\%<FROM #(prod:Id)#
+\end{bbgrammar}
 
 A local variable expression consists simply of the name of the local variable,
 field of the current object, formal parameter in scope, etc. It evaluates to
@@ -100,12 +100,11 @@ val m = n + 56;
 \label{FieldAccess}
 
 
-\begin{grammar}
-FieldExpression \: Expression \xcd"." Identifier \\
-                \| \xcd"super" \xcd"." Identifier \\
-                \| ClassName \xcd"." Identifier \\
-                \| ClassName \xcd"." \xcd"super" \xcd"." Identifier \\
-\end{grammar}
+\begin{bbgrammar}
+ FieldAccess    \: Primary \xcd"." Id & (\ref{prod:FieldAccess})\\%<FROM #(prod:FieldAccess)#
+    \| \xcd"super" \xcd"." Id\\
+    \| ClassName \xcd"." \xcd"super"  \xcd"." Id
+\end{bbgrammar}
 
 A field of an object instance may be  accessed
 with a field access expression.
@@ -173,17 +172,22 @@ Function literals are described in \Sref{Functions}.
 \label{MethodInvocation}
 \label{MethodInvocationSubstitution}
 
-\begin{grammar}
-MethodCall \: TypeName \xcd"." Identifier TypeArguments\opt \xcd"(" ArgumentList\opt \xcd")" \\
-           \| \xcd"super" \xcd"." Identifier TypeArguments\opt \xcd"(" ArgumentList\opt \xcd")" \\
-           \| ClassName \xcd"." \xcd"super" \xcd"." Identifier TypeArguments\opt \xcd"(" ArgumentList\opt \xcd")" \\
-Call \: Primary TypeArguments\opt \xcd"(" ArgumentList\opt \xcd")" \\
-TypeArguments \: \xcd"[" Type ( \xcd"," Type )\star \xcd"]" \\
-\end{grammar}
 
-A \grammarrule{MethodCall} may be to either a \xcd"static" or an 
-instance method.  A \grammarrule{Call} may invoke either a method
-or a closure.  
+%TODO -- The grammar here looks perpexing.
+\begin{bbgrammar}
+ MethodInvocation    \: MethodName TypeArguments\opt \xcd"(" ArgumentList\opt \xcd")" & (\ref{prod:MethodInvocation})\\%<FROM #(prod:MethodInvocation)#
+    \| Primary \xcd"." Id TypeArguments\opt \xcd"(" ArgumentList\opt \xcd")"\\
+    \| \xcd"super" \xcd"." Id TypeArguments\opt \xcd"(" ArgumentList\opt \xcd")"\\
+    \| ClassName \xcd"." \xcd"super"  \xcd"." Id TypeArguments\opt \xcd"(" ArgumentList\opt \xcd")"\\
+    \| Primary TypeArguments\opt \xcd"(" ArgumentList\opt \xcd")"\\
+ ArgumentList    \: Exp & (\ref{prod:ArgumentList})\\%<FROM #(prod:ArgumentList)#
+    \| ArgumentList \xcd"," Exp\\
+\end{bbgrammar}
+
+
+
+A \grammarrule{MethodInvocation} may be to either a \xcd"static" method, an
+instance method, or a closure.
 
 The syntax is ambiguous; the target must be type-checked to determine if it is
 the name of a method or if it refers to a field containing a closure. It is a
@@ -243,26 +247,26 @@ class DivideBy(denom:Int) {
 
 \section{Assignment}\index{assignment}\label{AssignmentStatement}
 
-\begin{grammar}
-Expression \: Assignment \\
-Assignment \: SimpleAssignment \\
-           \| OpAssignment \\
-SimpleAssignment \: LeftHandSide \xcd"=" Expression \\
-OpAssignment \: LeftHandSide \xcd"+=" Expression \\
-             \: LeftHandSide \xcd"-=" Expression \\
-             \: LeftHandSide \xcd"*=" Expression \\
-             \: LeftHandSide \xcd"/=" Expression \\
-             \: LeftHandSide \xcd"%=" Expression \\
-             \: LeftHandSide \xcd"&=" Expression \\
-             \: LeftHandSide \xcd"|=" Expression \\
-             \: LeftHandSide \xcd"^=" Expression \\
-             \: LeftHandSide \xcd"<<=" Expression \\
-             \: LeftHandSide \xcd">>=" Expression \\
-             \: LeftHandSide \xcd">>>=" Expression \\
-LeftHandSide \: Identifier \\
-             \| Primary \xcd"." Identifier \\
-             \| Primary \xcd"(" Expression \xcd")" \\
-\end{grammar}
+\begin{bbgrammar}
+ Assignment    \: LeftHandSide AssignmentOperator AssignmentExp & (\ref{prod:Assignment})\\%<FROM #(prod:Assignment)#
+    \| ExpName  \xcd"(" ArgumentList\opt \xcd")" AssignmentOperator AssignmentExp\\
+    \| Primary  \xcd"(" ArgumentList\opt \xcd")" AssignmentOperator AssignmentExp\\
+ LeftHandSide    \: ExpName & (\ref{prod:LeftHandSide})\\%<FROM #(prod:LeftHandSide)#
+    \| FieldAccess\\
+ AssignmentOperator    \: \xcd"=" & (\ref{prod:AssignmentOperator})\\%<FROM #(prod:AssignmentOperator)#
+    \| \xcd"*="\\
+    \| \xcd"/="\\
+    \| \xcd"%="\\
+    \| \xcd"+="\\
+    \| \xcd"-="\\
+    \| \xcd"<<="\\
+    \| \xcd">>="\\
+    \| \xcd">>>="\\
+    \| \xcd"&="\\
+    \| \xcd"^="\\
+    \| \xcd"|="
+\end{bbgrammar}
+
 
 
 
@@ -539,11 +543,10 @@ than negative infinity.
 \section{Conditional expressions}
 \label{Conditional}
 
-\begin{grammar}
-ConditionalExpression \: Expression
-                \xcd"?" Expression
-                \xcd":" Expression 
-\end{grammar}
+\begin{bbgrammar}
+ ConditionalExp    \: 
+     ConditionalOrExp \xcd"?" Exp \xcd":" ConditionalExp& (\ref{prod:ConditionalExp})\\%<FROM #(prod:ConditionalExp)#
+\end{bbgrammar}
 
 A conditional expression evaluates its first subexpression (the
 condition); if \xcd"true"
@@ -570,10 +573,13 @@ type system.
 \label{StableEquality}
 \index{==}\index{!=}
 
-\begin{grammar}
-EqualityExpression \: Expression \xcd"==" Expression \\
-\| Expression \xcd"!=" Expression \\
-\end{grammar}
+\begin{bbgrammar}
+ EqualityExp    \: RelationalExp & (\ref{prod:EqualityExp})\\%<FROM #(prod:EqualityExp)#
+    \| EqualityExp \xcd"==" RelationalExp\\
+    \| EqualityExp \xcd"!=" RelationalExp\\
+    \| Type  \xcd"==" Type \\
+\end{bbgrammar}
+
 
 The \xcd"==" and \xcd"!=" operators provide a fundamental, though
 non-abstract, notion of equality.  \xcd`a==b` is true if the values of \xcd`a`
@@ -590,7 +596,7 @@ and all their fields or components must be \xcd"==".
 \item The definition of equality for function types is specified in
       \Sref{FunctionEquality}.
 \item If the operands have numeric types, they are coerced into the larger of
-      the two types and then compared for numeric equality.
+      the two types (see \Sref{WideningConversion}) and then compared for numeric equality.
 \end{itemize}
 
 \xcd`a != b`
@@ -605,12 +611,14 @@ after evaluation of \xcd`a` and \xcd`b`.
 \section{Allocation}
 \label{ClassCreation}
 
-\begin{grammar}
-NewExpression \: \xcd"new" ClassName TypeArguments\opt \xcd"(" ArgumentList\opt \xcd")"
-        ClassBody\opt \\
-  \| \xcd"new" InterfaceName TypeArguments\opt \xcd"(" ArgumentList\opt \xcd")"
-        ClassBody
-\end{grammar}
+\begin{bbgrammar}
+ ClassInstCreationExp    \: \xcd"new" TypeName TypeArguments\opt \xcd"(" ArgumentList\opt \xcd")" ClassBody\opt & (\ref{prod:ClassInstCreationExp})\\%<FROM #(prod:ClassInstCreationExp)#
+    \| \xcd"new" TypeName \xcd"[" Type \xcd"]" \xcd"[" ArgumentList\opt \xcd"]"\\
+    \| Primary \xcd"." \xcd"new" Id TypeArguments\opt \xcd"(" ArgumentList\opt \xcd")" ClassBody\opt\\
+
+    \| AmbiguousName \xcd"." \xcd"new" Id TypeArguments\opt \xcd"(" ArgumentList\opt \xcd")" ClassBody\opt\\
+
+\end{bbgrammar}
 
 An allocation expression creates a new instance of a class and
 invokes a constructor of the class.
@@ -647,10 +655,10 @@ possibility of a {\em ClassBody}.
 
 The cast operation may be used to cast an expression to a given type:
 
-\begin{grammar}
-UnaryExpression \: CastExpression \\
-CastExpression \: UnaryExpression \xcd"as" Type \\
-\end{grammar}
+\begin{bbgrammar}
+ CastExp    \: 
+     CastExp \xcd"as" Type & (\ref{prod:CastExp})\\%<FROM #(prod:CastExp)#\\
+\end{bbgrammar}
 
 The result of this operation is a value of the given type if the cast
 is permissible at run time, and either a compile-time error or a runtime
@@ -1037,6 +1045,7 @@ approximation is good enough.
 \subsection{Conversions}
 
 \paragraph{Widening numeric conversion.}
+\label{WideningConversions}
 A numeric type may be implicitly converted to a wider numeric type. In
 particular, an implicit conversion may be performed between a numeric
 type and a type to its right, below:

@@ -1,8 +1,8 @@
-\chapter{Annotations and compiler plugins}\label{XtenAnnotations}\index{annotations}
+\chapter{Annotations}\label{XtenAnnotations}\index{annotations}
 
 
 \Xten{} provides an 
-an annotation system and compiler plugin system for to allow the
+an annotation system  system for to allow the
 compiler to be extended with new static analyses and new
 transformations.
 
@@ -13,25 +13,27 @@ In \Xten{}, interfaces may declare
 both methods and properties.  Therefore, like any interface type, an
 annotation may instantiate
 one or more of its interface's properties.
-Unlike with Java
-annotations,
-property initializers need not be
-compile-time constants;
-however, a given compiler plugin
-may do additional checks to constrain the allowable
-initializer expressions.
-The \Xten{} type-checker does not check that
-all properties of an annotation are initialized,
-although this could be enforced by
-a compiler plugin.
+%%PLUGINNERY%%  Unlike with Java
+%%PLUGINNERY%%  annotations,
+%%PLUGINNERY%%  property initializers need not be
+%%PLUGINNERY%%  compile-time constants;
+%%PLUGINNERY%%  however, a given compiler plugin
+%%PLUGINNERY%%  may do additional checks to constrain the allowable
+%%PLUGINNERY%%  initializer expressions.
+%%PLUGINNERY%%  The \Xten{} type-checker does not check that
+%%PLUGINNERY%%  all properties of an annotation are initialized,
+%%PLUGINNERY%%  although this could be enforced by
+%%PLUGINNERY%%  a compiler plugin.
 
 \section{Annotation syntax}
 
 The annotation syntax consists of an ``\texttt{@}'' followed by an interface type.
 
-\begin{grammar}
-Annotation \: \xcd"@" InterfaceBaseType Constraints\opt \\
-\end{grammar}
+\begin{bbgrammar}
+ Annotations    \: Annotation & (\ref{prod:Annotations})\\%<FROM #(prod:Annotations)#
+    \| Annotations Annotation\\
+ Annotation    \: \xcd"@" NamedType & (\ref{prod:Annotation})\\%<FROM #(prod:Annotation)#
+\end{bbgrammar}
 
 Annotations can be applied to most syntactic constructs in the language
 including class declarations, constructors, methods, field declarations,
@@ -40,22 +42,22 @@ expressions, and types.
 Multiple occurrences of the same annotation (i.e., multiple
 annotations with the same interface type) on the same entity are permitted.
 
-\begin{grammar}
-ClassModifier \: Annotation \\
-InterfaceModifier \: Annotation \\
-FieldModifier \: Annotation \\
-MethodModifier \: Annotation \\
-VariableModifier \: Annotation \\
-ConstructorModifier \: Annotation \\
-AbstractMethodModifier \: Annotation \\
-ConstantModifier \: Annotation \\
-Type \: AnnotatedType \\
-AnnotatedType \: Annotation\plus Type \\
-Statement \: AnnotatedStatement \\
-AnnotatedStatement \: Annotation\plus Statement \\
-Expression \: AnnotatedExpression \\
-AnnotatedExpression \: Annotation\plus Expression \\
-\end{grammar}
+%%OBSOLETE%% \begin{grammar}
+%%OBSOLETE%% ClassModifier \: Annotation \\
+%%OBSOLETE%% InterfaceModifier \: Annotation \\
+%%OBSOLETE%% FieldModifier \: Annotation \\
+%%OBSOLETE%% MethodModifier \: Annotation \\
+%%OBSOLETE%% VariableModifier \: Annotation \\
+%%OBSOLETE%% ConstructorModifier \: Annotation \\
+%%OBSOLETE%% AbstractMethodModifier \: Annotation \\
+%%OBSOLETE%% ConstantModifier \: Annotation \\
+%%OBSOLETE%% Type \: AnnotatedType \\
+%%OBSOLETE%% AnnotatedType \: Annotation\plus Type \\
+%%OBSOLETE%% Statement \: AnnotatedStatement \\
+%%OBSOLETE%% AnnotatedStatement \: Annotation\plus Statement \\
+%%OBSOLETE%% Expression \: AnnotatedExpression \\
+%%OBSOLETE%% AnnotatedExpression \: Annotation\plus Expression \\
+%%OBSOLETE%% \end{grammar}
 
 \noindent
 Recall that interface types may have dependent parameters.
@@ -126,88 +128,88 @@ Annotations on particular static entities must extend the corresponding
 \end{itemize}
 
 
-\section{Compiler plugins}
-\index{plugins}
-
-After the base \Xten{} semantic checking is completed, 
-compiler plugins are loaded and run.  Plugins may perform
-any number of compiler passes to implement
-additional semantic checking and code transformations, including
-transformations using the abstract syntax of the annotations
-themselves.  Plugins should output valid \Xten{} abstract
-syntax trees.
-
-Plugins are implemented in \Java{} as
-Polyglot~\cite{ncm03} passes applied to the AST
-after normal base \Xten{} type checking.
-Plugins to run are specified on the command-line.  The order of
-execution is determined by the Polyglot pass scheduler.
-\index{Polyglot}
-
-To run compiler plugins, add the command-line option:
-\begin{verbatim}
-  -PLUGINS=P1,P2,...,Pn
-\end{verbatim}
-where \texttt{P1}, \texttt{P2}, \dots, \texttt{Pn} are classes that implement the
-\texttt{CompilerPlugin} interface:
-\index{CompilerPlugin}
-
-\begin{xten}
-package polyglot.ext.x10.plugin;
-
-import polyglot.ext.x10.ExtensionInfo;
-import polyglot.frontend.Job;
-import polyglot.frontend.goals.Goal;
-
-public interface CompilerPlugin {
-  public Goal
-    register(ExtensionInfo extInfo, Job job);
-}
-\end{xten}
-
-\index{Goal}
-The \texttt{Goal} object returned by the \texttt{register} method specifies dependencies on other passes.
-Documentation for Polyglot can be found at:
-\begin{verbatim}
-http://www.cs.cornell.edu/Projects/polyglot
-\end{verbatim}
-Most plugins should implement either \texttt{SimpleOnePassPlugin} or
-\texttt{SimpleVisitorPlugin}.
-
-The compiler loads plugin classes from the x10c classpath.
-
-Plugins are given access to a Polyglot AST and type system.  Annotations are
-represented in the AST as \texttt{Node}s with the following interface:
-\index{Node}
-
-\begin{verbatim}
-package polyglot.ext.x10.ast;
-
-public interface AnnotationNode extends Node {
-  X10ClassType annotation();
-}
-\end{verbatim}
-
-Annotations for a \texttt{Node} object \texttt{n} can be accessed through the
-node's extension object as follows:
-\index{AnnotationNode}
-
-\begin{verbatim}
-List<AnnotationNode> annotations =
-  ((X10Ext) n.ext()).annotations();
-List<X10ClassType> annotationTypes =
-  ((X10Ext) n.ext()).annotationInterfaces();
-\end{verbatim}
-In the type system, \texttt{X10TypeObject} has the following
-method for accessing annotations:
-\begin{verbatim}
-List<X10ClassType> annotations();
-\end{verbatim}
-
-
-%\balance
-
-% \clearpage
-
+%%PLUGINNERY%%  \section{Compiler plugins}
+%%PLUGINNERY%%  \index{plugins}
+%%PLUGINNERY%%  
+%%PLUGINNERY%%  After the base \Xten{} semantic checking is completed, 
+%%PLUGINNERY%%  compiler plugins are loaded and run.  Plugins may perform
+%%PLUGINNERY%%  any number of compiler passes to implement
+%%PLUGINNERY%%  additional semantic checking and code transformations, including
+%%PLUGINNERY%%  transformations using the abstract syntax of the annotations
+%%PLUGINNERY%%  themselves.  Plugins should output valid \Xten{} abstract
+%%PLUGINNERY%%  syntax trees.
+%%PLUGINNERY%%  
+%%PLUGINNERY%%  Plugins are implemented in \Java{} as
+%%PLUGINNERY%%  Polyglot~\cite{ncm03} passes applied to the AST
+%%PLUGINNERY%%  after normal base \Xten{} type checking.
+%%PLUGINNERY%%  Plugins to run are specified on the command-line.  The order of
+%%PLUGINNERY%%  execution is determined by the Polyglot pass scheduler.
+%%PLUGINNERY%%  \index{Polyglot}
+%%PLUGINNERY%%  
+%%PLUGINNERY%%  To run compiler plugins, add the command-line option:
+%%PLUGINNERY%%  \begin{verbatim}
+%%PLUGINNERY%%    -PLUGINS=P1,P2,...,Pn
+%%PLUGINNERY%%  \end{verbatim}
+%%PLUGINNERY%%  where \texttt{P1}, \texttt{P2}, \dots, \texttt{Pn} are classes that implement the
+%%PLUGINNERY%%  \texttt{CompilerPlugin} interface:
+%%PLUGINNERY%%  \index{CompilerPlugin}
+%%PLUGINNERY%%  
+%%PLUGINNERY%%  \begin{xten}
+%%PLUGINNERY%%  package polyglot.ext.x10.plugin;
+%%PLUGINNERY%%  
+%%PLUGINNERY%%  import polyglot.ext.x10.ExtensionInfo;
+%%PLUGINNERY%%  import polyglot.frontend.Job;
+%%PLUGINNERY%%  import polyglot.frontend.goals.Goal;
+%%PLUGINNERY%%  
+%%PLUGINNERY%%  public interface CompilerPlugin {
+%%PLUGINNERY%%    public Goal
+%%PLUGINNERY%%      register(ExtensionInfo extInfo, Job job);
+%%PLUGINNERY%%  }
+%%PLUGINNERY%%  \end{xten}
+%%PLUGINNERY%%  
+%%PLUGINNERY%%  \index{Goal}
+%%PLUGINNERY%%  The \texttt{Goal} object returned by the \texttt{register} method specifies dependencies on other passes.
+%%PLUGINNERY%%  Documentation for Polyglot can be found at:
+%%PLUGINNERY%%  \begin{verbatim}
+%%PLUGINNERY%%  http://www.cs.cornell.edu/Projects/polyglot
+%%PLUGINNERY%%  \end{verbatim}
+%%PLUGINNERY%%  Most plugins should implement either \texttt{SimpleOnePassPlugin} or
+%%PLUGINNERY%%  \texttt{SimpleVisitorPlugin}.
+%%PLUGINNERY%%  
+%%PLUGINNERY%%  The compiler loads plugin classes from the x10c classpath.
+%%PLUGINNERY%%  
+%%PLUGINNERY%%  Plugins are given access to a Polyglot AST and type system.  Annotations are
+%%PLUGINNERY%%  represented in the AST as \texttt{Node}s with the following interface:
+%%PLUGINNERY%%  \index{Node}
+%%PLUGINNERY%%  
+%%PLUGINNERY%%  \begin{verbatim}
+%%PLUGINNERY%%  package polyglot.ext.x10.ast;
+%%PLUGINNERY%%  
+%%PLUGINNERY%%  public interface AnnotationNode extends Node {
+%%PLUGINNERY%%    X10ClassType annotation();
+%%PLUGINNERY%%  }
+%%PLUGINNERY%%  \end{verbatim}
+%%PLUGINNERY%%  
+%%PLUGINNERY%%  Annotations for a \texttt{Node} object \texttt{n} can be accessed through the
+%%PLUGINNERY%%  node's extension object as follows:
+%%PLUGINNERY%%  \index{AnnotationNode}
+%%PLUGINNERY%%  
+%%PLUGINNERY%%  \begin{verbatim}
+%%PLUGINNERY%%  List<AnnotationNode> annotations =
+%%PLUGINNERY%%    ((X10Ext) n.ext()).annotations();
+%%PLUGINNERY%%  List<X10ClassType> annotationTypes =
+%%PLUGINNERY%%    ((X10Ext) n.ext()).annotationInterfaces();
+%%PLUGINNERY%%  \end{verbatim}
+%%PLUGINNERY%%  In the type system, \texttt{X10TypeObject} has the following
+%%PLUGINNERY%%  method for accessing annotations:
+%%PLUGINNERY%%  \begin{verbatim}
+%%PLUGINNERY%%  List<X10ClassType> annotations();
+%%PLUGINNERY%%  \end{verbatim}
+%%PLUGINNERY%%  
+%%PLUGINNERY%%  
+%%PLUGINNERY%%  %\balance
+%%PLUGINNERY%%  
+%%PLUGINNERY%%  % \clearpage
+%%PLUGINNERY%%  
 
 

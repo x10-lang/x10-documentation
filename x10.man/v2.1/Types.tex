@@ -4,7 +4,7 @@
 {}\Xten{} is a {\em strongly typed} object-oriented language: every
 variable and expression has a type that is known at compile-time.
 Types limit the values that variables can hold and specify the places
-at which these values can lie.
+at which these variables can lie.
 
 {}\Xten{} supports three kinds of runtime entities, {\em objects},
 {\em structs}, and {\em functions}. Objects are instances of {\em
@@ -26,8 +26,8 @@ identity (\Xcd{==}) in constant time by simply comparing references to
 the memory used to represent the objects. The default hash code for an
 object is based on the value of this reference. A downside of this
 flexibility is that the operations of accessing a field and invoking a
-method are more expensive than simply reading a memory location and
-invoking a function pointer (respectively). 
+method are more expensive than simply reading a register and
+invoking a static function.
 
 %% TODO vj: discussion is still somewhat awkward. Need a term like
 %% linking that can be used uniformly for objects nad structs to
@@ -37,7 +37,7 @@ invoking a function pointer (respectively).
 Structs are instances of {\em struct types} (\Sref{StructClasses}).  A
 struct is represented without the extra level of indirection, with a
 memory chunk of size $N$ words precisely big enough to store the value
-of every field of the struct (modulo alignment). Thus structs cannot
+of every field of the struct (modulo alignment), plus whatever padding is needed. Thus structs cannot
 be shared. Entities (such as variables and fields) refering to the
 struct must allocate $N$ words to directly contain the chunk.  An
 assignment to this entity must copy the $N$ words representing the
@@ -46,8 +46,8 @@ to structs, \Xcd{null} is not a legal value for a struct
 type. Comparison for identity (\Xcd{==}) involves examining $N$
 words. Additionally, structs do not have any mutable fields, hence
 they can be freely copied. The payoff for these restrictions lies in
-that field access is implemented by reading a single memory location
-and method invocation is implemented by invoking a function pointer.
+that fields can be stored in registers or local variables, and 
+and method invocation is implemented by invoking a static function.
 
 Functions, called closures or lambda-expressions in other languages, are
 instances of {\em function types|} (\Sref{Functions}). 
@@ -61,8 +61,8 @@ copied from place to place and may be repeatedly applied to a set of
 arguments.
 
 These runtime entities are classified by {\em types}. Types are used in
-variable declarations, explicit coercions and conversions, object creation,
-array creation, class literals, static state and method accessors, and
+variable declarations, coercions and  explicit conversions, object creation,
+array creation, static state and method accessors, and
 \xcd"instanceof" and \xcd`as` expressions.
 
 %% vj: We cannot use ``instantiation'' because technically it means
@@ -75,8 +75,8 @@ mean ``$e$ is an element of type $T$''.  For example, \xcd`1` has type
 \xcd`Int` (the type of all integers representible in 32 bits). It also
 has type \xcd`Any` (since all entitites have type \xcd`Any`), type
 \xcd`Int{self != 0}` (the type of nonzero integers), type
-\xcd`Int{self == 1}` (the type of integers which are equal to \xcd`1`,
-this type contains only one element), etc.
+\xcd`Int{self == 1}` (the type of integers which are equal to \xcd`1`, which
+contains only one element), etc. 
 
 %% vj. Bard, the text below is wrong. You have given an extensional
 %% description (i.e. a relation on the sets of values that satisfy a
@@ -162,8 +162,8 @@ non-zero integer.
 Similarly, \xcd`var x : Triple{x != null};` defines a \xcd`Triple`-valued
 variable \xcd`x` whose value is never null.
 
-The qualified type {\em Type \xcd`.` Type} refers to an instance of an {\em
-inner} type; that is, a class or struct defined inside of another class or
+The qualified type {\em Type \xcd`.` Type} refers to an instance of a {\em
+nested} type; that is, a class or struct defined inside of another class or
 struct, and holding an implicit reference to the outer.  For example, given
 the type declaration 
 %~~gen
@@ -253,7 +253,7 @@ class Position {
 Class instances, also called objects, are created via constructor calls. Class
 instances have fields and methods, type members, and value properties bound at
 construction time. In addition, classes have static members: static \xcd`val` fields,
-type definitions, and member classes and member interfaces.
+methods, type definitions, and member classes and member interfaces.
 
 A class with type parameters is {\em generic}. A class type is instantiatable
 only if all of its parameters are instantiated on concrete types.  The
@@ -310,8 +310,8 @@ of its own, beyond that required by \xcd`Any`.
 
 
 \index{null}
-\bard{We've got to say this better.}
-Variables of class type may contain the value \xcd"null". 
+
+Variables of class  type may contain the value \xcd"null". 
 
 \subsection{Interface types}
 \label{InterfaceTypes}
@@ -329,7 +329,7 @@ interface.
 
 Interfaces can also have static members: static fields, type definitions,
 and member classes and interfaces.  However, interfaces cannot specify that
-implementing classes must provide static members.
+implementing classes must provide static members or constructors.
 
 An interface may extend multiple interfaces.  
 %~~gen
@@ -343,20 +343,20 @@ interface Mobile {
   def move(howFar:Int):void;
 }
 interface Person extends Named, Mobile {}
-interface NamedPoint extends Named, Mobile{} 
+interface NamedPoint extends Named, Mobile {} 
 \end{xten}
 %~~siv
 %
 %~~neg
 
 
-Classes may be declared to implement multiple interfaces. Semantically, the
+Classes and structs may be declared to implement multiple interfaces. Semantically, the
 interface type is the set of all objects that are instances of classes that
 implement the interface. A class implements an interface if it is declared to
 and if it concretely or abstractly implements all the methods and properties
 defined in the interface. For example, \xcd`KimThePoint` implements
 \xcd`Person`, and hence \xcd`Named` and \xcd`Mobile`. It would be a static
-error if \xcd`KimThePoint` had no \xcd`name` method, unless it were also
+error if \xcd`KimThePoint` had no \xcd`name` method, unless \xcd`KimThePoint` were also
 declared \xcd`abstract`.
 
 %~~gen
@@ -413,7 +413,7 @@ found in \Sref{ConstrainedTypes}.
 
 
 
-\section{Type parameters and Generic Types}
+\section{Type Parameters and Generic Types}
 \label{TypeParameters}
 
 \index{types!type parameters}
@@ -517,6 +517,8 @@ class NonGeneric {
 % 
 % 
 
+Type parameters of classes (though not of methods) can be {\em variant}.
+
 Consider classes \xcd`Person :> Child`.  Every child is a person, but there
 are people who are not children.  What is the relationship between
 \xcd`Cell[Person]` and \xcd`Cell[Child]`?  
@@ -578,7 +580,9 @@ invariant.
 
 A typical example of covariance is \xcd`Get`.  As the \xcd`example()` method
 shows, a \xcd`Get[T]` must be constructed with its value, and will return that
-value whenever desired.
+value whenever desired.  \xcd`Get[T]` is only moderately useful as a class; it
+is more useful as an interface for providing a limited (read) access to a more
+powerful data structure.
 %~~gen
 % package ch4;
 %~~vis
@@ -598,34 +602,33 @@ class Get[+T] {
 %~~siv
 %~~neg
 
-
-%TODO - Yoav points out that the example uses ``var'', which is nonvariant.
-A typical example of contravariance is \xcd`Set`.  As the \xcd`example()`
-method shows,  a variety of objects\footnote{Objects but no structs.  If we
-had wanted structs too, we could have used a \xcd`Cell[Any]`.}  can be put
-into a 
-\xcd`Set[Object]`.  While the object itself cannot be retrieved, some summary
-information about it -- in this case, its \xcd`typeName` -- can be.  
+There are few if any {\em classes} with contravariant type parameters.
+(Covariant type parameters are only moderately more common.)  
+However, it is frequently useful to have {\em interfaces} with contravariant
+type parameters.  For example: 
 %~~gen
-% package ch4;
+% package Types.Sheesh.BardSaidSomethingNiceAboutNate;
 %~~vis
 \begin{xten}
-class Set[-T] {
-  var x: T;
-  def this(x: T) { this.x = x; }
-  def set(x: T) = { this.x = x; } 
-  def summary(): String = this.x.typeName();
-  static def example() {
-    val s : Set[Object] = new Set[Object](new Throwable());
-    s.summary(); // == "x10.lang.Throwable"
-    s.set("A String");
-    s.summary(); // == "x10.lang.String";
-  }    
+interface OutputStream[-T] {
+   def write(T) : void;
+}
+interface ComparableTo[-T] {
+   def compare(T) : Int;
 }
 \end{xten}
 %~~siv
 %
 %~~neg
+Clearly, \xcd`Int <: Any`. 
+An \xcd`OutputStream[Int]` is only capable of writing \xcd`Int`s.  
+An \xcd`OutputStream[Any]` is capable of writing anything.  In particular, it
+can write \xcd`Int`s. Thus, an \xcd`OutputStream[Any]` can be used in place of
+an \xcd`OutputStream[Int]`, and hence \xcd`OutputStream[Any] <: OutputStream[Int]`.
+Similarly, a \xcd`ComparableTo[Int]` can be compared to an integer. A
+\xcd`ComparableTo[Any]` can be compared to anything, and, in particular, to an
+integer.  Thus \xcd`ComparableTo[Any] <: ComparableTo[Int]`.
+So, both of these interfaces are contravariant.
 
 
 Given types \xcd"S" and \xcd"T": 
@@ -637,7 +640,7 @@ If the parameter of \xcd"Get" is covariant, then
 
 \item
 If the parameter of \xcd"Set" is contravariant, then
-\xcd"Set[S]" is a subtype of \xcd"Set[T]" if
+\xcd"OutputStream[S]" is a subtype of \xcd"OutputStream[T]" if
 \xcd"S" is a {\em supertype} of \xcd"T".
 
 \item
@@ -659,8 +662,12 @@ is covariant or contravariant is determined by the \Xcd{+} or \Xcd{-} annotation
 at that position in the declaration of \Xcd{C}.
 \end{itemize}
 
-%TODO: Yoav asks ``What are covariant and contravariant values?''
-There are similar restrictions on use of covariant and contravariant values. 
+
+There are similar restrictions on use of covariant and contravariant variables.
+
+\limitationx{} Full checking of covariance and contravariance is not yet
+implemented.  Covariant and contravariant classes and structs should be used
+with great caution.
 
 %TODO: Yoav says ``There are other rules, not implemented or specified,
 %involving fields, inheritance, etc.  There are several JIRAs on it. No idea
@@ -877,7 +884,7 @@ more specific descriptions.
 However, there are a lot of things that one frequently wants to say about
 data.  One might want to know that a \xcd`String` variable is not \xcd`null`,
 or that a matrix is square, or that one matrix has the same number of columns
-that another has rows (so they can be multiplied).  In the multicore setting,
+as another has rows (so they can be multiplied).  In the multicore setting,
 one might wish to know that two values are located at the same processor, or
 that one is located at the same place as the current computation.
 
@@ -1317,14 +1324,14 @@ allowed if \xcd`T` has a default value.
 
 Default values are: 
 \begin{itemize}
-\item The fundamental numeric type (\xcd`Int`, \xcd`UInt`,
+\item The fundamental numeric types (\xcd`Int`, \xcd`UInt`,
       \xcd`Long`, \xcd`ULong`, 
 %%limitation%%       \xcd`Short`, \xcd`UShort`, \xcd`Byte`,
 %%limitation%%       \xcd`UByte`, 
       \xcd`Float`, \xcd`Double`) all have default value 0.
 \item \xcd`Boolean` has default value \xcd`false`.
 \item \xcd`Char` has default value \xcd`'\0'`.
-\item Struct other than those listed above have no default value.
+\item Struct types other than those listed above have no default value.
 \item A function type has a default value of \xcd`null`.
 \item A class type has a default value of \xcd`null`.
 \item The constrained type \xcd`T{c}` has the same default value as \xcd`T` if
@@ -1404,9 +1411,10 @@ and
 \xcd`(b:Int, a:Array[String](1){a.size==b}) => Boolean`
 are equivalent types.
 
-\limitationx{}
+\limitation{
 This is not currently implemented properly; these two types are presently
 considered different.
+}
 
 The formal parameter names are in scope from the point of definition to the
 end of the function type---they may be used in the types of other formal parameters
@@ -1757,8 +1765,7 @@ public interface Any {
 \end{xten}
 
 \xcd`Any` provides a handful of essential methods that make sense and are
-useful for everything.\footnote{The behavioral annotation \xcd`property` is
-  explained in \Sref{properties}.} \xcd`a.toString()` produces a
+useful for everything. \xcd`a.toString()` produces a
 string representation of \xcd`a`, and \xcd`a.typeName()` the string
 representation of its type; both are useful for debugging.  \xcd`a.equals(b)`
 is the programmer-overridable equality test, and \xcd`a.hashCode()` an integer
@@ -1784,7 +1791,7 @@ A variable of this type can hold a reference to any object.
 \XtenCurrVer{} supports limited local type inference, permitting
 certain variable types and return types to be elided.
 It is a static error if an omitted type cannot be inferred or
-uniquely determined.
+uniquely determined. Type inference does not consider coercions.
 
 \subsection{Variable declarations}
 
@@ -1911,52 +1918,75 @@ write a generic function which works with both functions which return a value
 and functions which do not.  In most cases, functions which have no sensible
 return value can be provided with a dummy return value.
 
-\subsection{Type arguments}
-
-\limitation{This does not seem to work at all currently.}
+\subsection{Inferring Type Arguments}
 
 
 A call to a polymorphic method %, closure, or constructor 
 may omit the
 explicit type arguments.  If the method has a type parameter
 \xcd"T", the type argument corresponding to \xcd"T" is inferred
-to be the least common ancestor of the types of any formal
+to be a common ancestor of the types of any formal
 parameters of type \xcd"T".
-\bard{Not least!}
 
 %TODO--check this!
-Consider the following method:
+Consider the following method, which chooses one of its arguments.  (A more
+sophisticated one might sometimes choose the second argument, but that does
+not matter for the sake of this example.)
 \begin{xten}
-def choose[T](a: T, b: T): T { ... }
-\end{xten}
-%
-Given \xcd"Set[T] <: Collection[T]", 
-\xcd"List[T] <: Collection[T]",
-and \xcd"SubClass <: SuperClass",
-in the following snippet, the algorithm will infer the type
-\xcd"Collection[Any]" for \xcd"x".
-\begin{xten}
-def m(intSet: Set[Int], stringList: List[String]) {
-  val x = choose(intSet, stringList);
-...
-}
-\end{xten}
-%
-And in this snippet, the algorithm should infer the type
-\xcd"Collection[Int]" for \xcd"y".
-\begin{xten}
-def m(intSet: Set[Int], intList: List[Int]) {
-  val y = choose(intSet, intList);
-  ...
-}
-\end{xten}
-%
-Finally, in this snippet, the algorithm should infer the type
-\xcd"Collection{T <: SuperClass}" for \xcd"z".
-\begin{xten}
-def m(intSet: Set[SubClass], numList: List{T <: SuperClass}) {
-  val z = choose(intSet, numList);
-  ...
-}
+static def choose[T](a: T, b: T): T = a; 
 \end{xten}
 
+The type argument \xcd`T` can always be supplied: 
+\xcd`choose[Int](1, 2)` picks an integer, 
+and \xcd`choose[Any](1, "yes")` picks a value that might be an integer or a
+string.  
+However, the type argument can be elided.  Suppose that \xcd`Sub <: Super`;
+then the following compiles: 
+
+%~~gen
+% package Types.GenericInference;
+% class Exampllll{ 
+%~~vis
+\begin{xten}
+  static def choose[T](a: T, b: T): T = a; 
+  static val j : Any = choose("string", 1);
+  static val k : Super = choose(new Sub(), new Super());
+\end{xten}
+%~~siv
+%}
+% class Super {}
+% class Sub extends Super {}
+%~~neg
+
+
+
+%%DUNNO%% Given \xcd"Set[T] <: Collection[T]", 
+%%DUNNO%% \xcd"List[T] <: Collection[T]",
+%%DUNNO%% and \xcd"SubClass <: SuperClass",
+%%DUNNO%% in the following snippet, the algorithm will infer the type
+%%DUNNO%% \xcd"Collection[Any]" for \xcd"x".
+%%DUNNO%% \begin{xten}
+%%DUNNO%% def m(intSet: Set[Int], stringList: List[String]) {
+%%DUNNO%%   val x = choose(intSet, stringList);
+%%DUNNO%% ...
+%%DUNNO%% }
+%%DUNNO%% \end{xten}
+%%DUNNO%% %
+%%DUNNO%% And in this snippet, the algorithm should infer the type
+%%DUNNO%% \xcd"Collection[Int]" for \xcd"y".
+%%DUNNO%% \begin{xten}
+%%DUNNO%% def m(intSet: Set[Int], intList: List[Int]) {
+%%DUNNO%%   val y = choose(intSet, intList);
+%%DUNNO%%   ...
+%%DUNNO%% }
+%%DUNNO%% \end{xten}
+%%DUNNO%% %
+%%DUNNO%% Finally, in this snippet, the algorithm should infer the type
+%%DUNNO%% \xcd"Collection{T <: SuperClass}" for \xcd"z".
+%%DUNNO%% \begin{xten}
+%%DUNNO%% def m(intSet: Set[SubClass], numList: List{T <: SuperClass}) {
+%%DUNNO%%   val z = choose(intSet, numList);
+%%DUNNO%%   ...
+%%DUNNO%% }
+%%DUNNO%% \end{xten}
+%%DUNNO%% 

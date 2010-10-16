@@ -25,9 +25,7 @@ wait until all participant have finished with the phase -- as measured by the
 clock \xcd`cl` to which they are both registered.  
 Then they do the second phase, and another \xcd`next;` to make sure that
 neither proceeds to the third phase until both are ready.  This example uses
-\xcd`finish` to wait for both particiants to finish.  The parent thread is also
-registered on the clock just as the particiants are, and executes \xcd`next;next;`
-to run through the phases.
+\xcd`finish` to wait for both particiants to finish.  
 
 
 %%TODO -- put the 'atomic' back in when that's legal.
@@ -73,10 +71,10 @@ activities. An activity may perform operations only on those clocks it
 is registered with (these clocks constitute its {\em clock set}). 
 An attempt by an activity to operate on a clock it is not registered with
 will cause a 
-\xcd"ClockUseException"\index{clock!ClockUseException}. 
+\xcd"ClockUseException"\index{clock!ClockUseException}
 to be thrown.  
 An activity is registered with zero or more clocks when it is created.
-During its lifetime the only additional clocks it is registered with
+During its lifetime the only additional clocks it can possibly be registered with
 are exactly those that it creates. In particular it is not possible
 for an activity to register itself with a clock it discovers by
 reading a data structure.
@@ -85,7 +83,7 @@ The primary operations that an activity \xcd`a` may perform on a clock \xcd`c`
 that it is registered upon are: 
 \begin{itemize}
 \item It may spawn and simultaneously  {\em register} a new activity on
-      \xcd`c`, with the statement       \xcd`async clocked(c){S}`.
+      \xcd`c`, with the statement       \xcd`async clocked(c)S`.
 \item It may {\em unregister} itself from \xcd`c`, with \xcd`c.drop()`.  After
       doing so, it can no longer use most primary operations on \xcd`c`.
 \item It may {\em resume} the clock, with \xcd`c.resume()`, indicating that it
@@ -221,7 +219,7 @@ clocked(c) S}), the new activity {$b$} starts out having also resumed
 %static def example() {
 %~~vis
 \begin{xten}
-//a
+// a
 val c = Clock.make();
 c.resume();
 async clocked(c) {
@@ -307,7 +305,7 @@ with before suspending.)
 clocks that the current activity is registered with.  (The parallelism is
 conceptually important: if activities {$a$} and {$b$} are both
 registered on clocks \xcd`c` and \xcd`d`, and {$a$} executes
-\xcd`c.wait(); d.wait()` while {$b$} executes \xcd`d.wait(); c.wait()`,
+\xcd`c.next(); d.next()` while {$b$} executes \xcd`d.next(); c.next()`,
 then the two will deadlock.  However, if the two clocks are waited on in
 parallel, as \xcd`next;` does, {$a$} and {$b$} will not deadlock.)
 

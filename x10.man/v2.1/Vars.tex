@@ -43,7 +43,7 @@ in this sense because they do not refer to X10 values.  Other named entities,
 such as classes and methods, are not called variables.  However, all
 name-to-whatever bindings enjoy similar concepts of scope and visibility.  
 
-In the following example, \xcd`n` is an instance variable, and \xcd`next` is a
+In the following example, \xcd`n` is an instance variable, and \xcd`nxt` is a
 local variable defined within the method \xcd`bump`.\footnote{This code is
 unnecessarily turgid for the sake of the example.  One would generally write
 \xcd`public def bump() = ++n;`.   }
@@ -54,9 +54,9 @@ unnecessarily turgid for the sake of the example.  One would generally write
 class Counter {
   private var n : Int = 0;
   public def bump() : Int {
-    val next = n+1;
-    n = next;
-    return next;
+    val nxt = n+1;
+    n = nxt;
+    return nxt;
     }
 }
 \end{xten}
@@ -65,9 +65,9 @@ class Counter {
 %~~neg
 Both variables have type \xcd`Int` (or
 perhaps something more specific).    The scope of \xcd`n` is the body of
-\xcd`Counter`; the scope of \xcd`next` is the body of \xcd`bump`.  The
+\xcd`Counter`; the scope of \xcd`nxt` is the body of \xcd`bump`.  The
 lifetime of \xcd`n` is the lifetime of the \xcd`Counter` object holding it;
-the lifetime of \xcd`next` is the duration of the call to \xcd`bump`. Neither
+the lifetime of \xcd`nxt` is the duration of the call to \xcd`bump`. Neither
 variable can be seen from outside of its scope.
 
 \label{exploded-syntax}
@@ -229,17 +229,12 @@ Or, for mutable variables, it may be done by a later assignment.
 Every class variable must be initialized before it is read, through
 the execution of an explicit initializer. Every
 instance variable must be initialized before it is read, through the
-execution of an explicit initializer or a constructor.
-\bard{Revise this in light of initial values}
-Mutable instance variables of class type are initialized to 
-to \xcd"null".
-Mutable instance variables of struct type are 
-assumed to have an initializer that sets the value to the
-result of invoking the nullary constructor on the class. 
-An initializer is required if the default initial value of the variable's type
-is not
-assignable to the variable's type, \eg, \xcd`Int` variables are initialized to
-zero, but that doesn't work for \xcd`val x:Int{x!=0}`.
+execution of an explicit or implicit initializer or a constructor.
+Implicit initializers initialize \xcd`var`s to the default values of their
+types (\Sref{DefaultValues}). Variables of types which do not have default
+values are not implicitly initialized.
+
+
 
 Each method and constructor parameter is initialized to the
 corresponding argument value provided by the invoker of the method. An
@@ -253,7 +248,7 @@ using the rules for definite assignment \cite[\S~16]{jls2}.
 \index{variable declarator!destructuring}
 \index{destructuring}
 \Xten{} permits a \emph{destructuring} syntax for local variable
-declarations and formal parameters of type \xcd`Point`, \Sref{point-syntax}.
+declarations with explicit initializers,  and for formal parameters, of type \xcd`Point`, \Sref{point-syntax}.
 (Future versions of X10 may allow destructuring of other types as well.) 
 A point is a sequence of {$r \ge 0$} \xcd`Int`-valued coordinates.  
 It is often useful to get at the coordinates directly, in variables. 
@@ -306,7 +301,7 @@ They are always declared with a type.  (Type inference is not
 advisable, because there is no single expression to deduce a type from.)
 The variable name can be omitted if it is not to be used in the
 scope of the declaration, as in the type of the method 
-\xcd`static def main(Rail[String]):void` executed at the start of a program that
+\xcd`static def main(Array[String]):void` executed at the start of a program that
 does not use its command-line arguments.
 
 %%GRAMMAR%%  \begin{grammar}

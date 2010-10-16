@@ -4,7 +4,7 @@
 
 This document summarizes the main changes between X10 2.0.6 and X10 2.1.  The
 descriptions are intended to be suggestive rather than definitive; see the
-language specification -- when it is finished -- for full details.
+language specification for full details.
 
 \subsection{Object Model}
 
@@ -13,8 +13,9 @@ language specification -- when it is finished -- for full details.
    
     \begin{enumerate}
     \item The \Xcd{home} property is gone.
-    \item \Xcd{at(P)S} produces deep copies of all objects located \Xcd{here}
-          when it executes \Xcd{S}.  ({\bf Warning:} They are copied even in 
+    \item \Xcd{at(P)S} produces deep copies of all objects reachable from
+          lexically exposed variables in \xcd`S` 
+          when it executes \Xcd{S}.  ({\bf Warning:} They are copied even in  
           \Xcd{at(here)S}.)
     \end{enumerate}
 
@@ -166,7 +167,7 @@ Most clock operations can be accomplished using the new implicit clocks.
 \subsection{Asynchronous initialization of val}
 
 \Xcd{val}s can be initialized asynchronously.   As always with \Xcd{val}s,
-they can only be read after is guaranteed that they have been initialized.
+they can only be read after it is guaranteed that they have been initialized.
 For example, both of the \Xcd{print}s below are good.  However, the
 commented-out \Xcd{print} in the \Xcd{async} is bad, since it is possible that
 it will be executed before the initialization of \Xcd{a}. 

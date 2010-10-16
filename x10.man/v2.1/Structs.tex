@@ -30,7 +30,9 @@ They are also interconvertable, within the constraints of structs. If you
 start off defining a struct and decide you need a class instead, the code
 change required is simply changing the keyword \xcd`struct` to \xcd`class`. If
 you have a class that does not use inheritance or mutable fields, it can be
-converted to a struct by changing its keyword.
+converted to a struct by changing its keyword. Client code using the struct
+that was a class will need certain changes: the \xcd`new` keyword must be
+added in constructor calls, and structs (unlike classes) do not have default values.
 
 
 
@@ -107,7 +109,7 @@ type \Xcd{S}.
 \label{StructAnyMethods}
 \index{Any!structs}
 
-Unlike objects, structs do not have global identity. Instead, two
+Two
 structs are equal (\Xcd{==}) if and only if their corresponding fields
 are equal (\Xcd{==}). 
 

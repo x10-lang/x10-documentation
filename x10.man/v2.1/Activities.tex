@@ -203,17 +203,17 @@ of \xcd`x10.lang.GlobalRef[T]` for more details.
 
 %%\xcd`p` may be an expression of type \xcd`Place`, in which case its value is
 %%used as the place to execute the body: 
-%%%~~gen
+%%%~x~gen
 %%%% package Activities.At.A.Standstill;
 %%% class Example {
 %%% def example(ob: Object, S: ()=>Void) {
-%%%~~vis
+%%%~x~vis
 %%\begin{xten}
 %%   at (here.next()) S();
 %%\end{xten}
-%%%~~siv
+%%%~x~siv
 %%% } } 
-%%%~~neg
+%%%~x~neg
 %%\noindent
 
 
@@ -359,6 +359,7 @@ class Trans {
 
 
 \subsubsection{Copying and GlobalRef}
+\label{GlobalRef}
 \index{at!GlobalRef}
 \index{at!blocking copying}
 
@@ -428,7 +429,10 @@ command-line argument array.
 There are two dangers involved with \xcd`at`: 
 \begin{itemize}
 \item Careless use of \xcd`at` can result in copying and transmission
-of very large data structures.  
+of very large data structures.  In particular, it is very easy to capture
+\xcd`this` -- a field reference will do it -- and accidentally copy everything
+that \xcd`this` refers to, which can be very large.
+
 \item As seen in the examples above, a local variable reference
   \xcd`x` may refer to different objects in different nested \xcd`at`
   scopes The programmer must either ensure that a variable accessed
@@ -497,16 +501,11 @@ An activity is created by executing the \xcd`async` statement:
 
 \begin{bbgrammar}
  AsyncStatement    \: \xcd"async" ClockedClause\opt Statement & (\ref{prod:AsyncStatement})\\%<FROM #(prod:AsyncStatement)#
-    \| clocked \xcd"async" Statement\\
- ClockedClause    \: clocked \xcd"(" ClockList \xcd")" & (\ref{prod:ClockedClause})\\%<FROM #(prod:ClockedClause)#
+    \| \xcd"clocked" \xcd"async" Statement\\
+
+ ClockedClause    \: \xcd"clocked" \xcd"(" ClockList \xcd")" & (\ref{prod:ClockedClause})\\%<FROM #(prod:ClockedClause)#
 \end{bbgrammar}
 
-%%GRAMMAR%% \begin{grammar}
-%%GRAMMAR%% Statement \: AsyncStatement \\
-%%GRAMMAR%% AsyncStatement \: \xcd"async"  Statement \\
-%%GRAMMAR%% PlaceExpressionSingleList \: \xcd"(" PlaceExpression \xcd")" \\
-%%GRAMMAR%% PlaceExpression \: Expression 
-%%GRAMMAR%% \end{grammar} 
 
 
 The basic form of \xcd`async` is \xcd`async S`, which starts a new activity
@@ -558,11 +557,10 @@ such, it may reference variables in lexically enclosing scopes.
 The statement \xcd"finish S" converts global termination to local
 termination.
 
-%%TODO: Check against current grammar
-\begin{grammar}
-Statement \: FinishStatement \\
-FinishStatement \: \xcd"finish" Statement 
-\end{grammar}
+\begin{bbgrammar}
+ FinishStatement    \: \xcd"finish" Statement & (\ref{prod:FinishStatement})\\%<FROM #(prod:FinishStatement)#
+    \| \xcd"clocked" \xcd"finish" Statement\\
+\end{bbgrammar}
 
 An activity $A$ executes \xcd"finish S" by executing \xcd"S" and
 then waiting for all activities spawned by \xcd`S` (directly or
@@ -665,15 +663,16 @@ places.)
 
 \section{Ateach statements}\index{\Xcd{ateach}}\label{ateach-section}
 \deprecated{} The \xcd`ateach` construct is deprecated.
-\begin{grammar}
-Statement \: AtEachStatement \\
-AtEachStatement \:
-      \xcd"ateach" \xcd"(" Formal \xcd"in" Expression \xcd")"
-         Statement \\
-AtEachStatement \:
-      \xcd"ateach" \xcd"(" Expression \xcd")"
-         Statement 
-\end{grammar}
+
+\begin{bbgrammar}
+ AtEachStatement    \: \xcd"ateach" \xcd"(" LoopIndex \xcd"in" Exp \xcd")" ClockedClause\opt Statement & (\ref{prod:AtEachStatement})\\%<FROM #(prod:AtEachStatement)#
+    \| \xcd"ateach" \xcd"(" Exp \xcd")" Statement\\
+ LoopIndexDeclarator    \: Id HasResultType\opt & (\ref{prod:LoopIndexDeclarator})\\%<FROM #(prod:LoopIndexDeclarator)#
+    \| \xcd"[" IdList \xcd"]" HasResultType\opt\\
+    \| Id \xcd"[" IdList \xcd"]" HasResultType\opt\\
+ LoopIndex    \: Mods\opt LoopIndexDeclarator & (\ref{prod:LoopIndex})\\%<FROM #(prod:LoopIndex)#
+    \| Mods\opt VarKeyword LoopIndexDeclarator\\
+\end{bbgrammar}
 In \xcd`ateach(p in D) S`, \xcd`D` must be either of type \xcd"Dist"
 (see \Sref{XtenDistributions}) or of type \xcd`DistArray[T]` (see
 \Sref{XtenArrays}), and \xcd`p` will be of type \xcd"Point" (see
@@ -713,30 +712,6 @@ If the programmer wishes to execute \xcd`S` in parallel at each place,
 
 
 
-%%DUPLICATE%% \section{At expressions}
-%%DUPLICATE%% 
-%%DUPLICATE%% \begin{grammar}
-%%DUPLICATE%% Expression \: \xcd"at" \xcd"(" Expression \xcd")" Expression
-%%DUPLICATE%% \end{grammar}
-%%DUPLICATE%% 
-%%DUPLICATE%% An \Xcd{at} expression evaluates an expression synchronously at the
-%%DUPLICATE%% given place and returns its value.  For instance a copy of the
-%%DUPLICATE%% value pointed to by a \Xcd{GlobalRef} may be obtained using
-%%DUPLICATE%% the \Xcd{fetch} method:
-%%DUPLICATE%% %~x~gen
-%%DUPLICATE%% % package Activities.AtExpressions.Fetching;
-%%DUPLICATE%% % class Example[T] {
-%%DUPLICATE%% %~x~vis
-%%DUPLICATE%% \begin{xten}
-%%DUPLICATE%%   def fetch(g:GlobalRef[T]):T = at (g) g();
-%%DUPLICATE%% \end{xten}
-%%DUPLICATE%% %~x~siv
-%%DUPLICATE%% % } 
-%%DUPLICATE%% %~x~neg
-%%DUPLICATE%% 
-%%DUPLICATE%% The expression evaluation may spawn asynchronous activities. The \Xcd{at}
-%%DUPLICATE%% expression will return without waiting for those activities to terminate. That
-%%DUPLICATE%% is, \Xcd{at} does not have built-in \Xcd{finish} semantics.
 
 \section{Atomic blocks}\label{AtomicBlocks}\index{atomic blocks}
 
@@ -745,6 +720,11 @@ the mutation of shared data.
 A programmer may use atomic blocks to guarantee that invariants of
 shared data-structures are maintained even as they are being accessed
 simultaneously by multiple activities running in the same place.  
+
+\begin{bbgrammar}
+ AtomicStatement    \: \xcd"atomic" Statement & (\ref{prod:AtomicStatement})\\%<FROM #(prod:AtomicStatement)#
+ WhenStatement    \: \xcd"when" \xcd"(" Exp \xcd")" Statement & (\ref{prod:WhenStatement})\\%<FROM #(prod:WhenStatement)#
+\end{bbgrammar}
 
 For example, consider a class \xcd`Redund[T]`, which encapsulates a list
 \xcd`list` and, (redundantly) keeps the size of the list in a second field

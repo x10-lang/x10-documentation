@@ -40,19 +40,24 @@ mutatis mutandis} for method, constructor, and operator resolution.
 Generics introduce several subtleties, especially with the inference of
 generic types. 
 
+
 For the purposes of method resolution, all that matters about a method,
 constructor, or operator \xcd`M` --- we use the word ``method'' to include all
-three choices for this section --- is: 
+three choices for this section --- is its signature, plus which method it is.
+So, a typical \xcd`M` might look like 
+\xcdmath"def m[G$_1$,$\ldots$, G$_g$](x$_1$:T$_1$,$\ldots$, x$_f$:T$_f$){c} =...".  The code body \xcd`...` is irrelevant for the purpose of whether a
+given method call means \xcd`M` or not, so we ignore it for this section.
+
 \begin{enumerate}
 \item The method name \xcd`m`;
-\item The generic type parameters \xcdmath"G$_1$,$\ldots$, G$_g$".  If there
-      are no generic type parameters, {$x=0$}.  
+\item The generic type parameters of the method \xcd`M`,  \xcdmath"G$_1$,$\ldots$, G$_g$".  If there
+      are no generic type parameters, {$g=0$}.  
 \item The types \xcdmath"x$_1$:T$_1$,$\ldots$, x$_f$:T$_f$" of the formal parameters.  If
       there are no formal parameters, {$f=0$}. In the case of an instance
       method, the receiver will be the first formal parameter.\footnote{The
       variable names are relevant because one formal can be mentioned in a
       later type, or even a constraint: {\tt def f(a:Int, b:Point\{rank==a\})=...}.}
-\item The constraint \xcd`c`. If no constraint is specified, \xcd`c` is
+\item The constraint \xcd`c` of the method \xcd`M`. If no constraint is specified, \xcd`c` is
       \xcd`true`. 
 \item A {\em unique identifier} \xcd`id`, sufficient to tell the compiler
       which method body is intended.  A file name and position in that file
@@ -109,7 +114,7 @@ The procedure for computing \xcd`resolve(invo, context)` is:
       the one that is intended.
 \item From the remaining methods, find the unique \xcd`ms` which is more specific than all the
       others, \viz, for which \xcd`specific(ms,mo) = true` for all other
-      methods \xcd`mo`
+      methods \xcd`mo`.
       The specificity test \xcd`specific` is given next.
       \begin{itemize}
       \item If there is a unique such \xcd`ms`, then

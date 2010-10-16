@@ -161,6 +161,30 @@ For example, an implementation of matrices \xcd`Mat` might have the numbers of
 rows and columns as properties.  A little bit of care in definitions allows
 the definition of a \xcd`+` operation that works on matrices of the same
 shape, and \xcd`*` that works on matrices with appropriately matching shapes.
+%~~gen
+%package Overview.Mat2;
+%~~vis
+\begin{xten}
+abstract class Mat(rows:Int, cols:Int) {
+ static type Mat(r:Int, c:Int) = Mat{self.rows==r&&self.cols==c};
+ abstract operator this + (y:Mat(this.rows,this.cols))
+                 :Mat(this.rows, this.cols);
+ abstract operator this * (y:Mat) {this.cols == y.rows} 
+                 :Mat(this.rows, y.cols);
+\end{xten}
+%~~siv
+%  static def makeMat(r:Int,c:Int) : Mat(r,c) = null;
+%  static def example(a:Int, b:Int, c:Int) {
+%    val axb1 : Mat(a,b) = makeMat(a,b);
+%    val axb2 : Mat(a,b) = makeMat(a,b);
+%    val bxc  : Mat(b,c) = makeMat(b,c);
+%    val axc  : Mat(a,c) = (axb1 +axb2) * bxc;
+%  }
+%}
+%~~neg
+
+
+
 The following code typechecks, but an attempt to compute \xcd`axb1 + bxc` or
 \xcd`bxc * axb1` would result in a compile-time type error:
 %~~gen
@@ -197,14 +221,12 @@ A constrained type looks like \xcd`Mat{self.rows==r && self.cols==c}`: a type
 name, followed by a Boolean expression in braces.  The special variable
 \xcd`self` refers to the matrix whose number of rows and columns is being
 checked.  The \xcd`type` declaration on the second line makes
-\xcd`Mat(2,3)` be a synonym for \xcd`Mat{self.rows==r && self.cols==c}`,
+\xcd`Mat(r,c)` be a synonym for \xcd`Mat{self.rows==r && self.cols==c}`,
 allowing for compact types in many places.
 
 Functions can return constrained types.  
 The \xcd`makeMat(r,c)` method returns a \xcd`Mat(r,c)` -- a matrix whose shape
-is given by the arguments to the method.  For the sake of brevity in
-the example, it returns \xcd`null`; in real code, it would actually produce a
-matrix -- which must be statically provable to have the right shape.  In
+is given by the arguments to the method.    In
 particular, constructors can have constrained return types to provide specific
 information about the constructed values.
 
@@ -225,27 +247,7 @@ And that is all that is necessary for a user-defined class of matrices to have
 shape-checking for matrix addition and multiplication.  The \xcd`example`
 method compiles under those definitions.
 
-%~~gen
-%package Overview.Mat2;
-%~~vis
-\begin{xten}
-abstract class Mat(rows:Int, cols:Int) {
- static type Mat(r:Int, c:Int) = Mat{self.rows==r&&self.cols==c};
- static def makeMat(r:Int,c:Int) : Mat(r,c) = null;
- abstract operator this + (y:Mat(this.rows,this.cols))
-                 :Mat(this.rows, this.cols);
- abstract operator this * (y:Mat) {this.cols == y.rows} 
-                 :Mat(this.rows, y.cols);
-\end{xten}
-%~~siv
-%  static def example(a:Int, b:Int, c:Int) {
-%    val axb1 : Mat(a,b) = makeMat(a,b);
-%    val axb2 : Mat(a,b) = makeMat(a,b);
-%    val bxc  : Mat(b,c) = makeMat(b,c);
-%    val axc  : Mat(a,c) = (axb1 +axb2) * bxc;
-%  }
-%}
-%~~neg
+
 
 
 
@@ -308,7 +310,7 @@ An \Xten{} program is intended to run on a wide range of computers,
 from uniprocessors to large clusters of parallel processors supporting
 millions of concurrent operations. To support this scale, \Xten{}
 introduces the central concept of \emph{place} (\Sref{XtenPlaces}).
-A place can be though of as a virtual shared-memory multi-processor:
+A place can be thought of as a virtual shared-memory multi-processor:
 a computational unit with a finite (though perhaps changing) number of
 hardware threads and a bounded amount of shared memory, uniformly
 accessible by all threads.
@@ -510,7 +512,7 @@ native code.
 
 \subsection{Conclusion}
 {}\Xten{} is considerably higher-level than thread-based languages in
-that it supports dynamically spawning very lightweight activities, the
+that it supports dynamically spawning lightweight activities, the
 use of atomic operations for mutual exclusion, and the use of clocks
 for repeated quiescence detection.
 

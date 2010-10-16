@@ -1,6 +1,9 @@
 \chapter{Grammar}
 
 
+In this grammar, $X^?$ denotes an optional $X$ element.
+
+
 \begin{bbgrammar}
 
  MethodInvocation  \refstepcounter{equation}\label{prod:MethodInvocation}  \: MethodPrimaryPrefix \xcd"(" ArgumentList\opt \xcd")" & (\arabic{equation})\\
@@ -8,7 +11,7 @@
     \| MethodClassNameSuperPrefix \xcd"(" ArgumentList\opt \xcd")"\\
  Mod  \refstepcounter{equation}\label{prod:Mod}  \: \xcd"abstract" & (\arabic{equation})\\
     \| Annotation\\
-    \| atomic\\
+    \| \xcd"atomic"\\
     \| \xcd"final"\\
     \| \xcd"native"\\
     \| \xcd"private"\\
@@ -20,29 +23,32 @@
 \begin{bbgrammar}
 
     \| \xcd"transient"\\
-    \| clocked\\
- TypeDefDecl  \refstepcounter{equation}\label{prod:TypeDefDecl}  \: Mods\opt type Id TypeParams\opt FormalParams\opt WhereClause\opt \xcd"=" Type \xcd";" & (\arabic{equation})\\
+    \| \xcd"clocked"\\
+ MethMods  \refstepcounter{equation}\label{prod:MethMods}  \: Mods\opt & (\arabic{equation})\\
+    \| MethMods \xcd"property" \\
+    \| MethMods Mod\\
+ TypeDefDecl  \refstepcounter{equation}\label{prod:TypeDefDecl}  \: Mods\opt \xcd"type" Id TypeParams\opt FormalParams\opt WhereClause\opt \xcd"=" Type \xcd";" & (\arabic{equation})\\
  Properties  \refstepcounter{equation}\label{prod:Properties}  \: \xcd"(" PropertyList \xcd")" & (\arabic{equation})\\
  PropertyList  \refstepcounter{equation}\label{prod:PropertyList}  \: Property & (\arabic{equation})\\
     \| PropertyList \xcd"," Property\\
  Property  \refstepcounter{equation}\label{prod:Property}  \: Annotations\opt Id ResultType & (\arabic{equation})\\
- MethodDecl  \refstepcounter{equation}\label{prod:MethodDecl}  \: MethodMods\opt \xcd"def" Id TypeParams\opt FormalParams WhereClause\opt HasResultType\opt Offers\opt MethodBody & (\arabic{equation})\\
-    \| MethodMods\opt \xcd"operator" TypeParams\opt \xcd"(" FormalParam  \xcd")" BinOp \xcd"(" FormalParam  \xcd")" WhereClause\opt HasResultType\opt Offers\opt MethodBody\\
-    \| MethodMods\opt \xcd"operator" TypeParams\opt PrefixOp \xcd"(" FormalParam  \xcd")" WhereClause\opt HasResultType\opt Offers\opt MethodBody\\
-    \| MethodMods\opt \xcd"operator" TypeParams\opt \xcd"this" BinOp \xcd"(" FormalParam  \xcd")" WhereClause\opt HasResultType\opt Offers\opt MethodBody\\
-    \| MethodMods\opt \xcd"operator" TypeParams\opt \xcd"(" FormalParam  \xcd")" BinOp \xcd"this" WhereClause\opt HasResultType\opt Offers\opt MethodBody\\
-    \| MethodMods\opt \xcd"operator" TypeParams\opt PrefixOp \xcd"this" WhereClause\opt HasResultType\opt Offers\opt MethodBody\\
-    \| MethodMods\opt \xcd"operator" \xcd"this" TypeParams\opt FormalParams WhereClause\opt HasResultType\opt Offers\opt MethodBody\\
-    \| MethodMods\opt \xcd"operator" \xcd"this" TypeParams\opt FormalParams \xcd"=" \xcd"(" FormalParam  \xcd")" WhereClause\opt HasResultType\opt Offers\opt MethodBody\\
-    \| MethodMods\opt \xcd"operator" TypeParams\opt \xcd"(" FormalParam  \xcd")" \xcd"as" Type WhereClause\opt Offers\opt MethodBody\\
-    \| MethodMods\opt \xcd"operator" TypeParams\opt \xcd"(" FormalParam  \xcd")" \xcd"as" \xcd"?" WhereClause\opt HasResultType\opt Offers\opt MethodBody\\
-    \| MethodMods\opt \xcd"operator" TypeParams\opt \xcd"(" FormalParam  \xcd")" WhereClause\opt HasResultType\opt Offers\opt MethodBody\\
- PropertyMethodDecl  \refstepcounter{equation}\label{prod:PropertyMethodDecl}  \: MethodMods\opt Id TypeParams\opt FormalParams WhereClause\opt HasResultType\opt MethodBody & (\arabic{equation})\\
-    \| MethodMods\opt Id WhereClause\opt HasResultType\opt MethodBody\\
+ MethodDecl  \refstepcounter{equation}\label{prod:MethodDecl}  \: MethMods \xcd"def" Id TypeParams\opt FormalParams WhereClause\opt HasResultType\opt Offers\opt MethodBody & (\arabic{equation})\\
+    \| MethMods \xcd"operator" TypeParams\opt \xcd"(" FormalParam  \xcd")" BinOp \xcd"(" FormalParam  \xcd")" WhereClause\opt HasResultType\opt Offers\opt MethodBody\\
+    \| MethMods \xcd"operator" TypeParams\opt PrefixOp \xcd"(" FormalParam  \xcd")" WhereClause\opt HasResultType\opt Offers\opt MethodBody\\
+    \| MethMods \xcd"operator" TypeParams\opt \xcd"this" BinOp \xcd"(" FormalParam  \xcd")" WhereClause\opt HasResultType\opt Offers\opt MethodBody\\
+    \| MethMods \xcd"operator" TypeParams\opt \xcd"(" FormalParam  \xcd")" BinOp \xcd"this" WhereClause\opt HasResultType\opt Offers\opt MethodBody\\
+    \| MethMods \xcd"operator" TypeParams\opt PrefixOp \xcd"this" WhereClause\opt HasResultType\opt Offers\opt MethodBody\\
+    \| MethMods \xcd"operator" \xcd"this" TypeParams\opt FormalParams WhereClause\opt HasResultType\opt Offers\opt MethodBody\\
+    \| MethMods \xcd"operator" \xcd"this" TypeParams\opt FormalParams \xcd"=" \xcd"(" FormalParam  \xcd")" WhereClause\opt HasResultType\opt Offers\opt MethodBody\\
+    \| MethMods \xcd"operator" TypeParams\opt \xcd"(" FormalParam  \xcd")" \xcd"as" Type WhereClause\opt Offers\opt MethodBody\\
+    \| MethMods \xcd"operator" TypeParams\opt \xcd"(" FormalParam  \xcd")" \xcd"as" \xcd"?" WhereClause\opt HasResultType\opt Offers\opt MethodBody\\
+    \| MethMods \xcd"operator" TypeParams\opt \xcd"(" FormalParam  \xcd")" WhereClause\opt HasResultType\opt Offers\opt MethodBody\\
 \end{bbgrammar}
 
 \begin{bbgrammar}
 
+ PropertyMethodDecl  \refstepcounter{equation}\label{prod:PropertyMethodDecl}  \: MethMods Id TypeParams\opt FormalParams WhereClause\opt HasResultType\opt MethodBody & (\arabic{equation})\\
+    \| MethMods Id WhereClause\opt HasResultType\opt MethodBody\\
  ExplicitCtorInvocation  \refstepcounter{equation}\label{prod:ExplicitCtorInvocation}  \: \xcd"this" TypeArguments\opt \xcd"(" ArgumentList\opt \xcd")" \xcd";" & (\arabic{equation})\\
     \| \xcd"super" TypeArguments\opt \xcd"(" ArgumentList\opt \xcd")" \xcd";"\\
     \| Primary \xcd"." \xcd"this" TypeArguments\opt \xcd"(" ArgumentList\opt \xcd")" \xcd";"\\
@@ -63,14 +69,14 @@
     \| \xcd"(" Type \xcd")"\\
  PlaceType  \refstepcounter{equation}\label{prod:PlaceType}  \: PlaceExp & (\arabic{equation})\\
  SimpleNamedType  \refstepcounter{equation}\label{prod:SimpleNamedType}  \: TypeName & (\arabic{equation})\\
-    \| Primary \xcd"." Id\\
-    \| DepNamedType \xcd"." Id\\
- DepNamedType  \refstepcounter{equation}\label{prod:DepNamedType}  \: SimpleNamedType DepParams & (\arabic{equation})\\
-    \| SimpleNamedType Arguments\\
 \end{bbgrammar}
 
 \begin{bbgrammar}
 
+    \| Primary \xcd"." Id\\
+    \| DepNamedType \xcd"." Id\\
+ DepNamedType  \refstepcounter{equation}\label{prod:DepNamedType}  \: SimpleNamedType DepParams & (\arabic{equation})\\
+    \| SimpleNamedType Arguments\\
     \| SimpleNamedType Arguments DepParams\\
     \| SimpleNamedType TypeArguments\\
     \| SimpleNamedType TypeArguments DepParams\\
@@ -94,14 +100,14 @@
  NormalClassDecl  \refstepcounter{equation}\label{prod:NormalClassDecl}  \: Mods\opt \xcd"class" Id TypeParamsWithVariance\opt Properties\opt WhereClause\opt Super\opt Interfaces\opt ClassBody & (\arabic{equation})\\
  StructDecl  \refstepcounter{equation}\label{prod:StructDecl}  \: Mods\opt \xcd"struct" Id TypeParamsWithVariance\opt Properties\opt WhereClause\opt Interfaces\opt ClassBody & (\arabic{equation})\\
  CtorDecl  \refstepcounter{equation}\label{prod:CtorDecl}  \: Mods\opt \xcd"def" \xcd"this" TypeParams\opt FormalParams WhereClause\opt HasResultType\opt Offers\opt CtorBody & (\arabic{equation})\\
- Super  \refstepcounter{equation}\label{prod:Super}  \: \xcd"extends" ClassType & (\arabic{equation})\\
- FieldKeyword  \refstepcounter{equation}\label{prod:FieldKeyword}  \: val & (\arabic{equation})\\
-    \| \xcd"var"\\
 \end{bbgrammar}
 
 \begin{bbgrammar}
 
- VarKeyword  \refstepcounter{equation}\label{prod:VarKeyword}  \: val & (\arabic{equation})\\
+ Super  \refstepcounter{equation}\label{prod:Super}  \: \xcd"extends" ClassType & (\arabic{equation})\\
+ FieldKeyword  \refstepcounter{equation}\label{prod:FieldKeyword}  \: \xcd"val" & (\arabic{equation})\\
+    \| \xcd"var"\\
+ VarKeyword  \refstepcounter{equation}\label{prod:VarKeyword}  \: \xcd"val" & (\arabic{equation})\\
     \| \xcd"var"\\
  FieldDecl  \refstepcounter{equation}\label{prod:FieldDecl}  \: Mods\opt FieldKeyword FieldDeclarators \xcd";" & (\arabic{equation})\\
     \| Mods\opt FieldDeclarators \xcd";"\\
@@ -133,15 +139,15 @@
     \| ResumeStatement\\
     \| AssignPropertyCall\\
     \| OfferStatement\\
- OfferStatement  \refstepcounter{equation}\label{prod:OfferStatement}  \: offer Exp \xcd";" & (\arabic{equation})\\
+ OfferStatement  \refstepcounter{equation}\label{prod:OfferStatement}  \: \xcd"offer" Exp \xcd";" & (\arabic{equation})\\
  IfThenStatement  \refstepcounter{equation}\label{prod:IfThenStatement}  \: \xcd"if" \xcd"(" Exp \xcd")" Statement & (\arabic{equation})\\
  IfThenElseStatement  \refstepcounter{equation}\label{prod:IfThenElseStatement}  \: \xcd"if" \xcd"(" Exp \xcd")" Statement  \xcd"else" Statement  & (\arabic{equation})\\
- EmptyStatement  \refstepcounter{equation}\label{prod:EmptyStatement}  \: \xcd";" & (\arabic{equation})\\
- LabeledStatement  \refstepcounter{equation}\label{prod:LabeledStatement}  \: Id \xcd":" LoopStatement & (\arabic{equation})\\
 \end{bbgrammar}
 
 \begin{bbgrammar}
 
+ EmptyStatement  \refstepcounter{equation}\label{prod:EmptyStatement}  \: \xcd";" & (\arabic{equation})\\
+ LabeledStatement  \refstepcounter{equation}\label{prod:LabeledStatement}  \: Id \xcd":" LoopStatement & (\arabic{equation})\\
  LoopStatement  \refstepcounter{equation}\label{prod:LoopStatement}  \: ForStatement & (\arabic{equation})\\
     \| WhileStatement\\
     \| DoStatement\\
@@ -167,13 +173,13 @@
     \| \xcd"default" \xcd":"\\
  WhileStatement  \refstepcounter{equation}\label{prod:WhileStatement}  \: \xcd"while" \xcd"(" Exp \xcd")" Statement & (\arabic{equation})\\
  DoStatement  \refstepcounter{equation}\label{prod:DoStatement}  \: \xcd"do" Statement \xcd"while" \xcd"(" Exp \xcd")" \xcd";" & (\arabic{equation})\\
- ForStatement  \refstepcounter{equation}\label{prod:ForStatement}  \: BasicForStatement & (\arabic{equation})\\
-    \| EnhancedForStatement\\
- BasicForStatement  \refstepcounter{equation}\label{prod:BasicForStatement}  \: \xcd"for" \xcd"(" ForInit\opt \xcd";" Exp\opt \xcd";" ForUpdate\opt \xcd")" Statement & (\arabic{equation})\\
 \end{bbgrammar}
 
 \begin{bbgrammar}
 
+ ForStatement  \refstepcounter{equation}\label{prod:ForStatement}  \: BasicForStatement & (\arabic{equation})\\
+    \| EnhancedForStatement\\
+ BasicForStatement  \refstepcounter{equation}\label{prod:BasicForStatement}  \: \xcd"for" \xcd"(" ForInit\opt \xcd";" Exp\opt \xcd";" ForUpdate\opt \xcd")" Statement & (\arabic{equation})\\
  ForInit  \refstepcounter{equation}\label{prod:ForInit}  \: StatementExpList & (\arabic{equation})\\
     \| LocalVariableDecl\\
  ForUpdate  \refstepcounter{equation}\label{prod:ForUpdate}  \: StatementExpList & (\arabic{equation})\\
@@ -189,26 +195,26 @@
     \| Catches CatchClause\\
  CatchClause  \refstepcounter{equation}\label{prod:CatchClause}  \: \xcd"catch" \xcd"(" FormalParam \xcd")" Block & (\arabic{equation})\\
  Finally  \refstepcounter{equation}\label{prod:Finally}  \: \xcd"finally" Block & (\arabic{equation})\\
- ClockedClause  \refstepcounter{equation}\label{prod:ClockedClause}  \: clocked \xcd"(" ClockList \xcd")" & (\arabic{equation})\\
+ ClockedClause  \refstepcounter{equation}\label{prod:ClockedClause}  \: \xcd"clocked" \xcd"(" ClockList \xcd")" & (\arabic{equation})\\
  AsyncStatement  \refstepcounter{equation}\label{prod:AsyncStatement}  \: \xcd"async" ClockedClause\opt Statement & (\arabic{equation})\\
-    \| clocked \xcd"async" Statement\\
- AtStatement  \refstepcounter{equation}\label{prod:AtStatement}  \: at PlaceExpSingleList Statement & (\arabic{equation})\\
- AtomicStatement  \refstepcounter{equation}\label{prod:AtomicStatement}  \: atomic Statement & (\arabic{equation})\\
- WhenStatement  \refstepcounter{equation}\label{prod:WhenStatement}  \: \xcd"when" \xcd"(" Exp \xcd")" Statement & (\arabic{equation})\\
- AtEachStatement  \refstepcounter{equation}\label{prod:AtEachStatement}  \: \xcd"ateach" \xcd"(" LoopIndex \xcd"in" Exp \xcd")" ClockedClause\opt Statement & (\arabic{equation})\\
-    \| \xcd"ateach" \xcd"(" Exp \xcd")" Statement\\
- EnhancedForStatement  \refstepcounter{equation}\label{prod:EnhancedForStatement}  \: \xcd"for" \xcd"(" LoopIndex \xcd"in" Exp \xcd")" Statement & (\arabic{equation})\\
+    \| \xcd"clocked" \xcd"async" Statement\\
+ AtStatement  \refstepcounter{equation}\label{prod:AtStatement}  \: \xcd"at" PlaceExpSingleList Statement & (\arabic{equation})\\
+ AtomicStatement  \refstepcounter{equation}\label{prod:AtomicStatement}  \: \xcd"atomic" Statement & (\arabic{equation})\\
 \end{bbgrammar}
 
 \begin{bbgrammar}
 
+ WhenStatement  \refstepcounter{equation}\label{prod:WhenStatement}  \: \xcd"when" \xcd"(" Exp \xcd")" Statement & (\arabic{equation})\\
+ AtEachStatement  \refstepcounter{equation}\label{prod:AtEachStatement}  \: \xcd"ateach" \xcd"(" LoopIndex \xcd"in" Exp \xcd")" ClockedClause\opt Statement & (\arabic{equation})\\
+    \| \xcd"ateach" \xcd"(" Exp \xcd")" Statement\\
+ EnhancedForStatement  \refstepcounter{equation}\label{prod:EnhancedForStatement}  \: \xcd"for" \xcd"(" LoopIndex \xcd"in" Exp \xcd")" Statement & (\arabic{equation})\\
     \| \xcd"for" \xcd"(" Exp \xcd")" Statement\\
  FinishStatement  \refstepcounter{equation}\label{prod:FinishStatement}  \: \xcd"finish" Statement & (\arabic{equation})\\
-    \| clocked \xcd"finish" Statement\\
+    \| \xcd"clocked" \xcd"finish" Statement\\
  PlaceExpSingleList  \refstepcounter{equation}\label{prod:PlaceExpSingleList}  \: \xcd"(" PlaceExp \xcd")" & (\arabic{equation})\\
  PlaceExp  \refstepcounter{equation}\label{prod:PlaceExp}  \: Exp & (\arabic{equation})\\
- NextStatement  \refstepcounter{equation}\label{prod:NextStatement}  \: next \xcd";" & (\arabic{equation})\\
- ResumeStatement  \refstepcounter{equation}\label{prod:ResumeStatement}  \: resume \xcd";" & (\arabic{equation})\\
+ NextStatement  \refstepcounter{equation}\label{prod:NextStatement}  \: \xcd"next" \xcd";" & (\arabic{equation})\\
+ ResumeStatement  \refstepcounter{equation}\label{prod:ResumeStatement}  \: \xcd"resume" \xcd";" & (\arabic{equation})\\
  ClockList  \refstepcounter{equation}\label{prod:ClockList}  \: Clock & (\arabic{equation})\\
     \| ClockList \xcd"," Clock\\
  Clock  \refstepcounter{equation}\label{prod:Clock}  \: Exp & (\arabic{equation})\\
@@ -225,15 +231,15 @@
  TypeParam  \refstepcounter{equation}\label{prod:TypeParam}  \: Id & (\arabic{equation})\\
  AssignmentExp  \refstepcounter{equation}\label{prod:AssignmentExp}  \: Exp  \xcd"->" Exp  & (\arabic{equation})\\
  ClosureExp  \refstepcounter{equation}\label{prod:ClosureExp}  \: FormalParams WhereClause\opt HasResultType\opt Offers\opt \xcd"=>" ClosureBody & (\arabic{equation})\\
- LastExp  \refstepcounter{equation}\label{prod:LastExp}  \: Exp & (\arabic{equation})\\
- ClosureBody  \refstepcounter{equation}\label{prod:ClosureBody}  \: ConditionalExp & (\arabic{equation})\\
-    \| Annotations\opt \xcd"{" BlockStatements\opt LastExp \xcd"}"\\
-    \| Annotations\opt Block\\
- AtExp  \refstepcounter{equation}\label{prod:AtExp}  \: at PlaceExpSingleList ClosureBody & (\arabic{equation})\\
 \end{bbgrammar}
 
 \begin{bbgrammar}
 
+ LastExp  \refstepcounter{equation}\label{prod:LastExp}  \: Exp & (\arabic{equation})\\
+ ClosureBody  \refstepcounter{equation}\label{prod:ClosureBody}  \: ConditionalExp & (\arabic{equation})\\
+    \| Annotations\opt \xcd"{" BlockStatements\opt LastExp \xcd"}"\\
+    \| Annotations\opt Block\\
+ AtExp  \refstepcounter{equation}\label{prod:AtExp}  \: \xcd"at" PlaceExpSingleList ClosureBody & (\arabic{equation})\\
  FinishExp  \refstepcounter{equation}\label{prod:FinishExp}  \: \xcd"finish" \xcd"(" Exp \xcd")" Block & (\arabic{equation})\\
  identifier  \refstepcounter{equation}\label{prod:identifier}  \: \xcd"IDENTIFIER"  & (\arabic{equation})\\
  TypeName  \refstepcounter{equation}\label{prod:TypeName}  \: Id & (\arabic{equation})\\
@@ -258,15 +264,15 @@
     \| PackageDecl ImportDecls PackageDecl  ImportDecls\opt  TypeDecls\opt\\
  ImportDecls  \refstepcounter{equation}\label{prod:ImportDecls}  \: ImportDecl & (\arabic{equation})\\
     \| ImportDecls ImportDecl\\
+\end{bbgrammar}
+
+\begin{bbgrammar}
+
  TypeDecls  \refstepcounter{equation}\label{prod:TypeDecls}  \: TypeDecl & (\arabic{equation})\\
     \| TypeDecls TypeDecl\\
  PackageDecl  \refstepcounter{equation}\label{prod:PackageDecl}  \: Annotations\opt \xcd"package" PackageName \xcd";" & (\arabic{equation})\\
  ImportDecl  \refstepcounter{equation}\label{prod:ImportDecl}  \: SingleTypeImportDecl & (\arabic{equation})\\
     \| TypeImportOnDemandDecl\\
-\end{bbgrammar}
-
-\begin{bbgrammar}
-
  SingleTypeImportDecl  \refstepcounter{equation}\label{prod:SingleTypeImportDecl}  \: \xcd"import" TypeName \xcd";" & (\arabic{equation})\\
  TypeImportOnDemandDecl  \refstepcounter{equation}\label{prod:TypeImportOnDemandDecl}  \: \xcd"import" PackageOrTypeName \xcd"." \xcd"*" \xcd";" & (\arabic{equation})\\
  TypeDecl  \refstepcounter{equation}\label{prod:TypeDecl}  \: ClassDecl & (\arabic{equation})\\
@@ -293,14 +299,14 @@
  FieldDeclarators  \refstepcounter{equation}\label{prod:FieldDeclarators}  \: FieldDeclarator & (\arabic{equation})\\
     \| FieldDeclarators \xcd"," FieldDeclarator\\
  VariableDeclaratorsWithType  \refstepcounter{equation}\label{prod:VariableDeclaratorsWithType}  \: VariableDeclaratorWithType & (\arabic{equation})\\
-    \| VariableDeclaratorsWithType \xcd"," VariableDeclaratorWithType\\
- VariableDeclarators  \refstepcounter{equation}\label{prod:VariableDeclarators}  \: VariableDeclarator & (\arabic{equation})\\
-    \| VariableDeclarators \xcd"," VariableDeclarator\\
- VariableInitializer  \refstepcounter{equation}\label{prod:VariableInitializer}  \: Exp & (\arabic{equation})\\
 \end{bbgrammar}
 
 \begin{bbgrammar}
 
+    \| VariableDeclaratorsWithType \xcd"," VariableDeclaratorWithType\\
+ VariableDeclarators  \refstepcounter{equation}\label{prod:VariableDeclarators}  \: VariableDeclarator & (\arabic{equation})\\
+    \| VariableDeclarators \xcd"," VariableDeclarator\\
+ VariableInitializer  \refstepcounter{equation}\label{prod:VariableInitializer}  \: Exp & (\arabic{equation})\\
  ResultType  \refstepcounter{equation}\label{prod:ResultType}  \: \xcd":" Type & (\arabic{equation})\\
  HasResultType  \refstepcounter{equation}\label{prod:HasResultType}  \: \xcd":" Type & (\arabic{equation})\\
     \| \xcd"<:" Type\\
@@ -329,13 +335,13 @@
     \| \xcd"=" AssignPropertyCall\\
     \| \xcd";"\\
  CtorBlock  \refstepcounter{equation}\label{prod:CtorBlock}  \: \xcd"{" ExplicitCtorInvocation\opt BlockStatements\opt \xcd"}" & (\arabic{equation})\\
- Arguments  \refstepcounter{equation}\label{prod:Arguments}  \: \xcd"(" ArgumentList\opt \xcd")" & (\arabic{equation})\\
- InterfaceDecl  \refstepcounter{equation}\label{prod:InterfaceDecl}  \: NormalInterfaceDecl & (\arabic{equation})\\
- ExtendsInterfaces  \refstepcounter{equation}\label{prod:ExtendsInterfaces}  \: \xcd"extends" Type & (\arabic{equation})\\
 \end{bbgrammar}
 
 \begin{bbgrammar}
 
+ Arguments  \refstepcounter{equation}\label{prod:Arguments}  \: \xcd"(" ArgumentList\opt \xcd")" & (\arabic{equation})\\
+ InterfaceDecl  \refstepcounter{equation}\label{prod:InterfaceDecl}  \: NormalInterfaceDecl & (\arabic{equation})\\
+ ExtendsInterfaces  \refstepcounter{equation}\label{prod:ExtendsInterfaces}  \: \xcd"extends" Type & (\arabic{equation})\\
     \| ExtendsInterfaces \xcd"," Type\\
  InterfaceBody  \refstepcounter{equation}\label{prod:InterfaceBody}  \: \xcd"{" InterfaceMemberDecls\opt \xcd"}" & (\arabic{equation})\\
  InterfaceMemberDecls  \refstepcounter{equation}\label{prod:InterfaceMemberDecls}  \: InterfaceMemberDecl & (\arabic{equation})\\
@@ -364,14 +370,14 @@
     \| \xcd"[" IdList \xcd"]" ResultType\\
     \| Id \xcd"[" IdList \xcd"]" ResultType\\
  FieldDeclarator  \refstepcounter{equation}\label{prod:FieldDeclarator}  \: Id HasResultType & (\arabic{equation})\\
-    \| Id HasResultType\opt \xcd"=" VariableInitializer\\
- VariableDeclarator  \refstepcounter{equation}\label{prod:VariableDeclarator}  \: Id HasResultType\opt \xcd"=" VariableInitializer & (\arabic{equation})\\
-    \| \xcd"[" IdList \xcd"]" HasResultType\opt \xcd"=" VariableInitializer\\
-    \| Id \xcd"[" IdList \xcd"]" HasResultType\opt \xcd"=" VariableInitializer\\
 \end{bbgrammar}
 
 \begin{bbgrammar}
 
+    \| Id HasResultType\opt \xcd"=" VariableInitializer\\
+ VariableDeclarator  \refstepcounter{equation}\label{prod:VariableDeclarator}  \: Id HasResultType\opt \xcd"=" VariableInitializer & (\arabic{equation})\\
+    \| \xcd"[" IdList \xcd"]" HasResultType\opt \xcd"=" VariableInitializer\\
+    \| Id \xcd"[" IdList \xcd"]" HasResultType\opt \xcd"=" VariableInitializer\\
  VariableDeclaratorWithType  \refstepcounter{equation}\label{prod:VariableDeclaratorWithType}  \: Id HasResultType \xcd"=" VariableInitializer & (\arabic{equation})\\
     \| \xcd"[" IdList \xcd"]" HasResultType \xcd"=" VariableInitializer\\
     \| Id \xcd"[" IdList \xcd"]" HasResultType \xcd"=" VariableInitializer\\
@@ -379,7 +385,7 @@
  LocalVariableDecl  \refstepcounter{equation}\label{prod:LocalVariableDecl}  \: Mods\opt VarKeyword VariableDeclarators & (\arabic{equation})\\
     \| Mods\opt VariableDeclaratorsWithType\\
     \| Mods\opt VarKeyword FormalDeclarators\\
- Primary  \refstepcounter{equation}\label{prod:Primary}  \: here & (\arabic{equation})\\
+ Primary  \refstepcounter{equation}\label{prod:Primary}  \: \xcd"here" & (\arabic{equation})\\
     \| \xcd"[" ArgumentList\opt \xcd"]"\\
     \| Literal\\
     \| \xcd"self"\\
@@ -404,6 +410,10 @@
     \| TypeName \xcd"." \xcd">>>"\\
     \| TypeName \xcd"." \xcd"<"\\
     \| TypeName \xcd"." \xcd"<="\\
+\end{bbgrammar}
+
+\begin{bbgrammar}
+
     \| TypeName \xcd"." \xcd">="\\
     \| TypeName \xcd"." \xcd">"\\
     \| TypeName \xcd"." \xcd"=="\\
@@ -411,10 +421,6 @@
  Literal  \refstepcounter{equation}\label{prod:Literal}  \: \xcd"IntegerLiteral"  & (\arabic{equation})\\
     \| \xcd"LongLiteral" \\
     \| \xcd"UnsignedIntegerLiteral" \\
-\end{bbgrammar}
-
-\begin{bbgrammar}
-
     \| \xcd"UnsignedLongLiteral" \\
     \| \xcd"FloatingPointLiteral" \\
     \| \xcd"DoubleLiteral" \\
@@ -442,14 +448,14 @@
     \| \xcd"super" \xcd"." Id \xcd"." \xcd"(" FormalParamList\opt \xcd")"\\
     \| ClassName \xcd"." \xcd"super"  \xcd"." Id \xcd"." \xcd"(" FormalParamList\opt \xcd")"\\
  PostfixExp  \refstepcounter{equation}\label{prod:PostfixExp}  \: CastExp & (\arabic{equation})\\
-    \| PostIncrementExp\\
-    \| PostDecrementExp\\
- PostIncrementExp  \refstepcounter{equation}\label{prod:PostIncrementExp}  \: PostfixExp \xcd"++" & (\arabic{equation})\\
- PostDecrementExp  \refstepcounter{equation}\label{prod:PostDecrementExp}  \: PostfixExp \xcd"--" & (\arabic{equation})\\
 \end{bbgrammar}
 
 \begin{bbgrammar}
 
+    \| PostIncrementExp\\
+    \| PostDecrementExp\\
+ PostIncrementExp  \refstepcounter{equation}\label{prod:PostIncrementExp}  \: PostfixExp \xcd"++" & (\arabic{equation})\\
+ PostDecrementExp  \refstepcounter{equation}\label{prod:PostDecrementExp}  \: PostfixExp \xcd"--" & (\arabic{equation})\\
  UnannotatedUnaryExp  \refstepcounter{equation}\label{prod:UnannotatedUnaryExp}  \: PreIncrementExp & (\arabic{equation})\\
     \| PreDecrementExp\\
     \| \xcd"+" UnaryExpNotPlusMinus\\
@@ -479,6 +485,10 @@
     \| SubtypeConstraint\\
     \| RelationalExp \xcd"<" RangeExp\\
     \| RelationalExp \xcd">" RangeExp\\
+\end{bbgrammar}
+
+\begin{bbgrammar}
+
     \| RelationalExp \xcd"<=" RangeExp\\
     \| RelationalExp \xcd">=" RangeExp\\
     \| RelationalExp \xcd"instanceof" Type\\
@@ -486,10 +496,6 @@
  EqualityExp  \refstepcounter{equation}\label{prod:EqualityExp}  \: RelationalExp & (\arabic{equation})\\
     \| EqualityExp \xcd"==" RelationalExp\\
     \| EqualityExp \xcd"!=" RelationalExp\\
-\end{bbgrammar}
-
-\begin{bbgrammar}
-
     \| Type  \xcd"==" Type \\
  AndExp  \refstepcounter{equation}\label{prod:AndExp}  \: EqualityExp & (\arabic{equation})\\
     \| AndExp \xcd"&" EqualityExp\\
@@ -519,6 +525,10 @@
     \| \xcd"%="\\
     \| \xcd"+="\\
     \| \xcd"-="\\
+\end{bbgrammar}
+
+\begin{bbgrammar}
+
     \| \xcd"<<="\\
     \| \xcd">>="\\
     \| \xcd">>>="\\
@@ -526,10 +536,6 @@
     \| \xcd"^="\\
     \| \xcd"|="\\
  Exp  \refstepcounter{equation}\label{prod:Exp}  \: AssignmentExp & (\arabic{equation})\\
-\end{bbgrammar}
-
-\begin{bbgrammar}
-
  ConstantExp  \refstepcounter{equation}\label{prod:ConstantExp}  \: Exp & (\arabic{equation})\\
  PrefixOp  \refstepcounter{equation}\label{prod:PrefixOp}  \: \xcd"+" & (\arabic{equation})\\
     \| \xcd"-"\\
@@ -555,4 +561,24 @@
     \| \xcd"=="\\
     \| \xcd"!="\\
 \end{bbgrammar}
+
+\iffalse
+
+abstract       false          offers         transient      
+as             final          operator       true           
+assert         finally        package        try            
+async          finish         private        var            
+ateach         for            property       when           
+break          goto           protected      while          
+case           if             public         at             
+catch          implements     return         atomic         
+class          import         self           await          
+continue       in             static         clocked        
+def            instanceof     struct         here           
+default        interface      super          next           
+do             native         switch         offer          
+else           new            this           resume         
+extends        null           throw          type           
+
+\fi
 

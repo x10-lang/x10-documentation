@@ -19,7 +19,7 @@ options to set the number of places.
 
 Places are first-class values in X10, as instances of the built-in struct,
 \xcd"x10.lang.Place".   \xcd`Place` provides a number of useful ways to
-query places, such as \xcd`Place.places`, a 1-dimensional \xcd`Array` of all
+query places, such as \xcd`Place.places`, a \xcd`Sequence[Place]` of 
 the places
 available to the current run of the program.
 
@@ -31,10 +31,13 @@ They can be {\em copied} to other places, and the special library struct
 \section{The Structure of Places}
 
 Places are numbered 0 through \xcd`Places.MAX_PLACES-1`, stored in the field
-\xcd`pl.id`.  The \xcd`Array` \xcd`Place.places` contains the places of the
+\xcd`pl.id`.  The \xcd`Sequence[Place]` \xcd`Place.places()` contains the places of the
 program, in numeric order. 
 The program starts by executing a \xcd`main` method at
-\xcd`Place.FIRST_PLACE`, which is \xcd`Place.places(0)`; see
+%~~exp~~`~~`~~ ~~
+\xcd`Place.FIRST_PLACE`, which is 
+%~~exp~~`~~`~~ ~~
+\xcd`Place.places()(0)`; see
 \Sref{initial-computation}. 
 
 Operations on places include \xcd`pl.next()`, which gives the next entry
