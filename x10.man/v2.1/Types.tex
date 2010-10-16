@@ -256,41 +256,19 @@ methods, type definitions, and member classes and member interfaces.
 Classes may be {\em generic}, i.e.{} defined with one or more type
 parameters (\Sref{TypeParameters}).
 
-%%REPETITIOUS%% A class with type parameters is {\em generic}.
-%%REPETITOUS%% If a generic class $C$ has $k$ type parameters ($k\geq
-%%1$), then $k$ types must be supplied
-%%REPETITOUS%% to form a type with $C$ as base.  For example, \xcd`Cell[T]` class
-%%REPETITOUS%% provides a container capable of holding a value of type \xcd`T`, or
-%%REPETITOUS%% being empty.
-%%REPETITOUS%% 
 %~~gen
-%%REPETITOUS%% % package Types.For.Gripes.Of.Wesley.Snipes;
 %~~vis
-%%REPETITOUS%% 
 \begin{xten}
 class Cell[T] {
-%%REPETITOUS%%   var empty : Boolean = true;
   var contents : T;
-%%REPETITOUS%%   public def this(t:T) { 
-     contents = t; empty = false; 
-%%REPETITOUS%%   }
-  public def putIn(t:T) { 
-%%REPETITOUS%%     contents = t; empty = false; 
+  public def this(t:T) { contents = t;  }
+  public def putIn(t:T) { contents = t; }
+  public def get() = contents;
   }
-%%REPETITOUS%%   public def emptyOut() { empty = true; }
-  public def isEmpty() = empty;
-%%REPETITOUS%%   public def getOut():T {
-     if (empty) throw new Exception("Empty!");
-%%REPETITOUS%%      return contents ;
-  }
-%%REPETITOUS%% }
 \end{xten}
-%%REPETITOUS%% %~~siv
-%
-%%REPETITOUS%% %~~neg
+%~~siv
+%~~neg
 
-%%REPETITOUS%% Examples of types built with \xcd`Cell` as base: \xcd`Cell[String]`,
-%%REPETITOUS%% \xcd`Cell[Int]`.
 
 %TODO: Yoav: ``This reasoning is no longer true in the new object model''
 %% Why not?
@@ -319,10 +297,11 @@ of its own, beyond those required by \xcd`Any`.
 
 \index{null}
 
-Let \xcd`C` be a class. The null value, represented by the literal
-\xcd"null", is a value of every type \xcd`C`, where \xcd`C` names a
-class. The type whose values are all instances of \xcd`C` but not
-\xcd`null` can be defined as \xcd`C{self != null}`
+
+The null value, represented by the literal
+\xcd"null", is a value of every class type \xcd`C`. The type whose values are
+all instances of \xcd`C` but not 
+\xcd`null` can be defined as \xcd`C{self != null}`.
 
 
 \subsection{Interface types}
@@ -425,7 +404,7 @@ class Coords(x: Int, y: Int) {
 %~~neg
 
 Properties, unlike other public \xcd`val` fields, can be used  
-at compile time in {\em constraints}. This allows us
+at compile time in {constraints}. This allows us
 to specify subtypes based on properties, by appending a boolean expression to
 the type. For example, the type \xcd"Coords{x==0}" is the set of all points
 whose \xcd"x" property is \xcd"0".  Details of this substantial topic are
@@ -450,7 +429,7 @@ on instantiation.  For example, a generic stack class may be defined as
 %~~type~~`~~`~~ ~~class Stack[T]{}
 \xcd`Stack[Int]` is a stack of integers, and 
 %~~type~~`~~`~~ ~~class Stack[T]{}
-\xcd`Stack[Point{self!=null}]`is a stack of non-null \xcd`Point`s.
+\xcd`Stack[Point {self!=null}]` is a stack of non-null \xcd`Point`s.
 Generics {\em must} be instantiated when they are used: \xcd`Stack`, by
 itself, is not a valid type.
 Type parameters may be constrained by a guard on the declaration
@@ -459,11 +438,11 @@ Type parameters may be constrained by a guard on the declaration
 
 \index{types!concrete types}
 \index{concrete type}
-A {\em generic class} (struct/interface/type definition) 
-is a class (struct/interface/type definition) 
+A {\em generic class} (or struct, interface, or type definition) 
+is a class (resp. struct, interface, or type definition) 
 declared with $k \geq 1$ type parameters. 
-A generic class (struct/interface/type definition) 
-can be used to form a type by supplying $k$ types as arguments within
+A generic class (or struct, interface, or type definition) 
+can be used to form a type by supplying $k$ types as type arguments within
 \xcd`[` \ldots \xcd`]`.
 %%When instantiated,
 %%with concrete (\viz, non-generic) types for its parameters, 
@@ -504,8 +483,16 @@ The \xcd"get" method on a \xcd`Cell[Int]` returns an \xcd"Int"; the
 \xcd"Cell" alone is not a legal type because the parameter is
 not bound.
 
+
 A class (whether generic or not) may have generic methods.
-\XtenCurrVer{} requires generic methods to be static. 
+Below,
+\xcd`NonGeneric` has a generic method 
+\xcd`first[T](x:List[T])`. An invocation of such a method may supply
+the type parameters explicitly (\eg, \xcd`first[Int](z)`).
+ In certain cases (\eg, \xcd`first(z)`)
+type parameters may
+be omitted and are inferred by the compiler (\Sref{TypeInference}).
+
 %~~gen
 % package Types.For.Cripes.Sake.Generic.Methods;
 % import x10.util.*;
@@ -513,7 +500,7 @@ A class (whether generic or not) may have generic methods.
 \begin{xten}
 class NonGeneric {
   static def first[T](x:List[T]):T = x(0);
-  def m(z:List[Int) {
+  def m(z:List[Int]) {
     val f = first[Int](z);
     val g = first(z);
     return f == g;
@@ -523,13 +510,9 @@ class NonGeneric {
 %~~siv
 %
 %~~neg
-Below,
-\xcd`NonGeneric` has a generic method 
-\xcd`first[T](x:List[T])`. An invocation of such a method may supply
-the type parameters explicitly (\Eg, \xcd`first[Int](z)`).
- In certain cases (\Eg, \xcd`first(z)`)
-type parameters may
-be omitted and are inferred by the compiler (\Sref{TypeInference}).
+\limitation{ \XtenCurrVer{}'s C++ back end requires generic methods to be
+static or final; the Java back end can accomodate generic instance methods as well. }
+
 
 \subsection{Variance of Type Parameters}
 \index{covariant}
@@ -549,18 +532,18 @@ There are three variance specifications:
 \xcd`+` indicates {\em co-variance},  \xcd`-` indicates {\em
   contravariance} and the absence of  \xcd`+` and 
  \xcd`-` indicates {\em invariance}. For a class (or struct or
- interface) \xcd`S` specifying that a particlar parameter position
- (say, \xcd`i`) is co-variant means that 
+ interface) \xcd`S` specifying that a particular parameter position
+ (say, \xcd`i`) is covariant means that 
 if \xcd`Si <: Ti` then
-\xcd`S[S1,\ldots,Sn] <: S[S1,\ldots, Si-1,Ti,Si+1,\ldots Sn]`.
-Similarly, saying that position \xcd`i` is is contra-variant means
+\xcdmath"S[S1,$\ldots$,Sn] <: S[S1,$\ldots$, Si-1,Ti,Si+1,$\ldots$ Sn]`"
+Similarly, saying that position \xcd`i` is is contravariant means
 that 
 if \xcd`Si <: Ti` then
-\xcd`S[S1,\ldots, Si-1,Ti,Si+1,\ldots Sn] <: S[S1,\ldots,Sn]`. If the
+\xcdmath"S[S1,$\ldots$, Si-1,Ti,Si+1,\$ldots$ Sn] <: S[S1,$\ldots$,Sn]`" If the
 position is invariant, then no such relationship is asserted between
 \xcd`Si <: Ti` 
 and
-\xcd`S[S1,\ldots, Si-1,Ti,Si+1,\ldots Sn]`. The compiler must perform
+\xcdmath"S[S1,$\ldots$, Si-1,Ti,Si+1,$\ldots$ Sn]`" The compiler must perform
 several checks on the body of the class (or struct or interface) to
 establish that type parameters with a variance are used in a manner
 that is consistent with their semantics.
@@ -665,16 +648,16 @@ Or, we could abstract it somewhat, defining a type constructor
 %~~gen
 % package TypeDefs.glip.second;
 % import x10.util.*;
-% class LnSn {
-% def example() {
+% 
 %~~vis
 \begin{xten}
-type Nonnull[T]{T <: Object} = T{self!=null};
-type LnSn = Nonnull[List[Nonnull[String]]];
-var example : LnSn;
+class Example {
+  static type Nonnull[T]{T <: Object}  = T{self!=null};
+  var example : Nonnull[Example] = new Example();
+}
 \end{xten}
 %~~siv
-%}}
+%
 %~~neg
 
 Type definitions can also refer to values, in particular, inside 
