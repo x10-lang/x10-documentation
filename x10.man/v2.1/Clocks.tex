@@ -1,4 +1,4 @@
-\chapter{Clocks}\label{XtenClocks}\index{clocks}
+\chapter{Clocks}\label{XtenClocks}\index{clock}
 
 Many concurrent algorithms proceed in phases: in phase {$k$}, several
 activities work independently, but synchronize together before proceeding on
@@ -137,6 +137,7 @@ that it is registered upon are:
 %%OLIVIER-DENIES%% the wait-for graph. A more rigorous proof may be found in \cite{X10-concur05}.
 
 \section{Clock operations}\label{sec:clock}
+\index{clock!operations on}
 There are two language constructs for working with clocks. 
 \xcd`async clocked(cl) S` starts a new activity registered on one or more
 clocks.  \xcd`next;` blocks the current activity until all the activities

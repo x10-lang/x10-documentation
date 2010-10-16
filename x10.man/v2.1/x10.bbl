@@ -18,7 +18,7 @@ William Carlson, Tarek El-Ghazawi, Bob Numrich, and Kathy Yelick.
   {M}odel, 2003.
 \newblock Presentation at SC 2003, http://www.gwu.edu/{~}upc/tutorials.html.
 
-\bibitem{ZPL}
+\bibitem{zpl}
 Bradford~L.{} Chamberlain, Sung-Eun Choi, Steven~J. Deitz, and Lawrence Snyder.
 \newblock The high-level parallel language {ZPL} improves productivity and
   performance.

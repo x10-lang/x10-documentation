@@ -12,6 +12,7 @@ an exception.
 %%WRONG%% and then the application.  
 
 \section{Literals}
+\index{literal}
 
 Literals denote fixed values of built-in types. 
 The syntax for literals is given in \Sref{Literals}. 
@@ -21,6 +22,8 @@ is of type \xcd`Int{self==1}`, and \xcd`true` is of type
 \xcd`Boolean{self==true}`.
 
 \section{\Xcd{this}}
+\index{this}
+\index{\Xcd{this}}
 
 \begin{bbgrammar}
  Primary    \:      \xcd"this" & (\ref{prod:Primary})\\%<FROM #(prod:Primary)#
@@ -98,7 +101,7 @@ val m = n + 56;
 
 \section{Field access}
 \label{FieldAccess}
-
+\index{field!access to}
 
 \begin{bbgrammar}
  FieldAccess    \: Primary \xcd"." Id & (\ref{prod:FieldAccess})\\%<FROM #(prod:FieldAccess)#
@@ -171,6 +174,14 @@ Function literals are described in \Sref{Functions}.
 \label{Call}
 \label{MethodInvocation}
 \label{MethodInvocationSubstitution}
+\index{invocation}
+\index{call}
+\index{invocation!method}
+\index{call!method}
+\index{invocation!function}
+\index{call!function}
+\index{method!calling}
+\index{method!invoking}
 
 
 \begin{bbgrammar}
@@ -343,6 +354,10 @@ storage location. Specifically, \xcd`A()(I()) += B()` is tantamount to:
 
 
 \section{Increment and decrement}
+\index{increment}
+\index{decrement}
+\index{\Xcd{++}}
+\index{\Xcd{--}}
 
 
 The operators \xcd"++" and \xcd"--" increment and decrement
@@ -360,6 +375,8 @@ The difference between the two is the return value.
 \label{XtenPromotions}
 \index{promotion}
 \index{numeric promotion}
+\index{numeric operations}
+\index{operation!numeric}
 
 Numeric types (\xcd`Byte`, \xcd`Short`, \xcd`Int`, \xcd`Long`, \xcd`Float`,
 \xcd`Double`, and unsigned variants of fixed-point types) are normal X10
@@ -460,6 +477,7 @@ The \xcd"|" operator  performs the bitwise inclusive OR of the promoted operands
 The \xcd"^" operator  performs the bitwise exclusive OR of the promoted operands.
 
 \section{String concatenation}
+\index{string!concatenation}
 
 The \xcd"+"  operator is used for string concatenation 
  as well as addition.
@@ -540,6 +558,9 @@ All finite values are less than positive infinity and greater
 than negative infinity.
 
 \section{Conditional expressions}
+\index{\Xcd{? :}}
+\index{conditional expression}
+\index{expression!conditional}
 \label{Conditional}
 
 \begin{bbgrammar}
@@ -570,7 +591,8 @@ type system.
 
 \section{Stable equality}
 \label{StableEquality}
-\index{==}\index{!=}
+\index{\Xcd{==}}
+\index{equality}
 
 \begin{bbgrammar}
  EqualityExp    \: RelationalExp & (\ref{prod:EqualityExp})\\%<FROM #(prod:EqualityExp)#

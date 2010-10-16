@@ -1,21 +1,11 @@
 This is BibTeX, Version 0.99c (Web2C 7.5.7)
 The top-level auxiliary file: x10.aux
-Case mismatch error between cite keys zpl and ZPL
----line 26 of file x10.aux
- : \citation{zpl
- :              }
-I'm skipping whatever remains of this command
-Case mismatch error between cite keys zpl and ZPL
----line 49 of file x10.aux
- : \citation{zpl
- :              }
-I'm skipping whatever remains of this command
 The style file: plain.bst
 Database file #1: master.bib
 Warning--I didn't find a database entry for "scala"
 You've used 9 entries,
             2118 wiz_defined-function locations,
-            555 strings with 5620 characters,
+            554 strings with 5617 characters,
 and the built_in function-call counts, 3343 in all, are:
 = -- 302
 > -- 210
@@ -54,4 +44,4 @@ warning$ -- 0
 while$ -- 27
 width$ -- 10
 write$ -- 97
-(There were 2 error messages)
+(There was 1 warning)

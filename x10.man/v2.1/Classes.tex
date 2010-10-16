@@ -2,7 +2,8 @@
 \label{XtenClasses}\index{class}
 \label{ReferenceClasses}
 
-\section{Principles of X10 Objects}\label{XtenObjects}\index{Object}
+\section{Principles of X10 Objects}\label{XtenObjects}\index{object}
+\index{class}
 
 \subsection{Basic Design}
 
@@ -100,6 +101,8 @@ class type (\Sref{ReferenceTypes}).
 
 \section{Fields}
 \label{FieldDefinitions}
+\index{object!field}
+\index{field}
 
 Objects may have {\em instance fields}, or simply {\em fields}: places to
 store data that is pertinent to the object. Fields, like variables, may be
@@ -128,6 +131,8 @@ Then \xcd`crash.f(3)` might either mean ``call the function \xcd`crash.f` on
 argument \xcd`3`'', or ``invoke the method \xcd`f` on argument \xcd`3`''.)
 
 \subsection{Field Initialization}
+\index{field!initialization}
+\index{initialization!of field}
 
 Fields may be given values via {\em field initialization expressions}:
 \xcd`val f1 = E;` and \xcd`var f2 : Int = F;`. Other fields of \xcd`this` may
@@ -202,13 +207,14 @@ class B extends A {
 
 \subsection{Field qualifiers}
 \label{FieldQualifier}
-\index{Qualifier!field}
+\index{qualifier!field}
 
 The behavior of a field may be changed by a field qualifier, such as
 \xcd`static` or \xcd`transient`.  
 
 
 \subsubsection{\Xcd{static} qualifier}
+\index{field!static}
 
 A \xcd`val` field may be declared to be {\em static}, as described in
 \Sref{FieldDefinitions}. 
@@ -251,6 +257,7 @@ class Trans {
 
 \section{Properties}
 \label{PropertiesInClasses}
+\index{property}
 
 The properties of an object (or struct) are  public \xcd`val` fields
 usable at compile time in constraints.\footnote{In many cases, a 
@@ -352,6 +359,10 @@ properties \xcd`c` and \xcd`d` such that \xcd`a.c == b` and \xcd`b.d == a`.
 
 
 \section{Methods}
+\index{method}
+\index{signature}
+\index{method!signature}
+\index{method!static}
 
 As is common in object-oriented languages, objects can have {\em methods}, of
 two sorts.  {\em Static methods} are functions, conceptually associated with a
@@ -429,6 +440,8 @@ and is initialized with the value of the actual parameter.
 
 \subsection{Method Guards}
 \label{MethodGuard}
+\index{method!guard}
+\index{guard!on method}
 
 Often, a method will only make sense to invoke under certain
 statically-determinable conditions.  For example, \xcd`example(x)` is only
@@ -519,6 +532,8 @@ Using a reference to an outer class, \xcd`Outer.this`, in a constraint, is not s
 
 
 \subsection{Property methods}
+\index{method!property}
+\index{property method}
 
 Property methods are methods that can be evaluated in constraints.  
 For example, the \xcd`eq()` method below tells if the \xcd`x` and \xcd`y`
@@ -619,7 +634,7 @@ is equivalent to
 
 \subsection{Method overloading, overriding, hiding, shadowing and obscuring}
 \label{MethodOverload}
-
+\index{method!overloading}
 
 The definitions of method overloading, overriding, hiding, shadowing
 and obscuring in \Xten{} are the same as in \Java, modulo the following
@@ -1121,6 +1136,8 @@ any place.
 
 
 \section{User-Defined Operators}
+\index{operator}
+\index{operator!user-defined}
 
 It is often convenient to have methods named by symbols rather than words.
 For example, suppose that we wish to define a \xcd`Poly` class of
@@ -1564,6 +1581,7 @@ complexities of binary operations are not needed.
 
 
 \subsection{Type Conversions}
+\index{type conversion!user-defined}
 
 Explicit type conversions, \xcd`e as T{c}`, can be defined as operators on
 class \xcd`T`.
@@ -1619,6 +1637,7 @@ class Poly {
 \bard{Syntax}
 
 \subsection{Implicit Type Coercions}
+\index{type conversion!implicit}
 
 You may also define {\em implicit} type coercions to \xcd`T{c}` as static
 operators in class \xcd`T`.  The syntax for this is
@@ -1752,6 +1771,8 @@ class Oddvec {
 \section{Class Guards and Invariants}\label{DepType:ClassGuard}
 \index{type invariants}
 \index{class invariants}
+\index{invariant!type}
+\index{invariant!class}
 \index{guards}
 
 
@@ -1848,8 +1869,8 @@ $\mathit{inv}(\mbox{\xcd"T"}[\mbox{\xcd"o"}/\mbox{\xcd"this"}])
 \label{DepType:Extends}
 \index{type-checking!implements clause}
 \index{type-checking!extends clause}
-\index{implements clause}
-\index{extends  clause}
+\index{implements}
+\index{extends}
 Consider a class definition
 \begin{xtenmath}
 $\mbox{\emph{ClassModifiers}}^{\mbox{?}}$
@@ -1871,6 +1892,8 @@ must entail the invariant \xcdmath"$\mathit{inv}$(C)".
 \end{staticrule}
 
 \subsection{Invariants and constructor definitions}
+\index{invariant!and constructor}
+\index{constructor!and invariant}
 
 A constructor for a class \xcd"C" is guaranteed to return an object of the
 class on successful termination. This object must satisfy  \xcdmath"$\mathit{inv}$(C)", the

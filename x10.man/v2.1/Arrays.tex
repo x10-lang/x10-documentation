@@ -1,4 +1,4 @@
-\chapter{Local and Distributed Arrays}\label{XtenArrays}\index{arrays}
+\chapter{Local and Distributed Arrays}\label{XtenArrays}\index{array}
 
 \Xcd{Array}s provide indexed access to data at a single \Xcd{Place}, {\em via}
 \Xcd{Point}s---indices of any dimensionality. \Xcd{DistArray}s is similar, but
@@ -11,7 +11,10 @@ and \Xcd{DistArray}, and their supporting classes \Xcd{Point}, \Xcd{Region}
 and \Xcd{Dist}.  
 
 
-\section{Points}\label{point-syntax}\index{point syntax}
+\section{Points}\label{point-syntax}
+\index{point}
+\index{point!syntax}
+
 
 General arrays are indexed by \xcd`Point`s, which are $n$-dimensional tuples of
 integers.  The \xcd`rank`
@@ -59,6 +62,7 @@ The coordinates of a point are available by subscripting; \xcd`p(i)` is the
 
 
 \section{Regions}\label{XtenRegions}\index{region}
+\index{region!syntax}
 
 A region is a set of points of the same rank.  {}\Xten{}
 provides a built-in class, \xcd`x10.lang.Region`, to allow the
@@ -160,6 +164,7 @@ The operation
 \xcd`R`.
 
 \subsection{Operations on regions}
+\index{region!operations}
 
 Let \xcd`R` be a region. A {\em sub-region} is a subset of \Xcd{R}.
 \index{region!sub-region}
@@ -209,6 +214,7 @@ by \xcdmath`p`. That is, \Xcd{R+p} is the set of points
 More \Xcd{Region} methods are described in the API documentation.
 
 \section{Arrays}
+\index{array}
 
 Arrays are organized data, arranged so that it can be accessed by subscript.
 An \xcd`Array[T]` \Xcd{A} has a \Xcd{Region} \Xcd{A.region}, telling which
@@ -277,6 +283,7 @@ An \Xcd{Array[T]} \Xcd{A} has:
 \end{itemize}
 
 \subsection{Array Constructors}
+\index{array!constructor}
 
 To construct an array whose elements all have the same value, call
 \Xcd{new Array[T](R, init)}, where \Xcd{init:T} is the initial value. 
@@ -300,6 +307,7 @@ Other constructors are available; see the API documentation and
 \Sref{sect:ArrayCtors}. 
 
 \subsection{Array Operations}
+\index{array!operations on}
 
 The basic operation on \Xcd{Array}s is subscripting.  If \Xcd{A:Array[T]} and 
 \xcd`p:Point{rank == A.rank}`, then \Xcd{a(p)} is the value of type \Xcd{T}
@@ -396,6 +404,7 @@ if \xcd`p` does not lie in the underlying region.
 
 
 \subsection{Operations returning distributions}
+\index{distribution!operations}
 
 Let \xcd`R` be a region, \xcd`Q` a Sequence of places \{\xcd`p1`, \dots,
 \xcd`pk`\} (enumerated in canonical order), and \xcd`P` a place.
@@ -545,6 +554,10 @@ into the array.
 %%What-Is-This-Example%% 
 
 \section{Distributed Arrays}
+\index{array!distributed}
+\index{distributed array}
+\index{\Xcd{DistArray}}
+\index{DistArray}
 
 Distributed arrays, instances of \xcd`DistArray[T]`, are very much like
 \xcd`Array`s, except that they distribute information among multiple
@@ -569,7 +582,10 @@ val da <: DistArray[Float] = DistArray.make[Float](D, (Point(1))=>0.0f);
 
 
 
-\section{Distributed Array Construction}\label{ArrayInitializer}\label{array!creation}
+\section{Distributed Array Construction}\label{ArrayInitializer}
+\index{distributed array!creation}
+\index{\Xcd{DistArray}!creation}
+\index{DistArray!creation}
 
 \xcd`DistArray`s are instantiated by invoking one of the \xcd`make` factory
 methods of the \xcd`DistArray` class.
