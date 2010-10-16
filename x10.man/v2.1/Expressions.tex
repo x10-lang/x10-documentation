@@ -631,6 +631,14 @@ after evaluation of \xcd`a` and \xcd`b`.
 
 \section{Allocation}
 \label{ClassCreation}
+\index{new}
+\index{allocation}
+\index{class!instantation}
+\index{class!construction}
+\index{struct!instantation}
+\index{struct!construction}
+\index{instantation}
+
 
 \begin{bbgrammar}
  ClassInstCreationExp    \: \xcd"new" TypeName TypeArguments\opt \xcd"(" ArgumentList\opt \xcd")" ClassBody\opt & (\ref{prod:ClassInstCreationExp})\\%<FROM #(prod:ClassInstCreationExp)#
@@ -672,7 +680,8 @@ Note that instantiating a struct type uses function application syntax, not
 possibility of a {\em ClassBody}.
 
 
-\section{Casts}\label{ClassCast}\index{classcast}
+\section{Casts}\label{ClassCast}\index{cast}
+\index{type conversion}
 
 The cast operation may be used to cast an expression to a given type:
 
@@ -758,6 +767,7 @@ type \xcd`Int{self==2}`.
 \section{\Xcd{instanceof}}
 \label{instanceOf}
 \index{\Xcd{instanceof}}
+\index{instanceof}
 
 \Xten{} permits types to be used in an in instanceof expression
 to determine whether an object is an instance of the given type:
@@ -794,6 +804,10 @@ rejects it.
 
 
 \section{Subtyping expressions}
+\index{\Xcd{<:}}
+\index{\Xcd{:>}}
+\index{subtype!test}
+
 
 \begin{bbgrammar}
  SubtypbeConstraint    \: Type  \xcd"<:" Type  & (\ref{prod:SubtypeConstraint})\\%<FROM #(prod:SubtypeConstraint)#
@@ -834,6 +848,7 @@ class OrderedList[T]{T <: x10.util.Ordered[T]} {
 
 
 \section{Contains expressions}
+\index{in}
 
 \begin{bbgrammar}
  RelationalExp    \: RelationalExp \xcd"in" ShiftExp& (\ref{prod:RelationalExp})\\%<FROM #(prod:RelationalExp)#\\
@@ -849,6 +864,8 @@ be of type \xcd"T".
 
 \section{Array Constructors}
 \label{sect:ArrayCtors}
+\index{array!construction}
+\index{array!literal}
 
 \begin{bbgrammar}
  Primary    \: \xcd"[" ArgumentList\opt \xcd"]"& (\ref{prod:Primary})\\%<FROM
@@ -974,7 +991,8 @@ val eels <: Array[Eel{self != null}](1) =
 \section{Coercions and conversions}
 \label{XtenConversions}
 \label{User-definedCoercions}
-\index{conversions}\index{coercions}
+\index{conversion}\index{coercion}
+\index{type!conversion}\index{type!coercion}
 
 \XtenCurrVer{} supports the following coercions and conversions.
 
@@ -1081,6 +1099,8 @@ approximation is good enough.
 \end{itemize}
 
 \subsection{Conversions}
+\index{conversion}
+\index{type!conversion}
 
 \paragraph{Widening numeric conversion.}
 \label{WideningConversions}

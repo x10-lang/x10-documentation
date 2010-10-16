@@ -30,6 +30,9 @@ for (var i: Int = 0; i < a.size; i++, sum += a(i))
 %~~neg
 
 \section{Local variable declaration}
+\index{variable!declaration}
+\index{var}
+\index{val}
 
 \begin{bbgrammar}
  LocalVariableDeclStatement    \: LocalVariableDecl \xcd";" & (\ref{prod:LocalVariableDeclStatement})\\%<FROM #(prod:LocalVariableDeclStatement)#
@@ -70,6 +73,7 @@ block.
 
 
 \section{Block statement}
+\index{block}
 \label{Blocks}
 
 \begin{bbgrammar}
@@ -150,6 +154,8 @@ constructor invocations.
 
 
 \section{Labeled statement}
+\index{label}
+\index{statement label}
 
 \begin{bbgrammar}
  LabeledStatement    \: Id \xcd":" LoopStatement & (\ref{prod:LabeledStatement})\\%<FROM #(prod:LabeledStatement)#
@@ -182,6 +188,7 @@ lbl : for ([i] in 1..10) {
 
 
 \section{Break statement}
+\index{break}
 
 \begin{bbgrammar}
  BreakStatement    \: \xcd"break" Id\opt \xcd";" & (\ref{prod:BreakStatement})\\%<FROM #(prod:BreakStatement)#
@@ -217,6 +224,7 @@ outer: for (var i: Int = 0; i < a.length; i++)
 %~~neg
 
 \section{Continue statement}
+\index{continue}
 
 \begin{bbgrammar}
  ContinueStatement    \: \xcd"continue" Id\opt \xcd";" & (\ref{prod:ContinueStatement})\\%<FROM #(prod:ContinueStatement)#
@@ -229,6 +237,7 @@ It is illegal to continue a loop not defined in the current
 method, constructor, initializer, or closure.
 
 \section{If statement}
+\index{if}
 
 \begin{bbgrammar}
  IfThenStatement    \: \xcd"if" \xcd"(" Exp \xcd")" Statement & (\ref{prod:IfThenStatement})\\%<FROM #(prod:IfThenStatement)#
@@ -267,6 +276,7 @@ This example is interpreted as
 
 
 \section{Switch statement}
+\index{switch}
 
 \begin{bbgrammar}
  SwitchStatement    \: \xcd"switch" \xcd"(" Exp \xcd")" SwitchBlock & (\ref{prod:SwitchStatement})\\%<FROM #(prod:SwitchStatement)#
@@ -324,7 +334,7 @@ switch (i) {
 
 
 \section{While statement}
-\index{\Xcd{while}}
+\index{while}
 
 \begin{bbgrammar}
  WhileStatement    \: \xcd"while" \xcd"(" Exp \xcd")" Statement & (\ref{prod:WhileStatement})\\%<FROM #(prod:WhileStatement)#
@@ -352,7 +362,7 @@ the condition is \xcd"false", the loop exits.
 %~~neg
 
 \section{Do--while statement}
-\index{\Xcd{do}}
+\index{do}
 
 \begin{bbgrammar}
  DoStatement    \: \xcd"do" Statement \xcd"while" \xcd"(" Exp \xcd")" \xcd";" & (\ref{prod:DoStatement})\\%<FROM #(prod:DoStatement)#
@@ -367,7 +377,7 @@ Otherwise, the loop exits.
 
 
 \section{For statement}
-\index{\Xcd{for}}
+\index{for}
 
 \begin{bbgrammar}
  ForStatement    \: BasicForStatement & (\ref{prod:ForStatement})\\%<FROM #(prod:ForStatement)#
@@ -510,6 +520,7 @@ x10.lang.Error: Changed my mind about a
 
 
 \section{Exceptions in X10}
+\index{exception}
 
 X10 programs can throw {\em Exceptions} to indicate unusual or problematic
 situations.  Exceptions, as data values, are objects which which inherit from
@@ -567,6 +578,10 @@ if (i < 0 || i >= x.length)
 %~~neg
 
 \section{Try--catch statement}
+\index{try}
+\index{catch}
+\index{finally}
+\index{exception}
 \begin{bbgrammar}
  TryStatement    \: \xcd"try" Block Catches & (\ref{prod:TryStatement})\\%<FROM #(prod:TryStatement)#
     \| \xcd"try" Block Catches\opt Finally\\
