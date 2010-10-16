@@ -2,7 +2,7 @@
 \label{XtenStructs}
 \label{StructClasses}
 \label{Structs}
-\index{structs}
+\index{struct}
 
 X10 objects are a powerful general-purpose programming tool. However, the
 power must be paid for in space and time. In space, a typical object
@@ -37,6 +37,7 @@ added in constructor calls, and structs (unlike classes) do not have default val
 
 
 \section{Struct declaration}
+\index{struct!declaration}
 A struct declaration has the structure: 
 \begin{xtenmath}
 $\mbox{\emph{StructModifiers}}^{\mbox{?}}$
@@ -90,6 +91,8 @@ struct Pair[T,U](t:T, u:U) {
 
 \section{Boxing of structs}
 \index{auto-boxing!struct to interface}
+\index{struct!auto-boxing}
+\index{struct!casting to interface}
 \label{auto-boxing} 
 If a struct \Xcd{S} implements an interface \Xcd{I} (\eg, \Xcd{Any}),
 a value \Xcd{v} of type \Xcd{S} can be assigned to a variable of type
@@ -132,6 +135,20 @@ yield better performance since the cost of an upcast to \Xcd{Any} and
 then a downcast to \Xcd{S} can be avoided.
 
 \section{Primitive Types}
+\index{types!primitive}
+\index{primitive types}
+\index{Int}
+\index{UInt}
+\index{Long}
+\index{ULong}
+\index{Char}
+\index{Byte}
+\index{UByte}
+\index{Boolean}
+\index{Short}
+\index{UShort}
+\index{Float}
+\index{Double}
 
 Certain types that might be built in to other languages are in fact
 implemented as structs in package \xcd`x10.lang` in X10. Their methods and
@@ -143,6 +160,8 @@ Float, Double, UByte, UShort, UInt, ULong
 \end{xten}
  
 \section{Generic programming with structs}
+\section{struct!generic}
+\section{generics!struct}
 
 An unconstrained type variable \Xcd{X} can be instantiated with \Xcd{Object} or
 its subclasses or structs or functions.

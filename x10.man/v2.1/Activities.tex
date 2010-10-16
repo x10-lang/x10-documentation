@@ -175,6 +175,8 @@ that side effects are made to the correct copy of the object. For this
 the struct \xcd`x10.lang.GlobalRef[T]` is often useful.
 
 \paragraph{Serialization and deserialization.}
+\index{transient}
+\index{field!transient}
 The X10 runtime provides a default mechanism for
 serializing/deserializing an object graph with a given set of roots.
 This mechanism may be overridden by the programmer on a per class or
@@ -337,6 +339,8 @@ assert(a(0)() == 6 && a(1)() == 6);     // (G)
 
 \subsubsection{Copying and Transient Fields}
 \index{at!transient fields and}
+\index{transient}
+\index{field!transient}
 
 Recall that fields of classes and structs marked \xcd`transient` are not copied by
 \xcd`at`.  Instead, they are set to the default values for their types. Types
@@ -733,7 +737,7 @@ If the programmer wishes to execute \xcd`S` in parallel at each place,
 
 
 
-\section{Atomic blocks}\label{AtomicBlocks}\index{atomic blocks}
+\section{Atomic blocks}\label{AtomicBlocks}
 \index{atomic}
 
 X10's \xcd`atomic` blocks provide a high-level construct for coordinating

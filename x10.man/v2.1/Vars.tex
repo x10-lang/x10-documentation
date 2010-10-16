@@ -111,8 +111,10 @@ var f : Int{self != 100} = 0;  // Constrained type
 \label{FinalVariables}
 \index{variable!immutable}
 \index{immutable variable}
+\index{variable!val}
+\index{val}
 
-Immutable variables can be given values (by initialization or assignment) at
+Immutable (\xcd`val`) variables can be given values (by initialization or assignment) at
 most once, and must be given values before they are used.  Usually this is
 achieved by declaring and initializing the variable in a single statement.
 %~~gen
@@ -189,6 +191,9 @@ x10.io.Console.OUT.println("4 squared = " + sq(4));
 
 \section{Initial values of variables}
 \label{NullaryConstructor}\index{nullary constructor}
+\index{initial value}
+\index{initialization}
+
 
 Every assignment, binding, or initialization to a variable of type \xcd`T{c}`
 must be an instance of type \xcd`T` satisfying the constraint \xcd`{c}`.
@@ -294,6 +299,8 @@ A pattern of the form \xcdmath"p[i$_1$,$\ldots$,i$_n$]" does the same,  but
 also binds \xcd`p` to the point.
 
 \section{Formal parameters}
+\index{formal parameter}
+\index{parameter}
 
 \begin{bbgrammar}
  FormalParams    \: \xcd"(" FormalParamList\opt \xcd")" & (\ref{prod:FormalParams})\\%<FROM #(prod:FormalParams)#
@@ -338,6 +345,8 @@ static def inc(var i:Int) { i += 1; }
 
 
 \section{Local variables}\label{local-variables}
+\index{variable!local}
+\index{local variable}
 Local variables are declared in a limited scope, and, dynamically, keep their
 values only for so long as the scope is being executed.  They may be \xcd`var`
 or \xcd`val`.  
@@ -418,6 +427,10 @@ static def main(r: Array[String](1)):void {
 
 
 \section{Fields}
+\index{field}
+\index{object!field}
+\index{struct!field}
+\index{class!field}
 
 \begin{bbgrammar}
  FieldDeclarators    \: FieldDeclarator & (\ref{prod:FieldDeclarators})\\%<FROM #(prod:FieldDeclarators)#

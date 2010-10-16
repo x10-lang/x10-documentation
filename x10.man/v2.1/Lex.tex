@@ -88,12 +88,13 @@ f &=& b x
 
 \begin{itemize}
 
-\item \xcd`true` and \xcd`false` are the \xcd`Boolean` literals.
+\item \xcd`true` and \xcd`false` are the \xcd`Boolean` literals. \index{Boolean!literal}\index{literal!Boolean}
 
 \item \xcd`null` is a literal for the null value.  It has type
-      \xcd`Any{self==null}`. 
+      \xcd`Any{self==null}`. \index{null} \index{object!literal}
 
-\item \xcd`Int` literals have the form {$si$}; \eg, \xcd`123`,
+\item \index{Int!literal}\index{literal!integer}
+\xcd`Int` literals have the form {$si$}; \eg, \xcd`123`,
       \xcd`-321` are decimal \xcd`Int`s, \xcd`0123` and \xcd`-0321` are octal
       \xcd`Int`s, and \xcd`0x123`, \xcd`-0X321`,  \xcd`0xBED`, and \xcd`0XEBEC` are
       hexadecimal \xcd`Int`s.  
@@ -110,12 +111,16 @@ f &=& b x
       literals. 
 
 \item \xcd`Float` literals have the form {$s f {\tt f}$} or  {$s
+\index{float!literal}
+\index{literal!float}
       f {\tt F}$}.  Note that the floating-point marker letter \xcd`f` is
       required: unmarked floating-point-looking literals are \xcd`Double`. 
       \Eg, \xcd`1f`, \xcd`6.023E+32f`, \xcd`6.626068E-34F` are \xcd`Float`
       literals. 
 
 \item \xcd`Double` literals have the form {$s f$}\footnote{Except that
+\index{double!literal}
+\index{literal!double}
       literals like \xcd`1` 
       which match both {$i$} and {$f$} are counted as
       integers, not \xcd`Double`; \xcd`Double`s require a decimal
@@ -125,7 +130,10 @@ f &=& b x
       \Eg, \xcd`0.0`, \xcd`0e100`, \xcd`1.3D`,  \xcd`229792458d`, and \xcd`314159265e-8`
       are \xcd`Double` literals.
 
-\item \xcd`Char` literals have one of the following forms: 
+\item 
+\index{char!literal}
+\index{literal!char}
+\xcd`Char` literals have one of the following forms: 
       \begin{itemize}
       \item \xcd`'`{\it c}\xcd`'` where {\em c} is any printing ASCII
             character other than 
@@ -144,7 +152,10 @@ f &=& b x
             is an error if {\em dd}{$>0377$}.      
       \end{itemize}
 
-\item \xcd`String` literals consist of a double-quote \xcd`"`, followed by
+\item
+\index{string!literal} 
+\index{literal!string}
+\xcd`String` literals consist of a double-quote \xcd`"`, followed by
       zero or more of the contents of a \xcd`Char` literal, followed by
       another double quote.  \Eg, \xcd`"hi!"`, \xcd`""`.
 
@@ -162,6 +173,7 @@ f &=& b x
 \end{xten}
 
 \paragraph{Operators}
+\index{operator}
 \Xten{} has the following operator,  type constructor, and miscellaneous symbols.  (\xcd`?` and
 \xcd`:` comprise a single ternary operator, but are written separately.)
 \begin{xten}

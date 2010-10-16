@@ -1,4 +1,4 @@
-\chapter{Expressions}\label{XtenExpressions}\index{expressions}
+\chapter{Expressions}\label{XtenExpressions}\index{expression}
 
 \Xten{} has a rich expression language.
 Evaluating an expression produces a value, or, in a few cases, no value. 
@@ -1011,7 +1011,7 @@ user-defined conversions (\Sref{sec:user-defined-conversions}).
 
 \paragraph{Subsumption coercion.}
 A subtype may be implicitly coerced to any supertype.
-\index{coercions!subsumption coercion}
+\index{coercion!subsumption}
 
 \paragraph{Explicit coercion (casting with \xcd"as")}
 
@@ -1039,8 +1039,8 @@ If the value coerced is not an instance of the target type,
 a \xcd"ClassCastException" is thrown.  Casting to a constrained
 type may require a run-time check that the constraint is
 satisfied.
-\index{coercions!explicit coercion}
-\index{casting}
+\index{coercion!explicit}
+\index{cast}
 \index{\Xcd{as}}
 
 \limitation{It is currently a static error, rather than the specified
@@ -1112,8 +1112,8 @@ type and a type to its right, below:
 Byte < Short < Int < Long < Float < Double
 \end{xten}
 
-\index{conversions!widening conversions}
-\index{conversions!numeric conversions}
+\index{conversion!widening}
+\index{conversion!numeric}
 
 \paragraph{String conversion.}
 Any value that is an operand of the binary
@@ -1122,10 +1122,10 @@ be converted to \xcd"String" if the other operand is a \xcd"String".
 A conversion to \xcd"String" is performed by invoking the \xcd"toString()"
 method.
 
-\index{conversions!string conversion}
+\index{conversion!string}
 
 \paragraph{User defined conversions.}\label{sec:user-defined-conversions}
-\index{conversions!user defined}
+\index{conversion!user-defined}
 
 The user may define conversion operators from type \Xcd{A} {\em to} a
 container type \Xcd{B} by specifying a method on \Xcd{B} as follows:

@@ -266,7 +266,8 @@ parameters (\Sref{TypeParameters}).
 %~~gen
 %%REPETITOUS%% % package Types.For.Gripes.Of.Wesley.Snipes;
 %~~vis
-%%REPETITOUS%% \begin{xten}
+%%REPETITOUS%% 
+\begin{xten}
 class Cell[T] {
 %%REPETITOUS%%   var empty : Boolean = true;
   var contents : T;
@@ -564,7 +565,7 @@ several checks on the body of the class (or struct or interface) to
 establish that type parameters with a variance are used in a manner
 that is consistent with their semantics.
 
-\Limitation{} The implementation of variance specifications  suffers from
+\limitation{} The implementation of variance specifications  suffers from
 various limitations in \XtenCurrVer. Users are strongly encouraged not
 to use variance. (Some classes/structs/interfaces in the standard
 libraries use variance specifications in a careful way that
