@@ -56,7 +56,7 @@ language specification for full details.
     
     \begin{enumerate}
     \item Constructors can only invoke \Xcd{private} or \Xcd{final} methods, 
-          or methods annotated \xcd`@NonEscaping("v1,v2")`.  
+          or methods annotated \xcd`@NonEscaping`.  
     \item Methods invoked by constructors cannot read fields before they are
           written. 
     \item The compiler ensures this with a detailed protocol. 
