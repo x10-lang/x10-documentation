@@ -1,4 +1,4 @@
-\chapter{Expressions}\label{XtenExpressions}\index{expressions}
+\chapter{Expressions}\label{XtenExpressions}\index{expression}
 
 \Xten{} has a rich expression language.
 Evaluating an expression produces a value, or, in a few cases, no value. 
@@ -6,12 +6,13 @@ Expression evaluation may have side effects, such as change of the value of a
 \xcd`var` variable or a data structure, allocation of new values, or throwing
 an exception. 
 
-Evaluation is performed left to right, wherever possible.  For example, in 
-%~~exp~~`~~`~~f:() => ((Int,Int)=>Int), a:()=>Int, b:()=>Int ~~
-\xcd`f()(a(),b())`, \xcd`f()` is evaluated, then \xcd`a()`, then \xcd`b()`,
-andd then the application.  
+%%WRONG%% Evaluation is performed left to right, wherever possible.  For example, in 
+%%WRONG%% %~x~exp~~`~~`~~f:() => ((Int,Int)=>Int), a:()=>Int, b:()=>Int ~~
+%%WRONG%% \xcd`f()(a(),b())`, \xcd`f()` is evaluated, then \xcd`a()`, then \xcd`b()`,
+%%WRONG%% and then the application.  
 
 \section{Literals}
+\index{literal}
 
 Literals denote fixed values of built-in types. 
 The syntax for literals is given in \Sref{Literals}. 
@@ -21,11 +22,13 @@ is of type \xcd`Int{self==1}`, and \xcd`true` is of type
 \xcd`Boolean{self==true}`.
 
 \section{\Xcd{this}}
+\index{this}
+\index{\Xcd{this}}
 
-\begin{grammar}
-ThisExpression \: \xcd"this" \\
-\| ClassName \xcd"." \xcd"this" \\
-\end{grammar}
+\begin{bbgrammar}
+ Primary    \:      \xcd"this" & (\ref{prod:Primary})\\%<FROM #(prod:Primary)#
+    \| ClassName \xcd"." \xcd"this"\\
+\end{bbgrammar}
 
 The expression \xcd"this" is a  local \xcd`val` containing a reference
 to an instance of the lexically enclosing class.
@@ -37,21 +40,23 @@ Within an inner class, \xcd"this" may be qualified with the
 name of a lexically enclosing class.  In this case, it
 represents an instance of that enclosing class.  
 For example, \xcd`Outer` is a class containing \xcd`Inner`.  Each instance of
-\xcd`Inner` has a reference \xcd`outer` to the \xcd`Outer` involved in its
-creation, which is acquired by use of \xcd`Outer.this`.
+\xcd`Inner` has a reference \xcd`Outer.this` to the \xcd`Outer` involved in its
+creation.  \xcd`Inner` has access to the fields of \xcd`Outer.this`, as seen
+in the \xcd`outerThree` and \xcd`alwaysTrue` methods.  Note that \xcd`Inner`
+has its own \xcd`three` field, which is different from and not even the same
+type as \xcd`Outer.this.three`. 
 %~~gen
 % package exp.vexp.pexp.lexp.shexp;
 %~~vis
 \begin{xten}
 class Outer {
-/* REDO THIS EXAMPLE 
-  val inner : Inner = new Inner();
+  val three = 3;
   class Inner {
-    val outer : Outer = Outer.this;
+     val three = "THREE";
+     def outerThree() = Outer.this.three;
+     def alwaysTrue() = outerThree() == 3;
   }
-  def alwaysTrue() = (this == inner.outer);
-*/}
-
+}
 \end{xten}
 %~~siv
 %
@@ -71,9 +76,9 @@ body or in supertypes, are accessible through \xcd"this".
 
 \section{Local variables}
 
-\begin{grammar}
-LocalExpression \: Identifier \\
-\end{grammar}
+\begin{bbgrammar}
+ Id    \: identifier & (\ref{prod:Id})\\%<FROM #(prod:Id)#
+\end{bbgrammar}
 
 A local variable expression consists simply of the name of the local variable,
 field of the current object, formal parameter in scope, etc. It evaluates to
@@ -96,14 +101,13 @@ val m = n + 56;
 
 \section{Field access}
 \label{FieldAccess}
+\index{field!access to}
 
-
-\begin{grammar}
-FieldExpression \: Expression \xcd"." Identifier \\
-                \| \xcd"super" \xcd"." Identifier \\
-                \| ClassName \xcd"." Identifier \\
-                \| ClassName \xcd"." \xcd"super" \xcd"." Identifier \\
-\end{grammar}
+\begin{bbgrammar}
+ FieldAccess    \: Primary \xcd"." Id & (\ref{prod:FieldAccess})\\%<FROM #(prod:FieldAccess)#
+    \| \xcd"super" \xcd"." Id\\
+    \| ClassName \xcd"." \xcd"super"  \xcd"." Id
+\end{bbgrammar}
 
 A field of an object instance may be  accessed
 with a field access expression.
@@ -122,7 +126,7 @@ the superclass of the enclosing class.  This form is used to access fields of
 the parent class shadowed by same-named fields of the current class.
 
 If the field target is \xcd`Cls.super`, then the target's type is \xcd`Cls`,
-which must be an ancestor class of the enclosing class.  This (admittedly
+which must be an  enclosing class.  This (admittedly
 obscure) form is used to access fields of an ancestor class which are shadowed
 by same-named fields of some more recent ancestor.  The following example
 illustrates all four cases:
@@ -170,18 +174,30 @@ Function literals are described in \Sref{Functions}.
 \label{Call}
 \label{MethodInvocation}
 \label{MethodInvocationSubstitution}
+\index{invocation}
+\index{call}
+\index{invocation!method}
+\index{call!method}
+\index{invocation!function}
+\index{call!function}
+\index{method!calling}
+\index{method!invoking}
 
-\begin{grammar}
-MethodCall \: TypeName \xcd"." Identifier TypeArguments\opt \xcd"(" ArgumentList\opt \xcd")" \\
-           \| \xcd"super" \xcd"." Identifier TypeArguments\opt \xcd"(" ArgumentList\opt \xcd")" \\
-           \| ClassName \xcd"." \xcd"super" \xcd"." Identifier TypeArguments\opt \xcd"(" ArgumentList\opt \xcd")" \\
-Call \: Primary TypeArguments\opt \xcd"(" ArgumentList\opt \xcd")" \\
-TypeArguments \: \xcd"[" Type ( \xcd"," Type )\star \xcd"]" \\
-\end{grammar}
 
-A \grammarrule{MethodCall} may be to either a \xcd"static" or an 
-instance method.  A \grammarrule{Call} may invoke either a method
-or a closure.  
+\begin{bbgrammar}
+ MethodInvocation    \: MethodName TypeArguments\opt \xcd"(" ArgumentList\opt \xcd")" & (\ref{prod:MethodInvocation})\\%<FROM #(prod:MethodInvocation)#
+    \| Primary \xcd"." Id TypeArguments\opt \xcd"(" ArgumentList\opt \xcd")"\\
+    \| \xcd"super" \xcd"." Id TypeArguments\opt \xcd"(" ArgumentList\opt \xcd")"\\
+    \| ClassName \xcd"." \xcd"super"  \xcd"." Id TypeArguments\opt \xcd"(" ArgumentList\opt \xcd")"\\
+    \| Primary TypeArguments\opt \xcd"(" ArgumentList\opt \xcd")"\\
+ ArgumentList    \: Exp & (\ref{prod:ArgumentList})\\%<FROM #(prod:ArgumentList)#
+    \| ArgumentList \xcd"," Exp\\
+\end{bbgrammar}
+
+
+
+A \grammarrule{MethodInvocation} may be to either a \xcd"static" method, an
+instance method, or a closure.
 
 The syntax is ambiguous; the target must be type-checked to determine if it is
 the name of a method or if it refers to a field containing a closure. It is a
@@ -218,36 +234,49 @@ ambiguous: it could be a call to the closure, or to the static method:
 A closure call \xcdmath"e($\dots$)" is shorthand for a method call
 \xcdmath"e.apply($\dots$)". 
 
-Method selection rules are similar to that of \java{}.\bard{Explain}
-For a call with no explicit type arguments, a method with 
-no parameters is considered more specific than a method with one or more
-type parameters that would have to be inferred.
+Method selection rules are given in \Sref{sect:MethodResolution}.
 
 It is a static error if a method's \grammarrule{Guard} is not satisfied by the
-caller. 
+caller.  For example: 
+%~~gen
+%package Expressions.Calls.Guarded.By.Walls;
+%~~vis
+\begin{xten}
+class DivideBy(denom:Int) {
+  def doIt(numer:Int){denom != 0} = numer / denom;
+  def example() {
+     //ERROR: denom might be zero: this.doIt(100); 
+     (this as DivideBy{self.denom != 0}).doIt(100);
+  }
+}
+\end{xten}
+%~~siv
+%
+%~~neg
+
 
 \section{Assignment}\index{assignment}\label{AssignmentStatement}
 
-\begin{grammar}
-Expression \: Assignment \\
-Assignment \: SimpleAssignment \\
-           \| OpAssignment \\
-SimpleAssignment \: LeftHandSide \xcd"=" Expression \\
-OpAssignment \: LeftHandSide \xcd"+=" Expression \\
-             \: LeftHandSide \xcd"-=" Expression \\
-             \: LeftHandSide \xcd"*=" Expression \\
-             \: LeftHandSide \xcd"/=" Expression \\
-             \: LeftHandSide \xcd"%=" Expression \\
-             \: LeftHandSide \xcd"&=" Expression \\
-             \: LeftHandSide \xcd"|=" Expression \\
-             \: LeftHandSide \xcd"^=" Expression \\
-             \: LeftHandSide \xcd"<<=" Expression \\
-             \: LeftHandSide \xcd">>=" Expression \\
-             \: LeftHandSide \xcd">>>=" Expression \\
-LeftHandSide \: Identifier \\
-             \| Primary \xcd"." Identifier \\
-             \| Primary \xcd"(" Expression \xcd")" \\
-\end{grammar}
+\begin{bbgrammar}
+ Assignment    \: LeftHandSide AssignmentOperator AssignmentExp & (\ref{prod:Assignment})\\%<FROM #(prod:Assignment)#
+    \| ExpName  \xcd"(" ArgumentList\opt \xcd")" AssignmentOperator AssignmentExp\\
+    \| Primary  \xcd"(" ArgumentList\opt \xcd")" AssignmentOperator AssignmentExp\\
+ LeftHandSide    \: ExpName & (\ref{prod:LeftHandSide})\\%<FROM #(prod:LeftHandSide)#
+    \| FieldAccess\\
+ AssignmentOperator    \: \xcd"=" & (\ref{prod:AssignmentOperator})\\%<FROM #(prod:AssignmentOperator)#
+    \| \xcd"*="\\
+    \| \xcd"/="\\
+    \| \xcd"%="\\
+    \| \xcd"+="\\
+    \| \xcd"-="\\
+    \| \xcd"<<="\\
+    \| \xcd">>="\\
+    \| \xcd">>>="\\
+    \| \xcd"&="\\
+    \| \xcd"^="\\
+    \| \xcd"|="
+\end{bbgrammar}
+
 
 
 
@@ -325,6 +354,10 @@ storage location. Specifically, \xcd`A()(I()) += B()` is tantamount to:
 
 
 \section{Increment and decrement}
+\index{increment}
+\index{decrement}
+\index{\Xcd{++}}
+\index{\Xcd{--}}
 
 
 The operators \xcd"++" and \xcd"--" increment and decrement
@@ -342,6 +375,8 @@ The difference between the two is the return value.
 \label{XtenPromotions}
 \index{promotion}
 \index{numeric promotion}
+\index{numeric operations}
+\index{operation!numeric}
 
 Numeric types (\xcd`Byte`, \xcd`Short`, \xcd`Int`, \xcd`Long`, \xcd`Float`,
 \xcd`Double`, and unsigned variants of fixed-point types) are normal X10
@@ -363,8 +398,8 @@ numeric type, perhaps with loss of accuracy.
 % def example() {
 %~~vis
 \begin{xten}
-val f : (Int)=>Boolean = (Int) => true; 
 val n : Byte = 123 as Byte; // explicit 
+val f : (Int)=>Boolean = (Int) => true; 
 val ok = f(n); // implicit
 \end{xten}
 %~~siv
@@ -401,7 +436,7 @@ On integers, the operands are coerced to the longer of their two types, and
 then operated upon.  
 Floating point operations are determined by the IEEE 754
 standard. 
-The integer \xcd"/" and \xcd"%" throw a \xcd"DivideByZeroException"
+The integer \xcd"/" and \xcd"%" throw an exception 
 if the right operand is zero.
 
 \section{Binary shift operations}
@@ -411,11 +446,11 @@ The type of the result is the type of the left operand.
 
 If the promoted type of the left operand is \xcd"Int",
 the right operand is masked with \xcd"0x1f" using the bitwise
-AND (\xcd"&") operator, giving a number {$\le$} the number of bits in an
+AND (\xcd"&") operator, giving a number at most the number of bits in an
 \xcd`Int`. 
 If the promoted type of the left operand is \xcd"Long",
 the right operand is masked with \xcd"0x3f" using the bitwise
-AND (\xcd"&") operator, giving a number {$\le$} the number of bits in a
+AND (\xcd"&") operator, giving a number at most the number of bits in a
 \xcd`Long`. 
 
 The \xcd"<<" operator left-shifts the left operand by the number of
@@ -442,6 +477,7 @@ The \xcd"|" operator  performs the bitwise inclusive OR of the promoted operands
 The \xcd"^" operator  performs the bitwise exclusive OR of the promoted operands.
 
 \section{String concatenation}
+\index{string!concatenation}
 
 The \xcd"+"  operator is used for string concatenation 
  as well as addition.
@@ -458,7 +494,7 @@ The type of the result is \xcd"String".
  For example, 
 %~~exp~~`~~`~~ ~~
       \xcd`"one " + 2 + here` 
-      evaluates to something like \xcd`one 2(Place 0)`.  
+      evaluates to  \xcd`one 2(Place 0)`.  
 
 \section{Logical negation}
 
@@ -522,13 +558,15 @@ All finite values are less than positive infinity and greater
 than negative infinity.
 
 \section{Conditional expressions}
+\index{\Xcd{? :}}
+\index{conditional expression}
+\index{expression!conditional}
 \label{Conditional}
 
-\begin{grammar}
-ConditionalExpression \: Expression
-                \xcd"?" Expression
-                \xcd":" Expression 
-\end{grammar}
+\begin{bbgrammar}
+ ConditionalExp    \: 
+     ConditionalOrExp \xcd"?" Exp \xcd":" ConditionalExp& (\ref{prod:ConditionalExp})\\%<FROM #(prod:ConditionalExp)#
+\end{bbgrammar}
 
 A conditional expression evaluates its first subexpression (the
 condition); if \xcd"true"
@@ -553,17 +591,20 @@ type system.
 
 \section{Stable equality}
 \label{StableEquality}
-\index{==}\index{!=}
+\index{\Xcd{==}}
+\index{equality}
 
-\begin{grammar}
-EqualityExpression \: Expression \xcd"==" Expression \\
-\| Expression \xcd"!=" Expression \\
-\end{grammar}
+\begin{bbgrammar}
+ EqualityExp    \: RelationalExp & (\ref{prod:EqualityExp})\\%<FROM #(prod:EqualityExp)#
+    \| EqualityExp \xcd"==" RelationalExp\\
+    \| EqualityExp \xcd"!=" RelationalExp\\
+    \| Type  \xcd"==" Type \\
+\end{bbgrammar}
+
 
 The \xcd"==" and \xcd"!=" operators provide a fundamental, though
 non-abstract, notion of equality.  \xcd`a==b` is true if the values of \xcd`a`
-and \xcd`b` are extremely identical, in a sense defined shortly.  \xcd`a != b`
-is true iff \xcd`a==b` is false.
+and \xcd`b` are extremely identical.
 
 \begin{itemize}
 \item If \xcd`a` and \xcd`b` are values of object type, then \xcd`a==b` holds
@@ -576,8 +617,11 @@ and all their fields or components must be \xcd"==".
 \item The definition of equality for function types is specified in
       \Sref{FunctionEquality}.
 \item If the operands have numeric types, they are coerced into the larger of
-      the two types and then compared for numeric equality.
+      the two types (see \Sref{WideningConversion}) and then compared for numeric equality.
 \end{itemize}
+
+\xcd`a != b`
+is true iff \xcd`a==b` is false.
 
 The predicates \xcd"==" and \xcd"!=" may not be overridden by the programmer.
 Note that \xcd`a==b` is a form of \emph{stable equality}; that is, the result of
@@ -587,13 +631,23 @@ after evaluation of \xcd`a` and \xcd`b`.
 
 \section{Allocation}
 \label{ClassCreation}
+\index{new}
+\index{allocation}
+\index{class!instantation}
+\index{class!construction}
+\index{struct!instantation}
+\index{struct!construction}
+\index{instantation}
 
-\begin{grammar}
-NewExpression \: \xcd"new" ClassName TypeArguments\opt \xcd"(" ArgumentList\opt \xcd")"
-        ClassBody\opt \\
-  \| \xcd"new" InterfaceName TypeArguments\opt \xcd"(" ArgumentList\opt \xcd")"
-        ClassBody
-\end{grammar}
+
+\begin{bbgrammar}
+ ClassInstCreationExp    \: \xcd"new" TypeName TypeArguments\opt \xcd"(" ArgumentList\opt \xcd")" ClassBody\opt & (\ref{prod:ClassInstCreationExp})\\%<FROM #(prod:ClassInstCreationExp)#
+    \| \xcd"new" TypeName \xcd"[" Type \xcd"]" \xcd"[" ArgumentList\opt \xcd"]"\\
+    \| Primary \xcd"." \xcd"new" Id TypeArguments\opt \xcd"(" ArgumentList\opt \xcd")" ClassBody\opt\\
+
+    \| AmbiguousName \xcd"." \xcd"new" Id TypeArguments\opt \xcd"(" ArgumentList\opt \xcd")" ClassBody\opt\\
+
+\end{bbgrammar}
 
 An allocation expression creates a new instance of a class and
 invokes a constructor of the class.
@@ -626,14 +680,15 @@ Note that instantiating a struct type uses function application syntax, not
 possibility of a {\em ClassBody}.
 
 
-\section{Casts}\label{ClassCast}\index{classcast}
+\section{Casts}\label{ClassCast}\index{cast}
+\index{type conversion}
 
 The cast operation may be used to cast an expression to a given type:
 
-\begin{grammar}
-UnaryExpression \: CastExpression \\
-CastExpression \: UnaryExpression \xcd"as" Type \\
-\end{grammar}
+\begin{bbgrammar}
+ CastExp    \: 
+     CastExp \xcd"as" Type & (\ref{prod:CastExp})\\%<FROM #(prod:CastExp)#\\
+\end{bbgrammar}
 
 The result of this operation is a value of the given type if the cast
 is permissible at run time, and either a compile-time error or a runtime
@@ -652,7 +707,7 @@ type \xcd`T` (which may fail), and then the constraint \xcd`{c}` is checked.
       
 \item If \xcd`T` is a class, then the first half of the cast succeeds if the
       run-time value of \xcd`E` is an instance of class \xcd`T`, or of a
-      subclass 
+      subclass. 
 
 \item If \xcd`T` is an interface, then the first half of the cast succeeds if
       the run-time value of \xcd`E` is an instance of a class implementing
@@ -712,13 +767,15 @@ type \xcd`Int{self==2}`.
 \section{\Xcd{instanceof}}
 \label{instanceOf}
 \index{\Xcd{instanceof}}
+\index{instanceof}
 
 \Xten{} permits types to be used in an in instanceof expression
 to determine whether an object is an instance of the given type:
 
-\begin{grammar}
-RelationalExpression \: RelationalExpression \xcd"instanceof" Type
-\end{grammar}
+\begin{bbgrammar}
+ RelationalExp    \:  RelationalExp \xcd"instanceof" Type
+ & (\ref{prod:RelationalExp})\\%<FROM #(prod:RelationalExp)#
+\end{bbgrammar}
 
 In the above expression, \grammarrule{Type} is any type. At run time, the
 result of this operator is \xcd"true" if the
@@ -738,20 +795,24 @@ However, it is a static error if \xcd`e` cannot possibly be an instance of
 \xcd`1` can never satisfy \xcd`Int{self == 2}`. Similarly, \Xcd{1 instanceof
 String} is a static error, rather than an expression always returning false. 
 
-\limitation{
+\limitationx
 X10 does not currently handle \xcd`instanceof` of generics in the way you
-%~~exp~~`~~`~~r:ValRail[Int] ~~
-might expect.  For example, \xcd`r instanceof ValRail[Int{self != 0}]` does
-not test that every element of \xcd`r` is non-zero.
-}
+%~NO~exp~~`~~`~~r:Array[Int](1) ~~
+might expect.  For example, \xcd`r instanceof Array[Int{self != 0}]` does
+not test that every element of \xcd`r` is non-zero; instead, the compiler
+rejects it.
+
 
 \section{Subtyping expressions}
+\index{\Xcd{<:}}
+\index{\Xcd{:>}}
+\index{subtype!test}
 
-\begin{grammar}
-SubtypingExpression \: Expression \xcd"<:" Expression \\
-                    \| Expression \xcd":>" Expression \\
-                    \| Expression \xcd"==" Expression \\
-\end{grammar}
+
+\begin{bbgrammar}
+ SubtypbeConstraint    \: Type  \xcd"<:" Type  & (\ref{prod:SubtypeConstraint})\\%<FROM #(prod:SubtypeConstraint)#
+    \| Type  \xcd":>" Type \\
+\end{bbgrammar}
 
 The subtyping expression \xcdmath"T$_1$ <: T$_2$" evaluates to \xcd"true"
 \xcdmath"T$_1$" is a subtype of \xcdmath"T$_2$".
@@ -787,10 +848,13 @@ class OrderedList[T]{T <: x10.util.Ordered[T]} {
 
 
 \section{Contains expressions}
+\index{in}
 
-\begin{grammar}
-ContainsExpression \: Expression \xcd"in" Expression \\
-\end{grammar}
+\begin{bbgrammar}
+ RelationalExp    \: RelationalExp \xcd"in" ShiftExp& (\ref{prod:RelationalExp})\\%<FROM #(prod:RelationalExp)#\\
+
+\end{bbgrammar}
+
 
 The expression \xcd"p in r" tests if a value \xcd"p" is in a collection
 \xcd"r"; it evaluates to \xcd"r.contains(p)".
@@ -799,6 +863,16 @@ must be of type \xcd"Collection[T]" and the value \xcd"p" must
 be of type \xcd"T".
 
 \section{Array Constructors}
+\label{sect:ArrayCtors}
+\index{array!construction}
+\index{array!literal}
+
+\begin{bbgrammar}
+ Primary    \: \xcd"[" ArgumentList\opt \xcd"]"& (\ref{prod:Primary})\\%<FROM
+                                %#(prod:Primary)#
+ ClassInstCreationExp    \:\xcd"new" TypeName \xcd"[" Type \xcd"]" \xcd"[" ArgumentList\opt \xcd"]"& (\ref{prod:ClassInstCreationExp})\\%<FROM #(prod:ClassInstCreationExp)#
+
+\end{bbgrammar}
 
 X10 includes short syntactic forms for constructing one-dimensional arrays.
 The shortest form is to enclose some expressions in brackets: 
@@ -825,22 +899,22 @@ More importantly, the type of
 of type \xcd`Int{self==0}`.  This is subtle but important. There are many
 functions that take \xcd`Array[Int](1)`s, such as conversions to \xcd`Point`.
 These functions do {\em not} take
-\xcd`Array[Int{self==0}]`'s.\footnote{
-Suppose that the function took \xcd`a:Array[Int](1)` and did 
+\xcd`Array[Int{self==0}]`'s.
+
+(Suppose that the function took \xcd`a:Array[Int](1)` and did 
 the operation \xcd`a(i)=100`.   This operation is perfectly fine for
 an \xcd`Array[Int](1)`, which is all the compiler knows about \xcd`a`.  
 However, it is invalid for an \xcd`Array[Int{self==0}](1)`, because it assigns
 a non-zero value to an element of the array, violating the type constraint
 which says that all the elements are zero.  So, \xcd`Array[Int{self==0}](1)`
-is not a subtype of \xcd`Array[Int](1)` --- the two types are simply unrelated.
-}
+is not a subtype of \xcd`Array[Int](1)` --- the two types are simply unrelated.)
 %~~type~~`~~`~~ ~~
 Since there are far more uses for \xcd`Array[Int](1)` than
 %~~type~~`~~`~~ ~~
 \xcd`Array[Int{self==0}](1)`, the compiler produces the former.
 
 Still, occasionally one does actually need \xcd`Array[Int{self==0}](1)`, 
-or, say, \Xcd{Array[Eel{self != null}](1)}, an array of non-null \xcd`Eel`s.  
+or, say, \xcd`Array[Eel{self != null}](1)`, an array of non-null \xcd`Eel`s.  
 For these cases, X10 provides an array constructor which does allow
 specification of the element type: \xcd`new Array[T][e1...en]`.  Each
 element \xcd`ei` must be of type \xcd`T`.  The resulting array is of type
@@ -917,11 +991,17 @@ val eels <: Array[Eel{self != null}](1) =
 \section{Coercions and conversions}
 \label{XtenConversions}
 \label{User-definedCoercions}
-\index{conversions}\index{coercions}
+\index{conversion}\index{coercion}
+\index{type!conversion}\index{type!coercion}
 
 \XtenCurrVer{} supports the following coercions and conversions.
 
 \subsection{Coercions}
+
+\begin{bbgrammar}
+ CastExp    \:  CastExp \xcd"as" Type& (\ref{prod:CastExp})\\%<FROM #(prod:CastExp)#
+\end{bbgrammar}
+
 
 A {\em coercion} does not change object identity; a coerced object may
 be explicitly coerced back to its original type through a cast. A {\em
@@ -931,9 +1011,12 @@ user-defined conversions (\Sref{sec:user-defined-conversions}).
 
 \paragraph{Subsumption coercion.}
 A subtype may be implicitly coerced to any supertype.
-\index{coercions!subsumption coercion}
+\index{coercion!subsumption}
 
 \paragraph{Explicit coercion (casting with \xcd"as")}
+
+
+
 An object of any class may be explicitly coerced to any other
 class type using the \xcd"as" operation.  If \xcd`Child <: Person` and
 \xcd`rhys:Child`, then 
@@ -956,8 +1039,8 @@ If the value coerced is not an instance of the target type,
 a \xcd"ClassCastException" is thrown.  Casting to a constrained
 type may require a run-time check that the constraint is
 satisfied.
-\index{coercions!explicit coercion}
-\index{casting}
+\index{coercion!explicit}
+\index{cast}
 \index{\Xcd{as}}
 
 \limitation{It is currently a static error, rather than the specified
@@ -1016,8 +1099,11 @@ approximation is good enough.
 \end{itemize}
 
 \subsection{Conversions}
+\index{conversion}
+\index{type!conversion}
 
 \paragraph{Widening numeric conversion.}
+\label{WideningConversions}
 A numeric type may be implicitly converted to a wider numeric type. In
 particular, an implicit conversion may be performed between a numeric
 type and a type to its right, below:
@@ -1026,20 +1112,20 @@ type and a type to its right, below:
 Byte < Short < Int < Long < Float < Double
 \end{xten}
 
-\index{conversions!widening conversions}
-\index{conversions!numeric conversions}
+\index{conversion!widening}
+\index{conversion!numeric}
 
 \paragraph{String conversion.}
-Any object that is an operand of the binary
+Any value that is an operand of the binary
 \xcd"+" operator may
 be converted to \xcd"String" if the other operand is a \xcd"String".
 A conversion to \xcd"String" is performed by invoking the \xcd"toString()"
-method of the object.
+method.
 
-\index{conversions!string conversion}
+\index{conversion!string}
 
 \paragraph{User defined conversions.}\label{sec:user-defined-conversions}
-\index{conversions!user defined}
+\index{conversion!user-defined}
 
 The user may define conversion operators from type \Xcd{A} {\em to} a
 container type \Xcd{B} by specifying a method on \Xcd{B} as follows:
@@ -1056,8 +1142,7 @@ programmer to specify the return type for such operators explicitly.
 For instance, the code for \Xcd{x10.lang.Point} contains:
 
 \begin{xten}
-  public static global safe operator (r: Rail[int])
-     : Point(r.length) = make(r);
+  public operator (r: Array[int](1)): Point(r.length) = make(r);
 \end{xten}
 
 The compiler looks for such operators on the container type \Xcd{B}

@@ -1,7 +1,7 @@
 
 \chapter{Places}
 \label{XtenPlaces}
-\index{places}
+\index{place}
 
 An \Xten{} place is a repository for data and activities, corresponding
 loosely to a process or a processor. Places induce a concept of ``local''. The
@@ -19,7 +19,8 @@ options to set the number of places.
 
 Places are first-class values in X10, as instances of the built-in struct,
 \xcd"x10.lang.Place".   \xcd`Place` provides a number of useful ways to
-query places, such as \xcd`Place.places`, a \xcd`ValRail` of all the places
+query places, such as \xcd`Place.places`, a \xcd`Sequence[Place]` of 
+the places
 available to the current run of the program.
 
 Objects and structs (with one exception) are created in a single place -- the
@@ -28,12 +29,19 @@ They can be {\em copied} to other places, and the special library struct
 \Xcd{GlobalRef} allows values at one place to point to values at another.  
 
 \section{The Structure of Places}
+\index{place!MAX\_PLACES}
+\index{place!FIRST\_PLACES}
+\index{MAX\_PLACES}
+\index{FIRST\_PLACE}
 
-Places are numbered 0 through \xcd`Places.MAX_PLACES`, stored in the field
-\xcd`pl.id`.  The \xcd`ValRail` \xcd`Place.places` contains the places of the
+Places are numbered 0 through \xcd`Places.MAX_PLACES-1`, stored in the field
+\xcd`pl.id`.  The \xcd`Sequence[Place]` \xcd`Place.places()` contains the places of the
 program, in numeric order. 
 The program starts by executing a \xcd`main` method at
-\xcd`Place.FIRST_PLACE`, which is \xcd`Place.places(0)`; see
+%~~exp~~`~~`~~ ~~
+\xcd`Place.FIRST_PLACE`, which is 
+%~~exp~~`~~`~~ ~~
+\xcd`Place.places()(0)`; see
 \Sref{initial-computation}. 
 
 Operations on places include \xcd`pl.next()`, which gives the next entry
@@ -45,14 +53,6 @@ There are also a number of tests, like \xcd`pl.isSPE()` and
 %~~exp~~`~~`~~pl:Place ~~
 \xcd`pl.isCUDA()`, which test for particular kinds of processors.
 
-Future versions of the language may permit user-definable
-places, and the ability to dynamically create places.
-
-Place expressions \index{place expression} (\viz, expressions of type
-\xcd`Place`), such as \xcd`here` 
-%~~exp~~`~~`~~ globRef:GlobalRef[Int]~~
-and \xcd`globRef.home`, are used in \xcd`at` and
-\xcd`async` statements.  
 
 
 

@@ -1,5 +1,5 @@
 
-\chapter{Variables}\label{XtenVariables}\index{variables}
+\chapter{Variables}\label{XtenVariables}\index{variable}
 
 %%OLDA variable is a storage location.  \Xten{} supports seven kinds of
 %%OLDvariables: constant {\em class variables} (static variables), {\em
@@ -43,7 +43,7 @@ in this sense because they do not refer to X10 values.  Other named entities,
 such as classes and methods, are not called variables.  However, all
 name-to-whatever bindings enjoy similar concepts of scope and visibility.  
 
-In the following example, \xcd`n` is an instance variable, and \xcd`next` is a
+In the following example, \xcd`n` is an instance variable, and \xcd`nxt` is a
 local variable defined within the method \xcd`bump`.\footnote{This code is
 unnecessarily turgid for the sake of the example.  One would generally write
 \xcd`public def bump() = ++n;`.   }
@@ -54,9 +54,9 @@ unnecessarily turgid for the sake of the example.  One would generally write
 class Counter {
   private var n : Int = 0;
   public def bump() : Int {
-    val next = n+1;
-    n = next;
-    return next;
+    val nxt = n+1;
+    n = nxt;
+    return nxt;
     }
 }
 \end{xten}
@@ -65,9 +65,9 @@ class Counter {
 %~~neg
 Both variables have type \xcd`Int` (or
 perhaps something more specific).    The scope of \xcd`n` is the body of
-\xcd`Counter`; the scope of \xcd`next` is the body of \xcd`bump`.  The
+\xcd`Counter`; the scope of \xcd`nxt` is the body of \xcd`bump`.  The
 lifetime of \xcd`n` is the lifetime of the \xcd`Counter` object holding it;
-the lifetime of \xcd`next` is the duration of the call to \xcd`bump`. Neither
+the lifetime of \xcd`nxt` is the duration of the call to \xcd`bump`. Neither
 variable can be seen from outside of its scope.
 
 \label{exploded-syntax}
@@ -111,8 +111,10 @@ var f : Int{self != 100} = 0;  // Constrained type
 \label{FinalVariables}
 \index{variable!immutable}
 \index{immutable variable}
+\index{variable!val}
+\index{val}
 
-Immutable variables can be given values (by initialization or assignment) at
+Immutable (\xcd`val`) variables can be given values (by initialization or assignment) at
 most once, and must be given values before they are used.  Usually this is
 achieved by declaring and initializing the variable in a single statement.
 %~~gen
@@ -189,6 +191,9 @@ x10.io.Console.OUT.println("4 squared = " + sq(4));
 
 \section{Initial values of variables}
 \label{NullaryConstructor}\index{nullary constructor}
+\index{initial value}
+\index{initialization}
+
 
 Every assignment, binding, or initialization to a variable of type \xcd`T{c}`
 must be an instance of type \xcd`T` satisfying the constraint \xcd`{c}`.
@@ -227,19 +232,14 @@ Or, for mutable variables, it may be done by a later assignment.
 
 
 Every class variable must be initialized before it is read, through
-the execution of an explicit initializer or a static block. Every
+the execution of an explicit initializer. Every
 instance variable must be initialized before it is read, through the
-execution of an explicit initializer or a constructor.
-\bard{Revise this in light of initial values}
-Mutable instance variables of class type are initialized to 
-to \xcd"null".
-Mutable instance variables of struct type are 
-assumed to have an initializer that sets the value to the
-result of invoking the nullary constructor on the class. 
-An initializer is required if the default initial value of the variable's type
-is not
-assignable to the variable's type, \eg, \xcd`Int` variables are initialized to
-zero, but that doesn't work for \xcd`val x:Int{x!=0}`.
+execution of an explicit or implicit initializer or a constructor.
+Implicit initializers initialize \xcd`var`s to the default values of their
+types (\Sref{DefaultValues}). Variables of types which do not have default
+values are not implicitly initialized.
+
+
 
 Each method and constructor parameter is initialized to the
 corresponding argument value provided by the invoker of the method. An
@@ -253,7 +253,7 @@ using the rules for definite assignment \cite[\S~16]{jls2}.
 \index{variable declarator!destructuring}
 \index{destructuring}
 \Xten{} permits a \emph{destructuring} syntax for local variable
-declarations and formal parameters of type \xcd`Point`, \Sref{point-syntax}.
+declarations with explicit initializers,  and for formal parameters, of type \xcd`Point`, \Sref{point-syntax}.
 (Future versions of X10 may allow destructuring of other types as well.) 
 A point is a sequence of {$r \ge 0$} \xcd`Int`-valued coordinates.  
 It is often useful to get at the coordinates directly, in variables. 
@@ -295,31 +295,38 @@ as an \xcd`Int`; without them, it would be a \xcd`Point`.
 
 In general, a pattern of the form \xcdmath"[i$_1$,$\ldots$,i$_n$]" matches a
 point with {$n$} coordinates, binding \xcdmath"i$_j$" to coordinate {$j$}.  
-A pattern of the form \xcdmath"p[i$_1$,$\ldots$,i$_n$]" does the same, , but
+A pattern of the form \xcdmath"p[i$_1$,$\ldots$,i$_n$]" does the same,  but
 also binds \xcd`p` to the point.
 
 \section{Formal parameters}
+\index{formal parameter}
+\index{parameter}
+
+\begin{bbgrammar}
+ FormalParams    \: \xcd"(" FormalParamList\opt \xcd")" & (\ref{prod:FormalParams})\\%<FROM #(prod:FormalParams)#
+ FormalParamList    \: FormalParam & (\ref{prod:FormalParamList})\\%<FROM #(prod:FormalParamList)#
+    \| FormalParamList \xcd"," FormalParam\\
+ FormalParam    \: Mods\opt FormalDeclarator & (\ref{prod:FormalParam})\\%<FROM #(prod:FormalParam)#
+    \| Mods\opt VarKeyword FormalDeclarator\\
+    \| Type\\
+ FormalDeclarators    \: FormalDeclarator & (\ref{prod:FormalDeclarators})\\%<FROM #(prod:FormalDeclarators)#
+    \| FormalDeclarators \xcd"," FormalDeclarator\\
+ FormalDeclarator    \: Id ResultType & (\ref{prod:FormalDeclarator})\\%<FROM #(prod:FormalDeclarator)#
+    \| \xcd"[" IdList \xcd"]" ResultType\\
+    \| Id \xcd"[" IdList \xcd"]" ResultType\\
+ ResultType    \: \xcd":" Type & (\ref{prod:ResultType})\\%<FROM #(prod:ResultType)#
+\end{bbgrammar}
 
 Formal parameters are the variables which hold values transmitted into a
 method or function.  
 They are always declared with a type.  (Type inference is not
-advisable, because there is no single expression to deduce a type from.)
+available, because there is no single expression to deduce a type from.)
 The variable name can be omitted if it is not to be used in the
 scope of the declaration, as in the type of the method 
-\xcd`static def main(Rail[String]):Void` executed at the start of a program that
+\xcd`static def main(Array[String]):void` executed at the start of a program that
 does not use its command-line arguments.
 
-\begin{grammar}
-Formal
-        \: FormalModifier\star \xcd"var" VarDeclaratorWithType \\
-        \| FormalModifier\star \xcd"val" VarDeclaratorWithType \\
-        \| FormalModifier\star VarDeclaratorWithType \\
-        \| Type \\
-FormalModifier \: Annotation \\
-              \| \xcd"shared" \\
-\end{grammar}
-
-\xcd`var`, \xcd`val`, and \xcd`shared` behave just as they do for local
+\xcd`var` and \xcd`val` behave just as they do for local
 variables, \Sref{local-variables}.  In particular, the following \xcd`inc`
 method is allowed, but, unlike some languages, does {\em not} increment its
 actual parameter.  \xcd`inc(j)` creates a new local 
@@ -338,6 +345,8 @@ static def inc(var i:Int) { i += 1; }
 
 
 \section{Local variables}\label{local-variables}
+\index{variable!local}
+\index{local variable}
 Local variables are declared in a limited scope, and, dynamically, keep their
 values only for so long as the scope is being executed.  They may be \xcd`var`
 or \xcd`val`.  
@@ -348,29 +357,31 @@ If the variable is immutable
 (\xcd"val")
 the type may be omitted and
 inferred from the initializer type (\Sref{TypeInference}).
-Variables marked \xcd`shared` can be used by many activities at once; see
-\Sref{Shared}.
 
 The variable declaration \xcd`val x:T=e;` confirms that \xcd`e`'s value is of
 type \xcd`T`, and then introduces the variable \xcd`x` with type \xcd`T`.  For
-example, 
+example, consider a class Tub with a property \xcd`p`.
 %~~gen
 % package Vars.Local;
-% class Tub{
-% def example() {
 %~~vis
 \begin{xten}
-   val t : Tub = new Tub();
+class Tub(p:Int){
+  def this(pp:Int):Tub{self.p==pp} {property(pp);}
+  def example() {
+    val t : Tub = new Tub(3);
+  }
+}
 \end{xten}
 %~~siv
-%}}
+%
 %~~neg
 \noindent
 produces a variable \xcd`t` of type \xcd`Tub`, even though the expression
-\xcd`new Tub()` produces a value of type \xcd`Tub!` -- that is, a \xcd`Tub`
-located \xcd`here`.    This can be inconvenient if, \eg, it is desired to make
-method calls upon \xcd`t`.  
+\xcd`new Tub(3)` produces a value of type \xcd`Tub{self.p==3}` -- that is, a
+\xcd`Tub`  whose \xcd`p` field is 3.  This can be inconvenient when the
+constraint information is required.
 
+\index{\Xcd{<:}}
 Including type information in variable declarations is generally good
 programming practice: it explains to both the compiler and human readers
 something of the intent of the variable.  However, including types in 
@@ -378,7 +389,7 @@ something of the intent of the variable.  However, including types in
 documentation type declaration}, written \xcd`val t <: T = e`.  This 
 has the same effect as \xcd`val t = e`, giving \xcd`t` the full type inferred
 from \xcd`e`; but it also confirms statically that that type is at least
-\xcd`T`.  For example, the following gives \xcd`t` the type \xcd`Tub!` as
+\xcd`T`.  For example, the following gives \xcd`t` the type \xcd`Tub{self.p==3}` as
 desired: 
 %~~gen
 % package Vars.Local;
@@ -386,7 +397,7 @@ desired:
 % def example() {
 %~~vis
 \begin{xten}
-   val t <: Tub = new Tub();
+   val t <: Tub = new Tub(3);
 \end{xten}
 %~~siv
 %}}
@@ -403,9 +414,9 @@ this restriction. The following is correct, albeit obtuse:
 % class NotInitVal {
 %~~vis
 \begin{xten}
-static def main(r: Rail[String]):Void {
+static def main(r: Array[String](1)):void {
   val a : Int;
-  a = r.length;
+  a = r.size;
   val b : String;
   if (a == 5) b = "five?"; else b = "" + a + " args"; 
   // ... 
@@ -415,9 +426,37 @@ static def main(r: Rail[String]):Void {
 %~~neg
 
 
-\bard{Give grammar}
 
 \section{Fields}
+\index{field}
+\index{object!field}
+\index{struct!field}
+\index{class!field}
+
+\begin{bbgrammar}
+ FieldDeclarators    \: FieldDeclarator & (\ref{prod:FieldDeclarators})\\%<FROM #(prod:FieldDeclarators)#
+    \| FieldDeclarators \xcd"," FieldDeclarator\\
+ FieldDecl    \: Mods\opt FieldKeyword FieldDeclarators \xcd";" & (\ref{prod:FieldDecl})\\%<FROM #(prod:FieldDecl)#
+    \| Mods\opt FieldDeclarators \xcd";"\\
+ FieldDeclarator    \: Id HasResultType & (\ref{prod:FieldDeclarator})\\%<FROM #(prod:FieldDeclarator)#
+    \| Id HasResultType\opt \xcd"=" VariableInitializer\\
+ HasResultType    \: \xcd":" Type & (\ref{prod:HasResultType})\\%<FROM #(prod:HasResultType)#
+    \| \xcd"<:" Type\\
+ FieldKeyword    \: \xcd"val" & (\ref{prod:FieldKeyword})\\%<FROM #(prod:FieldKeyword)#
+    \| \xcd"var"\\
+ Mod    \: \xcd"abstract" & (\ref{prod:Mod})\\%<FROM #(prod:Mod)#
+    \| Annotation\\
+    \| \xcd"atomic"\\
+    \| \xcd"final"\\
+    \| \xcd"native"\\
+    \| \xcd"private"\\
+    \| \xcd"protected"\\
+    \| \xcd"public"\\
+    \| \xcd"static"\\
+    \| \xcd"transient"\\
+    \| \xcd"clocked"\\
+
+\end{bbgrammar}
 
 Like most other kinds of variables in X10, 
 the fields of an object can be either \xcd`val` or \xcd`var`. 
@@ -434,332 +473,334 @@ For \xcd`val` fields, as for \xcd`val` local variables, the type may be
 omitted and inferred from the initializer type (\Sref{TypeInference}).
 \xcd`var` files, like \xcd`var` local variables, must be declared with a type.
 
-\begin{grammar}
-FieldDeclaration
-        \: FieldModifier\star \xcd"var" FieldDeclaratorsWithType \\&& ( \xcd"," FieldDeclaratorsWithType )\star \\
-        \| FieldModifier\star \xcd"val" FieldDeclarators \\&& ( \xcd"," FieldDeclarators )\star \\
-        \| FieldModifier\star FieldDeclaratorsWithType \\&& ( \xcd"," FieldDeclaratorsWithType )\star \\
-FieldDeclarators
-        \: FieldDeclaratorsWithType \\
-        \: FieldDeclaratorWithInit \\
-FieldDeclaratorId
-        \: Identifier  \\
-FieldDeclaratorWithInit
-        \: FieldDeclaratorId Init \\
-        \| FieldDeclaratorId ResultType Init \\
-FieldDeclaratorsWithType
-        \: FieldDeclaratorId ( \xcd"," FieldDeclaratorId )\star ResultType \\
-FieldModifier \: Annotation \\
-                \| \xcd"static" \\ \| \xcd`property` \\ \| \xcd`global` \\
-\end{grammar}
 
 
+%%GRAM%% \begin{grammar}
+%%GRAM%% FieldDeclaration
+%%GRAM%%         \: FieldModifier\star \xcd"var" FieldDeclaratorsWithType \\&& ( \xcd"," FieldDeclaratorsWithType )\star \\
+%%GRAM%%         \| FieldModifier\star \xcd"val" FieldDeclarators \\&& ( \xcd"," FieldDeclarators )\star \\
+%%GRAM%%         \| FieldModifier\star FieldDeclaratorsWithType \\&& ( \xcd"," FieldDeclaratorsWithType )\star \\
+%%GRAM%% FieldDeclarators
+%%GRAM%%         \: FieldDeclaratorsWithType \\
+%%GRAM%%         \: FieldDeclaratorWithInit \\
+%%GRAM%% FieldDeclaratorId
+%%GRAM%%         \: Identifier  \\
+%%GRAM%% FieldDeclaratorWithInit
+%%GRAM%%         \: FieldDeclaratorId Init \\
+%%GRAM%%         \| FieldDeclaratorId ResultType Init \\
+%%GRAM%% FieldDeclaratorsWithType
+%%GRAM%%         \: FieldDeclaratorId ( \xcd"," FieldDeclaratorId )\star ResultType \\
+%%GRAM%% FieldModifier \: Annotation \\
+%%GRAM%%                 \| \xcd"static" \\ \| \xcd`property` \\ \| \xcd`global` \\
+%%GRAM%% \end{grammar}
+%%GRAM%% 
+%%GRAM%% 
 
-\section{Accumulator Variables}
-
-Accumulator variables allow the accumulation of partial results to produce a
-final result.  For example, an accumulator variable could compute a running
-sum, product, maximum, or minimum of a collection of numbers.  In particular,
-many concurrent activites can accumulate safely into the {\em same} local
-variable, without need for \Xcd{atomic} blocks or other explicit coordination.  
-
-An accumulator variable is associated with a {\em reducer}, which explains how
-new partial values are accumulated.
-
-\subsection{Reducers}
-
-A notion of accumulation has two aspects: 
-\begin{enumerate}
-\item A {\bf zero} value, which is the initial value of the accumulator,
-      before any partial results have been included.  When accumulating a sum,
-      the zero value is \Xcd{0}; when accumulating a product, it is \Xcd{1}.
-\item A {\bf combining function}, explaining how to combine two partial
-      accumulations into a whole one.  When accumulating a sum, partial sums
-      should be added together; for a product, they should be multiplied.  
-\end{enumerate}
-
-In X10, this is represented as a value of type
-\Xcd{x10.lang.Reducer[T]}: 
-%~~gen
-%package Vars.Notx10lang.Reducerererer;
-%~~vis
-\begin{xten}
-struct Reducer[T](zero:T, apply: (T,T)=>T){}
-\end{xten}
-%~~siv
-%
-%~~neg
-\noindent 
-If \Xcd{r:Reducer[T]}, then \Xcd{r.zero} is the zero element, and
-\Xcd{r(a,b)} --- which can also be written \Xcd{r.apply(a,b)} --- is the
-combination of \Xcd{a} and \Xcd{b}.
-
-For example, the reducers for adding and multiplying integers are: 
-%~~gen
-%package Vars.Notx10lang.Reducererererererer;
-%struct Reducer[T](zero:T, apply: (T,T)=>T){}
-%class Example{
-%~~vis
-\begin{xten}
-val summer = Reducer[Int](0, Int.+);
-val producter = Reducer[Int](1, Int.*);
-\end{xten}
-%~~siv
-%}
-%~~neg
-
-
-Reduction is guaranteed to be deterministic if the reducer is {\em
-Abelian},\footnote{This term is borrowed from abstract algebra, where such a
-reducer, together with its type, forms an Abelian monoid.}
-that is, 
-\begin{enumerate}
-\item \Xcd{r.apply} is pure; that is, has no side effects;
-\item \Xcd{r.apply} is commutative; that is, \Xcd{r(a,b) == r(b,a)} for all
-      inputs \Xcd{a} and \Xcd{b};
-\item \Xcd{r.apply} is associative; that is, 
-      \Xcd{r(a,r(b,c)) == r(r(a,b),c)} for all \Xcd{a}, \Xcd{b}, and \Xcd{c}.
-\item \Xcd{r.zero} is the identity element for \Xcd{r.apply}; that is, 
-      \Xcd{r(a, r.zero) == a}
-      for all \Xcd{a}.
-\end{enumerate}
-
-
-
-
-\Xcd{summer} and \Xcd{producter} satisfy all these conditions, and give
-determinate reductions. The compiler does not require or check these, though.
-
-
-\subsection{Accumulators}
-
-If \Xcd{r} is a  value of type \Xcd{Reducer[T]}, then an accumulator of type
-\Xcd{T} using \Xcd{r} is declared as:
-%~TODO~gen
-% package Vars.Accumulators.Basic.Little.Idea;
-% class C[T]{
-% static def example (r:Reducer[T]) {
-%~TODO~vis
-\begin{xten}
-acc(r) x : T;
-acc(r) y; 
-\end{xten}
-%~TODO~siv
-%
-%~TODO~neg
-The type declaration \Xcd{T} is optional; if specified, it must be the same
-type that the reducer \Xcd{r} uses.
-
-\subsection{Sequential Use of Accumulators}
-
-The sequential use of accumulator variables is straightforward, and could be
-done as easily without accumulators.  (The power of accumulators is in their
-concurrent use, \Sref{ConcurrentUseOfAccumulators}.)
-
-A variable declared as \Xcd{acc(r) x:T;} is initialized to \Xcd{r.zero}.  
-
-Assignment of values of \Xcd{acc} variables has nonstandard semantics.
-\Xcd{x = v;} causes the value \Xcd{r(v,x)} to be stored in \Xcd{x} --- in
-particular, {\em not} the value of \Xcd{v}.
-
-Reading a value from an accumulator retrieves the current accumulation.
-
-For example, the sum and product of a list \Xcd{L} of integers can be computed
-by: 
-%~TODO~gen
-%package Vars.Accumulators.Are.For.Bisimulators;
-% import java.util.*;
-% class Example{
-% static def example(L: List[Int]) {
-%~TODO~vis
-\begin{xten}
-val summer = Reducer[Int](0, Int.+);
-val producter = Reducer[Int](1, Int.*);
-acc(summer) sum;
-acc(producter) prod;
-for (x in L) {
-  sum = x;
-  prod = x;
-}
-x10.io.Console.OUT.println("Sum = " + sum + "; Product = " + prod);
-\end{xten}
-%~TODO~siv
-%
-%~TODO~neg
-
-
-
-\subsection{Concurrent Use of Accumulators}
-\label{ConcurrentUseOfAccumulators}
-\index{accumulator!and activities}
-
-Accumulator variables are restricted and synchronized in ways that make them
-ideally suited for concurrent accumulation of data.   The {\em governing
-activity} of an accumulator is the activity in which the \Xcd{acc} variable is
-declared.  
-
-\begin{enumerate}
-\item The governing activity can read the accumulator at any point that it has
-      no running sub-activities.  
-\item Any activity that has lexical access to the accumulator can write to it.  
-      All
-      writes are performed atomically, without need for \Xcd{atomic} or other
-      concurrency control.
-\end{enumerate}
-
-If the reducer is Abelian, this guarantees that \Xcd{acc} variables cannot
-cause race conditions; the result of such a computation is determinate,
-independent of the scheduling of activities. Read-read conflicts are
-impossible, as only a single activity, the governing activity, can read the
-\Xcd{acc} variable. Read-write conflicts are impossible, as reads are only
-allowed at points where the only activity which can refer to the \Xcd{acc}
-variable is the governing activity. Two activities may try to write the
-\Xcd{acc} variable at the same time. The writes are performed atomically, so
-they behave as if they happened in some (arbitrary) order---and, because the
-reducer is Abelian, the order of writes doesn't matter.
-
-If the reducer is not Abelian---\eg, it is accumulating a string result by
-concatenating a lot of partial strings together---the result is indeterminate.
-However, because the accumulator operations are atomic, it will be the result
-of {\em some} combination of the individual elements by the reduction
-operation, \eg, the concatenation of the partial strings in {\em some} order.  
-
-
-
-For example, the following code computes triangle numbers {$\sum_{i=1}^{n}i$}
-concurrently.\footnote{This program is highly inefficient. Even ignoring the
-  constant-time formula {$\sum_{i=1}^{n}i = \frac{n(n+1)}{2}$}, this program
-  incurs the cost of starting {$n$} activities and coordinating {$n$} accesses
-  to the accumulator. Accumulator variables are of most value in multi-place,
-  multi-core computations.}
-
-
-%~TODO~gen
-%package Vars.Accumulator.Concurrency.Example;
-%class Example{
-%
-%~TODO~vis
-\begin{xten}
-def triangle(n:Int) {
-  val summer = Reducer[Int](0, Int.+);
-  acc(summer) sum; 
-  finish {
-    for([i] in 1..n) async {
-      sum = i;  // (A)
-    }
-    // (C)
-  }
-  return sum; // (B)
-}
-\end{xten}
-%~TODO~siv
-%}
-%~TODO~neg
-
-The governing activity of the \Xcd{acc} variable \Xcd{sum} is the activity
-including the body of \Xcd{triangle}.  It starts up \Xcd{n} sub-activities,
-each of which adds one value to \Xcd{sum} at point \Xcd{(A)}.  Note that these
-activities cannot {\em read} the value of \Xcd{sum}---only the governing
-activity can do that---but they can update it.  
-
-At point \Xcd{(B)}, \Xcd{triangle} returns the value in \Xcd{sum}. It is
-clear, from the \Xcd{finish} statement, that all sub-activities started by the
-governing process have finished at this point. X10 forbids reading of
-\Xcd{sum}, even by the governing process, at point \Xcd{(C)}, since
-sub-activities writing into it could still be active when the governing
-activity reaches this point.  The \Xcd{return sum;} statement could not be
-moved to \Xcd{(C)}, which is good, because the program would be wrong if it
-were there.
-
-
-
-
-\subsubsection{Accumulators and Places}
-\index{accumulator!and places} Activity variables can be read and written from
-any place, without need for \Xcd{GlobalRef}s. We may spread the previous
-computation out among all the available processors by simply sticking in an
-\Xcd{at(...)} statement at point \Xcd{(D)}, without need for other
-restructuring of the program.
-
-%~TODO~gen
-%package Vars.Accumulator.Concurrency.Example.Multiplacey;
-%class Example{
-%~TODO~vis
-\begin{xten}
-def triangle(n:Int) {
-  val summer = Reducer[Int](0, Int.+);
-  acc(summer) sum; 
-  finish {
-    for([i] in 1..n) async 
-      at(Places.place(i % Places.MAX_PLACES) { //(D)
-        sum = i;  // (A)
-    }
-  }
-  return sum; // (B)
-}
-\end{xten}
-%~TODO~siv
-%}
-%~TODO~neg
-
-\subsubsection{Accumulator Parameters}
-\index{accumulator variables!as parameters}
-\index{parameters!accumulator}
-
-Accumulators can be passed to methods and closures, by giving the keyword 
-\Xcd{acc} instead of \Xcd{var} or \Xcd{val}.  Reducers are not specified; each
-accumulator comes with its own reducer.  However, the type \Xcd{T} of the
-accumulator {\em is} required.
-
-For example, the following method takes a list of numbers, and accumulates
-those that are divisible by 2 in \Xcd{evens}, and those that are divisible by
-3 in \Xcd{triples}: 
-%~TODO~gen
-%package Vars.accumulators.parameters.oscillators.convulsitors.proximators;
-%import x10.util.*;
-%class Whatever {
-%~TODO~vis
-\begin{xten}
-static def split23(L:List[Int], acc evens:Int, acc triples:Int) {
-  for(n in L) {
-     if (n % 2 == 0) evens = n;
-     if (n % 3 == 0) triples = n;
-  }
-}
-static val summer = Reducer[Int](0, Int.+);
-static val producter = Reducer[Int](1, Int.*);
-static def sumEvenPlusProdTriple(L:List[Int]) {
-  acc(summer) sumEven;
-  acc(producter) prodTriple;
-  split23(L, sumEven, prodTriple);
-  return sumEven + prodTriple;
-}
-\end{xten}
-%~TODO~siv
-%}
-%~TODO~neg
-
-\subsection{Indexed Accumulators}
-\index{accumulator!indexed}
-\index{accumulator!array}
-
-
-\noo{Define this!}
-
-%~TODO~gen
-% package Vars.Indexed.Accumulators;
-%~TODO~vis
-\begin{xten}
-class BoolAccum implements SelfAccumulator[Boolean, Int] {
-  var sumTrue = 0, sumFalse = 0;
-  def update(k:Boolean, v:Int) { 
-     if (k) sumTrue += k; else sumFalse += k;
-  }
-  def update(ks:Array[Boolean]{rail}, vs:Array[Int]{ks.size == vs.size}) {
-     for([i] in ks.region) update(ks(i), vs(i));  }
-  
-}
-\end{xten}
-%~TODO~siv
-%
-%~TODO~neg
+%%ACC%%  \section{Accumulator Variables}
+%%ACC%%  
+%%ACC%%  Accumulator variables allow the accumulation of partial results to produce a
+%%ACC%%  final result.  For example, an accumulator variable could compute a running
+%%ACC%%  sum, product, maximum, or minimum of a collection of numbers.  In particular,
+%%ACC%%  many concurrent activites can accumulate safely into the {\em same} local
+%%ACC%%  variable, without need for \Xcd{atomic} blocks or other explicit coordination.  
+%%ACC%%  
+%%ACC%%  An accumulator variable is associated with a {\em reducer}, which explains how
+%%ACC%%  new partial values are accumulated.
+%%ACC%%  
+%%ACC%%  \subsection{Reducers}
+%%ACC%%  
+%%ACC%%  A notion of accumulation has two aspects: 
+%%ACC%%  \begin{enumerate}
+%%ACC%%  \item A {\bf zero} value, which is the initial value of the accumulator,
+%%ACC%%        before any partial results have been included.  When accumulating a sum,
+%%ACC%%        the zero value is \Xcd{0}; when accumulating a product, it is \Xcd{1}.
+%%ACC%%  \item A {\bf combining function}, explaining how to combine two partial
+%%ACC%%        accumulations into a whole one.  When accumulating a sum, partial sums
+%%ACC%%        should be added together; for a product, they should be multiplied.  
+%%ACC%%  \end{enumerate}
+%%ACC%%  
+%%ACC%%  In X10, this is represented as a value of type
+%%ACC%%  \Xcd{x10.lang.Reducer[T]}: 
+%%ACC%%  %~acc~gen
+%%ACC%%  %package Vars.Notx10lang.Reducerererer;
+%%ACC%%  %~acc~vis
+%%ACC%%  \begin{xten}
+%%ACC%%  struct Reducer[T](zero:T, apply: (T,T)=>T){}
+%%ACC%%  \end{xten}
+%%ACC%%  %~acc~siv
+%%ACC%%  %
+%%ACC%%  %~acc~neg
+%%ACC%%  \noindent 
+%%ACC%%  If \Xcd{r:Reducer[T]}, then \Xcd{r.zero} is the zero element, and
+%%ACC%%  \Xcd{r(a,b)} --- which can also be written \Xcd{r.apply(a,b)} --- is the
+%%ACC%%  combination of \Xcd{a} and \Xcd{b}.
+%%ACC%%  
+%%ACC%%  For example, the reducers for adding and multiplying integers are: 
+%%ACC%%  %~acc~gen
+%%ACC%%  %package Vars.Notx10lang.Reducererererererer;
+%%ACC%%  %struct Reducer[T](zero:T, apply: (T,T)=>T){}
+%%ACC%%  %class Example{
+%%ACC%%  %~acc~vis
+%%ACC%%  \begin{xten}
+%%ACC%%  val summer = Reducer[Int](0, Int.+);
+%%ACC%%  val producter = Reducer[Int](1, Int.*);
+%%ACC%%  \end{xten}
+%%ACC%%  %~acc~siv
+%%ACC%%  %}
+%%ACC%%  %~acc~neg
+%%ACC%%  
+%%ACC%%  
+%%ACC%%  Reduction is guaranteed to be deterministic if the reducer is {\em
+%%ACC%%  Abelian},\footnote{This term is borrowed from abstract algebra, where such a
+%%ACC%%  reducer, together with its type, forms an Abelian monoid.}
+%%ACC%%  that is, 
+%%ACC%%  \begin{enumerate}
+%%ACC%%  \item \Xcd{r.apply} is pure; that is, has no side effects;
+%%ACC%%  \item \Xcd{r.apply} is commutative; that is, \Xcd{r(a,b) == r(b,a)} for all
+%%ACC%%        inputs \Xcd{a} and \Xcd{b};
+%%ACC%%  \item \Xcd{r.apply} is associative; that is, 
+%%ACC%%        \Xcd{r(a,r(b,c)) == r(r(a,b),c)} for all \Xcd{a}, \Xcd{b}, and \Xcd{c}.
+%%ACC%%  \item \Xcd{r.zero} is the identity element for \Xcd{r.apply}; that is, 
+%%ACC%%        \Xcd{r(a, r.zero) == a}
+%%ACC%%        for all \Xcd{a}.
+%%ACC%%  \end{enumerate}
+%%ACC%%  
+%%ACC%%  
+%%ACC%%  
+%%ACC%%  
+%%ACC%%  \Xcd{summer} and \Xcd{producter} satisfy all these conditions, and give
+%%ACC%%  determinate reductions. The compiler does not require or check these, though.
+%%ACC%%  
+%%ACC%%  
+%%ACC%%  \subsection{Accumulators}
+%%ACC%%  
+%%ACC%%  If \Xcd{r} is a  value of type \Xcd{Reducer[T]}, then an accumulator of type
+%%ACC%%  \Xcd{T} using \Xcd{r} is declared as:
+%%ACC%%  %~accTODO~gen
+%%ACC%%  % package Vars.Accumulators.Basic.Little.Idea;
+%%ACC%%  % class C[T]{
+%%ACC%%  % static def example (r:Reducer[T]) {
+%%ACC%%  %~accTODO~vis
+%%ACC%%  \begin{xten}
+%%ACC%%  acc(r) x : T;
+%%ACC%%  acc(r) y; 
+%%ACC%%  \end{xten}
+%%ACC%%  %~accTODO~siv
+%%ACC%%  %
+%%ACC%%  %~accTODO~neg
+%%ACC%%  The type declaration \Xcd{T} is optional; if specified, it must be the same
+%%ACC%%  type that the reducer \Xcd{r} uses.
+%%ACC%%  
+%%ACC%%  \subsection{Sequential Use of Accumulators}
+%%ACC%%  
+%%ACC%%  The sequential use of accumulator variables is straightforward, and could be
+%%ACC%%  done as easily without accumulators.  (The power of accumulators is in their
+%%ACC%%  concurrent use, \Sref{ConcurrentUseOfAccumulators}.)
+%%ACC%%  
+%%ACC%%  A variable declared as \Xcd{acc(r) x:T;} is initialized to \Xcd{r.zero}.  
+%%ACC%%  
+%%ACC%%  Assignment of values of \Xcd{acc} variables has nonstandard semantics.
+%%ACC%%  \Xcd{x = v;} causes the value \Xcd{r(v,x)} to be stored in \Xcd{x} --- in
+%%ACC%%  particular, {\em not} the value of \Xcd{v}.
+%%ACC%%  
+%%ACC%%  Reading a value from an accumulator retrieves the current accumulation.
+%%ACC%%  
+%%ACC%%  For example, the sum and product of a list \Xcd{L} of integers can be computed
+%%ACC%%  by: 
+%%ACC%%  %~accTODO~gen
+%%ACC%%  %package Vars.Accumulators.Are.For.Bisimulators;
+%%ACC%%  % import java.util.*;
+%%ACC%%  % class Example{
+%%ACC%%  % static def example(L: List[Int]) {
+%%ACC%%  %~accTODO~vis
+%%ACC%%  \begin{xten}
+%%ACC%%  val summer = Reducer[Int](0, Int.+);
+%%ACC%%  val producter = Reducer[Int](1, Int.*);
+%%ACC%%  acc(summer) sum;
+%%ACC%%  acc(producter) prod;
+%%ACC%%  for (x in L) {
+%%ACC%%    sum = x;
+%%ACC%%    prod = x;
+%%ACC%%  }
+%%ACC%%  x10.io.Console.OUT.println("Sum = " + sum + "; Product = " + prod);
+%%ACC%%  \end{xten}
+%%ACC%%  %~accTODO~siv
+%%ACC%%  %
+%%ACC%%  %~accTODO~neg
+%%ACC%%  
+%%ACC%%  
+%%ACC%%  
+%%ACC%%  \subsection{Concurrent Use of Accumulators}
+%%ACC%%  \label{ConcurrentUseOfAccumulators}
+%%ACC%%  \index{accumulator!and activities}
+%%ACC%%  
+%%ACC%%  Accumulator variables are restricted and synchronized in ways that make them
+%%ACC%%  ideally suited for concurrent accumulation of data.   The {\em governing
+%%ACC%%  activity} of an accumulator is the activity in which the \Xcd{acc} variable is
+%%ACC%%  declared.  
+%%ACC%%  
+%%ACC%%  \begin{enumerate}
+%%ACC%%  \item The governing activity can read the accumulator at any point that it has
+%%ACC%%        no running sub-activities.  
+%%ACC%%  \item Any activity that has lexical access to the accumulator can write to it.  
+%%ACC%%        All
+%%ACC%%        writes are performed atomically, without need for \Xcd{atomic} or other
+%%ACC%%        concurrency control.
+%%ACC%%  \end{enumerate}
+%%ACC%%  
+%%ACC%%  If the reducer is Abelian, this guarantees that \Xcd{acc} variables cannot
+%%ACC%%  cause race conditions; the result of such a computation is determinate,
+%%ACC%%  independent of the scheduling of activities. Read-read conflicts are
+%%ACC%%  impossible, as only a single activity, the governing activity, can read the
+%%ACC%%  \Xcd{acc} variable. Read-write conflicts are impossible, as reads are only
+%%ACC%%  allowed at points where the only activity which can refer to the \Xcd{acc}
+%%ACC%%  variable is the governing activity. Two activities may try to write the
+%%ACC%%  \Xcd{acc} variable at the same time. The writes are performed atomically, so
+%%ACC%%  they behave as if they happened in some (arbitrary) order---and, because the
+%%ACC%%  reducer is Abelian, the order of writes doesn't matter.
+%%ACC%%  
+%%ACC%%  If the reducer is not Abelian---\eg, it is accumulating a string result by
+%%ACC%%  concatenating a lot of partial strings together---the result is indeterminate.
+%%ACC%%  However, because the accumulator operations are atomic, it will be the result
+%%ACC%%  of {\em some} combination of the individual elements by the reduction
+%%ACC%%  operation, \eg, the concatenation of the partial strings in {\em some} order.  
+%%ACC%%  
+%%ACC%%  
+%%ACC%%  
+%%ACC%%  For example, the following code computes triangle numbers {$\sum_{i=1}^{n}i$}
+%%ACC%%  concurrently.\footnote{This program is highly inefficient. Even ignoring the
+%%ACC%%    constant-time formula {$\sum_{i=1}^{n}i = \frac{n(n+1)}{2}$}, this program
+%%ACC%%    incurs the cost of starting {$n$} activities and coordinating {$n$} accesses
+%%ACC%%    to the accumulator. Accumulator variables are of most value in multi-place,
+%%ACC%%    multi-core computations.}
+%%ACC%%  
+%%ACC%%  
+%%ACC%%  %~accTODO~gen
+%%ACC%%  %package Vars.Accumulator.Concurrency.Example;
+%%ACC%%  %class Example{
+%%ACC%%  %
+%%ACC%%  %~accTODO~vis
+%%ACC%%  \begin{xten}
+%%ACC%%  def triangle(n:Int) {
+%%ACC%%    val summer = Reducer[Int](0, Int.+);
+%%ACC%%    acc(summer) sum; 
+%%ACC%%    finish {
+%%ACC%%      for([i] in 1..n) async {
+%%ACC%%        sum = i;  // (A)
+%%ACC%%      }
+%%ACC%%      // (C)
+%%ACC%%    }
+%%ACC%%    return sum; // (B)
+%%ACC%%  }
+%%ACC%%  \end{xten}
+%%ACC%%  %~accTODO~siv
+%%ACC%%  %}
+%%ACC%%  %~accTODO~neg
+%%ACC%%  
+%%ACC%%  The governing activity of the \Xcd{acc} variable \Xcd{sum} is the activity
+%%ACC%%  including the body of \Xcd{triangle}.  It starts up \Xcd{n} sub-activities,
+%%ACC%%  each of which adds one value to \Xcd{sum} at point \Xcd{(A)}.  Note that these
+%%ACC%%  activities cannot {\em read} the value of \Xcd{sum}---only the governing
+%%ACC%%  activity can do that---but they can update it.  
+%%ACC%%  
+%%ACC%%  At point \Xcd{(B)}, \Xcd{triangle} returns the value in \Xcd{sum}. It is
+%%ACC%%  clear, from the \Xcd{finish} statement, that all sub-activities started by the
+%%ACC%%  governing process have finished at this point. X10 forbids reading of
+%%ACC%%  \Xcd{sum}, even by the governing process, at point \Xcd{(C)}, since
+%%ACC%%  sub-activities writing into it could still be active when the governing
+%%ACC%%  activity reaches this point.  The \Xcd{return sum;} statement could not be
+%%ACC%%  moved to \Xcd{(C)}, which is good, because the program would be wrong if it
+%%ACC%%  were there.
+%%ACC%%  
+%%ACC%%  
+%%ACC%%  
+%%ACC%%  
+%%ACC%%  \subsubsection{Accumulators and Places}
+%%ACC%%  \index{accumulator!and places} Activity variables can be read and written from
+%%ACC%%  any place, without need for \Xcd{GlobalRef}s. We may spread the previous
+%%ACC%%  computation out among all the available processors by simply sticking in an
+%%ACC%%  \Xcd{at(...)} statement at point \Xcd{(D)}, without need for other
+%%ACC%%  restructuring of the program.
+%%ACC%%  
+%%ACC%%  %~accTODO~gen
+%%ACC%%  %package Vars.Accumulator.Concurrency.Example.Multiplacey;
+%%ACC%%  %class Example{
+%%ACC%%  %~accTODO~vis
+%%ACC%%  \begin{xten}
+%%ACC%%  def triangle(n:Int) {
+%%ACC%%    val summer = Reducer[Int](0, Int.+);
+%%ACC%%    acc(summer) sum; 
+%%ACC%%    finish {
+%%ACC%%      for([i] in 1..n) async 
+%%ACC%%        at(Places.place(i % Places.MAX_PLACES) { //(D)
+%%ACC%%          sum = i;  // (A)
+%%ACC%%      }
+%%ACC%%    }
+%%ACC%%    return sum; // (B)
+%%ACC%%  }
+%%ACC%%  \end{xten}
+%%ACC%%  %~accTODO~siv
+%%ACC%%  %}
+%%ACC%%  %~accTODO~neg
+%%ACC%%  
+%%ACC%%  \subsubsection{Accumulator Parameters}
+%%ACC%%  \index{accumulator variables!as parameters}
+%%ACC%%  \index{parameters!accumulator}
+%%ACC%%  
+%%ACC%%  Accumulators can be passed to methods and closures, by giving the keyword 
+%%ACC%%  \Xcd{acc} instead of \Xcd{var} or \Xcd{val}.  Reducers are not specified; each
+%%ACC%%  accumulator comes with its own reducer.  However, the type \Xcd{T} of the
+%%ACC%%  accumulator {\em is} required.
+%%ACC%%  
+%%ACC%%  For example, the following method takes a list of numbers, and accumulates
+%%ACC%%  those that are divisible by 2 in \Xcd{evens}, and those that are divisible by
+%%ACC%%  3 in \Xcd{triples}: 
+%%ACC%%  %~accTODO~gen
+%%ACC%%  %package Vars.accumulators.parameters.oscillators.convulsitors.proximators;
+%%ACC%%  %import x10.util.*;
+%%ACC%%  %class Whatever {
+%%ACC%%  %~accTODO~vis
+%%ACC%%  \begin{xten}
+%%ACC%%  static def split23(L:List[Int], acc evens:Int, acc triples:Int) {
+%%ACC%%    for(n in L) {
+%%ACC%%       if (n % 2 == 0) evens = n;
+%%ACC%%       if (n % 3 == 0) triples = n;
+%%ACC%%    }
+%%ACC%%  }
+%%ACC%%  static val summer = Reducer[Int](0, Int.+);
+%%ACC%%  static val producter = Reducer[Int](1, Int.*);
+%%ACC%%  static def sumEvenPlusProdTriple(L:List[Int]) {
+%%ACC%%    acc(summer) sumEven;
+%%ACC%%    acc(producter) prodTriple;
+%%ACC%%    split23(L, sumEven, prodTriple);
+%%ACC%%    return sumEven + prodTriple;
+%%ACC%%  }
+%%ACC%%  \end{xten}
+%%ACC%%  %~accTODO~siv
+%%ACC%%  %}
+%%ACC%%  %~accTODO~neg
+%%ACC%%  
+%%ACC%%  \subsection{Indexed Accumulators}
+%%ACC%%  \index{accumulator!indexed}
+%%ACC%%  \index{accumulator!array}
+%%ACC%%  
+%%ACC%%  
+%%ACC%%  \noo{Define this!}
+%%ACC%%  
+%%ACC%%  %~accTODO~gen
+%%ACC%%  % package Vars.Indexed.Accumulators;
+%%ACC%%  %~accTODO~vis
+%%ACC%%  \begin{xten}
+%%ACC%%  class BoolAccum implements SelfAccumulator[Boolean, Int] {
+%%ACC%%    var sumTrue = 0, sumFalse = 0;
+%%ACC%%    def update(k:Boolean, v:Int) { 
+%%ACC%%       if (k) sumTrue += k; else sumFalse += k;
+%%ACC%%    }
+%%ACC%%    def update(ks:Array[Boolean]{rail}, vs:Array[Int]{ks.size == vs.size}) {
+%%ACC%%       for([i] in ks.region) update(ks(i), vs(i));  }
+%%ACC%%    
+%%ACC%%  }
+%%ACC%%  \end{xten}
+%%ACC%%  %~accTODO~siv
+%%ACC%%  %
+%%ACC%%  %~accTODO~neg

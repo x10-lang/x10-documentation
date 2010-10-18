@@ -1,4 +1,4 @@
-\begin{thebibliography}{10}
+\begin{thebibliography}{1}
 
 \bibitem{kava}
 David Bacon.
@@ -41,13 +41,6 @@ Jose~E. Moreira, Samuel~P. Midkiff, Manish Gupta, Pedro~V. Artigas, Marc Snir,
   and Richard~D. Lawrence.
 \newblock Java programming for high-performance numerical computing.
 \newblock {\em IBM Systems Journal}, 39(1):21--, 2000.
-
-\bibitem{ncm03}
-Nathaniel Nystrom, Michael~R. Clarkson, and Andrew~C. Myers.
-\newblock Polyglot: An extensible compiler framework for {J}ava.
-\newblock In G{\"o}rel Hedin, editor, {\em Compiler Construction, 12th
-  International Conference, CC 2003}, number 2622 in LNCS, pages 138--152,
-  Warsaw, Poland, April 2003. Springer-Verlag.
 
 \bibitem{mpi}
 A.~Skjellum, E.~Lusk, and W.~Gropp.

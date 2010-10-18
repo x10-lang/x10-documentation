@@ -2,7 +2,8 @@
 \label{XtenClasses}\index{class}
 \label{ReferenceClasses}
 
-\section{Principles of X10 Objects}\label{XtenObjects}\index{Object}
+\section{Principles of X10 Objects}\label{XtenObjects}\index{object}
+\index{class}
 
 \subsection{Basic Design}
 
@@ -16,8 +17,10 @@ from it, directly or indirectly.
 Classes are structured in a single-inheritance code
 hierarchy, may implement multiple interfaces, may have static and
 instance fields, may have static and instance methods, may have
-constructors, may have static and instance initializers, may have
-static and instance inner classes and interfaces. \Xten{} does not
+constructors, 
+%% vj: We dont support initializers.
+% may have static and instance initializers, 
+may have static and instance nested classes and interfaces. \Xten{} does not
 permit mutable static state.
 
 \Xten{} objects do not have locks associated with them.
@@ -34,7 +37,8 @@ The basic operations on objects are:
 
 {}\item Field access (\Sref{FieldAccess}). 
 The static and instance fields of an object can be retrieved; \xcd`var` fields
-can be set.  Accumulator fields can be updated, but only in limited contexts. 
+can be set.  
+%%ACCUM%% Accumulator fields can be updated, but only in limited contexts. 
 
 {}\item Method invocation (\Sref{MethodInvocation}).  
 Static and instance methods of an object can be invoked.
@@ -58,55 +62,62 @@ interfaces, and a class body containing the the definition of fields,
 properties, methods, and member types. Each such declaration introduces a
 class type (\Sref{ReferenceTypes}).
 
-\bard{Redo grammar}
+\begin{bbgrammar}
+ NormalClassDecl    \: Mods\opt \xcd"class" Id TypeParamsWithVariance\opt Properties\opt WhereClause\opt Super\opt Interfaces\opt ClassBody & (\ref{prod:NormalClassDecl})\\%<FROM #(prod:NormalClassDecl)#
+ TypeParamsWithVariance    \: \xcd"[" TypeParamWithVarianceList \xcd"]" & (\ref{prod:TypeParamsWithVariance})\\%<FROM #(prod:TypeParamsWithVariance)#
+ TypeParamWithVarianceList    \: TypeParamWithVariance & (\ref{prod:TypeParamWithVarianceList})\\%<FROM #(prod:TypeParamWithVarianceList)#
+    \| TypeParamWithVarianceList \xcd"," TypeParamWithVariance\\
+ TypeParamWithVariance    \: Id & (\ref{prod:TypeParamWithVariance})\\%<FROM #(prod:TypeParamWithVariance)#
+    \| \xcd"+" Id\\
+    \| \xcd"-" Id\\
+ Properties    \: \xcd"(" PropertyList \xcd")" & (\ref{prod:Properties})\\%<FROM #(prod:Properties)#
+ PropertyList    \: Property & (\ref{prod:PropertyList})\\%<FROM #(prod:PropertyList)#
+    \| PropertyList \xcd"," Property\\
+ Property    \: Annotations\opt Id ResultType & (\ref{prod:Property})\\%<FROM #(prod:Property)#
+ WhereClause    \: DepParams & (\ref{prod:WhereClause})\\%<FROM #(prod:WhereClause)#
+ DepParams    \: \xcd"{" ExistentialList\opt Conjunction\opt \xcd"}" & (\ref{prod:DepParams})\\%<FROM #(prod:DepParams)#
+ Super    \: \xcd"extends" ClassType & (\ref{prod:Super})\\%<FROM #(prod:Super)#
+ Interfaces    \: \xcd"implements" InterfaceTypeList & (\ref{prod:Interfaces})\\%<FROM #(prod:Interfaces)#
+ InterfaceTypeList    \: Type & (\ref{prod:InterfaceTypeList})\\%<FROM #(prod:InterfaceTypeList)#
+    \| InterfaceTypeList \xcd"," Type\\
+ ClassBody    \: \xcd"{" ClassBodyDecls\opt \xcd"}" & (\ref{prod:ClassBody})\\%<FROM #(prod:ClassBody)#
+ ClassBodyDecls    \: ClassBodyDecl & (\ref{prod:ClassBodyDecls})\\%<FROM #(prod:ClassBodyDecls)#
+    \| ClassBodyDecls ClassBodyDecl\\
+ ClassBodyDecl    \: ClassMemberDecl & (\ref{prod:ClassBodyDecl})\\%<FROM #(prod:ClassBodyDecl)#
+    \| CtorDecl\\
+ ClassMemberDecl    \: FieldDecl & (\ref{prod:ClassMemberDecl})\\%<FROM #(prod:ClassMemberDecl)#
+    \| MethodDecl\\
+    \| PropertyMethodDecl\\
+    \| TypeDefDecl\\
+    \| ClassDecl\\
+    \| InterfaceDecl\\
+    \| \xcd";"\\
 
-%%OW  
-%%OW  \begin{grammar}
-%%OW  NormalClassDeclaration \:
-%%OW        ClassModifiers\opt \xcd"class" Identifier  \\
-%%OW     && TypeParameterList\opt PropertyList\opt Guard\opt \\
-%%OW     && Super\opt Interfaces\opt ClassBody \\
-%%OW  \\
-%%OW  TypeParameterList     \:  \xcd"[" TypeParameters \xcd"]" \\
-%%OW  TypeParameters        \:  TypeParameter ( \xcd"," TypeParameter )\star \\
-%%OW  TypeParameter         \:  Variance\opt Annotation\star Identifier     \\
-%%OW  Variance \: \xcd"+" \\
-%%OW           && \xcd"-" \\
-%%OW  \\
-%%OW  PropertyList     \:  \xcd"(" Properties \xcd")" \\
-%%OW  Properties       \:  Property ( \xcd"," Property )\star \\
-%%OW  Property         \:  Annotation\star \xcd"val"\opt Identifier \xcd":" Type \\
-%%OW  \\
-%%OW  Super \: \xcd"extends" ClassType \\
-%%OW  Interfaces \: \xcd"implements" InterfaceType ( \xcd"," InterfaceType)\star \\
-%%OW  \\
-%%OW  ClassBody \: ClassMember\star \\
-%%OW  ClassMember \: ClassDeclaration \\
-%%OW              \| InterfaceDeclaration \\
-%%OW              \| FieldDeclaration \\
-%%OW              \| MethodDeclaration \\
-%%OW              \| ConstructorDeclaration \\
-%%OW  \end{grammar}
-%%OW  
- 
+\end{bbgrammar}
+
 
 
 
 
 \section{Fields}
 \label{FieldDefinitions}
+\index{object!field}
+\index{field}
 
 Objects may have {\em instance fields}, or simply {\em fields}: places to
 store data that is pertinent to the object. Fields, like variables, may be
-mutable (\xcd`val`), immutable (\xcd`var`), or accumulator (\Xcd{acc}).
+mutable (\xcd`var`) or immutable (\xcd`val`)
+%%ACC%% , or accumulator (\Xcd{acc})
+.
 
 Class may have {\em static fields}, which store data pertinent to the
 entire class of objects.  
 See \Sref{StaticInitialization} for more information.
 
 No two fields of the same class may have the same name.
-To avoid an ambiguity, it is a static error for a class to
-declare a field with a function type (\Sref{FunctionTypes}) with
+
+To avoid an ambiguity, it is a static error to invoke  a field with a function
+type (\Sref{FunctionTypes}) that has 
 the same name and signature  as a method of the same class.  
 (Consider the class 
 \begin{xten}
@@ -120,6 +131,8 @@ Then \xcd`crash.f(3)` might either mean ``call the function \xcd`crash.f` on
 argument \xcd`3`'', or ``invoke the method \xcd`f` on argument \xcd`3`''.)
 
 \subsection{Field Initialization}
+\index{field!initialization}
+\index{initialization!of field}
 
 Fields may be given values via {\em field initialization expressions}:
 \xcd`val f1 = E;` and \xcd`var f2 : Int = F;`. Other fields of \xcd`this` may
@@ -194,18 +207,20 @@ class B extends A {
 
 \subsection{Field qualifiers}
 \label{FieldQualifier}
-\index{Qualifier!field}
+\index{qualifier!field}
 
 The behavior of a field may be changed by a field qualifier, such as
 \xcd`static` or \xcd`transient`.  
 
 
 \subsubsection{\Xcd{static} qualifier}
+\index{field!static}
 
 A \xcd`val` field may be declared to be {\em static}, as described in
 \Sref{FieldDefinitions}. 
 
-\subsection{\Xcd{transient} Qualifier}
+\subsubsection{\Xcd{transient} Qualifier}
+\label{TransientFields}
 \index{transient}
 \index{field!transient}
 
@@ -221,10 +236,10 @@ default value, it cannot be marked \Xcd{transient}.
 \begin{xten}
 class Trans { 
    val copied = "copied";
-   transient val transy : String = "a very long string";
+   transient var transy : String = "a very long string";
    def example() {
       at (here) { // causes copying
-         assert(this.copied == "copied");
+         assert(this.copied.equals("copied"));
          assert(this.transy == null);
       }
    }
@@ -234,14 +249,15 @@ class Trans {
 %
 %~~neg
 
-\subsection{\Xcd{clocked} Qualifier}
-
-Clocked fields are discussed in \Sref{ClockedFields}.
-
+%%CLOCKED%% \subsection{\Xcd{clocked} Qualifier}
+%%CLOCKED%% 
+%%CLOCKED%% Clocked fields are discussed in \Sref{ClockedFields}.
+%%CLOCKED%% 
 
 
 \section{Properties}
 \label{PropertiesInClasses}
+\index{property}
 
 The properties of an object (or struct) are  public \xcd`val` fields
 usable at compile time in constraints.\footnote{In many cases, a 
@@ -315,7 +331,7 @@ the signature \xcd"x(): T".
 
 
 Properties are initialized by the invocation of a special \Xcd{property}
-statement, which must be performed in each constructor of the class:
+statement, which must be performed by each constructor of the class:
 \begin{xten}
 property(e1,..., en);
 \end{xten}
@@ -330,8 +346,6 @@ must be given values at the same time.
 By construction, the graph whose nodes are values and whose edges are
 properties is acyclic.  \Eg, there cannot be values \xcd`a` and \xcd`b` with
 properties \xcd`c` and \xcd`d` such that \xcd`a.c == b` and \xcd`b.d == a`.
-(The similar graph whose edges are \xcd`public val` fields {\em can} have
-cycles.) 
 
 
 \index{property!call}
@@ -345,73 +359,89 @@ cycles.)
 
 
 \section{Methods}
+\index{method}
+\index{signature}
+\index{method!signature}
+\index{method!static}
 
 As is common in object-oriented languages, objects can have {\em methods}, of
 two sorts.  {\em Static methods} are functions, conceptually associated with a
 class and defined in its namespace.  {\em Instance methods} are parameterized
 code bodies associated with an instance of the class, which execute with
-priveleged access to that instance's fields. 
+convenient access to that instance's fields. 
 
 Each method has a {\em signature}, telling what arguments it accepts, what
-type it returns, what precondition it requires, and what exceptions it may
-throw. Method definitions may be overridden by subclasses; the overriding
-definition may have a declared return type that is a subclass of the return
-type of the definition being overridden. Multiple methods with the same name
-but different signatures may be provided on a class (ad hoc polymorphism).
-Methods may be declared \Xcd{public}, \Xcd{private}, \Xcd{protected}, or given
-default access rights.
+type it returns, what precondition it requires. Method definitions may be
+overridden by subclasses; the overriding definition may have a declared return
+type that is a subtype of the return type of the definition being overridden.
+Multiple methods with the same name but different signatures may be provided
+on a class (called ``overloading'' or ``ad hoc polymorphism''). Methods may be
+declared \Xcd{public}, \Xcd{private}, \Xcd{protected}, or given default package-level access
+rights.
+
+\begin{bbgrammar}
+ MethMods    \: Mods\opt & (\ref{prod:MethMods})\\%<FROM #(prod:MethMods)#
+    \| MethMods \xcd"property" \\
+    \| MethMods Mod\\
+ MethodDecl    \: MethMods \xcd"def" Id TypeParams\opt FormalParams WhereClause\opt HasResultType\opt Offers\opt MethodBody & (\ref{prod:MethodDecl})\\%<FROM #(prod:MethodDecl)#
+ TypeParams    \: \xcd"[" TypeParamList \xcd"]" & (\ref{prod:TypeParams})\\%<FROM #(prod:TypeParams)#
+ FormalParams    \: \xcd"(" FormalParamList\opt \xcd")" & (\ref{prod:FormalParams})\\%<FROM #(prod:FormalParams)#
+ FormalParamList    \: FormalParam & (\ref{prod:FormalParamList})\\%<FROM #(prod:FormalParamList)#
+    \| FormalParamList \xcd"," FormalParam\\
+ HasResultType    \: \xcd":" Type & (\ref{prod:HasResultType})\\%<FROM #(prod:HasResultType)#
+    \| \xcd"<:" Type\\
+ MethodBody    \: \xcd"=" LastExp \xcd";" & (\ref{prod:MethodBody})\\%<FROM #(prod:MethodBody)#
+    \| \xcd"=" Annotations\opt \xcd"{" BlockStatements\opt LastExp \xcd"}"\\
+    \| \xcd"=" Annotations\opt Block\\
+    \| Annotations\opt Block\\
+    \| \xcd";"\\
+\end{bbgrammar}
 
 
-\begin{grammar}
-MethodDeclaration \: MethodHeader \xcd";" \\
-                  \| MethodHeader \xcd"="\opt ClosureBody \\
-MethodHeader \:  
-  MethodModifiers\opt \xcd"def" Identifier TypeParameters\opt \\
-&& \xcd"(" 
-  FormalParameterList\opt \xcd")" Guard\opt \\
-  && ReturnType\opt \\
-\end{grammar}
 
 \index{parameter!var}
 \index{parameter!val}
-A formal parameter may have a \xcd"val", \xcd"var", or \Xcd{ref}
+A formal parameter may have a \xcd"val" or \xcd"var"
+% , or \Xcd{ref}
 modifier; \xcd`val` is the default.
 The body of the method is executed in an environment in which 
 each formal parameter corresponds to a local variable (\xcd`var` iff the
 formal parameter is \xcd`var`)
 and is initialized with the value of the actual parameter.
-Call-by-reference, \Xcd{ref} parameters, allows passing in variables for a
-method to update, as described in \Sref{RefParameters}. 
-
-\subsection{\Xcd{ref} Parameters}
-\label{RefParameters}
-\index{ref}
-\index{parameter!ref}
-
-A \Xcd{ref} parameter allows a method to modify a \Xcd{var} variable that is
-available to the caller.  
-
-%~TODO~gen
-% package Classes.RefParameters.Primo.Examplo;
-% class Example {
-%~TODO~vis
-\begin{xten}
-  def incr(ref n:Int):Void {
-     n += 1;
-  }
-  def caller() {
-     var a : Int = 0;
-     incr(a);
-     assert(a == 1);
-  }
-\end{xten}
-%~TODO~siv
-% }
-%~TODO~neg
-
+%%REF%% Call-by-reference, \Xcd{ref} parameters, allows passing in variables for a
+%%REF%% method to update, as described in \Sref{RefParameters}. 
+%%REF%% 
+%%REF%%  \subsection{\Xcd{ref} Parameters}
+%%REF%%  \label{RefParameters}
+%%REF%%  \index{ref}
+%%REF%%  \index{parameter!ref}
+%%REF%%  
+%%REF%%  A \Xcd{ref} parameter allows a method to modify a \Xcd{var} variable that is
+%%REF%%  available to the caller.  
+%%REF%%  
+%%REF%%  %~TODO~gen
+%%REF%%  % package Classes.RefParameters.Primo.Examplo;
+%%REF%%  % class Example {
+%%REF%%  %~TODO~vis
+%%REF%%  \begin{xten}
+%%REF%%    def incr(ref n:Int):void {
+%%REF%%       n += 1;
+%%REF%%    }
+%%REF%%    def caller() {
+%%REF%%       var a : Int = 0;
+%%REF%%       incr(a);
+%%REF%%       assert(a == 1);
+%%REF%%    }
+%%REF%%  \end{xten}
+%%REF%%  %~TODO~siv
+%%REF%%  % }
+%%REF%%  %~TODO~neg
+%%REF%%  
 
 \subsection{Method Guards}
 \label{MethodGuard}
+\index{method!guard}
+\index{guard!on method}
 
 Often, a method will only make sense to invoke under certain
 statically-determinable conditions.  For example, \xcd`example(x)` is only
@@ -470,7 +500,7 @@ not a subtype of \xcd"C{c}".
 \begin{staticrule*}
     The compiler checks that every method invocation
     \xcdmath"o.m(e$_1$, $\dots$, e$_n$)"
-    for a method is type correct. Each argument
+    is type correct. Each argument
     \xcdmath"e$_i$" must have a
     static type \xcdmath"S$_i$" that is a subtype of the declared type
     \xcdmath"T$_i$" for the $i$th
@@ -496,8 +526,14 @@ not a subtype of \xcd"C{c}".
     parameters of the method.
 \end{staticrule*}
 
+\limitation{
+Using a reference to an outer class, \xcd`Outer.this`, in a constraint, is not supported.
+}
+
 
 \subsection{Property methods}
+\index{method!property}
+\index{property method}
 
 Property methods are methods that can be evaluated in constraints.  
 For example, the \xcd`eq()` method below tells if the \xcd`x` and \xcd`y`
@@ -522,7 +558,7 @@ class Example(x:Int, y:Int) {
 
 A method declared with the modifier \xcd"property" may be used
 in constraints.  A property method declared in a class must have
-a body and must not be \xcd"Void".  The body of the method must
+a body and must not be \xcd"void".  The body of the method must
 consist of only a single \xcd"return" statement or a single
 expression.  It is a static error if the expression cannot be
 represented in the constraint system. 
@@ -598,8 +634,7 @@ is equivalent to
 
 \subsection{Method overloading, overriding, hiding, shadowing and obscuring}
 \label{MethodOverload}
-
-\noo{Import this from Java!}
+\index{method!overloading}
 
 The definitions of method overloading, overriding, hiding, shadowing
 and obscuring in \Xten{} are the same as in \Java, modulo the following
@@ -610,7 +645,7 @@ name if they have a different number of type parameters, or
 they have formal parameters of different types.  \Eg, the following is legal: 
 
 %~~gen
-%
+% package Classes.Mful;
 %~~vis
 \begin{xten}
 class Mful{
@@ -639,8 +674,8 @@ as'' a method declaration \xcdmath"m$_2$" involves identity of types.
 The {\em constraint erasure} of a type \xcdmath"T" is defined as follows.
 The constraint erasure of  (a)~a class, interface or struct type \xcdmath"T" is 
 \xcdmath"T"; (b)~a type \xcdmath"T{c}" is the constraint erasure of 
-\xcdmath"T"; (b)~a type \xcdmath"T[S$_1$,\ldots,S$_n$]" 
-is \xcdmath"T'[S$_1$',\ldots,S$_n$']" where each primed type is the erasure of 
+\xcdmath"T"; (b)~a type \xcdmath"T[S$_1$,$\ldots$,S$_n$]" 
+is \xcdmath"T'[S$_1$',$\ldots$,S$_n$']" where each primed type is the erasure of 
 the corresponding unprimed type.
  Two methods are said to have {\em the
   same signature} if (a) they have the same number of type parameters,
@@ -680,433 +715,364 @@ their methods visible according to the access modifiers
 of the superclass/superinterfaces that are not hidden or overridden. A method \xcdmath"M$_1$" in a class
 \xcd"C" overrides
 a method \xcdmath"M$_2$" in a superclass \xcd"D" if
-\xcdmath"M$_1$" and \xcdmath"M$_2$" have the same signature.
+\xcdmath"M$_1$" and \xcdmath"M$_2$" have the same signature with constraints erased.
 Methods are overriden on a signature-by-signature basis.
 
-A method invocation \xcdmath"o.m(e$_1$, $\dots$, e$_n$)"
-is said to have the {\em static signature}
-\xcdmath"<T, T$_1$, $\dots$, T$_n$>" where \xcd"T" is the static type of
-\xcd"o", and
-\xcdmath"T$_1$",
-\dots,
-\xcdmath"T$_n$"
-are the static types of \xcdmath"e$_1$", \dots, \xcdmath"e$_n$",
-respectively.  As in
-\Java, it must be the case that the compiler can determine a single
-method defined on \xcd"T" with argument type
-\xcdmath"T$_1$", \dots \xcdmath"T$_n$"; otherwise, a
-compile-time error is declared. However, unlike \Java, the \Xten{} type \xcd"T"
-may be a dependent type \xcd"C{c}". Therefore, given a class definition for
-\xcd"C" we must determine which methods of \xcd"C" are available at a type
-\xcd"C{c}". But the answer to this question is clear: exactly those methods
-defined on \xcd"C" are available at the type \xcd"C{c}"
-whose guard \xcd"d" is implied by \xcd"c".
-
-\subsection{Method qualifiers}
-\label{MethodQualifier}
-\index{Qualifier!method}
-
-There are a number of qualifiers which may be applied to X10 methods.
-
-\begin{grammar}
-  MethodModifier \: \xcd"atomic"  \\
-  MethodModifier \: \xcd"pinned"  \\
-  MethodModifier \: \xcd"nonblocking"  \\
-  MethodModifier \: \xcd"sequential"  \\
-\end{grammar}
+% Yoav says that the following needs complete revision.  I think the method 
+% resolution section is that complet revision.
+%%SEE-METHOD-RESOLUTION%% A method invocation \xcdmath"o.m(e$_1$, $\dots$, e$_n$)"
+%%SEE-METHOD-RESOLUTION%% is said to have the {\em static signature}
+%%SEE-METHOD-RESOLUTION%% \xcdmath"<T, T$_1$, $\dots$, T$_n$>" where \xcd"T" is the static type of
+%%SEE-METHOD-RESOLUTION%% \xcd"o", and
+%%SEE-METHOD-RESOLUTION%% \xcdmath"T$_1$",
+%%SEE-METHOD-RESOLUTION%% \dots,
+%%SEE-METHOD-RESOLUTION%% \xcdmath"T$_n$"
+%%SEE-METHOD-RESOLUTION%% are the static types of \xcdmath"e$_1$", \dots, \xcdmath"e$_n$",
+%%SEE-METHOD-RESOLUTION%% respectively.  
+%%SEE-METHOD-RESOLUTION%% It must be the case that the compiler can determine a single
+%%SEE-METHOD-RESOLUTION%% method defined on \xcd"T" with argument type
+%%SEE-METHOD-RESOLUTION%% \xcdmath"T$_1$", \dots \xcdmath"T$_n$"; otherwise, a
+%%SEE-METHOD-RESOLUTION%% compile-time error is declared. However,  the \Xten{} type \xcd"T"
+%%SEE-METHOD-RESOLUTION%% may be a dependent type \xcd"C{c}". Therefore, given a class definition for
+%%SEE-METHOD-RESOLUTION%% \xcd"C" we must determine which methods of \xcd"C" are available at a type
+%%SEE-METHOD-RESOLUTION%% \xcd"C{c}". But the answer to this question is clear: exactly those methods
+%%SEE-METHOD-RESOLUTION%% defined on \xcd"C" are available at the type \xcd"C{c}"
+%%SEE-METHOD-RESOLUTION%% whose guard \xcd"d" is implied by \xcd"c".
 
 
-\subsubsection{\Xcd{atomic} qualifier}
-\label{AtomicAnnotation}
-\index{atomic}
-
-A method may be declared \xcd"atomic", indicating that it will be executed
-atomically---as if its body were wrapped in an \xcd`atomic` statement.
-
-
-
-\subsubsection{\Xcd{pinned} qualifier}
-\label{PinnedAnnotation}
-\label{PinnedMethod}
-\index{pinned!method}
-
-A method may be declared \xcd"pinned", indicating that the evaluation of the
-method takes place entirely \xcd`here`, without any communication necessary.
-A \Xcd{pinned} method may not
-contain any \Xcd{at} statement or expression whose place argument
-is not statically equivalent to \Xcd{here}. It must call only
-\Xcd{pinned} methods. 
-
-\Xcd{pinned} methods can be overridden only by methods marked \Xcd{pinned}.
-
-\subsubsection{\Xcd{nonblocking} qualifier}
-\label{NonblockingAnnotation}
-\label{NonblockingMethod}
-\index{nonblocking!method}
-
-A method may be declared \xcd"nonblocking", indicating that it does not block.  
-A \Xcd{nonblocking} method may not
-contain any \Xcd{when} statement whose condition
-is not statically equivalent to \Xcd{true}. It must call only
-\Xcd{nonblocking} methods. 
-
-\Xcd{nonblocking} methods can be overridden only by methods marked \Xcd{nonblocking}.
-
-\subsubsection{\Xcd{sequential} qualifier}
-\label{SequentialAnnotation}
-\label{SequentialMethod}
-\index{sequential!method}
-
-A method may be declared \xcd"sequential", indicating that it does not spawn
-any other activities.
-A \Xcd{sequential} method may not contain any \Xcd{async}
-statement. It must call only \Xcd{sequential} methods. 
-
-\Xcd{sequential} methods can be overridden only by methods marked \Xcd{sequential}.
-
-%(safe)\subsubsection{\Xcd{safe} qualifier}
-%(safe)\label{SafeAnnotation}
-%(safe)\label{SafeMethod}
-%(safe)\index{safe!method}
-%(safe)
-%(safe)A method may be declared \xcd"safe", indicating that it is 
-%(safe)\xcd`pinned`, \xcd`nonblocking`, and \xcd`sequential`.
-%(safe)Safe methods are the only methods which can be called inside of \xcd`atomic`
-%(safe)and \xcd`when` statements.
-
-\section{Instance Initialization}
-
-\section{Constructors}
-
-Constructors allow the initialization of objects by the execution of
-almost-arbitrary code.  Like methods, constructors can have formal parameters,
-a constraint, a return type, 
-and a body. The formals and constraint
- are identical to those for a method.
-A constructor is declared by \xcd`def this()...`; that is, as if it were a
-method whose name were the reserved word \xcd`this`.  
-
-
-\subsection{Constructor Return Types}
-
-The return type of a constructor describes the values that constructor can
-create.  While all constructors for class \xcd`C` create objects of base class
-\xcd`C`, some individual constructors may construct objects with more specific
-constraints.    For example, in
-%~~gen
-% package Classes.Are.For.Grasses;
-%~~vis
-\begin{xten}
-class Crate(n:Int) {
-  def this() : Crate{self.n==0} = { property(0); }
-  def this(b:Boolean) : Crate{self.n==1} = { property(1); }
-}
-\end{xten}
-%~~siv
-%
-%~~neg
-\noindent
-the nullary constructor call \xcd`new Crate()` will return a value of type 
-\xcd`Crate{self.n == 0}`--- the \xcd`n` field is zero and the compiler knows
-it.  The unary Boolean constructor will return an object of type 
-\xcd`Crate{self.n==1}`.
-A less trivial example might be a specialized constructor for a square matrix, 
-which returned type \xcd`Matrix{self.rows==self.cols}`.  
-
-If the constructor type is omitted, the constructor returns 
-the type of its class, constrained by the actual parameters to the
-\xcd`property` call in the constructor.  That is, the first constructor 
-call above could be abbreviated:
-%~~gen
-% package Classes.Are.For.Grasses.In.Mountain.Passes;
-% class Crate(n:Int) {
-%~~vis
-\begin{xten}
-  def this() { property(0); }
-  // And to prove that the nullary constructor knows n==0: 
-  static def confirm() {
-    val v : Crate{self.n == 0} = new Crate();
-  }
-\end{xten}
-%~~siv
-% }
-%~~neg
-
-\subsection{Constructor Bodies}
-
-Constructors have many restrictions, designed to ensure that objects behave
-sanely while being constructed. Constructors initialize fields of objects and
-establish object invariants.  It should never be possible to observe an
-uninitialized object outside of a constructor call.  However, without some
-restrictions, it would be possible to do so quite easily.  A constructor could
-put \Xcd{this} into a data structure before initializing it, and a concurrent
-activity could read it before the initialization is finished.  If the 
-line marked \Xcd{ILLEGAL} were uncommented, the following program would
-exhibit the problem: 
-%~~gen
-% package Classes.ConstructorBodies.Methane.Ammonia.Atmosphere;
-% import x10.util.*;
-%~~vis
-\begin{xten}
-class Escaper {
-   static val all = new ArrayList[Escaper]();
-   val fld : String;
-   def this() {
-      //ILLEGAL: all.add(this);
-      this.fld = "initialized";
-   }
-   def Main(Array[String](1)):Void {
-      finish{
-        async {new Escaper();}
-        async {
-          for (e in Escaper.all) 
-            assert(e.fld == "initialized");
-        }
-      }
-   }
-}
-\end{xten}
-%~~siv
-%
-%~~neg
-
-\subsubsection{Initialization of Fields}
-
-All fields of an object must be given a value before they are used.  There are
-several ways that this can be accomplished: 
-\begin{itemize}
-\item A \Xcd{var} field of a type with a default value, if not otherwise
-      initialized, 
-      will have its type's default value. (\Xcd{val} fields may not use this
-      option; they must be given values explicitly, either by an initializer
-      or by a constructor.)  For example, \Xcd{(new C()).zero}
-      in the example below will be zero, the default value of an \Xcd{Int}.
-%~~gen
-% package Classes.Initofields.One;
-%~~vis
-\begin{xten}
-class C {
-  var zero : Int;
-}
-\end{xten}
-%~~siv
-%
-%~~neg
-
-\item A field may have an explicit initializer, in which case its value is the
-      value of the initializer.  \Xcd{(new D()).one} is one.
-%~~gen
-% package Classes.Initofields.Two;
-%~~vis
-\begin{xten}
-class D {
-  val one = 1;
-}
-\end{xten}
-%~~siv
-%
-%~~neg
-
-\item A field may be given a value in a constructor, or in a method called
-      from a constructor.  \Xcd{(new E()).x} is two; \Xcd{(new E(3)).x} is
-      three. 
-%~~gen
-% package Classes.Initofields.Three;
-%~~vis
-\begin{xten}
-class E {
-   var x : Int;
-   def this() { x = 2; }
-   def this(n: Int) { 
-      this.setX(n);
-   }
-   private final def setX(n:Int) {
-     this.x = n;
-   }
-}
-\end{xten}
-%~~siv
-%
-%~~neg
-
-
-\end{itemize}
-
-\subsubsection{Calling Another Constructor}
-
-A constructor for class \Xcd{C} can call another constructor, either of
-\Xcd{C} itself or of \Xcd{C}'s supertype.  The call to the other constructor
-must be the first statement of the constructor body.
-
-%~~gen
-% package Classical.Constructorical.Calling.Another.One;
-%~~vis
-\begin{xten}
-class C {
-  val a : Int;
-  def this(a:Int) { this.a = a; }
-  def this() { 
-     this(0); // call another constructor of C
-  }
-}
-class D extends C {
-  val b : Int; 
-  def this(a:Int, b:Int) {
-     super(a); // call superclass constructor
-     this.b = b;
-  }
-}
-\end{xten}
-%~~siv
-%
-%~~neg
-
-No fields of \Xcd{this} may be read before the optional \Xcd{this}- or
-\Xcd{super}-call. For example, having \Xcd{super(this.x);} as the
-constructor-call is illegal, since it reads \Xcd{this.x} before the
-constructor-call.
-
-\subsubsection{\Xcd{property} Statement}
-
-The \Xcd{property} statement sets the properties of \Xcd{this}; note that
-properties may not be assigned to directly.  For example, 
-\Xcd{(new C(10)).x == 10}.
-%~~gen
-% package Classes.Propertystatement.Squid.Stuffing;
-%~~vis
-\begin{xten}
-class C(x:Int, y:Boolean) {
-   def this(x:Int) {
-      property(x, true);
-   }
-}
-
-\end{xten}
-%~~siv
-%
-%~~neg
-
-The properties of \Xcd{this} may be read after the \Xcd{property} statement,
-but not before it: 
-%~~gen
-% package Classes.Propertystatement.Squid.Stuffing.Pillows;
-%~~vis
-\begin{xten}
-class C(x:Int, y:Boolean) {
-   val z : Int;
-   def this(x:Int) {
-      // x cannot be read here.
-      property(x, true);
-      this.z = x+3;
-   }
-}
-\end{xten}
-%~~siv
-%
-%~~neg
-
-
-\subsubsection{Use of \Xcd{this} in a Constructor Body}
-
-After the optional constructor-call and optional \Xcd{property} statement,
-\Xcd{this} {\em can} be used, subject to certain restrictions. 
-We say that a method is {\em constructor-like} if it is \Xcd{private},
-\Xcd{final}, and obeys the following restrictions.
-
-\begin{itemize}
-\item \Xcd{this} may not be assigned to anything. This prevents problematic
-      cases such as: 
-%~~gen
-% package Classes.Usethisinactorbodytwo;
-%~~vis
-\begin{xten}
-class Outer {
-   var leak : Inner;
-   class Inner {
-      def this() {
-        //ILLEGAL: Outer.this.leak = this;
-      }
-   }
-}
-\end{xten}
-%~~siv
-%
-%~~neg
-(It also prevents harmless cases, such as \Xcd{val nonleak = this;}
-
-\item \Xcd{this} may only be used as an argument or receiver of a
-      constructor-like method call.  The following class definition is legal.
-%~~gen
-% package Classes.Usethisinactorbodyone; 
-%~~vis
-\begin{xten}
-class C {
-  private final def ctorLike() {
-    x10.io.Console.OUT.println("constructed");
-  }
-  def this() {
-    this.ctorLike();
-  }
-}
-\end{xten}
-%~~siv
-%
-%~~neg
-      It would not be legal if \Xcd{private} or \Xcd{final} were omitted, or
-      if \Xcd{ctorLike} called \Xcd{x10.io.Console.OUT.println(this +
-      "constructed");}.  (The implicit \Xcd{this.toString()} call is a call to
-      a non-constructor-like method.)
-\end{itemize}
-
-Constructor code may refer to fields of \Xcd{this} only after they have been
-definitely assigned.\Sref{DefiniteAssign}  For example: 
-%~~gen
-%package Classes.ctordefassignuse;
-%~~vis
-\begin{xten}
-class C {
-  val d : Int, e:Int; var f: Int;
-  def this() {
-    // ILLEGAL: f = d - 1; 
-    d = 1;
-    e = d + 2;
-    
-  }
-}
-\end{xten}
-%~~siv
-%
-%~~neg
-
-
-The bodies of constructor-like methods called from constructors may only read
-fields of \Xcd{this} which have been initialized at the point that the method
-was called.  They differ from true constructor bodies in that only 
-constructor bodies, not constructor-like methods, may assign to \Xcd{val}
-fields. 
-%~~gen
-% package Classes.Usethisinactorbodythree;
-%~~vis
-\begin{xten}
-class C {
-  val m: Int;
-  var n:Int; 
-  private final def ctorLike() {
-     n = m + 3;
-     }
-  def this() { 
-     //ILLEGAL: ctorLike();
-     m = 7;
-     ctorLike();
-     }
-}
-\end{xten}
-%~~siv
-%
-%~~neg
-
-
-
+%%OUTDATED%% \section{Instance Initialization}
+%%OUTDATED%% 
+%%OUTDATED%% \section{Constructors}
+%%OUTDATED%% 
+%%OUTDATED%% Constructors allow the initialization of objects by the execution of
+%%OUTDATED%% almost-arbitrary code.  Like methods, constructors can have formal parameters,
+%%OUTDATED%% a constraint, a return type, 
+%%OUTDATED%% and a body. The formals and constraint
+%%OUTDATED%%  are identical to those for a method.
+%%OUTDATED%% A constructor is declared by \xcd`def this()...`; that is, as if it were a
+%%OUTDATED%% method whose name were the reserved word \xcd`this`.  
+%%OUTDATED%% 
+%%OUTDATED%% 
+%%OUTDATED%% \subsection{Constructor Return Types}
+%%OUTDATED%% 
+%%OUTDATED%% The return type of a constructor describes the values that constructor can
+%%OUTDATED%% create.  While all constructors for class \xcd`C` create objects of base class
+%%OUTDATED%% \xcd`C`, some individual constructors may construct objects with more specific
+%%OUTDATED%% constraints.    For example, in
+%%OUTDATED%% %~x~gen
+%%OUTDATED%% % package Classes.Are.For.Grasses;
+%%OUTDATED%% %~x~vis
+%%OUTDATED%% \begin{xten}
+%%OUTDATED%% class Crate(n:Int) {
+%%OUTDATED%%   def this() : Crate{self.n==0} = { property(0); }
+%%OUTDATED%%   def this(b:Boolean) : Crate{self.n==1} = { property(1); }
+%%OUTDATED%% }
+%%OUTDATED%% \end{xten}
+%%OUTDATED%% %~x~siv
+%%OUTDATED%% %
+%%OUTDATED%% %~x~neg
+%%OUTDATED%% \noindent
+%%OUTDATED%% the nullary constructor call \xcd`new Crate()` will return a value of type 
+%%OUTDATED%% \xcd`Crate{self.n == 0}`--- the \xcd`n` field is zero and the compiler knows
+%%OUTDATED%% it.  The unary Boolean constructor will return an object of type 
+%%OUTDATED%% \xcd`Crate{self.n==1}`.
+%%OUTDATED%% A less trivial example might be a specialized constructor for a square matrix, 
+%%OUTDATED%% which returned type \xcd`Matrix{self.rows==self.cols}`.  
+%%OUTDATED%% 
+%%OUTDATED%% If the constructor type is omitted, the constructor returns 
+%%OUTDATED%% the type of its class, constrained by the actual parameters to the
+%%OUTDATED%% \xcd`property` call in the constructor.  That is, the first constructor 
+%%OUTDATED%% call above could be abbreviated:
+%%OUTDATED%% %~x~gen
+%%OUTDATED%% % package Classes.Are.For.Grasses.In.Mountain.Passes;
+%%OUTDATED%% % class Crate(n:Int) {
+%%OUTDATED%% %~x~vis
+%%OUTDATED%% \begin{xten}
+%%OUTDATED%%   def this() { property(0); }
+%%OUTDATED%%   // And to prove that the nullary constructor knows n==0: 
+%%OUTDATED%%   static def confirm() {
+%%OUTDATED%%     val v : Crate{self.n == 0} = new Crate();
+%%OUTDATED%%   }
+%%OUTDATED%% \end{xten}
+%%OUTDATED%% %~x~siv
+%%OUTDATED%% % }
+%%OUTDATED%% %~x~neg
+%%OUTDATED%% 
+%%OUTDATED%% \subsection{Constructor Bodies}
+%%OUTDATED%% 
+%%OUTDATED%% Constructors have many restrictions, designed to ensure that objects behave
+%%OUTDATED%% sanely while being constructed. Constructors initialize fields of objects and
+%%OUTDATED%% establish object invariants.  It should never be possible to observe an
+%%OUTDATED%% uninitialized object outside of a constructor call.  However, without some
+%%OUTDATED%% restrictions, it would be possible to do so quite easily.  A constructor could
+%%OUTDATED%% put \Xcd{this} into a data structure before initializing it, and a concurrent
+%%OUTDATED%% activity could read it before the initialization is finished.  If the 
+%%OUTDATED%% line marked \Xcd{ILLEGAL} were uncommented, the following program would
+%%OUTDATED%% exhibit the problem: 
+%%OUTDATED%% %~x~gen
+%%OUTDATED%% % package Classes.ConstructorBodies.Methane.Ammonia.Atmosphere;
+%%OUTDATED%% % import x10.util.*;
+%%OUTDATED%% %~x~vis
+%%OUTDATED%% \begin{xten}
+%%OUTDATED%% class Escaper {
+%%OUTDATED%%    static val all = new ArrayList[Escaper]();
+%%OUTDATED%%    val fld : String;
+%%OUTDATED%%    def this() {
+%%OUTDATED%%       //ILLEGAL: all.add(this);
+%%OUTDATED%%       this.fld = "initialized";
+%%OUTDATED%%    }
+%%OUTDATED%%    def Main(Array[String](1)):void {
+%%OUTDATED%%       finish{
+%%OUTDATED%%         async {new Escaper();}
+%%OUTDATED%%         async {
+%%OUTDATED%%           for (e in Escaper.all) 
+%%OUTDATED%%             assert(e.fld == "initialized");
+%%OUTDATED%%         }
+%%OUTDATED%%       }
+%%OUTDATED%%    }
+%%OUTDATED%% }
+%%OUTDATED%% \end{xten}
+%%OUTDATED%% %~x~siv
+%%OUTDATED%% %
+%%OUTDATED%% %~x~neg
+%%OUTDATED%% 
+%%OUTDATED%% \subsubsection{Initialization of Fields}
+%%OUTDATED%% 
+%%OUTDATED%% All fields of an object must be given a value before they are used.  There are
+%%OUTDATED%% several ways that this can be accomplished: 
+%%OUTDATED%% \begin{itemize}
+%%OUTDATED%% \item A \Xcd{var} field of a type with a default value, if not otherwise
+%%OUTDATED%%       initialized, 
+%%OUTDATED%%       will have its type's default value. (\Xcd{val} fields may not use this
+%%OUTDATED%%       option; they must be given values explicitly, either by an initializer
+%%OUTDATED%%       or by a constructor.)  For example, \Xcd{(new C()).zero}
+%%OUTDATED%%       in the example below will be zero, the default value of an \Xcd{Int}.
+%%OUTDATED%% %~x~gen
+%%OUTDATED%% % package Classes.Initofields.One;
+%%OUTDATED%% %~x~vis
+%%OUTDATED%% \begin{xten}
+%%OUTDATED%% class C {
+%%OUTDATED%%   var zero : Int;
+%%OUTDATED%% }
+%%OUTDATED%% \end{xten}
+%%OUTDATED%% %~x~siv
+%%OUTDATED%% %
+%%OUTDATED%% %~x~neg
+%%OUTDATED%% 
+%%OUTDATED%% \item A field may have an explicit initializer, in which case its value is the
+%%OUTDATED%%       value of the initializer.  \Xcd{(new D()).one} is one.
+%%OUTDATED%% %~x~gen
+%%OUTDATED%% % package Classes.Initofields.Two;
+%%OUTDATED%% %~x~vis
+%%OUTDATED%% \begin{xten}
+%%OUTDATED%% class D {
+%%OUTDATED%%   val one = 1;
+%%OUTDATED%% }
+%%OUTDATED%% \end{xten}
+%%OUTDATED%% %~x~siv
+%%OUTDATED%% %
+%%OUTDATED%% %~x~neg
+%%OUTDATED%% 
+%%OUTDATED%% \item A field may be given a value in a constructor, or in a method called
+%%OUTDATED%%       from a constructor.  \Xcd{(new E()).x} is two; \Xcd{(new E(3)).x} is
+%%OUTDATED%%       three. 
+%%OUTDATED%% %~x~gen
+%%OUTDATED%% % package Classes.Initofields.Three;
+%%OUTDATED%% %~x~vis
+%%OUTDATED%% \begin{xten}
+%%OUTDATED%% class E {
+%%OUTDATED%%    var x : Int;
+%%OUTDATED%%    def this() { x = 2; }
+%%OUTDATED%%    def this(n: Int) { 
+%%OUTDATED%%       this.setX(n);
+%%OUTDATED%%    }
+%%OUTDATED%%    private final def setX(n:Int) {
+%%OUTDATED%%      this.x = n;
+%%OUTDATED%%    }
+%%OUTDATED%% }
+%%OUTDATED%% \end{xten}
+%%OUTDATED%% %~x~siv
+%%OUTDATED%% %
+%%OUTDATED%% %~x~neg
+%%OUTDATED%% 
+%%OUTDATED%% 
+%%OUTDATED%% \end{itemize}
+%%OUTDATED%% 
+%%OUTDATED%% \subsubsection{Calling Another Constructor}
+%%OUTDATED%% 
+%%OUTDATED%% A constructor for class \Xcd{C} can call another constructor, either of
+%%OUTDATED%% \Xcd{C} itself or of \Xcd{C}'s supertype.  The call to the other constructor
+%%OUTDATED%% must be the first statement of the constructor body.
+%%OUTDATED%% 
+%%OUTDATED%% %~x~gen
+%%OUTDATED%% % package Classical.Constructorical.Calling.Another.One;
+%%OUTDATED%% %~x~vis
+%%OUTDATED%% \begin{xten}
+%%OUTDATED%% class C {
+%%OUTDATED%%   val a : Int;
+%%OUTDATED%%   def this(a:Int) { this.a = a; }
+%%OUTDATED%%   def this() { 
+%%OUTDATED%%      this(0); // call another constructor of C
+%%OUTDATED%%   }
+%%OUTDATED%% }
+%%OUTDATED%% class D extends C {
+%%OUTDATED%%   val b : Int; 
+%%OUTDATED%%   def this(a:Int, b:Int) {
+%%OUTDATED%%      super(a); // call superclass constructor
+%%OUTDATED%%      this.b = b;
+%%OUTDATED%%   }
+%%OUTDATED%% }
+%%OUTDATED%% \end{xten}
+%%OUTDATED%% %~x~siv
+%%OUTDATED%% %
+%%OUTDATED%% %~x~neg
+%%OUTDATED%% 
+%%OUTDATED%% No fields of \Xcd{this} may be read before the optional \Xcd{this}- or
+%%OUTDATED%% \Xcd{super}-call. For example, having \Xcd{super(this.x);} as the
+%%OUTDATED%% constructor-call is illegal, since it reads \Xcd{this.x} before the
+%%OUTDATED%% constructor-call.
+%%OUTDATED%% 
+%%OUTDATED%% \subsubsection{\Xcd{property} Statement}
+%%OUTDATED%% 
+%%OUTDATED%% The \Xcd{property} statement sets the properties of \Xcd{this}; note that
+%%OUTDATED%% properties may not be assigned to directly.  For example, 
+%%OUTDATED%% \Xcd{(new C(10)).x == 10}.
+%%OUTDATED%% %~x~gen
+%%OUTDATED%% % package Classes.Propertystatement.Squid.Stuffing;
+%%OUTDATED%% %~x~vis
+%%OUTDATED%% \begin{xten}
+%%OUTDATED%% class C(x:Int, y:Boolean) {
+%%OUTDATED%%    def this(x:Int) {
+%%OUTDATED%%       property(x, true);
+%%OUTDATED%%    }
+%%OUTDATED%% }
+%%OUTDATED%% 
+%%OUTDATED%% \end{xten}
+%%OUTDATED%% %~x~siv
+%%OUTDATED%% %
+%%OUTDATED%% %~x~neg
+%%OUTDATED%% 
+%%OUTDATED%% The properties of \Xcd{this} may be read after the \Xcd{property} statement,
+%%OUTDATED%% but not before it: 
+%%OUTDATED%% %~x~gen
+%%OUTDATED%% % package Classes.Propertystatement.Squid.Stuffing.Pillows;
+%%OUTDATED%% %~x~vis
+%%OUTDATED%% \begin{xten}
+%%OUTDATED%% class C(x:Int, y:Boolean) {
+%%OUTDATED%%    val z : Int;
+%%OUTDATED%%    def this(x:Int) {
+%%OUTDATED%%       // x cannot be read here.
+%%OUTDATED%%       property(x, true);
+%%OUTDATED%%       this.z = x+3;
+%%OUTDATED%%    }
+%%OUTDATED%% }
+%%OUTDATED%% \end{xten}
+%%OUTDATED%% %~x~siv
+%%OUTDATED%% %
+%%OUTDATED%% %~x~neg
+%%OUTDATED%% 
+%%OUTDATED%% 
+%%OUTDATED%% \subsubsection{Use of \Xcd{this} in a Constructor Body}
+%%OUTDATED%% 
+%%OUTDATED%% After the optional constructor-call and optional \Xcd{property} statement,
+%%OUTDATED%% \Xcd{this} {\em can} be used, subject to certain restrictions. 
+%%OUTDATED%% We say that a method is {\em constructor-like} if it is \Xcd{private},
+%%OUTDATED%% \Xcd{final}, and obeys the following restrictions.
+%%OUTDATED%% 
+%%OUTDATED%% \begin{itemize}
+%%OUTDATED%% \item \Xcd{this} may not be assigned to anything. This prevents problematic
+%%OUTDATED%%       cases such as: 
+%%OUTDATED%% %~x~gen
+%%OUTDATED%% % package Classes.Usethisinactorbodytwo;
+%%OUTDATED%% %~x~vis
+%%OUTDATED%% \begin{xten}
+%%OUTDATED%% class Outer {
+%%OUTDATED%%    var leak : Inner;
+%%OUTDATED%%    class Inner {
+%%OUTDATED%%       def this() {
+%%OUTDATED%%         //ILLEGAL: Outer.this.leak = this;
+%%OUTDATED%%       }
+%%OUTDATED%%    }
+%%OUTDATED%% }
+%%OUTDATED%% \end{xten}
+%%OUTDATED%% %~x~siv
+%%OUTDATED%% %
+%%OUTDATED%% %~x~neg
+%%OUTDATED%% (It also prevents harmless cases, such as \Xcd{val nonleak = this;}
+%%OUTDATED%% 
+%%OUTDATED%% \item \Xcd{this} may only be used as an argument or receiver of a
+%%OUTDATED%%       constructor-like method call.  The following class definition is legal.
+%%OUTDATED%% %~x~gen
+%%OUTDATED%% % package Classes.Usethisinactorbodyone; 
+%%OUTDATED%% %~x~vis
+%%OUTDATED%% \begin{xten}
+%%OUTDATED%% class C {
+%%OUTDATED%%   private final def ctorLike() {
+%%OUTDATED%%     x10.io.Console.OUT.println("constructed");
+%%OUTDATED%%   }
+%%OUTDATED%%   def this() {
+%%OUTDATED%%     this.ctorLike();
+%%OUTDATED%%   }
+%%OUTDATED%% }
+%%OUTDATED%% \end{xten}
+%%OUTDATED%% %~x~siv
+%%OUTDATED%% %
+%%OUTDATED%% %~x~neg
+%%OUTDATED%%       It would not be legal if \Xcd{private} or \Xcd{final} were omitted, or
+%%OUTDATED%%       if \Xcd{ctorLike} called \Xcd{x10.io.Console.OUT.println(this +
+%%OUTDATED%%       "constructed");}.  (The implicit \Xcd{this.toString()} call is a call to
+%%OUTDATED%%       a non-constructor-like method.)
+%%OUTDATED%% \end{itemize}
+%%OUTDATED%% 
+%%OUTDATED%% Constructor code may refer to fields of \Xcd{this} only after they have been
+%%OUTDATED%% definitely assigned.\Sref{DefiniteAssign}  For example: 
+%%OUTDATED%% %~x~gen
+%%OUTDATED%% %package Classes.ctordefassignuse;
+%%OUTDATED%% %~x~vis
+%%OUTDATED%% \begin{xten}
+%%OUTDATED%% class C {
+%%OUTDATED%%   val d : Int, e:Int; var f: Int;
+%%OUTDATED%%   def this() {
+%%OUTDATED%%     // ILLEGAL: f = d - 1; 
+%%OUTDATED%%     d = 1;
+%%OUTDATED%%     e = d + 2;
+%%OUTDATED%%     
+%%OUTDATED%%   }
+%%OUTDATED%% }
+%%OUTDATED%% \end{xten}
+%%OUTDATED%% %~x~siv
+%%OUTDATED%% %
+%%OUTDATED%% %~x~neg
+%%OUTDATED%% 
+%%OUTDATED%% 
+%%OUTDATED%% The bodies of constructor-like methods called from constructors may only read
+%%OUTDATED%% fields of \Xcd{this} which have been initialized at the point that the method
+%%OUTDATED%% was called.  They differ from true constructor bodies in that only 
+%%OUTDATED%% constructor bodies, not constructor-like methods, may assign to \Xcd{val}
+%%OUTDATED%% fields. 
+%%OUTDATED%% %~x~gen
+%%OUTDATED%% % package Classes.Usethisinactorbodythree;
+%%OUTDATED%% %~x~vis
+%%OUTDATED%% \begin{xten}
+%%OUTDATED%% class C {
+%%OUTDATED%%   val m: Int;
+%%OUTDATED%%   var n:Int; 
+%%OUTDATED%%   private final def ctorLike() {
+%%OUTDATED%%      n = m + 3;
+%%OUTDATED%%      }
+%%OUTDATED%%   def this() { 
+%%OUTDATED%%      //ILLEGAL: ctorLike();
+%%OUTDATED%%      m = 7;
+%%OUTDATED%%      ctorLike();
+%%OUTDATED%%      }
+%%OUTDATED%% }
+%%OUTDATED%% \end{xten}
+%%OUTDATED%% %~x~siv
+%%OUTDATED%% %
+%%OUTDATED%% %~x~neg
+%%OUTDATED%% 
+%%OUTDATED%% 
+%%OUTDATED%% 
 \section{Static initialization}
 \label{StaticInitialization}
 \index{initialization!static}
@@ -1170,6 +1136,8 @@ any place.
 
 
 \section{User-Defined Operators}
+\index{operator}
+\index{operator!user-defined}
 
 It is often convenient to have methods named by symbols rather than words.
 For example, suppose that we wish to define a \xcd`Poly` class of
@@ -1254,13 +1222,13 @@ argument \xcd`x`.  We would like to write code thus:
 %      return (ai == 1) ? xpow : "" + Math.abs(ai) + xpow;
 %   }
 %
-%   public static def Main(ss:Rail[String]) = main(ss);
+%   public static def Main(ss:Array[String](1)) = main(ss);
 %
 
 
 %~~vis
 \begin{xten}
-  public static def main(Rail[String]):Void {
+  public static def main(Array[String](1)):void {
      val X = new Poly([0,1]);
      val t <: Poly = 7 * X + 6 * X * X * X; 
      val u <: Poly = 3 + 5*X - 7*X*X;
@@ -1364,7 +1332,7 @@ Writing the same code with method calls, while possible, is far less elegant:
 %   static def const(n:Int) = n as UglyPoly;
 %
 %   public static def Main(x:Rail[String]) = main(x);
-%   public static def main(Rail[String]):Void {
+%   public static def main(Rail[String]):void {
 %      val X = new UglyPoly([0,1]);
 %      val t <: UglyPoly = 7 * X + 6 * X * X * X;
 %
@@ -1457,13 +1425,12 @@ an overloaded method definition.
 %         Math.max(this.coeff.size(), p.coeff.size()),
 %         (i:Int) => this.a(i) + p.a(i)
 %      ));
+%    public operator (n : Int) + this = new Poly([n]) + this;
 %~~vis
 \begin{xten}
-   public operator (n : Int) + this = new Poly([n]) + this;
+   public operator this + (n : Int) = new Poly([n]) + this;
 \end{xten}
 %~~siv
-
-%   public operator this + (n : Int) = new Poly([n]) + this;
 % 
 %   def makeSureItWorks() {
 %      val x = new Poly([0,1]);
@@ -1495,13 +1462,13 @@ allow it as a method on \xcd`Poly` as well.
 %         Math.max(this.coeff.size(), p.coeff.size()),
 %         (i:Int) => this.a(i) + p.a(i)
 %      ));
-%    public operator (n : Int) + this = new Poly([n]) + this;
 %~~vis
 \begin{xten}
-   public operator this + (n : Int) = new Poly([n]) + this;
+   public operator (n : Int) + this = new Poly([n]) + this;
 \end{xten}
 %~~siv
 % 
+%   public operator this + (n : Int) = new Poly([n]) + this;
 %   def makeSureItWorks() {
 %      val x = new Poly([0,1]);
 %      val p <: Poly = x+x+x;
@@ -1546,20 +1513,20 @@ The definition for the sum of two
 % }
 %~~neg
 
+This requires the following grammar: \\
+\begin{bbgrammar}
+ MethodDecl    \: MethMods \xcd"operator" TypeParams\opt \xcd"(" FormalParam  \xcd")" BinOp \xcd"(" FormalParam  \xcd")" WhereClause\opt HasResultType\opt Offers\opt MethodBody\\
+    \| MethMods \xcd"operator" TypeParams\opt PrefixOp \xcd"(" FormalParam  \xcd")" WhereClause\opt HasResultType\opt Offers\opt MethodBody\\
+    \| MethMods \xcd"operator" TypeParams\opt \xcd"this" BinOp \xcd"(" FormalParam  \xcd")" WhereClause\opt HasResultType\opt Offers\opt MethodBody\\
+    \| MethMods \xcd"operator" TypeParams\opt \xcd"(" FormalParam  \xcd")" BinOp \xcd"this" WhereClause\opt HasResultType\opt Offers\opt MethodBody\\
+    \| MethMods \xcd"operator" TypeParams\opt PrefixOp \xcd"this" WhereClause\opt HasResultType\opt Offers\opt MethodBody\\
+    \| MethMods \xcd"operator" \xcd"this" TypeParams\opt FormalParams WhereClause\opt HasResultType\opt Offers\opt MethodBody\\
+    \| MethMods \xcd"operator" \xcd"this" TypeParams\opt FormalParams \xcd"=" \xcd"(" FormalParam  \xcd")" WhereClause\opt HasResultType\opt Offers\opt MethodBody\\
+    \| MethMods \xcd"operator" TypeParams\opt \xcd"(" FormalParam  \xcd")" \xcd"as" Type WhereClause\opt Offers\opt MethodBody\\
+    \| MethMods \xcd"operator" TypeParams\opt \xcd"(" FormalParam  \xcd")" \xcd"as" \xcd"?" WhereClause\opt HasResultType\opt Offers\opt MethodBody\\
+    \| MethMods \xcd"operator" TypeParams\opt \xcd"(" FormalParam  \xcd")" WhereClause\opt HasResultType\opt Offers\opt MethodBody\\
 
-This requires the following syntax:\\ 
-\begin{grammar}
-MethodHeader \:
-  \xcd`operator` TypeParameterList\opt \xcd`this` BinOp \xcd`(`  FormalParameter \xcd")" \\
-  && Guard\opt ReturnType\opt  Throws\opt \\
-MethodHeader \:
-  \xcd`operator` TypeParameterList\opt \xcd`(`  FormalParameter \xcd")" BinOp \xcd`this`  \\
-  && Guard\opt ReturnType\opt  Throws\opt \\
-MethodHeader \:
-  \xcd`operator` TypeParameterList\opt \xcd`(`  FormalParameter \xcd")" BinOp  \xcd`(`  FormalParameter \xcd")"  \\
-  && Guard\opt ReturnType\opt  Throws\opt \\
-\end{grammar}
-
+\end{bbgrammar}
 When X10 attempts to typecheck a binary operator expression like \xcd`P+Q`, it
 first typechecks \xcd`P` and \xcd`Q`. Then, it looks for operator declarations
 for \xcd`+` in the types of \xcd`P` and \xcd`Q`. If there are none, it is a
@@ -1607,13 +1574,6 @@ expression.  The operator to negate a polynomial is:
 % }
 %~~neg
 
-The syntax for unary operators is:
-
-\begin{grammar}
-MethodHeader \:
-  \xcd`operator` PrefixOp \xcd`this`    Guard\opt ReturnType\opt  Throws\opt 
-\end{grammar}
-
 The rules for typechecking a unary operation are the same as for methods; the
 complexities of binary operations are not needed.
 
@@ -1621,6 +1581,7 @@ complexities of binary operations are not needed.
 
 
 \subsection{Type Conversions}
+\index{type conversion!user-defined}
 
 Explicit type conversions, \xcd`e as T{c}`, can be defined as operators on
 class \xcd`T`.
@@ -1633,7 +1594,7 @@ class Poly {
   public val coeff : Array[Int](1);
   public def this(coeff: Array[Int](1)) { this.coeff = coeff;}
   public static operator (a:Int) as Poly = new Poly([a]);
-  public static def main(Rail[String]):Void {
+  public static def main(Array[String](1)):void {
      val three : Poly = 3 as Poly;
   }
 }
@@ -1643,41 +1604,40 @@ class Poly {
 %~~neg
 
 
+% TODO
 
-You may define a type conversion to a constrained type, like \xcd`Poly` in
-the previous example.   If you convert to a more specific constraint, X10 will use
-the conversion, but insert a dynamic check to make sure that you have
-satisfied the more specific constraint.  
-For example: 
-%~~gen
-%package Classes.And.Type.Conversions;
-%~~vis
-\begin{xten}
-class Uni(n:Int) {
-/*
-  LIMITATION: This example should compile, but doesn't.
-
-  public def this(n:Int) : Uni{self.n==n} = {property(n);}
-  static operator (String) as Uni{self.n != 9} = new Uni(3);
-  public static def main(Rail[String]):Void {
-    val u = "" as Uni{self.n != 9 && self.n != 3};
-  }
-*/
-}
-\end{xten}
-%~~siv
-%
-%~~neg
-The string \xcd`""` is converted to \xcd`Uni{self.n != 9}` via the defined
-conversion operator, and that value is checked against the remaining
-constraints \xcd`{self.n != 3}` at runtime.  (In this case it will fail.)
-
-There may be many conversions from different types to \xcd`T`, but there may
-be at most one conversion from any given type to \xcd`T`. 
-
+%%TODO%%  You may define a type conversion to a constrained type, like \xcd`Poly` in
+%%TODO%%  the previous example.   If you convert to a more specific constraint, X10 will use
+%%TODO%%  the conversion, but insert a dynamic check to make sure that you have
+%%TODO%%  satisfied the more specific constraint.  
+%%TODO%%  For example: 
+%%TODO%%  %~x~gen
+%%TODO%%  %package Classes.And.Type.Conversions;
+%%TODO%%  %~x~vis
+%%TODO%%  \begin{xten}
+%%TODO%%  class Uni(n:Int) {
+%%TODO%%  
+%%TODO%%    public def this(n:Int) : Uni{self.n==n} = {property(n);}
+%%TODO%%    static operator (String) as Uni{self.n != 9} = new Uni(3);
+%%TODO%%    public static def main(Array[String](1)):void {
+%%TODO%%      val u = "" as Uni{self.n != 9 && self.n != 3};
+%%TODO%%    }
+%%TODO%%  }
+%%TODO%%  \end{xten}
+%%TODO%%  %~x~siv
+%%TODO%%  %
+%%TODO%%  %~x~neg
+%%TODO%%  The string \xcd`""` is converted to \xcd`Uni{self.n != 9}` via the defined
+%%TODO%%  conversion operator, and that value is checked against the remaining
+%%TODO%%  constraints \xcd`{self.n != 3}` at runtime.  (In this case it will fail.)
+%%TODO%%  
+%%TODO%%  There may be many conversions from different types to \xcd`T`, but there may
+%%TODO%%  be at most one conversion from any given type to \xcd`T`. 
+%%TODO%%  
 \bard{Syntax}
 
 \subsection{Implicit Type Coercions}
+\index{type conversion!implicit}
 
 You may also define {\em implicit} type coercions to \xcd`T{c}` as static
 operators in class \xcd`T`.  The syntax for this is
@@ -1733,7 +1693,7 @@ addition to add it to \xcd`x`.
         (i:Int) => p.a(i) + q.a(i)
      ));
 
-  public static def main(Array[String](1)):Void {
+  public static def main(Array[String](1)):void {
      val x = new Poly([0,1]);
      x10.io.Console.OUT.println("1+x=" + (1+x));
   }
@@ -1783,7 +1743,7 @@ coordinates.  \xcd`a(i,j)=b` assigns different values to \xcd`a(i)` and
 %~~vis
 \begin{xten}
 class Oddvec {
-  var v : Rail[Int] = Rail.make[Int](3, (Int)=>0);
+  var v : Array[Int](1) = new Array[Int](3, (Int)=>0);
   public def apply() = "(" + v(0) + "," + v(1) + "," + v(2) + ")";
   public def apply(i:Int) = v(i);
   public def apply(i:Int, j:Int) = [v(i),v(j)];
@@ -1793,7 +1753,7 @@ class Oddvec {
   // ... 
 \end{xten}
 %~~siv
-%  public static def main(argv:Rail[String]):Void {
+%  public static def main(argv:Rail[String]):void {
 %     val a = new Oddvec();
 %     x10.io.Console.OUT.println(a() + " ... " + a(0));
 %     a(1) = 20;
@@ -1811,7 +1771,9 @@ class Oddvec {
 \section{Class Guards and Invariants}\label{DepType:ClassGuard}
 \index{type invariants}
 \index{class invariants}
-\index{guards}
+\index{invariant!type}
+\index{invariant!class}
+\index{guard}
 
 
 Classes (and structs and interfaces) may specify a {\em class guard}, a
@@ -1847,7 +1809,9 @@ class Line(a:Pt, b:Pt{a != b}) {}
 
 
 \label{DepType:TypeInvariant}
-\index{Class invariant}
+\index{class invariant}
+\index{invariant!class}
+\index{class!invariant}
 \label{DepType:ClassGuardDef}
 
 
@@ -1907,8 +1871,8 @@ $\mathit{inv}(\mbox{\xcd"T"}[\mbox{\xcd"o"}/\mbox{\xcd"this"}])
 \label{DepType:Extends}
 \index{type-checking!implements clause}
 \index{type-checking!extends clause}
-\index{implements clause}
-\index{extends  clause}
+\index{implements}
+\index{extends}
 Consider a class definition
 \begin{xtenmath}
 $\mbox{\emph{ClassModifiers}}^{\mbox{?}}$
@@ -1925,11 +1889,13 @@ The type invariant \xcdmath"$\mathit{inv}$(C)" of \xcd"C" must entail
 \end{staticrule}
 
 \begin{staticrule}{Super-extends}
-The return type \xcd"c" of each constructor in \grammarrule{ClassBody}
-must entail \xcd"d".
+The return type \xcd"c" of each constructor in a class \xcd`C`
+must entail the invariant \xcdmath"$\mathit{inv}$(C)".
 \end{staticrule}
 
 \subsection{Invariants and constructor definitions}
+\index{invariant!and constructor}
+\index{constructor!and invariant}
 
 A constructor for a class \xcd"C" is guaranteed to return an object of the
 class on successful termination. This object must satisfy  \xcdmath"$\mathit{inv}$(C)", the
@@ -1940,16 +1906,10 @@ properties than the class invariant. \Xten{}'s dependent type system
 permits these extra properties to be asserted with the constructor in
 the form of a constrained type (the ``return type'' of the constructor):
 
-\begin{grammar}
-ConstructorDeclarator \:
-  \xcd"def" \xcd"this" TypeParameterList\opt \xcd"(" FormalParameterList\opt \xcd")" \\
-  && ReturnType\opt Guard\opt Throws\opt Offers\opt \\
-ReturnType    \: \xcd":" Type \\
-Guard   \: "\{" DepExpression "\}" \\
-Throws    \: \xcd"throws" ExceptionType  ( \xcd"," ExceptionType )\star \\
-Offers    \: \xcd"offers" Type \\
-ExceptionType \: ClassBaseType Annotation\star \\
-\end{grammar}
+\begin{bbgrammar}
+ CtorDecl    \: Mods\opt \xcd"def" \xcd"this" TypeParams\opt FormalParams WhereClause\opt HasResultType\opt Offers\opt CtorBody & (\ref{prod:CtorDecl})\\%<FROM #(prod:CtorDecl)#
+\end{bbgrammar}
+
 
 \label{ConstructorGuard}
 
@@ -1968,7 +1928,7 @@ has the type that a true \xcd`union` method would have.
 %~~vis
 \begin{xten}
 class MyRegion(rank:Int) {
-  static type MyRegion(n:Int)=MyRegion{self.rank==n};
+  static type MyRegion(n:Int)=MyRegion{rank==n};
   def this(r:Int):MyRegion(r) {
     property(r);
   }
@@ -1987,7 +1947,7 @@ class MyRegion(rank:Int) {
 %
 %~~neg
 The first constructor returns the empty region of rank \Xcd{r}.  The
-second constructor takes a \Xcd{ValRail[Int]} of arbitrary length
+second constructor takes a \Xcd{Array[Int](1)} of arbitrary length
 \Xcd{n} and returns a \Xcd{MyRegion(n)} (intended to represent the set
 of points in the rectangular parallelopiped between the origin and the
 \Xcd{diag}.)
@@ -2043,8 +2003,12 @@ constructor is type correct: each argument \xcdmath"e$_i$" must have a static ty
 that is a subtype of the declared type \xcdmath"T$_i$" for the $i$th
 argument of the
 constructor, and the conjunction of static types of the argument must
-entail the \grammarrule{Guard} in the parameter list of the constructor.
+entail the constraint in the parameter list of the constructor.
 \end{staticrule}
 
 
 \input{ObjectInitialization.tex}
+
+\input{MethodResolution.tex}
+
+\input{InnerClasses.tex}

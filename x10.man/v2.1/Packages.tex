@@ -1,5 +1,5 @@
 \chapter{Names and packages}
-\label{packages} \index{names}\index{packages}\index{public}\index{protected}\index{private}
+\label{packages} \index{name}\index{package}\index{public}\index{protected}\index{private}
 
 \Xten{} supports mechanisms for names and packages in the style of Java
 \cite[\S 6,\S 7]{jls2}, including \xcd"public", \xcd"protected", \xcd"private"
@@ -10,8 +10,8 @@ and package-specific access control.
 A package is a named collection of top-level type declarations, \viz, class,
 interface, and struct declarations. Package names are sequences of
 identifiers, like \xcd`x10.lang` and \xcd`com.ibm.museum`. The multiple names
-are simply a convenience. Packages \xcd`a`, \xcd`a.b`, and \xcd`a.c` have only
-a very tenuous relationship, despite the similarity of their names.
+are simply a convenience, though there is a tenuous relationship between
+packages \xcd`a`, \xcd`a.b`, and \xcd`a.c`. 
 
 Packages and protection modifiers determine which top-level names can be used
 where. Only the \xcd`public` members of package \xcd`pack.age` can be accessed
@@ -46,9 +46,9 @@ be used from outside of \xcd`pack.age`.
 
 \subsection{Name Collisions}
 
-It is a static error for a package to have two members, or apparent members,
-with the same name.  For example, package \xcd`pack.age` cannot define two
-classes both named \xcd`Crash`, nor a class and an interface with that name.
+It is a static error for a package to have two members with the same name. For
+example, package \xcd`pack.age` cannot define two classes both named
+\xcd`Crash`, nor a class and an interface with that name.
 
 Furthermore, \xcd`pack.age` cannot define a member \xcd`Crash` if there is
 another package named \xcd`pack.age.Crash`, nor vice-versa. (This prohibition
@@ -59,6 +59,7 @@ members are capitalized prevents such collisions.
 
 
 \section{\xcd`import` Declarations}
+\index{import}
 
 Any public member of a package can be referred to from anywhere through a
 fully-qualified name: \xcd`pack.age.Stimulus`.    
@@ -91,7 +92,7 @@ imported by automatic imports.
 
 \subsection{Implicit Imports}
 
-The packages \xcd`x10.lang` and \xcd`x10.array` are imported in all files
+The packages \xcd`x10.lang` and \xcd`x10.array` are automatically imported in all files
 without need for further specification.
 
 %%BARD-HERE
@@ -100,13 +101,13 @@ without need for further specification.
 
 \section{Conventions on Type Names}
 
-\begin{grammar}
-TypeName   \: Identifier \\
-        \| TypeName \xcd"." Identifier \\
-        \| PackageName \xcd"." Identifier \\
-PackageName   \: Identifier \\
-        \| PackageName \xcd"." Identifier \\
-\end{grammar}
+\begin{bbgrammar}
+ TypeName    \: Id & (\ref{prod:TypeName})\\%<FROM #(prod:TypeName)#
+    \| TypeName \xcd"." Id\\
+ PackageName    \: Id & (\ref{prod:PackageName})\\%<FROM #(prod:PackageName)#
+    \| PackageName \xcd"." Id\\
+\end{bbgrammar}
+
 
 
 While not enforced by the compiler, classes and interfaces
@@ -122,6 +123,6 @@ such as \xcd"int" and \xcd"boolean" to be written in lowercase.
 Names of methods, fields, value properties, and packages are in camelCase and
 begin with a lowercase letter. 
 Names of \xcd"static val" fields are in all uppercase with words
-separated by `\xcd"_"''s.
+separated by \xcd"_"'s.
 
 

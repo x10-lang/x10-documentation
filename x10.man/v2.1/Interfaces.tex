@@ -1,8 +1,7 @@
 \chapter{Interfaces}
-\label{XtenInterfaces}\index{interfaces}
+\label{XtenInterfaces}\index{interface}
 
-{}\XtenCurrVer{} interfaces are generally modelled on Java interfaces \cite[\S
-  9]{jls2}. An interface specifies signatures for public methods, properties,
+An interface specifies signatures for public methods, properties,
 \xcd`static val`s, and an invariant. It may extend several interfaces, giving
 X10 a large fraction of the power of multiple inheritance at a tiny fraction
 of the cost.
@@ -13,7 +12,7 @@ The following puny example illustrates all these features:
 %~~vis
 \begin{xten}
 interface Pushable(text:String, prio:Int) {
-  def push(): Void;
+  def push(): void;
   static val MAX_PRIO = 100;
 }
 class MessageButton(text:String, prio:Int) 
@@ -45,22 +44,38 @@ implement the interface may be stored in the variable.
 
 \label{DepType:Interface}
 
+\begin{bbgrammar}
+ NormalInterfaceDecl    \: Mods\opt \xcd"interface" Id TypeParamsWithVariance\opt Properties\opt WhereClause\opt ExtendsInterfaces\opt InterfaceBody & (\ref{prod:NormalInterfaceDecl})\\%<FROM #(prod:NormalInterfaceDecl)#
+ TypeParamsWithVariance    \: \xcd"[" TypeParamWithVarianceList \xcd"]" & (\ref{prod:TypeParamsWithVariance})\\%<FROM #(prod:TypeParamsWithVariance)#
+ Properties    \: \xcd"(" PropertyList \xcd")" & (\ref{prod:Properties})\\%<FROM #(prod:Properties)#
+ PropertyList    \: Property & (\ref{prod:PropertyList})\\%<FROM #(prod:PropertyList)#
+    \| PropertyList \xcd"," Property\\
+ Property    \: Annotations\opt Id ResultType & (\ref{prod:Property})\\%<FROM #(prod:Property)#
+ WhereClause    \: DepParams & (\ref{prod:WhereClause})\\%<FROM #(prod:WhereClause)#
+ ExtendsInterfaces    \: \xcd"extends" Type & (\ref{prod:ExtendsInterfaces})\\%<FROM #(prod:ExtendsInterfaces)#
+    \| ExtendsInterfaces \xcd"," Type\\
+ InterfaceBody    \: \xcd"{" InterfaceMemberDecls\opt \xcd"}" & (\ref{prod:InterfaceBody})\\%<FROM #(prod:InterfaceBody)#
+ InterfaceMemberDecls    \: InterfaceMemberDecl & (\ref{prod:InterfaceMemberDecls})\\%<FROM #(prod:InterfaceMemberDecls)#
+    \| InterfaceMemberDecls InterfaceMemberDecl\\
+ InterfaceMemberDecl    \: MethodDecl & (\ref{prod:InterfaceMemberDecl})\\%<FROM #(prod:InterfaceMemberDecl)#
+    \| PropertyMethodDecl\\
+    \| FieldDecl\\
+    \| ClassDecl\\
+    \| InterfaceDecl\\
+    \| TypeDefDecl\\
 
-\begin{grammar}
-NormalInterfaceDeclaration \:
-      InterfaceModifiers\opt \xcd"interface" Identifier  \\
-   && TypePropertyList\opt PropertyList\opt Constraint\opt \\
-   && ExtendsInterfaces\opt InterfaceBody \\
-\end{grammar}
+
+\end{bbgrammar}
+
 \noindent
 The invariant associated with an interface is the conjunction of the
 invariants associated with its superinterfaces and the invariant
 defined at the interface. 
 
-\begin{staticrule*}
-The compiler declares an error if this constraint
-is not consistent.  
-\end{staticrule*}
+%%WRONG%% \begin{staticrule*}
+%%WRONG%% The compiler declares an error if this constraint
+%%WRONG%% is not consistent.  
+%%WRONG%% \end{staticrule*}
 
 Each interface implicitly defines a nullary getter method
 \xcd"def p(): T" for each property \xcd"p: T". The interface may not have
@@ -73,14 +88,18 @@ A class \xcd"C" is said to implement an interface \xcd"I" if
 \item \xcd`I`, or a subtype of \xcd`I`, appears in the \xcd`implements` list
       of \xcd`C`, 
 \item \xcd`C`'s properties include all the properties of \xcd"I",
-\item \xcd`C`'s class invariant $\mathit{inv}($\xcd"C"$)$ implies
-$\mathit{inv}($\xcd"I"$)$.
+%%IMPLIED%% \item \xcd`C`'s class invariant $\mathit{inv}($\xcd"C"$)$ implies
+%%IMPLIED%% $\mathit{inv}($\xcd"I"$)$.
 \item Each method \xcd`m` defined by \xcd`I` is also a method of \xcd`C` --
-      {\em with the \xcd`public`} modifier added.   These methods may be
+      with the {\em  \xcd`public`} modifier added.   These methods may be
       \xcd`abstract` if \xcd`C` is \xcd`abstract`.
 \end{itemize}
 
+Note that, by definition of $\mathit{inv}(\cdot)$ (see \Sref{DepType:ClassGuardDef}, \xcd`C`'s class invariant $\mathit{inv}($\xcd"C"$)$ implies
+$\mathit{inv}($\xcd"I"$)$.
+
 \section{Field Definitions}
+\index{interface!field definition in}
 
 An interface may declare a \xcd`val` field, with a value.  This field is implicitly
 \xcd`public static val`: 
@@ -149,13 +168,5 @@ class Example implements I4 {
 %
 %~fails~neg
 
-\section{Interfaces Specifying Properties}
-
-Interfaces may specify properties.  
-
-
-\bard{Methods}
-\bard{Properties}
-\bard{Invariannt}
 
 

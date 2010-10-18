@@ -60,7 +60,7 @@ struct PlanePoint implements Normed {
 An \Xten{} interface specifies a collection of abstract methods; \xcd`Normed`
 specifies just \xcd`norm()`. Classes and
 structs can be specified to {\em implement} interfaces, as \xcd`Slider` and
-\xcd`PlanePoint` implement \xcd`Normed` , and, when they do so, must provide
+\xcd`PlanePoint` implement \xcd`Normed`, and, when they do so, must provide
 all the methods that the interface demands.
 
 Interfaces are
@@ -90,10 +90,10 @@ with these limitations; \eg, while they cannot {\em inherit} methods, they can
 have them -- as \xcd`PlanePoint` does.
 
 \Xten{} has no primitive classes per se. However, the standard library
-\xcd"x10.lang" supplies structs \xcd"Boolean", \xcd"Byte", \xcd"Short",
-\xcd"Char", \xcd"Int", \xcd"Long", \xcd"Float", \xcd"Double", \xcd"Complex"
-and \xcd"String". The user may defined additional arithmetic structs using the
-facilities of the language.
+\xcd"x10.lang" supplies structs and objects \xcd"Boolean", \xcd"Byte",
+\xcd"Short", \xcd"Char", \xcd"Int", \xcd"Long", \xcd"Float", \xcd"Double",
+\xcd"Complex" and \xcd"String". The user may defined additional arithmetic
+structs using the facilities of the language.
 
 
 
@@ -123,11 +123,12 @@ complicated way.
 
 
 They are used extensively in X10
-programs.  For example, the normal way to construct a \xcd`Rail[Int]` --
+programs.  For example, the normal way to construct an \xcd`Array[Int](1)` --
 that is, a fixed-length array of numbers, like an \xcd`int[]` in Java -- is to
 pass two arguments to a factory method: the first argument being the length of
-the rail, and the second being a function which computes the initial value of
-the \xcd`i`{$^{th}$} element.  The following code constructs a rail
+the array, and the second being a function which computes the initial value of
+the \xcd`i`{$^{th}$} element.  The following code constructs a 1-dimensional
+array 
 initialized to the squares of 0,1,...,9: \xcd`r(0) == 0`, \xcd`r(5)==25`, etc. 
 %~~gen
 % package Overview.of.Functions.two;
@@ -136,7 +137,7 @@ initialized to the squares of 0,1,...,9: \xcd`r(0) == 0`, \xcd`r(5)==25`, etc.
 %    val square = (i:Int) => i*i;
 %~~vis
 \begin{xten}
-  val r : Rail[Int] = Rail.make[Int](10, square);
+  val r : Array[Int](1) = new Array[Int](10, square);
 \end{xten}
 %~~siv
 %}}
@@ -159,13 +160,37 @@ properties, and can work with them logically.
 For example, an implementation of matrices \xcd`Mat` might have the numbers of
 rows and columns as properties.  A little bit of care in definitions allows
 the definition of a \xcd`+` operation that works on matrices of the same
-shape, and \xcd`*` that works on matrices with appropriately matching shapes
+shape, and \xcd`*` that works on matrices with appropriately matching shapes.
+%~~gen
+%package Overview.Mat2;
+%~~vis
+\begin{xten}
+abstract class Mat(rows:Int, cols:Int) {
+ static type Mat(r:Int, c:Int) = Mat{rows==r&&cols==c};
+ abstract operator this + (y:Mat(this.rows,this.cols))
+                 :Mat(this.rows, this.cols);
+ abstract operator this * (y:Mat) {this.cols == y.rows} 
+                 :Mat(this.rows, y.cols);
+\end{xten}
+%~~siv
+%  static def makeMat(r:Int,c:Int) : Mat(r,c) = null;
+%  static def example(a:Int, b:Int, c:Int) {
+%    val axb1 : Mat(a,b) = makeMat(a,b);
+%    val axb2 : Mat(a,b) = makeMat(a,b);
+%    val bxc  : Mat(b,c) = makeMat(b,c);
+%    val axc  : Mat(a,c) = (axb1 +axb2) * bxc;
+%  }
+%}
+%~~neg
+
+
+
 The following code typechecks, but an attempt to compute \xcd`axb1 + bxc` or
 \xcd`bxc * axb1` would result in a compile-time type error:
 %~~gen
 %package Overview.Mat1;
 %abstract class Mat(rows:Int, cols:Int) {
-%  static type Mat(r:Int, c:Int) = Mat{self.rows==r&&self.cols==c};
+%  static type Mat(r:Int, c:Int) = Mat{rows==r&&cols==c};
 %  public def this(r:Int, c:Int) : Mat(r,c) = {property(r,c);}
 %  static def makeMat(r:Int,c:Int) : Mat(r,c) = null;
 %  abstract  operator this + (y:Mat(this.rows,this.cols)):Mat(this.rows, this.cols);
@@ -192,18 +217,15 @@ abstract to allow for multiple implementations, like sparse and band matrices,
 but in fact is abstract to avoid having to write the actual definitions of
 \xcd`+` and \xcd`*`.}  
 
-A constrained type looks like \xcd`Mat{self.rows==r && self.cols==c}`: a type
-name, followed by a Boolean expression in braces.  The special variable
-\xcd`self` refers to the matrix whose number of rows and columns is being
-checked.  The \xcd`type` declaration on the second line makes
-\xcd`Mat(2,3)` be a synonym for \xcd`Mat{self.rows==r && self.cols==c}`,
+A constrained type looks like \xcd`Mat{rows==r && cols==c}`: a type
+name, followed by a Boolean expression in braces.  
+The \xcd`type` declaration on the second line makes
+\xcd`Mat(r,c)` be a synonym for \xcd`Mat{rows==r && cols==c}`,
 allowing for compact types in many places.
 
 Functions can return constrained types.  
 The \xcd`makeMat(r,c)` method returns a \xcd`Mat(r,c)` -- a matrix whose shape
-is given by the arguments to the method.  For the sake of brevity in
-the example, it returns \xcd`null`; in real code, it would actually produce a
-matrix -- which must be statically provable to have the right shape.  In
+is given by the arguments to the method.    In
 particular, constructors can have constrained return types to provide specific
 information about the constructed values.
 
@@ -224,27 +246,7 @@ And that is all that is necessary for a user-defined class of matrices to have
 shape-checking for matrix addition and multiplication.  The \xcd`example`
 method compiles under those definitions.
 
-%~~gen
-%package Overview.Mat2;
-%~~vis
-\begin{xten}
-abstract class Mat(rows:Int, cols:Int) {
- static type Mat(r:Int, c:Int) = Mat{self.rows==r&&self.cols==c};
- static def makeMat(r:Int,c:Int) : Mat(r,c) = null;
- abstract operator this + (y:Mat(this.rows,this.cols))
-                 :Mat(this.rows, this.cols);
- abstract operator this * (y:Mat) {this.cols == y.rows} 
-                 :Mat(this.rows, y.cols);
-\end{xten}
-%~~siv
-%  static def example(a:Int, b:Int, c:Int) {
-%    val axb1 : Mat(a,b) = makeMat(a,b);
-%    val axb2 : Mat(a,b) = makeMat(a,b);
-%    val bxc  : Mat(b,c) = makeMat(b,c);
-%    val axc  : Mat(a,c) = (axb1 +axb2) * bxc;
-%  }
-%}
-%~~neg
+
 
 
 
@@ -313,10 +315,10 @@ hardware threads and a bounded amount of shared memory, uniformly
 accessible by all threads.
 
 
-\bard{The following para is mostly obsolete.}
+
 An \Xten{} computation acts on \emph{values}(\Sref{XtenObjects}) through
 the execution of lightweight threads called
-\emph{activities}(\Sref{XtenActivities}). Values are of three kinds.  
+\emph{activities}(\Sref{XtenActivities}). 
 An {\em object}
  has a small, statically fixed set of fields, each of
 which has a distinct name. A scalar object is located at a single place and
@@ -355,17 +357,10 @@ available.
 
 \paragraph{Asynchronous activities.}
 
-An asynchronous activity is created by a statement \xcd"async (P) S"
-where \xcd"P" is a place expression and \xcd"S" is a statement.  Such
-a statement is executed by spawning an activity at the place
-\xcd"P"  executing statement \xcd"S".
+An asynchronous activity is created by a statement \xcd"async S", which starts
+up a new activity running \xcd`S`.  It does not wait for the new activity to
+finish; there is a separate statement (\xcd`finish`) to do that.
 
-If the activity needs to return a value, the form \xcd`future (p) E` is often
-convenient. This spawns an activity at \xcd`p` evaluating \xcd`E`, and also
-returns a value called a {\em future} which is capable of accepting the value
-of \xcd`E` when it is ready.  The caller can try to get the value from the
-future, which provides it immediately if it is ready and blocks to wait for it
-if it is not.
 
 
 
@@ -399,7 +394,7 @@ new clocks or new activities registered on an extant clock, and so on.
 
 Clocks act as {barriers} for a dynamically varying collection of activities.
 They generalize the barriers found in MPI style program in that an activity
-may use multiple clocks simultaneously. Yet programs using clocks are
+may use multiple clocks simultaneously. Yet programs using clocks properly are
 guaranteed not to suffer from deadlock.
 
 %%HERE
@@ -450,9 +445,11 @@ computation.
 \Xten{} is designed for scalability, by encouraging working with local data,
 and limiting the ability of events at one place to delay those at another. For
 example, an activity may atomically access only multiple locations in the
-current place. Unconditional atomic blocks are statically guaranteed to be
+current place. Unconditional atomic blocks are dynamically guaranteed to be
 non-blocking, and may be implemented using non-blocking techniques that avoid
-mutual exclusion bottlenecks. Data-flow synchronization permits point-to-point
+mutual exclusion bottlenecks. 
+%TODO: yoav says: ``no idea what [the following] means''
+Data-flow synchronization permits point-to-point
 coordination between reader/writer activities, obviating the need for
 barrier-based or lock-based synchronization in many cases.
 
@@ -475,7 +472,8 @@ providing weaker static correctness guarantees but more programming
 convenience. 
 
 Memory safety guarantees that an object may only access memory within its
-representation, and other objects it has a reference to. \Xten{} supports no
+representation, and other objects it has a reference to. \Xten{} does not
+permit 
 pointer arithmetic, and bound-checks array accesses dynamically if necessary.
 \Xten{} uses garbage collection to collect objects no longer referenced by any
 activity. \Xten{} guarantees that no object can retain a reference to an
@@ -503,6 +501,7 @@ A key issue for any new programming language is how well it can be
 integrated with existing (external) languages, system environments,
 libraries and tools.
 
+%TODO: Yoav asks ``you mean interop''?
 We believe that \Xten{}, like \java{}, will be able to support a large
 number of libraries and tools. An area where we expect future versions
 of \Xten{} to improve on \java{} like languages is \emph{native
@@ -512,7 +511,7 @@ native code.
 
 \subsection{Conclusion}
 {}\Xten{} is considerably higher-level than thread-based languages in
-that it supports dynamically spawning very lightweight activities, the
+that it supports dynamically spawning lightweight activities, the
 use of atomic operations for mutual exclusion, and the use of clocks
 for repeated quiescence detection.
 
@@ -529,8 +528,3 @@ support for generic programming will allow the \Xten{} programmer to
 be highly productive; many of the tedious details of
 distribution-specific code can be handled in a generic fashion.
 
-We expect the next version of the language to be significantly
-informed by experience in implementing and using the language. We
-expect it to have constructs to support continuous program
-optimization, and allow the programmer to provide guidance on
-clustering places to (hardware) nodes. 

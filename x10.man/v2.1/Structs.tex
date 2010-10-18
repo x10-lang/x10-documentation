@@ -2,7 +2,7 @@
 \label{XtenStructs}
 \label{StructClasses}
 \label{Structs}
-\index{structs}
+\index{struct}
 
 X10 objects are a powerful general-purpose programming tool. However, the
 power must be paid for in space and time. In space, a typical object
@@ -30,11 +30,14 @@ They are also interconvertable, within the constraints of structs. If you
 start off defining a struct and decide you need a class instead, the code
 change required is simply changing the keyword \xcd`struct` to \xcd`class`. If
 you have a class that does not use inheritance or mutable fields, it can be
-converted to a struct by changing its keyword.
+converted to a struct by changing its keyword. Client code using the struct
+that was a class will need certain changes: the \xcd`new` keyword must be
+added in constructor calls, and structs (unlike classes) do not have default values.
 
 
 
 \section{Struct declaration}
+\index{struct!declaration}
 A struct declaration has the structure: 
 \begin{xtenmath}
 $\mbox{\emph{StructModifiers}}^{\mbox{?}}$
@@ -44,8 +47,7 @@ $\mbox{\emph{StructBody}}$
 }
 \end{xtenmath}
 
-Each field and method in a struct is implicitly \Xcd{global}, and each field
-is \xcd`val`.
+All fields of a struct must be \xcd`val`.
 
 A struct \Xcd{S} cannot contain a field of type \Xcd{S}, or a field of struct
 type \Xcd{T} which, recursively, contains a field of type \Xcd{S}.  This
@@ -89,6 +91,8 @@ struct Pair[T,U](t:T, u:U) {
 
 \section{Boxing of structs}
 \index{auto-boxing!struct to interface}
+\index{struct!auto-boxing}
+\index{struct!casting to interface}
 \label{auto-boxing} 
 If a struct \Xcd{S} implements an interface \Xcd{I} (\eg, \Xcd{Any}),
 a value \Xcd{v} of type \Xcd{S} can be assigned to a variable of type
@@ -108,21 +112,11 @@ type \Xcd{S}.
 \label{StructAnyMethods}
 \index{Any!structs}
 
-Unlike objects, structs do not have global identity. Instead, two
+Two
 structs are equal (\Xcd{==}) if and only if their corresponding fields
 are equal (\Xcd{==}). 
 
-All structs implement \Xcd{x10.lang.Any}. All 
-structs have the following methods implicitly defined on them:
-\begin{xten}
-  property def home()=here;
-  property def at(Place)=true;
-  property def at(Object)=true;
-\end{xten}
-\noindent It is an error for a programmer to attempt to define them.
-Note that the \xcd`home` of a struct evaluated in place \xcd`P` is equal to
-\xcd`P`---a struct, unlike an object, can have different values of \xcd`home`. 
-
+All structs implement \Xcd{x10.lang.Any}. 
 Structs are required to implement the following methods from \xcd`Any`.  
 Programmers need not provide them; X10 will produce them automatically if 
 the program does not include them. 
@@ -141,17 +135,33 @@ yield better performance since the cost of an upcast to \Xcd{Any} and
 then a downcast to \Xcd{S} can be avoided.
 
 \section{Primitive Types}
+\index{types!primitive}
+\index{primitive types}
+\index{Int}
+\index{UInt}
+\index{Long}
+\index{ULong}
+\index{Char}
+\index{Byte}
+\index{UByte}
+\index{Boolean}
+\index{Short}
+\index{UShort}
+\index{Float}
+\index{Double}
 
 Certain types that might be built in to other languages are in fact
 implemented as structs in package \xcd`x10.lang` in X10. Their methods and
 operations are often provided with \xcd`@Native` (\Sref{NativeCode}) rather
 than X10 code, however. These types are:
 \begin{xten}
-boolean, char, byte, short, int, long
-float, double, ubyte, ushort, uint, ulong
+Boolean, Char, Byte, Short, Int, Long
+Float, Double, UByte, UShort, UInt, ULong
 \end{xten}
  
 \section{Generic programming with structs}
+\index{struct!generic}
+\index{generic!struct}
 
 An unconstrained type variable \Xcd{X} can be instantiated with \Xcd{Object} or
 its subclasses or structs or functions.
@@ -207,3 +217,11 @@ struct Pair[T,U] {
 %
 %~~neg
 
+\section{Nested Structs}
+\index{struct!static nested}
+\index{static nested struct}
+
+Static nested structs may be defined, essentially as static nested classes
+except for making them structs
+(\Sref{StaticNestedClasses}).  Inner structs may be defined, essentially as
+inner classes except making them structs (\Sref{InnerClasses}).

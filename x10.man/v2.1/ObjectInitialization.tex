@@ -1,4 +1,9 @@
 \subsection{Object Initialization}
+\index{initialization}
+\index{constructor}
+\index{object!constructor}
+\index{struct!constructor}
+
 
 X10 does object initialization safely.  It avoids a few classes of bad things: 
 \begin{enumerate}
@@ -78,7 +83,7 @@ In general, constructors must not be allowed to call methods with\Xcd{this} as
 an argument or receiver. Such calls could leak references to \Xcd{this},
 either directly from a call to \Xcd{cell.set(this)}, or indirectly because
 \Xcd{toString} leaks \Xcd{this}, and the concatenation 
-\Xcd{"Escaper = "+this} calls \Xcd{toString}.\footnote{This is abominable behavior for 
+\Xcd`"Escaper = "+this` calls \Xcd{toString}.\footnote{This is abominable behavior for 
 \Xcd{toString}, but nonetheless it is allowed.}
 %~WRONG~gen
 %package ObjectInit.CtorAndNonEscaping.One;
@@ -118,23 +123,23 @@ be accomplished in two ways:
       methods called from the constructor: they can be marked \Xcd{final} or
       \Xcd{private}, or the whole class can be \Xcd{final}.
 \item Marking the methods called from the constructor by
-      \xcd`@NonEscaping("v1,v2")`.
+      \xcd`@NonEscaping`.
 \end{enumerate}
 
 \subsubsection{Non-Escaping Methods}
 \index{method!non-escaping}
 \index{method!implicitly non-escaping}
-\index{method!@NonEscaping}
+\index{method!NonEscaping}
 \index{implicitly non-escaping}
 \index{non-escaping}
 \index{non-escaping!implicitly}
-\index{@NonEscaping}
+\index{NonEscaping}
 
 
-A method may be annotated with \xcd`@NonEscaping("v1,v2")`.  This
+A method may be annotated with \xcd`@NonEscaping`.  This
 imposes several restrictions on the method body, and on all methods overriding
 it.  However, it is the only way that a method can be called from
-constructors, and simultaneously be overridable and non-private.  The
+constructors.  The
 \Xcd{@NonEscaping} annotation makes explicit all the X10 compiler's needs for
 constructor-safety.  
 
@@ -143,7 +148,7 @@ A method can, however, be safe to call from constructors without being marked
 Implicitly non-escaping methods need to obey the same constraints on
 \Xcd{this}, \Xcd{super}, and variable usage as \Xcd{@NonEscaping} methods. An
 implicitly non-escaping method {\em could} be marked as
-\xcd`@NonEscaping("v1,v2")` for some list of variables; the compiler, in
+\xcd`@NonEscaping` for some list of variables; the compiler, in
 effect, infers the annotation. In addition, implicitly non-escaping methods
 must be \Xcd{private} or \Xcd{final} or members of a \Xcd{final} class; this
 corresponds to the hereditary nature of \Xcd{@NonEscaping} (by forbidding
@@ -157,20 +162,10 @@ The first requirement on non-escaping methods is that they do not allow
 only be used for field access and assignment, and as the receiver of
 non-escaping methods.
 
-\Xcd{@NonEscaping("v1,v2")} methods specify a list of fields of \Xcd{this}, as
-a string argument of the annotation: in this example, the fields are \Xcd{v1}
-and \Xcd{v2}.  These are the only fields of \Xcd{this} that can be {\em read}
-in the body of the method.  So, \Xcd{x = this.v3} would be forbidden---as
-would a call to a method which reads \Xcd{v3}, even if that method were
-non-escaping. 
-
-For a method to be implicitly non-escaping, there must be {\em some} such list
-of fields.  
-
 Finally, if a method \Xcd{m} in class \Xcd{C} is marked
-\xcd`@NonEscaping("v1,v2")`, then every method which overrides \Xcd{m} in any
+\xcd`@NonEscaping`, then every method which overrides \Xcd{m} in any
 subclass of \Xcd{C} must be annotated with precisely the same annotation,
-\xcd`@NonEscaping("v1,v2")`, as well.  
+\xcd`@NonEscaping`, as well.  
 
 The following example uses most of the possible variations (leaving out
 \Xcd{final} class).  \Xcd{aplomb()} explicitly forbids reading any field but
@@ -190,7 +185,7 @@ declared \xcd`@NonEscaping("a")`, just like \Xcd{C2.aplomb()}.
 \begin{xten}
 import x10.compiler.*;
 
-class C2 {
+final class C2 {
   protected val a:Int, b:Int, c:Int;
   protected var x:Int, y:Int, z:Int;
   def this() {
@@ -201,27 +196,19 @@ class C2 {
     c = 3;
     this.cajoled();
   }
-  @NonEscaping("a") def aplomb() {
+  @NonEscaping def aplomb() {
     x = a;
     // this.boric(); // not allowed; boric reads b.
     // z = b; // not allowed -- only 'a' can be read here
   }
-  @NonEscaping("b") final def boric() {
+  @NonEscaping final def boric() {
     y = b;
     this.aplomb(); // allowed; a is definitely set before boric is called
     // z = c; // not allowed; c is not definitely written 
   }
-  @NonEscaping("c") private def cajoled() {
+  @NonEscaping private def cajoled() {
     z = c;
   }  
-}
-
-class See extends C2 {}
-
-class SeeAlso extends See { 
-  @NonEscaping("a") def aplomb() {
-    x = a + 2;
-  }
 }
 
 \end{xten}
@@ -248,8 +235,8 @@ and one of them implicit.
       following the first segment, up to and including the \Xcd{property()}
       statement.  
 
-      If the class or struct has no properties, the \Xcd{property()} call is
-      optional. If it is present, the second segment is defined as before.  If
+      If the class or struct has no properties, the \Xcd{property()} call must
+      be omitted. If it is present, the second segment is defined as before.  If
       it is absent, the second segment is empty.
 \item The third segment is automatically generated.  Fields with initializers
       are initialized immediately after the \Xcd{property} statement.  
@@ -389,6 +376,12 @@ the terminology of \Sref{SFineStructCtors}.
 
 
 \subsection{Summary of Restrictions on Classes and Constructors}
+
+The following table tells whether a given feature is (yes), is not (no) or is
+with some conditions (note) allowed in a given context.   For example, a
+property method is allowed with the type of another property, as long as it
+only mentions the preceding properties. The first column of the table gives
+examples, by line of the following code body.
 
 \begin{tabular}{||l|l|c|c|c|c|c|c||} 
 \hline
