@@ -65,7 +65,7 @@ The coordinates of a point are available by subscripting; \xcd`p(i)` is the
 \index{region!syntax}
 
 A region is a set of points of the same rank.  {}\Xten{}
-provides a built-in class, \xcd`x10.lang.Region`, to allow the
+provides a built-in class, \xcd`x10.array.Region`, to allow the
 creation of new regions and to perform operations on regions. 
 Each region \xcd`R` has a property \xcd`R.rank`, giving the dimensionality of
 all the points in it.
@@ -361,7 +361,7 @@ for (p in A) A(p) = 2*A(p);
 Distributed arrays are spread across multiple \xcd`Place`s.  
 A {\em distribution}, a mapping from a region to a set of places, 
 describes where each element of a distributed array is kept.
-Distributions are embodied by the class \Xcd{x10.lang.Dist}.
+Distributions are embodied by the class \Xcd{x10.array.Dist}.
 This class is \xcd`final` in
 {}\XtenCurrVer; future versions of the language may permit
 user-definable distributions. 
