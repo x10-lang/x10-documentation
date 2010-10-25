@@ -25,13 +25,13 @@ allowed.  All text from the ASCII characters
 \index{identifier}
 \index{variable name}
 
-Identifiers consist of a single letter followed by zero or more
-letters or digits.
-The letters are the ASCII characters \xcd`a` through \xcd`z`, \xcd`A` through
-\xcd`Z`, and \xcd`_`.
-Digits are defined as the ASCII characters \xcd"0" through \xcd"9". Case is
-significant; \xcd`a` and \xcd`A` are distinct identifiers, \xcd`as` is a
-keyword, but \xcd`As` and \xcd`AS` are identifiers.
+Identifiers consist of a single letter followed by zero or more letters or
+digits. The letters are the ASCII characters \xcd`a` through \xcd`z`, \xcd`A`
+through \xcd`Z`, and \xcd`_`. Digits are defined as the ASCII characters
+\xcd"0" through \xcd"9". Case is significant; \xcd`a` and \xcd`A` are distinct
+identifiers, \xcd`as` is a keyword, but \xcd`As` and \xcd`AS` are identifiers.
+(However, case is insignificant in the hexadecimal numbers, exponent markers,
+and type-tags of numeric literals -- 0xbabe = 0XBABE.)
 
 \paragraph{Keywords}
 \index{keywords}
@@ -73,6 +73,7 @@ Less briefly, we use the following abbreviations:
 d &=& \mbox{one or more decimal digits}\\
 d_8 &=& \mbox{one or more octal digits}\\
 d_{16} &=& \mbox{one or more hexadecimal digits, using \xcd`a`-\xcd`f`
+or \xcd`A`-\xcd`F`
 for 10-15}\\
 i &=& d 
         \mathbin{|} {\tt 0} d_8 
