@@ -35,7 +35,7 @@ keyword, but \xcd`As` and \xcd`AS` are identifiers.
 
 \paragraph{Keywords}
 \index{keywords}
-\Xten{} reserves the following keywords:
+\Xten{} uses the following keywords:
 \begin{xten}
 abstract       false          offers         transient      
 as             final          operator       true           
@@ -43,16 +43,19 @@ assert         finally        package        try
 async          finish         private        var            
 ateach         for            property       when           
 break          goto           protected      while          
-case           if             public         at             
-catch          implements     return         atomic         
-class          import         self           await          
-continue       in             static         clocked        
-def            instanceof     struct         here           
-default        interface      super          next           
-do             native         switch         offer          
-else           new            this           resume         
-extends        null           throw          type           
+case           if             public         at (*)         
+catch          implements     return         atomic (*)     
+class          import         self           await (*)      
+continue       in             static         clocked (*)    
+def            instanceof     struct         here (*)       
+default        interface      super          next (*)       
+do             native         switch         offer (*)      
+else           new            this           resume (*)     
+extends        null           throw          type (*)       
 \end{xten}
+Keywords marked with a \xcd`(*)` are {\em soft} keywords, which may also be
+used as identifiers.  The other keywords may not be used as identifiers.
+
 Note that the primitive types are not considered keywords.
 
 \paragraph{Literals}\label{Literals}\index{literal}
