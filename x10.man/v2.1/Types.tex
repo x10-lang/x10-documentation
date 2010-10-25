@@ -708,20 +708,22 @@ var example : Vec(78);
 %
 The following examples are legal type definitions, given \xcd`import x10.util.*`:
 %~~gen
+% package Types.TypeDef.Examples;
 % import x10.util.*;
-% class TypeDefBrow {
-% def someTypeDefs () {
 %~~vis
 \begin{xten}
-type StringSet = Set[String];
-type MapToList[K,V] = Map[K,List[V]];
-type Int(x: Int) = Int{self==x};
-type Dist(r: Int) = Dist{self.rank==r};
-type Dist(r: Region) = Dist{self.region==r};
-type Redund(n:Int, r:Region){r.rank==n} = Dist{rank==n && region==r};
+class TypeExamples {
+  static type StringSet = Set[String];
+  static type MapToList[K,V] = Map[K,List[V]];
+  static type Int(x: Int) = Int{self==x};
+  static type Dist(r: Int) = Dist{self.rank==r};
+  static type Dist(r: Region) = Dist{self.region==r};
+  static type Redund(n:Int, r:Region){r.rank==n} 
+      = Dist{rank==n && region==r};
+}
 \end{xten}
 %~~siv
-% }}
+% 
 %~~neg
 
 The following code illustrates that type definitions are applicative rather
@@ -729,20 +731,22 @@ than generative.  \xcd`B` and \xcd`C` are both aliases for \xcd`String`,
 rather than new types, and so are interchangeable with each other and with
 \xcd`String`. Similarly, \xcd`A` and \xcd`Int` are equivalent.
 %~~gen
+% package Types.TypeDef.Example.NonGenerative;
 % import x10.util.*;
 % class TypeDefNonGenerative {
-% def someTypeDefs () {
 %~~vis
 \begin{xten}
-type A = Int;
-type B = String;
-type C = String;
-a: A = 3;
-b: B = new C("Hi");
-c: C = b + ", Mom!";
+def someTypeDefs () {
+  type A = Int;
+  type B = String;
+  type C = String;
+  a: A = 3;
+  b: B = new C("Hi");
+  c: C = b + ", Mom!";
+  }
 \end{xten}
 %~~siv
-% }}
+% }
 %~~neg
 % An instance of a defined type with no type parameters and no
 % value parameters may 
