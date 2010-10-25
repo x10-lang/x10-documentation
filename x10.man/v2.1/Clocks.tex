@@ -32,12 +32,12 @@ neither proceeds to the third phase until both are ready.  This example uses
 
 %~~gen
 %package Clocks.For.Spock;
-%class ClockEx {
-%  static def say(s:String) = 
-% { /*atomic{x10.io.Console.OUT.println(s);}*/ }
-%  public static def main(argv:Rail[String]) {
 %~~vis
 \begin{xten}
+class ClockEx {
+  static def say(s:String) = 
+     { atomic{x10.io.Console.OUT.println(s);} }
+  public static def main(argv:Rail[String]) {
     finish async{
       val cl = Clock.make();
       async clocked(cl) {// Activity A
