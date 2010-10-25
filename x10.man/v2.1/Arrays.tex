@@ -141,6 +141,23 @@ methods on \xcd`Region`.
 to the non-zero indices in an upper-triangular \xcd`N x N` matrix.
 \item \xcd`Region.makeLowerTriangular(N)` returns a region corresponding
 to the non-zero indices in a lower-triangular \xcd`N x N` matrix.
+\item 
+  If \xcd`R` is a region, and \xcd`p` a Point of the same rank, then 
+%~~exp~~`~~`~~R:Region, p:Point(R.rank) ~~
+  \xcd`R+p` is \xcd`R` translated forwards by 
+  \xcd`p` -- the region whose
+%~~exp~~`~~`~~r:Point, p:Point(r.rank) ~~
+  points are \xcd`r+p` 
+  for each \xcd`r` in \xcd`R`.
+\item 
+  If \xcd`R` is a region, and \xcd`p` a Point of the same rank, then 
+%~~exp~~`~~`~~R:Region, p:Point(R.rank) ~~
+  \xcd`R-p` is \xcd`R` translated backwards by 
+  \xcd`p` -- the region whose
+%~~exp~~`~~`~~r:Point, p:Point(r.rank) ~~
+  points are \xcd`r-p` 
+  for each \xcd`r` in \xcd`R`.
+
 \end{itemize}
 
 All the points in a region are ordered canonically by the
