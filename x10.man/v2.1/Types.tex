@@ -219,7 +219,7 @@ An example of such a function is \xcd`(x:Int) => x+1`.
 
 
 
-\section{Classes and interfaces}
+\section{Classes, Structs,  and interfaces}
 \label{ReferenceTypes}
 
 \subsection{Class types}
@@ -302,6 +302,32 @@ The null value, represented by the literal
 \xcd"null", is a value of every class type \xcd`C`. The type whose values are
 all instances of \xcd`C` but not 
 \xcd`null` can be defined as \xcd`C{self != null}`.
+
+\subsection{Struct Types}
+
+A {\em struct declaration} \Sref{XtenStructs} introduces a {\em struct type}
+containing all instances of the struct.  The \xcd`Coords` struct below gives
+an immutable position in 3-space: 
+%~~gen
+% package Types.Structs.Coords;
+%~~vis
+\begin{xten}
+struct Position {
+  public val x:Double, y:Double, z:Double; 
+  def this(x:Double, y:Double, z:Double) {
+     this.x = x; this.y = y; this.z = z;
+  }
+}
+\end{xten}
+%~~siv
+%
+%~~neg
+
+Structs have many capabilities of classes: they can have methods, implement
+interfaces, and be generic. However, they have certain restrictions; for
+example, they cannot contain mutable (\xcd`val`) fields, or inherit from
+superclasses. There is no \xcd`null` value for structs. Due to these
+restrictions, structs may be implemented more efficiently than objects.
 
 
 \subsection{Interface types}
