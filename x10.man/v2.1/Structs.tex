@@ -26,13 +26,14 @@ whose arguments are defined by interfaces can take both structs and classes.
 (Some caution is necessary here: referring to a struct through an interface
 requires overhead similar to that required for an object.)
 
-They are also interconvertable, within the constraints of structs. If you
-start off defining a struct and decide you need a class instead, the code
-change required is simply changing the keyword \xcd`struct` to \xcd`class`. If
-you have a class that does not use inheritance or mutable fields, it can be
-converted to a struct by changing its keyword. Client code using the struct
-that was a class will need certain changes: the \xcd`new` keyword must be
-added in constructor calls, and structs (unlike classes) do not have default values.
+In many cases structs can be converted to classes or classes to structs,
+within the constraints of structs. If you start off defining a struct and
+decide you need a class instead, the code change required is simply changing
+the keyword \xcd`struct` to \xcd`class`. If you have a class that does not use
+inheritance or mutable fields, it can be converted to a struct by changing its
+keyword. Client code using the struct that was a class will need certain
+changes: \eg, the \xcd`new` keyword must be added in constructor calls, and
+structs (unlike classes) do not have default values.
 
 
 
@@ -225,3 +226,71 @@ Static nested structs may be defined, essentially as static nested classes
 except for making them structs
 (\Sref{StaticNestedClasses}).  Inner structs may be defined, essentially as
 inner classes except making them structs (\Sref{InnerClasses}).
+
+\section{Converting Between Classes And Structs}
+
+Code written using structs can be modified to use classes, or vice versa.
+Caution must be used in certain places. 
+
+Class and struct {\em definitions} are syntactically nearly identical:
+change the \xcd`class` keyword to \xcd`struct` or vice versa.  Of course,
+certain important class features can't be used with structs, such as
+inheritance and \xcd`var` fields. 
+
+Converting code that {\em uses} the class or struct requires a certain amount
+of caution.
+Suppose, in particular, that we want to convert the class \xcd`Class2Struct`
+to a struct, and \xcd`Struct2Class` to a class.
+%~~gen
+%package Structs.Converting;
+%~~vis
+\begin{xten}
+class Class2Struct {
+  val a : Int;
+  def this(a:Int) { this.a = a; }
+  def m() = a;
+}
+struct Struct2Class { 
+  val a : Int;
+  def this(a:Int) { this.a = a; }
+  def m() = a;
+}
+\end{xten}
+%~~siv
+%
+%~~neg
+
+\begin{enumerate}
+
+\item Class constructors require the \xcd`new` keyword; struct constructors
+      forbid it.  \xcd`new Class2Struct(3)` will need to be converted to
+      \xcd`Class2Struct(3)`, and \xcd`Struct2Class(3)` to 
+      \xcd`new Struct2Class(3)`.
+
+\item Objects and structs have different notions of \xcd`==`.  
+      For objects, \xcd`==` means ``same object''; for structs, it means
+      ``same contents''. Before conversion, both \xcd`assert`s in the
+      following program succeed.  After converting and fixing constructors,
+      both of them fail.
+%~~gen
+%package Structs.Converting;
+%class Example {
+% static def Examplle() {
+%~~vis
+\begin{xten}
+val a = new Class2Struct(2);
+val b = new Class2Struct(2);
+assert a != b;
+val c = Struct2Class(3);
+val d = Struct2Class(3);
+assert c==d;
+\end{xten}
+%~~siv
+%}}
+%~~neg
+
+\item Objects can be set to \xcd`null`.  Structs cannot.  There is no
+      default value like \xcd`null` available for structs.  
+
+
+\end{enumerate}
