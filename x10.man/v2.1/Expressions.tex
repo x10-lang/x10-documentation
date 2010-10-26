@@ -717,7 +717,8 @@ type \xcd`T` (which may fail), and then the constraint \xcd`{c}` is checked.
       the run-time value of \xcd`E` is an instance of \xcd`T`.  
 
 \item If \xcd`T` is a function type, then the first half of the cast succeeds
-      if the run-time value of \xcd`X` is a function of precisely that type.
+      if the run-time value of \xcd`X` is a function of that type, or a
+      subtype of it.
 \end{itemize}
 
 If the first half of the cast succeeds, the second half -- the constraint
@@ -1142,7 +1143,7 @@ programmer to specify the return type for such operators explicitly.
 For instance, the code for \Xcd{x10.lang.Point} contains:
 
 \begin{xten}
-  public operator (r: Array[int](1)): Point(r.length) = make(r);
+  public operator (r: Array[Int](1)): Point(r.length) = make(r);
 \end{xten}
 
 The compiler looks for such operators on the container type \Xcd{B}
