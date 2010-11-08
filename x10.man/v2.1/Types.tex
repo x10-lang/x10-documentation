@@ -1636,7 +1636,7 @@ X10 provides certain guarantees about the common type \xcd`V{v}` computed for
 
 Certain types are used in fundamental ways by X10.  
 
-\subsection{The interface \xcd`Any`}
+\subsection{The interface {\tt Any}}
 
 It is quite convenient to have a type which all values are instances of; that
 is, a supertype of all types.\footnote{Java, for one, suffers a number of
@@ -1662,7 +1662,7 @@ is the programmer-overridable equality test, and \xcd`a.hashCode()` an integer
 useful for hashing.  
 
 
-\subsection{The class \Xcd{Object}}
+\subsection{The class {\tt Object}}
 \label{Object}
 \index{\Xcd{Object}}
 \index{\Xcd{x10.lang.Object}}
@@ -1809,6 +1809,7 @@ and functions which do not.  In most cases, functions which have no sensible
 return value can be provided with a dummy return value.
 
 \subsection{Inferring Type Arguments}
+\label{TypeParamInfer}
 
 
 A call to a polymorphic method %, closure, or constructor 
