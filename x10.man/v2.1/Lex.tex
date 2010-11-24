@@ -35,26 +35,76 @@ and type-tags of numeric literals -- 0xbabe = 0XBABE.)
 
 \paragraph{Keywords}
 \index{keywords}
-\Xten{} uses the following keywords:
-\begin{xten}
-abstract       false          offers         transient      
-as             final          operator       true           
-assert         finally        package        try            
-async          finish         private        var            
-ateach         for            property       when           
-break          goto           protected      while          
-case           if             public         at (*)         
-catch          implements     return         atomic (*)     
-class          import         self           await (*)      
-continue       in             static         clocked (*)    
-def            instanceof     struct         here (*)       
-default        interface      super          next (*)       
-do             native         switch         offer (*)      
-else           new            this           resume (*)     
-extends        null           throw          type (*)       
-\end{xten}
-Keywords marked with a \xcd`(*)` are {\em soft} keywords, which may also be
-used as identifiers.  The other keywords may not be used as identifiers.
+\Xten{} uses the following keywords:\\
+{\tt 
+\begin{tabular}{lll}
+    {\bf abstract} &
+    {\bf as}&
+    {\bf assert}\\
+    {\bf async}&
+    {\bf at}&
+    {\bf ateach}\\
+    {\it atomic}&
+    {\bf break}&
+    {\bf case}\\
+    {\bf catch}&
+    {\bf class}&
+    {\bf clocked}\\
+    {\bf continue}&
+    {\bf def}&
+    {\bf default}\\
+    {\bf do}&
+    {\bf else}&
+    {\bf extends}\\
+    {\bf false}&
+    {\bf final}&
+    {\bf finally}\\
+    {\bf finish}&
+    {\bf for}&
+    {\bf goto}\\
+    {\bf haszero}&
+    {\it here}&
+    {\bf if}\\
+    {\bf implements}&
+    {\bf import}&
+    {\bf in}\\
+    {\bf instanceof}&
+    {\bf interface}&
+    {\bf native}\\
+    {\bf new}&
+    {\it next}&
+    {\bf null}\\
+    {\it offer}&
+    {\bf offers}&
+    {\bf operator}\\
+    {\bf package}&
+    {\bf private}&
+    {\bf property}\\
+    {\bf protected}&
+    {\bf public}&
+    {\it resume}\\
+    {\bf return}&
+    {\bf self}&
+    {\bf static}\\
+    {\bf struct}&
+    {\bf super}&
+    {\bf switch}\\
+    {\bf this}&
+    {\bf throw}&
+    {\bf transient}\\
+    {\bf true}&
+    {\bf try}&
+    {\bf type}\\
+    {\bf val}&
+    {\bf var}&
+    {\bf when}\\
+    {\bf while}&
+\end{tabular}
+}
+
+Keywords in {\em italics} are {\em soft} keywords, which may also be
+used as identifiers.  The other keywords, in {\bf bold}, are {\em hard}
+keywords and  may not be used as identifiers.
 
 Note that the primitive types are not considered keywords.
 
