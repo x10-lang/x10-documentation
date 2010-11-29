@@ -170,8 +170,8 @@ Sequential iteration statements such as \xcd`for` (\Sref{ForAllLoop})
 iterate over the points in a region in the canonical order.
 
 A region is said to be {\em rectangular}\index{region!convex} if it is of
-the form \xcdmath`(T$_1$ * $\cdots$ * T$_k$)` for some set of regions
-\xcdmath`T$_i$`. Such a
+the form \xcdmath`(T$_1$ * $\cdots$ * T$_k$)` for some set of intervals
+\xcdmath`T$_i = $ l$_i$ .. h$_i$ `. Such a
 region satisfies the property that if two points $p_1$ and $p_3$ are
 in the region, then so is every point $p_2$ between them (that is, it is {\em convex}). 
 (Banded and triangular regions are not rectangular.)
@@ -867,12 +867,29 @@ Let \xcd`unit` be a value of type \xcd`T`.
 Then the
 %~~genexp~~`~~`~~ T ~~ f:(T,T)=>T, a : Array[T], unit:T ~~
 operation \xcd`a.reduce(f, unit)` returns a value of type \xcd`T` obtained
-by performing \xcd`f` on all points in \xcd`a` in some unspecified order
-(perhaps in parallel).  In order to guarantee that the result is precisely
-determined, the  function \xcd`f` should be associative and
-commutative, and the value \xcd`unit` should satisfy
-\xcd`f(unit,x)` \xcd`==` \xcd`x` \xcd`==` \xcd`f(x,unit)`.
-For example, 
+by combining all the elements of \xcd`a` by use of  \xcd`f` in some unspecified order
+(perhaps in parallel).   
+The following code gives one one possible implementation of \Xcd{reduce},
+having a running total \Xcd{r}, and accumulating each value \xcd`a(p)` into it
+using \Xcd{f} in turn:
+%~~gen
+%package Arrays.Reductions.And.Eliminations;
+% class Example {
+%~~vis
+\begin{xten}
+def oneWayToReduce[T](a:Array[T], f:(T,T)=>T, unit:T):T {
+  var r : T = unit;
+  for(p in a.region) r = f(r, a(p));
+  return r;
+}
+\end{xten}
+%~~siv
+%}
+%~~neg
+
+
+For example,  the following sums an array of integers.  \Xcd{f} is addition,
+and \Xcd{unit} is zero.  
 %~~gen
 % package Arrays.Reductions.And.Emulsions;
 % class Example {
@@ -886,6 +903,15 @@ assert(sum == 10); // 10 == 1+2+3+4
 %~~siv
 %}}
 %~~neg
+
+Other orders of evaluation, degrees of parallelism, and applications of
+\Xcd{f(x,unit)} and \xcd`f(unit,x)`are also correct.
+In order to guarantee that the result is precisely
+determined, the  function \xcd`f` should be associative and
+commutative, and the value \xcd`unit` should satisfy
+\xcd`f(unit,x)` \xcd`==` \xcd`x` \xcd`==` \xcd`f(x,unit)`
+for all \Xcd{x:T}.  
+
 
 
 

@@ -156,7 +156,7 @@ serialized into a buffer, the buffer is communicated to \xcd`p` where
 it is deserialized into an exception \xcd`E1` and \xcd`at (e) S`
 throws \xcd`E1`.
 
-Since \xcd`at(e) S` is a synchronous constructs usual control-flow
+Since \xcd`at(e) S` is a synchronous construct, usual control-flow
 constructs such as \xcd`break`, \xcd`continue`, \xcd`return` and 
 \xcd`throw` are permitted in \xcd`S`.  All concurrency related
 constructs -- \xcd`async`, \xcd`finish`, \xcd`atomic`, \xcd`when` are
@@ -244,7 +244,8 @@ of the following makes sense:
 activity to execute \xcd`S`), and,
 (3)~\xcd`async at(p) async S`. 
 
-As a consequence of this, \xcd`S` may contain constructs which only make sense
+Since \Xcd{at(p) S} does not start a new activity, 
+\xcd`S` may contain constructs which only make sense
 within a single activity.  
 For example, 
 \begin{xten}
@@ -265,7 +266,7 @@ to place \xcd`p`, before executing \xcd`S` there. The only things that are not
 copied are values only reachable through \xcd`GlobalRef`s and \xcd`transient`
 fields.    If \xcd`x` is a
 variable name referring to some object \xcd`ob` outside of \xcd`S`, then the
-same variable name \xcd`x` refers to a deep copy \xcd`ob{$'$}` of \xcd`ob`
+same variable name \xcd`x` refers to a deep copy of \xcd`ob`
 inside of \xcd`S`.  In this way the body \xcd`S` is in a separate block with
 different variable bindings.
 

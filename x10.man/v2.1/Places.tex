@@ -63,8 +63,10 @@ computation is running, in the same way that \xcd`this` is always bound to the
 instance of the current class (for non-static code), or \xcd`self` is bound to
 the instance of the type currently being constrained.  
 \xcd`here` may denote different places in the same method body, due to
-place-shifting operations. In the following code, \xcd`here` has one value at
-\xcd`h0`, and a different one at \xcd`h1`. 
+place-shifting operations, just as \Xcd{self} denotes 
+two different values in \xcd`List[Int{self!=0}]{self!=null}`. In the following
+code, \xcd`here` has one value at 
+\xcd`h0`, and a different one at \xcd`h1` (unless there is only one place).
 %~~gen
 % package places.are.For.Graces;
 % class Example {
