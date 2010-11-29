@@ -1004,10 +1004,6 @@ For examples of constraints and entailment, see (\Sref{ConstraintExamples})
 \index{constraint!subtyping}
 
 
-The constraint solver assumes all built-in types have an infinite
-number of values. Therefore it does not realize that 
-\xcd`a != b && a != c && b != c` is not satisfiable when \xcd`a`, \xcd`b`, and
-\xcd`c` are \xcd`Boolean` (since the \xcd`Boolean` type has only two values). 
 
 The constraint solver is sound in that if it claims that \xcd`c` entails \xcd`d`
 then in fact it is the case that every value that satisfies \xcd`c`
@@ -1019,6 +1015,7 @@ in which \xcd`c` entails \xcd`d` but the solver cannot establish it. For
 instance it cannot establish that \xcd`a != b && a != c && b != c`
 entails \xcd`false` if \xcd`a`, \xcd`b`, and \xcd`c` are of type
 \xcd`Boolean`.
+
 
 Certain other constraint entailments are prohibitively expensive to calculate.  The issues
 concern constraints that connect different levels of recursively-defined
