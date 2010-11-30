@@ -207,12 +207,12 @@ array and breaks out of the loop when it is found:
 %~~gen
 % package statements.come.from.banks.and.cranks;
 % class LabelledBreakeyBreakyHeart {
-% def findy(a:ValRail[ValRail[Int]], v:Int): Boolean {
+% def findy(a:Array[Array[Int](1)](1), v:Int): Boolean {
 %~~vis
 \begin{xten}
 var found: Boolean = false;
-outer: for (var i: Int = 0; i < a.length; i++)
-    for (var j: Int = 0; j < a(i).length; j++)
+outer: for (var i: Int = 0; i < a.size; i++)
+    for (var j: Int = 0; j < a(i).size; j++)
         if (a(i)(j) == v) {
             found = true;
             break outer;
@@ -566,10 +566,10 @@ throws an exception if not.
 %~~gen
 % package statements.are.from.mars.expressions.are.from.venus;
 % class ThrowStatementExample {
-% def thingie(i:Int, x:ValRail[Boolean])  {
+% def thingie(i:Int, x:Array[Boolean](1))  {
 %~~vis
 \begin{xten}
-if (i < 0 || i >= x.length)
+if (i < 0 || i >= x.size)
     throw new MyIndexOutOfBoundsException();
 \end{xten}
 %~~siv

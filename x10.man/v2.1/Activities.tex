@@ -805,8 +805,10 @@ stopped partway.
 %~~vis
 \begin{xten}
 def add(x:T) { 
-  this.list.add(x);
-  atomic { this.size = this.size + 1; }
+  atomic {
+    this.list.add(x);
+    this.size = this.size + 1; 
+  }
 }
 \end{xten}
 %~~siv
