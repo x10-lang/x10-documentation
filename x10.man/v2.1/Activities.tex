@@ -994,7 +994,7 @@ The statement \xcd"when (true) S" is
 behaviorally identical to \xcd"atomic S": it never suspends.
 
 The body \xcd`S` of \xcd`when(b)S` is subject to the same restrictions that
-the body of \xcd`await S` is.  The guard is subject to the same restrictions
+the body of \xcd`atomic S` is.  The guard is subject to the same restrictions
 as well.  Furthermore, guards should not have side effects.
 
 %%OBSOLETE%%\begin{staticrule*}

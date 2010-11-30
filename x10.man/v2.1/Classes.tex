@@ -1110,7 +1110,7 @@ as follows
 
 \begin{xten}
 def read_f():T {
-   await (initialized(C.f));
+   when (initialized(C.f)){};
    return C.f;
 }
 \end{xten}
