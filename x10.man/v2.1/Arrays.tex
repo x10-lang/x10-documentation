@@ -302,11 +302,12 @@ An \Xcd{Array[T]} \Xcd{A} has:
 \subsection{Array Constructors}
 \index{array!constructor}
 
-To construct an array whose elements all have the same value, call
-\Xcd{new Array[T](R, init)}, where \Xcd{init:T} is the initial value. 
+To construct an array whose elements all have the same value \Xcd{init}, call
+\Xcd{new Array[T](R, init)}. 
 For example, an array of a thousand \xcd`"oh!"`s can be made by:
 %~~exp~~`~~`~~ ~~
 \xcd`new Array[String](1..1000, "oh!")`.
+
 
 To construct and initialize an array, call the two-argument constructor. 
 \Xcd{new Array[T](R, f)} constructs an array of elements of type \Xcd{T} on
@@ -869,9 +870,11 @@ Then the
 operation \xcd`a.reduce(f, unit)` returns a value of type \xcd`T` obtained
 by combining all the elements of \xcd`a` by use of  \xcd`f` in some unspecified order
 (perhaps in parallel).   
-The following code gives one one possible implementation of \Xcd{reduce},
+The following code gives one method which 
+meets the definition of \Xcd{reduce},
 having a running total \Xcd{r}, and accumulating each value \xcd`a(p)` into it
-using \Xcd{f} in turn:
+using \Xcd{f} in turn.  (This code is simply given as an example; \Xcd{Array}
+has this operation defined already.)
 %~~gen
 %package Arrays.Reductions.And.Eliminations;
 % class Example {

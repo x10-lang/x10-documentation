@@ -43,7 +43,9 @@ in this sense because they do not refer to X10 values.  Other named entities,
 such as classes and methods, are not called variables.  However, all
 name-to-whatever bindings enjoy similar concepts of scope and visibility.  
 
-In the following example, \xcd`n` is an instance variable, and \xcd`nxt` is a
+\begin{ex}
+In the following example, 
+\xcd`n` is an instance variable, and \xcd`nxt` is a
 local variable defined within the method \xcd`bump`.\footnote{This code is
 unnecessarily turgid for the sake of the example.  One would generally write
 \xcd`public def bump() = ++n;`.   }
@@ -69,7 +71,7 @@ perhaps something more specific).    The scope of \xcd`n` is the body of
 lifetime of \xcd`n` is the lifetime of the \xcd`Counter` object holding it;
 the lifetime of \xcd`nxt` is the duration of the call to \xcd`bump`. Neither
 variable can be seen from outside of its scope.
-
+\end{ex}
 \label{exploded-syntax}
 \label{VariableDeclarations}
 \index{variable declaration}
@@ -84,6 +86,9 @@ variable declaration does not include either \xcd`var` or \xcd`val`, it is
 considered \xcd`val`. 
 
 
+\begin{ex}
+The following example illustrates many of the variations on variable
+declaration: 
 %~~gen
 %package Vars.For.Bears.In.Chairs;
 %class VarExample{
@@ -100,8 +105,7 @@ var f : Int{self != 100} = 0;  // Constrained type
 %~~siv
 %}}
 %~~neg
-
-
+\end{ex}
 
 
 
@@ -114,9 +118,22 @@ var f : Int{self != 100} = 0;  // Constrained type
 \index{variable!val}
 \index{val}
 
+\begin{bbgrammar}
+ LocalVariableDeclStatement    \: LocalVariableDecl \xcd";" & (\ref{prod:LocalVariableDeclStatement})\\%<FROM #(prod:LocalVariableDeclStatement)#
+ LocalVariableDecl    \: Mods\opt VarKeyword VariableDeclarators & (\ref{prod:LocalVariableDecl})\\%<FROM #(prod:LocalVariableDecl)#
+    \| Mods\opt VariableDeclaratorsWithType\\
+    \| Mods\opt VarKeyword FormalDeclarators\\
+\end{bbgrammar}
+
 Immutable (\xcd`val`) variables can be given values (by initialization or assignment) at
 most once, and must be given values before they are used.  Usually this is
-achieved by declaring and initializing the variable in a single statement.
+achieved by declaring and initializing the variable in a single statement, 
+such as \Xcd{val x = 3}, with syntax 
+(\ref{prod:LocalVariableDecl}) using the {\it VariableDeclarators} or {\it
+VariableDeclaratorsWithType} alternatives.
+
+\begin{ex}
+After these declarations, \xcd`a` and \xcd`b` cannot be assigned to further: 
 %~~gen
 % package Vars.In.Snares;
 % class ABitTedious{
@@ -129,10 +146,15 @@ val b = (a+1)*(a-1);
 %~~siv
 %}}
 %~~neg
-\xcd`a` and \xcd`b` cannot be assigned to further.
 
-In other cases, the declaration and assignment are separate.  One such
-case is how constructors give values to \xcd`val` fields of objects.  The
+\end{ex}
+
+In two special cases, the declaration and assignment are separate.  One 
+case is how constructors give values to \xcd`val` fields of objects.  In this
+case, production (\ref{prod:LocalVariableDecl}) is taken, with the {\it
+FormalDeclarators} option, such as  \Xcd{var n:Int;}.  
+
+\begin{ex} The
 \xcd`Example` class has an immutable field \xcd`n`, which is given different
 values depending on which constructor was called. \xcd`n` can't be given its
 value by initialization when it is declared, since it is not knowable which
@@ -150,10 +172,16 @@ class Example {
 %~~siv
 %
 %~~neg
+\end{ex}
 
-Another common case of separating declaration and assignment is in function
-and method call.  The formal parameters are bound to the corresponding actual
-parameters, but the binding does not happen until the function is called.  In
+
+The other case of separating declaration and assignment is in function
+and method call, described in \Sref{sect:formal-parameters}.  The formal
+parameters are bound to the corresponding actual 
+parameters, but the binding does not happen until the function is called.  
+
+\begin{ex}
+In
 the code below, \xcd`x` is initialized to \xcd`3` in the first call and
 \xcd`4` in the second.
 %~~gen
@@ -169,7 +197,7 @@ x10.io.Console.OUT.println("4 squared = " + sq(4));
 %~~siv
 %}}
 %~~neg
-
+\end{ex}
 
 
 
@@ -299,23 +327,10 @@ A pattern of the form \xcdmath"p[i$_1$,$\ldots$,i$_n$]" does the same,  but
 also binds \xcd`p` to the point.
 
 \section{Formal parameters}
+\label{sect:formal-parameters}
 \index{formal parameter}
 \index{parameter}
 
-\begin{bbgrammar}
- FormalParams    \: \xcd"(" FormalParamList\opt \xcd")" & (\ref{prod:FormalParams})\\%<FROM #(prod:FormalParams)#
- FormalParamList    \: FormalParam & (\ref{prod:FormalParamList})\\%<FROM #(prod:FormalParamList)#
-    \| FormalParamList \xcd"," FormalParam\\
- FormalParam    \: Mods\opt FormalDeclarator & (\ref{prod:FormalParam})\\%<FROM #(prod:FormalParam)#
-    \| Mods\opt VarKeyword FormalDeclarator\\
-    \| Type\\
- FormalDeclarators    \: FormalDeclarator & (\ref{prod:FormalDeclarators})\\%<FROM #(prod:FormalDeclarators)#
-    \| FormalDeclarators \xcd"," FormalDeclarator\\
- FormalDeclarator    \: Id ResultType & (\ref{prod:FormalDeclarator})\\%<FROM #(prod:FormalDeclarator)#
-    \| \xcd"[" IdList \xcd"]" ResultType\\
-    \| Id \xcd"[" IdList \xcd"]" ResultType\\
- ResultType    \: \xcd":" Type & (\ref{prod:ResultType})\\%<FROM #(prod:ResultType)#
-\end{bbgrammar}
 
 Formal parameters are the variables which hold values transmitted into a
 method or function.  
