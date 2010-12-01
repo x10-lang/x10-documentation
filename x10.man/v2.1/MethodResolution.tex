@@ -171,9 +171,9 @@ function, array, list, or the like, and where \xcd`a` has a method also named
 \xcd`f`.  The term \Xcd{a.f(b)} could either mean ``call method \xcd`f` of \xcd`a` upon
 \xcd`b`'', or ``apply the function \xcd`a.f` to argument \xcd`b`''.  
 
-%~~gen
+%~TODO~gen
 %package MethodResolution.Disambiguation.The.First;
-%~~vis
+%~TODO~vis
 \begin{xten}
 class Ambig {
   public val f : (Int)=>Int =  (x:Int) => x*x;
@@ -184,9 +184,9 @@ class Ambig {
   }
 }
 \end{xten}
-%~~siv
+%~TODO~siv
 %
-%~~neg
+%~TODO~neg
 \end{ex}
 
 In the case where a syntactic form \xcdmath"E.m(F$_1$, $\ldots$, F$_n$)" could
@@ -197,9 +197,9 @@ parentheses:  \xcdmath"(E.m)(F$_1$, $\ldots$, F$_n$)".
 
 \begin{ex}
 
-%~~gen
+%~TODO~gen
 %package MethodResolution.Disambiguation.The.Second;
-%~~vis
+%~TODO~vis
 \begin{xten}
 class Disambig {
   public val f : (Int)=>Int =  (x:Int) => x*x;
@@ -210,8 +210,8 @@ class Disambig {
   }
 }
 \end{xten}
-%~~siv
+%~TODO~siv
 %
-%~~neg
+%~TODO~neg
 
 \end{ex}
