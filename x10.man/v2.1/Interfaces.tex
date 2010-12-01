@@ -7,9 +7,10 @@ X10 a large fraction of the power of multiple inheritance at a tiny fraction
 of the cost.
 
 The following puny example illustrates all these features: 
-%~~gen
+% TODO Well, it would if there weren't a compiler bug in the way.
+%~TODO~gen
 %
-%~~vis
+%~TODO~vis
 \begin{xten}
 interface Pushable(text:String, prio:Int) {
   def push(): void;
@@ -22,9 +23,9 @@ class MessageButton(text:String, prio:Int)
   }
 }
 \end{xten}
-%~~siv
+%~TODO~siv
 %
-%~~neg
+%~TODO~neg
 \noindent
 \xcd`Pushable` defines two properties, a method, and a static value.  
 \xcd`MessageButton` implements a constrained version of \xcd`Pushable`,
