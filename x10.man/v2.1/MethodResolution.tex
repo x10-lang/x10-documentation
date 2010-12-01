@@ -143,3 +143,75 @@ the other, or either to be more specific.  \xcd`specific` is computed as:
       \xcd`specific(m1,m2)` returns true; otherwise, it returns false.
 \end{enumerate}
 
+\subsection{Other Disambiguations}
+
+It is possible to have a field of the same name as a method.
+Indeed, it is a common pattern to have private field and a public
+method of the same name to access it:
+\begin{ex}
+%~~gen
+%package MethodResolution.Disambiguation.The.First;
+%~~vis
+\begin{xten}
+class Xhaver {
+  private var x: Int = 0;
+  public def x() = x;
+  public def bumpX() { x ++; }
+}
+\end{xten}
+%~~siv
+%
+%~~neg
+\end{ex}
+
+\begin{ex}
+However, this can lead to syntactic ambiguity in the case where the field
+\Xcd{f} of object \xcd`a` is a
+function, array, list, or the like, and where \xcd`a` has a method also named
+\xcd`f`.  The term \Xcd{a.f(b)} could either mean ``call method \xcd`f` of \xcd`a` upon
+\xcd`b`'', or ``apply the function \xcd`a.f` to argument \xcd`b`''.  
+
+%~~gen
+%package MethodResolution.Disambiguation.The.First;
+%~~vis
+\begin{xten}
+class Ambig {
+  public val f : (Int)=>Int =  (x:Int) => x*x;
+  public def f(y:int) = y+1;
+  public def example() {
+      val v = this.f(10);
+      // is v 100, or 11?
+  }
+}
+\end{xten}
+%~~siv
+%
+%~~neg
+\end{ex}
+
+In the case where a syntactic form \xcdmath"E.m(F$_1$, $\ldots$, F$_n$)" could
+be resolved as either a method call, or the application of a field \xcd`E.m`
+to some arguments, it will be treated as a method call.  
+The application of \xcd`E.m` to some arguments can be specified by adding
+parentheses:  \xcdmath"(E.m)(F$_1$, $\ldots$, F$_n$)".
+
+\begin{ex}
+
+%~~gen
+%package MethodResolution.Disambiguation.The.Second;
+%~~vis
+\begin{xten}
+class Disambig {
+  public val f : (Int)=>Int =  (x:Int) => x*x;
+  public def f(y:int) = y+1;
+  public def example() {
+      assert(  this.f(10)  == 11  );
+      assert( (this.f)(10) == 100 );
+  }
+}
+\end{xten}
+%~~siv
+%
+%~~neg
+
+\end{ex}
