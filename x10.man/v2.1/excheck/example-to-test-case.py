@@ -8,8 +8,15 @@ files = []
 currentLine = 0
 genTestCases = True
 
+#If NOTEST appears anywhere in example code,
+#   do not generate a test case.
+#If NOCOMPILE does, do not generate a compileCheck.
+NOTEST_pattern = "NOTEST"
+NOCOMPILE_pattern = "NOCOMPILE"
 
-texsource = os.path.abspath("..") #"/Users/bard/x10/manual/x10.man/v2.1"
+
+
+texsource = "/Users/bard/x10/manual/x10.man/v2.1" # os.path.abspath("..") #
 gennedFileDir = texsource + "/compileCheck"
 testCaseDir  = texsource + "/testcases"
 
@@ -29,23 +36,85 @@ testCaseDir  = texsource + "/testcases"
 
 
 def dealWithExample(f, line, basename):
-    cmd, args = parsley(line)
-    if cmd == "stmt" : doStmt(cmd, args, f, line, basename)
-    elif cmd == "gen" : doGen(cmd, args, f, line, basename)
-    elif cmd == "exp" : doExp(cmd, args, f, line, basename)
-    elif cmd == "genexp" : doGenExp(cmd, args, f, line, basename)
-    elif cmd == "longexp" : doLongexp(cmd, args, f, line, basename)
-    elif cmd == "type" : doType(cmd, args, f, line, basename)
+    cmd, args, fileroot = parsley(line)
+    if cmd == "stmt" : doStmt(cmd, args, f, line, basename, fileroot)
+    elif cmd == "gen" : doGen(cmd, args, f, line, basename, fileroot)
+    elif cmd == "exp" : doExp(cmd, args, f, line, basename, fileroot)
+    elif cmd == "genexp" : doGenExp(cmd, args, f, line, basename, fileroot)
+    elif cmd == "longexp" : doLongexp(cmd, args, f, line, basename, fileroot)
+    elif cmd == "type" : doType(cmd, args, f, line, basename, fileroot)
     else:
         doom("In " + basename + " the command is \""+cmd + "\" -- what the feersnar is this line: " + line)
 
-# IN: %~~CMD~~a~~b~~c
+
+fileRootPat = re.compile("%~~(.*)\^\^\^(.*)")
+# IN: %~~CMD~~a~~b~~c  ^^^fileroot
 #     Any number of things after CMD
 # OUT: [CMD, [a,b,c]]
 def parsley(line):
-    L = line[len(clue):len(line)]
+    
+    matcho = fileRootPat.match(line)
+    if matcho != None: 
+        L = matcho.group(1)
+        fileroot = matcho.group(2).strip()
+        #from __future__ import with_statement
+import os;
+import os.path;
+import re;
+clue = "%~~"
+sep="~~"
+files = []
+currentLine = 0
+genTestCases = True
+
+
+texsource = "/Users/bard/x10/manual/x10.man/v2.1" # os.path.abspath("..") #
+gennedFileDir = texsource + "/compileCheck"
+testCaseDir  = texsource + "/testcases"
+
+# INPUT:
+# In file named 'Treeb.tex'
+#   %~~stmt(xcd`~~`)~~a:Int,b:Int
+#   fooble zimble plowk \xcd`I:Int = a + b;` transom
+# OUTPUT
+# File named 'Treeb1.x10',
+#   public class Treeb1{ def check(a:Int,b:Int) { I:Int = a + b; }
+# THAT IS:
+#   This is a line of type 'stmt', which wraps a statement
+#   in a method called 'check' with formals "a:Int,b:Int"
+#   The statement starts on the following line at the string "xcd`", and
+#   goes through the next "`" (which might be on that line or a still further one.)
+
+
+
+def dealWithExample(f, line, basename):
+    cmd, args, fileroot = parsley(line)
+    if cmd == "stmt" : doStmt(cmd, args, f, line, basename, fileroot)
+    elif cmd == "gen" : doGen(cmd, args, f, line, basename, fileroot)
+    elif cmd == "exp" : doExp(cmd, args, f, line, basename, fileroot)
+    elif cmd == "genexp" : doGenExp(cmd, args, f, line, basename, fileroot)
+    elif cmd == "longexp" : doLongexp(cmd, args, f, line, basename, fileroot)
+    elif cmd == "type" : doType(cmd, args, f, line, basename, fileroot)
+    else:
+        doom("In " + basename + " the command is \""+cmd + "\" -- what the feersnar is this line: " + line)
+
+
+fileRootPat = re.compile("%~~(.*)\^\^\^(.*)")
+# IN: %~~CMD~~a~~b~~c  ^^^fileroot
+#     Any number of things after CMD
+# OUT: [CMD, [a,b,c]]
+def parsley(line):
+    
+    matcho = fileRootPat.match(line)
+    if matcho != None: 
+        L = matcho.group(1)
+        fileroot = matcho.group(2).strip()
+        #print "matcho! L='" + L + "', rilefoot='" + fileroot + "'"
+    else: 
+        L = line[len(clue):len(line)]
+        fileroot = None
     S = L.split(sep)
-    R = [S[0].strip(), [s.strip() for s in S[1:len(S)]]]
+    R = [S[0].strip(), [s.strip() for s in S[1:len(S)]], fileroot]
     return R
 
     
@@ -56,7 +125,7 @@ def parsley(line):
 #     def check(a:Int,b:Int)  {
 #         I:Int = a+b;
 #     }}
-def doStmt(cmd, args, f, line, basename):
+def doStmt(cmd, args, f, line, basename, fileroot):
     global currentLine
     if len(args) != 3 and len(args) != 4:
         doom("'stmt' takes 3 args -- in " + basename  + "\nline="  + line + " ... plus optionally a fourth for imports and such.")
@@ -66,15 +135,16 @@ def doStmt(cmd, args, f, line, basename):
     importses = args[3] if len(args)==4 else ""
     stmt = extract(f, starter, ender, basename)
     classname = numberedName(basename)
+    fileroot = fileroot if fileroot != None else classname
     code = "\n".join([
 #          " package stmtsome." + classname + ";",
           "// file " + basename + ".tex,  line " + str(currentLine),
           importses, 
-          "public class " + classname + "{",
+          "class " + classname + "TestStmt{",
           "  def check(" + formals + ")  {",
           "    " + stmt,
           "  }}"])
-    writeX10File("stmtsome." + classname, classname, code)
+    writeX10File("stmtsome." + classname, classname, code, fileroot)
 
 # IN:
 #   %~~exp~~xcd`~~`~~a:Int
@@ -83,7 +153,7 @@ def doStmt(cmd, args, f, line, basename):
 #   public class Chippie13 {
 #     def check(a:Int) = a+4;
 #   }
-def doExp(cmd, args, f, line, basename):
+def doExp(cmd, args, f, line, basename, fileroot):
     if len(args) != 3 and len(args) != 4:
         doom("'exp' takes 3 args -- in " + basename  + "\nline="  + line + " ... plus optionally a fourth for imports and such.")
     starter = args[0]
@@ -93,14 +163,15 @@ def doExp(cmd, args, f, line, basename):
     importses = args[3] if len(args)==4 else ""
     exp = extract(f, starter, ender, basename)
     classname = numberedName(basename)
+    fileroot = fileroot if fileroot != None else classname
     code = "\n".join([
 #          " package expsome." + classname + ";",
           "// file " + basename + " line " + str(currentLine),
           importses, 
-          "public class " + classname + "{",
+          "class " + classname + "TestExp{",
           "  def check(" + formals + ")  = " + exp + ";"
           "  }"])
-    writeX10File("expsome." + classname, classname, code)
+    writeX10File("expsome." + classname, classname, code, fileroot)
 
 # IN:
 #   %~~genexp~~xcd`~~`~~T~~a:T, f:(T)=>Int
@@ -109,7 +180,7 @@ def doExp(cmd, args, f, line, basename):
 #   public class Chippie13 {
 #     def check[T](a:T, f:(T)=>Int) = f(a);
 #   }
-def doGenExp(cmd, args, f, line, basename):
+def doGenExp(cmd, args, f, line, basename, fileroot):
     if len(args) != 4 and len(args) != 5:
         doom("'genexp' takes 4 args -- in " + basename  + "\nline="  + line + " ... plus optionally a fifth for imports and such.")
     starter = args[0]
@@ -120,14 +191,15 @@ def doGenExp(cmd, args, f, line, basename):
     importses = args[4] if len(args)==5 else ""
     exp = extract(f, starter, ender, basename)
     classname = numberedName(basename)
+    fileroot = fileroot if fileroot != None else classname
     code = "\n".join([
 #          " package expsome." + classname + ";",
           "// file " + basename + " line " + str(currentLine),
           importses, 
-          "public class " + classname + "{",
+          "class " + classname + "GenexpTest{",
           "  def check[" + generics + "](" + formals + ")  = " + exp + ";"
           "  }"])
-    writeX10File("expsome." + classname, classname, code)
+    writeX10File("genexpsome." + classname, classname, code, fileroot)
 
 # IN:
 #   %~~type~~xcd`~~`~~a:Int
@@ -138,7 +210,7 @@ def doGenExp(cmd, args, f, line, basename):
 #     def check(a:Int) {
 #        var checkycheck : Tofu{a==3};
 #     }}
-def doType(cmd, args, f, line, basename):
+def doType(cmd, args, f, line, basename, fileroot):
     if len(args) != 3 and len(args) != 4:
         doom("'type' takes 3 args -- in " + basename  + "\nline="  + line + " ... plus optionally a fourth for imports and such.")
     starter = args[0]
@@ -148,15 +220,16 @@ def doType(cmd, args, f, line, basename):
     importses = args[3] if len(args)==4 else ""
     typer = extract(f, starter, ender, basename)
     classname = numberedName(basename)
+    fileroot = fileroot if fileroot != None else classname
     code = "\n".join([
 #          "package " + "typesome." + classname + ";",
           "// file " + basename + " line " + str(currentLine),
           importses, 
-          "public class " + classname + "{",
+          "class " + classname + "TypeTest{",
           "  def check(" + formals + ")  { ",
           "     var checkycheck : " + typer + ";"
           "  }}"])
-    writeX10File("typesome." + classname, classname, code)
+    writeX10File("typesome." + classname, classname, code, fileroot)
 
 
 # IN: 
@@ -187,7 +260,7 @@ def doType(cmd, args, f, line, basename):
 #      puts the output in the file named "foon.x10"
 
 
-def doGen(cmd, args, f, line, basename):
+def doGen(cmd, args, f, line, basename, fileroot):
     #print("doGen: " + cmd + " on " + "!".join(args));
     global currentLine
     prelude = (
@@ -197,11 +270,12 @@ def doGen(cmd, args, f, line, basename):
     body = readLines(f, "%~~siv", False, True, basename)
     postlude = readLines(f, "%~~neg", True, False, basename)
     classname = numberedName(basename)
+    fileroot = fileroot if fileroot != None else classname
     if len(args) >= 1:
         classname = args[0];
     fullcode = "\n".join(prelude + body + postlude)
     (packagename, code) = dissectOutPackageName(fullcode)
-    writeX10File(packagename, classname, code)
+    writeX10File(packagename, classname, code, fileroot)
 
 # IN
 #   %~~longexp~~`~~`
@@ -219,7 +293,7 @@ def doGen(cmd, args, f, line, basename):
 #    def zap() { val x = this ; }}
 #
 # So it's got the invisible parts like %~~gen, but works on a part of a line like %~~exp
-def doLongexp(cmd, args, f, line, basename):
+def doLongexp(cmd, args, f, line, basename, fileroot):
     # Mirroring exp code to get the delimiters of the exp to check
     global currentLine
     if len(args) != 2:
@@ -233,11 +307,12 @@ def doLongexp(cmd, args, f, line, basename):
     # Back to gen code for postlude
     postlude = readLines(f, "%~~pxegnol", True, False, basename)
     classname = numberedName(basename)
-    print "longexp: starter = '" + starter + "', ender = '" + ender + "', exp='" + exp + "'"
+    fileroot = fileroot if fileroot != None else classname
+    #print "longexp: starter = '" + starter + "', ender = '" + ender + "', exp='" + exp + "'"
     fullcode = "\n\n" + "\n".join(prelude + [exp] + postlude)
-    print "longexp: fullcode = " + fullcode
+    #print "longexp: fullcode = " + fullcode
     (packagename, code) = dissectOutPackageName(fullcode)
-    writeX10File(packagename, classname, code)
+    writeX10File(packagename, classname, code, fileroot)
 
 
 packagepattern = re.compile(" *package(.*);")
@@ -299,19 +374,65 @@ def doom(msg):
     raise Exception(msg)
 
 
-def cramCodeIntoFile(filename, code):
-    f = open(filename, 'w')
-    f.write(code)
-    f.flush()
-    f.close()
+def cramCodeIntoFile(filename, code, forbidFlag):
+    forbidFlagThere, deflaggedCode = findAndDelete(code, forbidFlag)
+    if not forbidFlagThere: 
+        f = open(filename, 'w')
+        f.write(deflaggedCode)
+        f.flush()
+        f.close()
 
-def writeX10File(packagename, classname, code):
+testPrelude = '''
+/*
+ *  This file is part of the X10 project (http://x10-lang.org).
+ *
+ *  This file is licensed to You under the Eclipse Public License (EPL);
+ *  You may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *      http://www.opensource.org/licenses/eclipse-1.0.php
+ *
+ *  (C) Copyright IBM Corporation 2006-2010.
+ */
+
+import harness.x10Test;
+'''
+testHarness = '''
+public class %s extends x10Test {
+   public def run() : boolean = (new Hook()).run();
+   public static def main(var args: Array[String](1)): void = {
+        new %s().execute();
+    }
+}    
+'''
+
+findHookPat = ("class Hook")
+standardHookCode = '''
+class Hook {
+   def run():Boolean = true;
+}
+'''
+
+def assembleTestCase(packageline, classname, code, fileroot):
+    testclass = testHarness % (fileroot, fileroot)
+    hook = "" if code.find(findHookPat) > -1 else standardHookCode
+    bits = [packageline, testPrelude, code, hook, testclass]
+    return "\n".join(bits)
+
+def findAndDelete(corpus, substring):
+    hasFlag = corpus.find(substring) > -1
+    deflagged = corpus.replace(NOTEST_pattern, "").replace(NOCOMPILE_pattern, "")
+    #print "findAndDelete " + substring + "->" + str(hasFlag) + "\n" + corpus + "\n\n\n\n"
+    return hasFlag, deflagged
+
+
+def writeX10File(packagename, classname, code, fileroot):
     global files
-    code1 = "package " + packagename + ";\n"  + code;
-    fn = gennedFileDir + "/" + classname + ".x10"
-    cramCodeIntoFile( fn, code1)
-    testcasecode = code1
-    cramCodeIntoFile( testCaseDir + "/" + classname + ".x10", testcasecode)
+    packageline =  "package " + packagename + ";\n"
+    code1 = packageline + code;
+    fn = gennedFileDir + "/" + fileroot + ".x10"
+    cramCodeIntoFile( fn, code1, NOCOMPILE_pattern)
+    testcasecode = assembleTestCase(packageline, classname, code, fileroot)
+    cramCodeIntoFile( testCaseDir + "/" + fileroot + ".x10", testcasecode, NOTEST_pattern)
     files.append(fn)
     
     
@@ -360,6 +481,7 @@ def extractExamplesFromAllFiles():
         
 os.chdir(gennedFileDir);
 os.system("rm -r " + gennedFileDir + "/*");
+os.system("rm -r " + testCaseDir + "/*");
 extractExamplesFromAllFiles()
 #print ("\n".join(files))
 os.system("x10c -STATIC_CALLS *.x10")
