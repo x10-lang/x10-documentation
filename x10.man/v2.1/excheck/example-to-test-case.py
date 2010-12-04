@@ -1,3 +1,14 @@
+# Common test case frobbies:
+# On the first line of the test case, you can append ^^^ classname
+# This will: (1) make the test-case class have the given name.
+#            (2) write it to a file of that name (plus .x10).
+#            Please use this when making a test case that ought to be stable.
+# If the string NOTEST appears anywhere in an example's code
+# (In particular, in the TeXly-commented parts)
+# it will be deleted, and the example will not generate a test case.
+# Similarly, NOCOMPILE means to not generate a compile check.
+# NOTEST and NOCOMPILE are independent; both can be used to generate nothing.
+
 from __future__ import with_statement
 import os;
 import os.path;
