@@ -34,14 +34,14 @@ They can be {\em copied} to other places, and the special library struct
 \index{MAX\_PLACES}
 \index{FIRST\_PLACE}
 
-%~~exp~~`~~`~~ ~~
+%~~exp~~`~~`~~ ~~ ^^^ Places10
 Places are numbered 0 through \xcd`Place.MAX_PLACES-1`, stored in the field
 \xcd`pl.id`.  The \xcd`Sequence[Place]` \xcd`Place.places()` contains the places of the
 program, in numeric order. 
 The program starts by executing a \xcd`main` method at
-%~~exp~~`~~`~~ ~~
+%~~exp~~`~~`~~ ~~ ^^^ Places20
 \xcd`Place.FIRST_PLACE`, which is 
-%~~exp~~`~~`~~ ~~
+%~~exp~~`~~`~~ ~~ ^^^ Places30
 \xcd`Place.places()(0)`; see
 \Sref{initial-computation}. 
 
@@ -49,9 +49,9 @@ Operations on places include \xcd`pl.next()`, which gives the next entry
 (looping around) in \xcd`Place.places` and its opposite \xcd`pl.prev()`. In
 particular, \xcd`here.next()` means ``a place other than \xcd`here`'', except
 in single-place executions.
-%~~exp~~`~~`~~pl:Place~~
+%~~exp~~`~~`~~pl:Place~~ ^^^ Places40
 There are also a number of tests, like \xcd`pl.isSPE()` and 
-%~~exp~~`~~`~~pl:Place ~~
+%~~exp~~`~~`~~pl:Place ~~ ^^^ Places50
 \xcd`pl.isCUDA()`, which test for particular kinds of processors.
 
 
@@ -68,7 +68,7 @@ place-shifting operations, just as \Xcd{self} denotes
 two different values in \xcd`List[Int{self!=0}]{self!=null}`. In the following
 code, \xcd`here` has one value at 
 \xcd`h0`, and a different one at \xcd`h1` (unless there is only one place).
-%~~gen
+%~~gen ^^^ Places60
 % package places.are.For.Graces;
 % class Example {
 % def example() {
@@ -92,7 +92,7 @@ constraints, and \xcd`this` by inner classes.)
 
 The following example looks through a list of references to \Xcd{Thing}s.  
 It finds those references to things that are \Xcd{here}, and deals with them.  
-%~~gen
+%~~gen ^^^ Places70
 %package Places.Are.For.Graces.2;
 %import x10.util.*;
 %abstract class Thing {}

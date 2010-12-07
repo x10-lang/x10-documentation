@@ -58,7 +58,7 @@ block of memory of size equal to the sum of the sizes of its fields.
 
 Values of a struct \Xcd{C} type can be created by invoking a constructor
 defined in \Xcd{C}, but without prefixing it with \Xcd{new}: 
-%~~gen
+%~~gen ^^^ Structs10
 % package Structs.For.Muckts;
 %~~vis
 \begin{xten}
@@ -76,7 +76,7 @@ Structs support the same notions of generics, properties, and constrained
 types that classes do.  For example, the \xcd`Pair` type below provides pairs
 of values; the \xcd`diag()` method applies only when the two elements of the
 pair are equal, and returns that common value: 
-%~~gen
+%~~gen ^^^ Structs20
 % package Structs.For.Gruckts;
 %~~vis
 \begin{xten}
@@ -198,7 +198,7 @@ suitable for use in a library.  For a shorter example, we define the
 two values of possibly unrelated type together in a single value, \eg, to
 return two values from a function.
 
-%~~gen
+%~~gen ^^^ Structs30
 % package Structs.Pairs.Are.For.Squares;
 %~~vis
 \begin{xten}
@@ -241,7 +241,7 @@ Converting code that {\em uses} the class or struct requires a certain amount
 of caution.
 Suppose, in particular, that we want to convert the class \xcd`Class2Struct`
 to a struct, and \xcd`Struct2Class` to a class.
-%~~gen
+%~~gen ^^^ Structs40
 %package Structs.Converting;
 %~~vis
 \begin{xten}
@@ -272,7 +272,7 @@ struct Struct2Class {
       ``same contents''. Before conversion, both \xcd`assert`s in the
       following program succeed.  After converting and fixing constructors,
       both of them fail.
-%~~gen
+%~~gen ^^^ Structs50
 %package Structs.Converting.And.Conniving;
 % class Class2Struct {
 %   val a : Int;

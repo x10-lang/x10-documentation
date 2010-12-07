@@ -41,7 +41,7 @@ creation.  \xcd`Inner` has access to the fields of \xcd`Outer.this`, as seen
 in the \xcd`outerThree` and \xcd`alwaysTrue` methods.  Note that \xcd`Inner`
 has its own \xcd`three` field, which is different from and not even the same
 type as \xcd`Outer.this.three`. 
-%~~gen
+%~~gen ^^^ Expressions10
 % package exp.vexp.pexp.lexp.shexp;
 %~~vis
 \begin{xten}
@@ -80,7 +80,7 @@ A local variable expression consists simply of the name of the local variable,
 field of the current object, formal parameter in scope, etc. It evaluates to
 the value of the local variable. \xcd`n` in the second line below is a local
 variable expression. 
-%~~gen 
+%~~gen  ^^^ Expressions20
 % package exp.loc.al.varia.ble; 
 % class Example {
 % def example() { 
@@ -127,7 +127,7 @@ obscure) form is used to access fields of an ancestor class which are shadowed
 by same-named fields of some more recent ancestor.  The following example
 illustrates all four cases:
 
-%~~gen
+%~~gen ^^^ Expressions30
 % package exp.re.ssio.ns.fiel.dacc.ess;
 %~~vis
 \begin{xten}
@@ -198,7 +198,7 @@ instance method, or a closure.
 The syntax is ambiguous; the target must be type-checked to determine if it is
 the name of a method or if it refers to a field containing a closure. It is a
 static error if a call may resolve to both a closure call or to a method call.
-%~~gen
+%~~gen ^^^ Expressions40
 % package expres.sio.nsca.lls;
 %~~vis
 \begin{xten}
@@ -215,7 +215,7 @@ class Callsome {
 However, adding a static method called \xcd`closure` makes \xcd`Callsome.closure()`
 ambiguous: it could be a call to the closure, or to the static method: 
 
-%~~gen
+%~~gen ^^^ Expressions50
 % package expres.sio.nsca.lls.twoooo;
 % class Callsome {static val closure = () => 1; static def method () = 2; static val methodEvaluated = Callsome.method();
 %~~vis
@@ -234,7 +234,7 @@ Method selection rules are given in \Sref{sect:MethodResolution}.
 
 It is a static error if a method's \grammarrule{Guard} is not satisfied by the
 caller.  For example: 
-%~~gen
+%~~gen ^^^ Expressions60
 %package Expressions.Calls.Guarded.By.Walls;
 %~~vis
 \begin{xten}
@@ -282,7 +282,7 @@ to a variable \xcd"x".
 Most often, \xcd`x` is a mutable (\xcd`var` variable).  The same syntax is
 used for delayed initialization of a \xcd`val`, but \xcd`val`s can only be
 initialized once.
-%~~gen
+%~~gen ^^^ Expressions70
 % package express.ions.ass.ignment;
 % class Example {
 % static def exasmple() {
@@ -326,7 +326,7 @@ one call to \xcd`a.apply(i)` and one to \xcd`a.set(i,c)`, the desugared forms
 of \xcd`a(i)` and \xcd`a(i)=c`.  If subscripting is implemented strangely for
 the class of \xcd`a`, the behavior is {\em not} necessarily updating a single
 storage location. Specifically, \xcd`A()(I()) += B()` is tantamount to: 
-%~~gen
+%~~gen ^^^ Expressions80
 % package expressions.stupid.addab;
 % class Example {
 % def example(A:()=>Rail[Int], I: () => Int, B: () => Int ) {
@@ -388,7 +388,7 @@ value.  For example, \xcd`(255 as UByte) as UInt` is 255.
 
 Specifically, each numeric type can be converted or coerced into each other
 numeric type, perhaps with loss of accuracy.
-%~~gen
+%~~gen ^^^ Expressions90
 % package exp.ress.io.ns.numeric.conversions;
 % class ExampleOfConversionAndStuff {
 % def example() {
@@ -488,7 +488,7 @@ If either operand is of static type \xcd"x10.lang.String",
 The type of the result is \xcd"String".
 
  For example, 
-%~~exp~~`~~`~~ ~~
+%~~exp~~`~~`~~ ~~ ^^^ Expressions100
       \xcd`"one " + 2 + here` 
       evaluates to  \xcd`one 2(Place 0)`.  
 
@@ -575,7 +575,7 @@ ancestor (as constrained by \Sref{LCA}) of the types of the consequent and the
 alternative. 
 
 For example, 
-%~~exp~~`~~`~~a:Int,b:Int ~~
+%~~exp~~`~~`~~a:Int,b:Int ~~ ^^^ Expressions110
 \xcd`a == b ? 1 : 2`
 evaluates to \xcd`1` if \xcd`a` and \xcd`b` are the same, and \xcd`2` if they
 are different.   As the type of \xcd`1` is \xcd`Int{self==1}` and of \xcd`2`
@@ -782,7 +782,7 @@ Otherwise the result is \xcd"false". This determination may involve checking
 that the constraint, if any, associated with the type is true for the given
 expression.
 
-%~~exp~~`~~`~~x:Int~~
+%~~exp~~`~~`~~x:Int~~ ^^^ Expressions120
 For example, \xcd`3 instanceof Int{self==x}` is an overly-complicated way of
 saying \xcd`3==x`.
 
@@ -829,7 +829,7 @@ true if values of type \xcd`T` can be compared to other values of type
 \xcd`T`.  So, if we wish to define a generic class \xcd`OrderedList[T]`, of
 lists whose elements are kept in the right order, we need the elements to be
 ordered.  This is phrased as a constraint on \xcd`T`: 
-%~~gen
+%~~gen ^^^ Expressions130
 % package expre.ssi.onsfgua.rde.dq.uantification;
 %~~vis
 \begin{xten}
@@ -873,7 +873,7 @@ be of type \xcd"T".
 
 X10 includes short syntactic forms for constructing one-dimensional arrays.
 The shortest form is to enclose some expressions in brackets: 
-%~~gen
+%~~gen ^^^ Expressions140
 % package Expressions.ArrayCtor.Primo;
 % class Example {
 % def example() {
@@ -905,9 +905,9 @@ However, it is invalid for an \xcd`Array[Int{self==0}](1)`, because it assigns
 a non-zero value to an element of the array, violating the type constraint
 which says that all the elements are zero.  So, \xcd`Array[Int{self==0}](1)`
 is not a subtype of \xcd`Array[Int](1)` --- the two types are simply unrelated.)
-%~~type~~`~~`~~ ~~
+%~~type~~`~~`~~ ~~ ^^^ Expressions150
 Since there are far more uses for \xcd`Array[Int](1)` than
-%~~type~~`~~`~~ ~~
+%~~type~~`~~`~~ ~~ ^^^ Expressions160
 \xcd`Array[Int{self==0}](1)`, the compiler produces the former.
 
 Still, occasionally one does actually need \xcd`Array[Int{self==0}](1)`, 
@@ -916,7 +916,7 @@ For these cases, X10 provides an array constructor which does allow
 specification of the element type: \xcd`new Array[T][e1...en]`.  Each
 element \xcd`ei` must be of type \xcd`T`.  The resulting array is of type
 \xcd`Array[T](1)`.  
-%~~gen
+%~~gen ^^^ Expressions170
 %package Expressions.ArrayCtor.Details;
 %class Eel{}
 %class Example{
@@ -1017,7 +1017,7 @@ A subtype may be implicitly coerced to any supertype.
 An object of any class may be explicitly coerced to any other
 class type using the \xcd"as" operation.  If \xcd`Child <: Person` and
 \xcd`rhys:Child`, then 
-%~~gen
+%~~gen ^^^ Expressions180
 % package Types.Coercions;
 %  class Person {}
 %  class Child extends Person{} 
@@ -1054,14 +1054,14 @@ approximation is good enough.
 \begin{itemize}
 \item Casting a number to a {\em wider} numeric type is safe and effective,
       and can be done by an implicit conversion as well as an explicit
-%~~exp~~`~~`~~ ~~
+%~~exp~~`~~`~~ ~~ ^^^ Expressions190
       coercion.  For example, \xcd`4 as Long` produces the \xcd`Long` value of
       4. 
 \item Casting a floating-point value to an integer value truncates the digits
       after the decimal point, thereby rounding the number towards zero.  
-%~~exp~~`~~`~~
+%~~exp~~`~~`~~ ^^^ Expressions200
       \xcd`54.321 as Int` is \xcd`54`, and 
-%~~exp~~`~~`~~ ~~
+%~~exp~~`~~`~~ ~~ ^^^ Expressions210
       \xcd`-54.321 as Int` is \xcd`-54`.
       If the floating-point value is too large to represent as that kind of
       integer, the coercion returns the largest or smallest value of that type
@@ -1069,26 +1069,26 @@ approximation is good enough.
       \xcd`Int.MAX_VALUE`, \xcd`2147483647`. 
 
 \item Casting a \xcd`Double` to a \xcd`Float` normally truncates digits: 
-%~~exp~~`~~`~~ ~~
+%~~exp~~`~~`~~ ~~ ^^^ Expressions220
       \xcd`0.12345678901234567890 as Float` is \xcd`0.12345679f`.  This can
       turn a nonzero \xcd`Double` into \xcd`0.0f`, the zero of type
       \xcd`Float`: 
-%~~exp~~`~~`~~ ~~
+%~~exp~~`~~`~~ ~~ ^^^ Expressions230
       \xcd`1e-100 as Float` is \xcd`0.0f`.  Since 
       \xcd`Double`s can be as large as about \xcd`1.79E308` and \xcd`Float`s
       can only be as large as about \xcd`3.4E38f`, a large \xcd`Double` will
       be converted to the special \xcd`Float` value of \xcd`Infinity`: 
-%~~exp~~`~~`~~ ~~
+%~~exp~~`~~`~~ ~~ ^^^ Expressions240
       \xcd`1e100 as Float` is \xcd`Infinity`.
 \item Integers are coerced to smaller integer types by truncating the
       high-order bits. If the value of the large integer fits into the smaller
       integer's range, this gives the same number in the smaller type: 
-%~~exp~~`~~`~~ ~~
+%~~exp~~`~~`~~ ~~ ^^^ Expressions250
       \xcd`12 as Byte` is the \xcd`Byte`-sized 12, 
-%~~exp~~`~~`~~ ~~
+%~~exp~~`~~`~~ ~~ ^^^ Expressions260
       \xcd`-12 as Byte` is -12. 
       However, if the larger integer {\em doesn't} fit in the smaller type,
-%~~exp~~`~~`~~ ~~
+%~~exp~~`~~`~~ ~~ ^^^ Expressions270
       the numeric value and even the sign can change: \xcd`254 as Byte` is
       \xcd`Byte`-sized \xcd`-2`.  
 
@@ -1154,7 +1154,7 @@ Consider the following code:
 
 
 
-%~~stmt~~\begin{xten}~~\end{xten}~~ ~~
+%~~stmt~~\begin{xten}~~\end{xten}~~ ~~ ^^^ Expressions280
 \begin{xten}
 val p  = [2, 2, 2, 2, 2] as Point;
 val q = [1, 1, 1, 1, 1] as Point;
@@ -1162,7 +1162,7 @@ val a = p - q;
 \end{xten}
 This code fragment compiles successfully, given the above operator definition. 
 The type of \Xcd{p} is inferred to be \Xcd{Point(5)} (i.e.{} the type 
-%~~type~~`~~`~~ ~~
+%~~type~~`~~`~~ ~~ ^^^ Expressions290
 \xcd`Point{self.rank==5}`.
 Similarly for \Xcd{q}. Hence the application of the operator ``\Xcd{-}'' is legal (it requires both arguments to have the same rank). The type of \Xcd{a} is computed as \Xcd{Point(5)}.
 \end{example}

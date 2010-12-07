@@ -140,7 +140,7 @@ be referenced, but only those that {\em precede} the field being initialized.
 For example, the following is correct, but would not be if the fields were
 reversed:
 
-%~~gen
+%~~gen ^^^ Classes10
 %package Classes_field_init_expr_a;
 %~~vis
 \begin{xten}
@@ -161,7 +161,7 @@ declared in a superclass, regardless of their types.  The
 superclass field \xcd"f" may be accessed within the body of
 the subclass via the reference \xcd"super.f".
 
-%~~gen
+%~~gen ^^^ Classes20
 % package classes.fields.primus;
 %~~vis
 \begin{xten}
@@ -180,7 +180,7 @@ class Sub extends Super {
 With inner classes, it is occasionally necessary to 
 write \xcd`Cls.super.f` to get at a hidden field \xcd`f` of an outer class
 \xcd`Cls`, as in 
-%~~gen
+%~~gen ^^^ Classes30
 % package classes.fields.secundus;
 %~~vis
 \begin{xten}
@@ -230,7 +230,7 @@ place in an \Xcd{at} statement.    The value of a transient field of a copied
 object is the default value of its type, regardless of the value of the field
 in the original.  If the type of a field has no
 default value, it cannot be marked \Xcd{transient}.
-%~~gen
+%~~gen ^^^ Classes40
 % package Classes.Transient.Example;
 %~~vis
 \begin{xten}
@@ -270,7 +270,7 @@ properties are desired.
 
 Properties are defined in parentheses, after the name of the class.  They are
 given values by the \xcd`property` command in constructors.
-%~~gen
+%~~gen ^^^ Classes50
 % package Classes.Toss.Freedom.Disk2;
 %~~vis
 \begin{xten}
@@ -293,7 +293,7 @@ a property with the name \xcd"x".
 
 A property \xcd`x:T` induces a field with the same name and type, 
 as if defined with: 
-%~~gen
+%~~gen ^^^ Classes60
 % package Classes.For.Masses.Of.NevermindTheRest;
 % class Exampll[T] {
 %~~vis
@@ -305,7 +305,7 @@ public val x : T;
 % }
 %~~neg
 \noindent It also defines a nullary getter method, 
-%~~gen
+%~~gen ^^^ Classes70
 % package Classes_nullary_getter_a;
 % class Exampllll[T] {
 % public val x : T;
@@ -447,7 +447,7 @@ Often, a method will only make sense to invoke under certain
 statically-determinable conditions.  For example, \xcd`example(x)` is only
 well-defined when \xcd`x != null`, as \xcd`null.toString()` throws a null
 pointer exception: 
-%~~gen
+%~~gen ^^^ Classes80
 % package Classes.methodwithconstraintthingie;
 %~~vis
 \begin{xten}
@@ -472,7 +472,7 @@ compiler that the guard is satisfied.  (As usual with static constraint
 checking, there is no runtime cost.  Indeed, this code can be more efficient
 than usual, as it is statically provable that \xcd`x != null`.)
 This may require a cast: 
-%~~gen
+%~~gen ^^^ Classes90
 % package Classes.methodguardnadacastthingie;
 % class Example {var f : String = ""; def example(x:Object){x != null} = {this.f = x.toString();}}
 % class Eyample {
@@ -540,7 +540,7 @@ For example, the \xcd`eq()` method below tells if the \xcd`x` and \xcd`y`
 properties are equal; the \xcd`is(z)` method tells if they are both equal to
 \xcd`z`.  These can be used in constraints, as illustrated in the
 \xcd`example()` method.
-%~~gen
+%~~gen ^^^ Classes100
 %package Classes.PropertyMethods;
 %~~vis
 \begin{xten}
@@ -576,7 +576,7 @@ the \xcd"def" keyword.  That is, the following are equivalent:
 
 
 
-%~~gen
+%~~gen ^^^ Classes110
 % package classes.waifsome1;
 % class Waif(rect:Boolean, onePlace:Place, zeroBased:Boolean) {
 %~~vis
@@ -587,7 +587,7 @@ property def rail(): Boolean = rect && onePlace == here && zeroBased;
 %}
 %~~neg
 and
-%~~gen
+%~~gen ^^^ Classes120
 % package classes.waifsome2;
 % class Waif(rect:Boolean, onePlace:Place, zeroBased:Boolean) {
 %~~vis
@@ -600,7 +600,7 @@ property rail: Boolean = rect && onePlace == here && zeroBased;
 
 Similarly, nullary property methods can be inspected in constraints without
 \xcd`()`.  
-%~~longexp~~`~~`
+%~~longexp~~`~~` ^^^ Classes130
 % package classes.not.weasels;
 % class Waif(rect:Boolean, onePlace:Place, zeroBased:Boolean) {
 %   def this(rect:Boolean, onePlace:Place, zeroBased:Boolean) 
@@ -615,7 +615,7 @@ Similarly, nullary property methods can be inspected in constraints without
 % }}
 %~~pxegnol
 is equivalent to 
-%~~longexp~~`~~`
+%~~longexp~~`~~` ^^^ Classes140
 % package classes.not.ferrets;
 % class Waif(rect:Boolean, onePlace:Place, zeroBased:Boolean) {
 %   def this(rect:Boolean, onePlace:Place, zeroBased:Boolean) 
@@ -644,7 +644,7 @@ Two or more methods of a class or interface may have the same
 name if they have a different number of type parameters, or
 they have formal parameters of different types.  \Eg, the following is legal: 
 
-%~~gen
+%~~gen ^^^ Classes150
 % package Classes.Mful;
 %~~vis
 \begin{xten}
@@ -1146,7 +1146,7 @@ polynomials -- for the sake of illustration, single-variable polynomials with
 polynomials by the usual operations: \xcd`+` to add, \xcd`*` to multiply,
 \xcd`-` to subtract, and \xcd`p(x)` to compute the value of the polynomial at
 argument \xcd`x`.  We would like to write code thus: 
-%~~gen
+%~~gen ^^^ Classes160
 
 % package Classes.In.Poly101;
 % // Integer-coefficient polynomials of one variable.
@@ -1247,7 +1247,7 @@ argument \xcd`x`.  We would like to write code thus:
 %~~neg
 
 Writing the same code with method calls, while possible, is far less elegant: 
-%~~gen
+%~~gen ^^^ Classes170
 
 %package Classes.In.Remedial.Poly101;
 % // Integer-coefficient polynomials of one variable.
@@ -1378,7 +1378,7 @@ definition.  It uses the \xcd`operator` keyword instead of \xcd`def`, and
 appear in a use of the operator.  So, 
 \xcd`operator this + (p:Poly)` explains how to add \xcd`this` to a
 \xcd`Poly` value.
-%~~gen
+%~~gen ^^^ Classes180
 % package Classes.In.Poly102;
 %~~vis
 \begin{xten}
@@ -1412,7 +1412,7 @@ class Poly {
 
 The sum of a polynomial and an integer, \xcd`P+3`, looks like
 an overloaded method definition.  
-%~~gen
+%~~gen ^^^ Classes190
 % package Classes.In.Poly103;
 % class Poly {
 %   public val coeff : Array[Int](1);
@@ -1449,7 +1449,7 @@ on \xcd`Int`; changing \xcd`Int` is far outside of normal coding.  So, we
 allow it as a method on \xcd`Poly` as well.
 
 
-%~~gen
+%~~gen ^^^ Classes200
 % package Classes.In.Poly104o;
 % class Poly {
 %   public val coeff : Array[Int](1);
@@ -1483,7 +1483,7 @@ Furthermore, it is sometimes convenient to express a binary operation as a
 static method on a class. 
 The definition for the sum of two
 \xcd`Poly`s could have been written:
-%~~gen
+%~~gen ^^^ Classes210
 % package Classes.In.Poly105;
 % class Poly {
 %   public val coeff : Array[Int](1);
@@ -1553,7 +1553,7 @@ Unary operators are defined in a similar way, with \xcd`this` appearing in the
 \xcd`operator` definition where an actual value would occur in a unary
 expression.  The operator to negate a polynomial is: 
 
-%~~gen
+%~~gen ^^^ Classes220
 % package Classes.In.Poly106;
 % class Poly {
 %   public val coeff : Array[Int](1);
@@ -1586,7 +1586,7 @@ complexities of binary operations are not needed.
 Explicit type conversions, \xcd`e as T{c}`, can be defined as operators on
 class \xcd`T`.
 
-%~~gen
+%~~gen ^^^ Classes230
 % package Classes_explicit_type_conversions_a;
 %~~vis
 \begin{xten}
@@ -1653,7 +1653,7 @@ will be used -- they would not be for an instance method operator).  The
 calculation \xcd`1+x` coerces \xcd`1` to a polynomial and uses polynomial
 addition to add it to \xcd`x`.
 
-%~~gen
+%~~gen ^^^ Classes240
 % package Classes.And.Implicit.Coercions;
 % class Poly {
 %   public val coeff : Array[Int](1);
@@ -1738,7 +1738,7 @@ coordinates of \xcd`a`, which is sensible.  \xcd`a(i)=b` assigns to one of the
 coordinates.  \xcd`a(i,j)=b` assigns different values to \xcd`a(i)` and
 \xcd`a(j)`, purely for the sake of the example.
 
-%~~gen
+%~~gen ^^^ Classes250
 % package Classes.Assignments1_oddvec;
 %~~vis
 \begin{xten}
@@ -1780,7 +1780,7 @@ Classes (and structs and interfaces) may specify a {\em class guard}, a
 constraint which must hold on all values of the class.    In the following
 example, a \xcd`Line` is defined by two distinct \xcd`Pt`s\footnote{We use \xcd`Pt`
 to avoid any possible confusion with the built-in class \xcd`Point`.}
-%~~gen
+%~~gen ^^^ Classes260
 % package classes.guards.invariants.glurp;
 %~~vis
 \begin{xten}
@@ -1795,7 +1795,7 @@ In most cases the class guard could be phrased as a type constraint on a propert
 the class instead, if preferred.  Arguably, a symmetric constraint like two
 points being different is better expressed as a class guard, rather than
 asymmetrically as a constraint on one type: 
-%~~gen
+%~~gen ^^^ Classes270
 % package classes.guards.invariants.glurp2;
 % class Pt(x:Int, y:Int){}
 %~~vis
@@ -1923,7 +1923,7 @@ Here is another example, constructed as a simplified
 version of \Xcd{x10.array.Region}.  The \xcd`mockUnion` method 
 has the type that a true \xcd`union` method would have.
 
-%~~gen
+%~~gen ^^^ Classes280
 %package Classes.SimplifiedRegion;
 %~~vis
 \begin{xten}

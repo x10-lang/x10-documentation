@@ -179,7 +179,7 @@ can read anything; its annotation, too, is not required.   \Xcd{SeeAlso} is able
 \Xcd{boric()} or the private one \Xcd{cajoled()}.  Even for overriding
 \Xcd{aplomb()}, it is crucial that \Xcd{SeeAlso.aplomb()} be
 declared \xcd`@NonEscaping("a")`, just like \Xcd{C2.aplomb()}.
-%~~gen
+%~~gen ^^^ ObjectInitialization10
 %package ObjInit.C2;
 %~~vis
 \begin{xten}
@@ -249,7 +249,7 @@ and one of them implicit.
 \end{enumerate}
 
 The segments in the following code are shown in the comments.
-%~~gen
+%~~gen ^^^ ObjectInitialization20
 % package ObjectInitialization.ShowingSegments;
 %~~vis
 \begin{xten}
@@ -286,7 +286,7 @@ So, the call to \Xcd{this.new Inner()} in the \Xcd{Outer} constructor {\em
 is} illegal.  It would leak \Xcd{this}.  There is no special rule in effect
 preventing this; a constructor call of an inner class is no
 different from a method as far as leaking is concerned.
-%~~gen
+%~~gen ^^^ ObjectInitialization30
 % package ObjInit.InnerClass;
 %~~vis
 \begin{xten}
@@ -314,7 +314,7 @@ place of creation. For example, \Xcd{closure} below is acceptable because it
 only refers to fields defined at the point it was written.  \Xcd{badClosure}
 would not be acceptable, because it refers to fields that were not defined at
 that point, although they were defined later.
-%~~gen
+%~~gen ^^^ ObjectInitialization40
 % package ObjectInitialization.Closures;
 %~~vis
 \begin{xten}
@@ -337,7 +337,7 @@ An instance field \Xcd{var x:T}, when \Xcd{T} has a default value, need not be
 explicitly initialized.  In this case, \Xcd{x} will be initialized to the
 default value of type \Xcd{T}.  For example, a \Xcd{Score} object will have
 its \Xcd{currently} field initialized to zero, below:
-%~~gen
+%~~gen ^^^ ObjectInitialization50
 % package ObjectInit.DefaultInit;
 %~~vis
 \begin{xten}
@@ -536,7 +536,7 @@ Details:
 
 
 The example indices refer to the following code:
-%~~gen
+%~~gen ^^^ ObjectInitialization60
 % package ObjectInit.GrandExample;
 % class Supertype[T]{}
 % interface SuperInterface[T]{}

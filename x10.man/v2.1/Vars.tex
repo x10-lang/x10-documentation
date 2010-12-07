@@ -49,7 +49,7 @@ In the following example,
 local variable defined within the method \xcd`bump`.\footnote{This code is
 unnecessarily turgid for the sake of the example.  One would generally write
 \xcd`public def bump() = ++n;`.   }
-%~~gen
+%~~gen ^^^ Vars10
 % package Vars.For.Squares;
 %~~vis
 \begin{xten}
@@ -89,7 +89,7 @@ considered \xcd`val`.
 \begin{ex}
 The following example illustrates many of the variations on variable
 declaration: 
-%~~gen
+%~~gen ^^^ Vars20
 %package Vars.For.Bears.In.Chairs;
 %class VarExample{
 %static def example() {
@@ -134,7 +134,7 @@ VariableDeclaratorsWithType} alternatives.
 
 \begin{ex}
 After these declarations, \xcd`a` and \xcd`b` cannot be assigned to further: 
-%~~gen
+%~~gen ^^^ Vars30
 % package Vars.In.Snares;
 % class ABitTedious{
 % def example() {
@@ -159,7 +159,7 @@ FormalDeclarators} option, such as  \Xcd{var n:Int;}.
 values depending on which constructor was called. \xcd`n` can't be given its
 value by initialization when it is declared, since it is not knowable which
 constructor is called at that point.  
-%~~gen
+%~~gen ^^^ Vars40
 % package Vars.For.Cares;
 %~~vis
 \begin{xten}
@@ -184,7 +184,7 @@ parameters, but the binding does not happen until the function is called.
 In
 the code below, \xcd`x` is initialized to \xcd`3` in the first call and
 \xcd`4` in the second.
-%~~gen
+%~~gen ^^^ Vars50
 %package Vars.For.Swears;
 %class Examplement {
 %static def whatever() {
@@ -229,7 +229,7 @@ Variables must be given a value before they are used. This may be done by
 initialization, which is the only way for immutable (\xcd`val`) variables and
 one option for mutable (\xcd`var`) ones: 
 
-%~~gen
+%~~gen ^^^ Vars60
 %package Vars.For.Bears;
 %class VarsForBears{
 %def check() {
@@ -244,7 +244,7 @@ one option for mutable (\xcd`var`) ones:
 %~~neg
 Or, for mutable variables, it may be done by a later assignment.  
 
-%~~gen
+%~~gen ^^^ Vars70
 %package Vars.For.Stars;
 %class VarsForStars{
 %def check() {
@@ -290,7 +290,7 @@ The following code makes an anonymous point with one coordinate \xcd`11`, and
 binds \xcd`i` to \xcd`11`.  Then it makes a point with coordinates \xcd`22`
 and \xcd`33`, binds \xcd`p` to that point, and \xcd`j` and \xcd`k` to \xcd`22`
 and \xcd`33` respectively.
-%~~gen
+%~~gen ^^^ Vars80
 % package Vars.For.Glares;
 % class DestructuringEx1 {
 % def whyJustForLocals() {
@@ -305,7 +305,7 @@ val q[l,m] = [44,55]; // coerces an array to a point.
 %~~neg
 
 A useful idiom for iterating over a range of numbers is: 
-%~~gen
+%~~gen ^^^ Vars90
 %package Vars.For.Swear.Bears;
 % class ForBear {
 % def forbear() {
@@ -347,7 +347,7 @@ method is allowed, but, unlike some languages, does {\em not} increment its
 actual parameter.  \xcd`inc(j)` creates a new local 
 variable \xcd`i` for the method call, initializes \xcd`i` with the value of
 \xcd`j`, increments \xcd`i`, and then returns.  \xcd`j` is never changed.
-%~~gen
+%~~gen ^^^ Vars100
 % package Vars.For.Squares.Of.Mares;
 % class Ink {
 %~~vis
@@ -430,7 +430,7 @@ Variables do not need to be initialized at the time of definition -- not even
 \xcd`val`s. They must be initialized by the time of use, and \xcd`val`s may
 only be assigned to once. The X10 compiler performs static checks guaranteeing
 this restriction. The following is correct, albeit obtuse: 
-%~~gen
+%~~gen ^^^ Vars110
 %package Vars.Local.lyproducedproduce;
 % class NotInitVal {
 %~~vis

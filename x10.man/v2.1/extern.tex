@@ -17,7 +17,7 @@ compiling to the \xcd`lang` back end.
 implementations are syntactically {\em expressions}, not statements, in C++ or
 Java.   Also, it is possible (and common) to provide native implementations
 into both Java and C++ for the same method.
-%~~gen
+%~~gen ^^^ extern10
 % package Extern.or_current_turn;
 %~~vis
 \begin{xten}
@@ -34,7 +34,7 @@ class Son {
 
 If only some back-end languages are given, the X10 code will be used for the
 remaining back ends: 
-%~~gen
+%~~gen ^^^ extern20
 % package Extern.or.burn;
 %~~vis
 \begin{xten}
@@ -53,7 +53,7 @@ class Land {
 The \xcd`native` modifier on methods indicates that the method must not have
 an X10 code body, and \xcd`@Native` implementations must be given for all back
 ends:
-%~~gen
+%~~gen ^^^ extern30
 % package Extern.or_maybe_getting_back_together;
 %~~vis
 \begin{xten}
@@ -71,7 +71,7 @@ class Plants {
 
 Values may be returned from external code to X10.  Scalar types in Java and
 C++ correspond directly to the analogous types in X10.  
-%~~gen
+%~~gen ^^^ extern40
 % package Extern.hardy;
 %~~vis
 \begin{xten}
@@ -93,7 +93,7 @@ class.)  Be aware that this is macro substitution rather than normal parameter
 passing; \eg, if the first actual parameter is \xcd`i++`, and \xcd`(#1)`
 appears twice in the external code, \xcd`i` will be incremented twice.
 For example, a (ridiculous) way to print the sum of two numbers is: 
-%~~gen
+%~~gen ^^^ extern50
 % package Extern.or_turnabout_is_fair_play;
 %~~vis
 \begin{xten}
@@ -111,7 +111,7 @@ class Species {
 
 Static variables in the class are available in the external code. 
 \iffalse
-%~~gen
+%~~gen ^^^ extern60
 %package Extern.or.Die;
 %~~vis
 \begin{xten}
@@ -137,7 +137,7 @@ variables from the surrounding context are available inside \xcd`stmt`. For
 example, the method call \xcd`born.example(10)`, if compiled to Java, changes
 the field \xcd`y` of a \xcd`Born` object to 10. If compiled to C++ (for which
 there is no \xcd`@Native`), it sets it to 3. 
-%~~gen
+%~~gen ^^^ extern70
 %package Extern.me.plz; 
 %~~vis
 \begin{xten}

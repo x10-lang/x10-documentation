@@ -123,11 +123,11 @@ one-dimensional integer-valued arrays; it is an abbreviation for
 \end{bbgrammar}
 
 The type {\em TypeName} refers to a defined type.  For example, 
-%~~type~~`~~`~~ ~~
+%~~type~~`~~`~~ ~~ ^^^ Types10
 \xcd`Int`
 is the type of 32-bit integers.
 Given a class declaration 
-%~~gen
+%~~gen ^^^ Types20
 %package Types.Core.TypeName; 
 %~~vis
 \begin{xten}
@@ -148,10 +148,10 @@ integers.
 The type {\em Type \xcd`{` Constraint \xcd`}`} refers to a constrained type.
 {\em Constraint} is a Boolean expression -- written in a {\em very} limited
 subset of X10 -- describing the acceptable values of the constrained type.
-%~~stmt~~`~~`~~ ~~
+%~~stmt~~`~~`~~ ~~ ^^^ Types30
 For example, \xcd`var n : Int{self != 0};` guarantees that \xcd`n` is always a
 non-zero integer. 
-%~~stmt~~`~~`~~ ~~class Triple{}
+%~~stmt~~`~~`~~ ~~class Triple{} ^^^ Types40
 Similarly, \xcd`var x : Triple{x != null};` defines a \xcd`Triple`-valued
 variable \xcd`x` whose value is never null.
 
@@ -159,7 +159,7 @@ The qualified type {\em Type \xcd`.` Type} refers to an instance of a {\em
 nested} type; that is, a class or struct defined inside of another class or
 struct, and holding an implicit reference to the outer.  For example, given
 the type declaration 
-%~~gen
+%~~gen ^^^ Types50
 % package Types.Core.Hardcore.Qualified;
 %~~vis
 \begin{xten}
@@ -171,14 +171,14 @@ class Outer {
 %
 %~~neg
 then 
-%~~exp~~`~~`~~ ~~ class Outer {class Inner { /* ... */ }}
+%~~exp~~`~~`~~ ~~ class Outer {class Inner { /* ... */ }} ^^^ Types60
 \xcd`(new Outer()).new Inner()` creates a value of type 
-%~~type~~`~~`~~ ~~class Outer {class Inner { /* ... */ }}
+%~~type~~`~~`~~ ~~class Outer {class Inner { /* ... */ }} ^^^ Types70
 \xcd`Outer.Inner`.
 
 Type variables, {\em TypeVar}, refer to types that are parameters.  For
 example, the following class defines a cell in a linked list.  
-%~~gen
+%~~gen ^^^ Types80
 % package Types.Core.Bore.Lore;
 %~~vis
 \begin{xten}
@@ -210,7 +210,7 @@ The closely-related void function type
 {\em \xcd`(` Formals{$^?$} \xcd`) =>`  \xcd`void`}  takes the listed
 parameters and returns no value.
 For example, 
-%~~type~~`~~`~~ ~~
+%~~type~~`~~`~~ ~~ ^^^ Types90
 \xcd`(x:Int) => Int{self != x}` 
 is the type of integer-valued functions which have no fixed points.  
 An example of such a function is \xcd`(x:Int) => x+1`.
@@ -234,7 +234,7 @@ A {\em class declaration} (\Sref{XtenClasses}) introduces a {\em class type}
 containing all instances of the class.  The \xcd`Position` class below
 could describe the position of a slider control, for example.
 
-%~~gen
+%~~gen ^^^ Types100
 % package Types.By.Cripes.Classes;
 %~~vis
 \begin{xten}
@@ -256,7 +256,7 @@ methods, type definitions, and member classes and member interfaces.
 Classes may be {\em generic}, i.e.{} defined with one or more type
 parameters (\Sref{TypeParameters}).
 
-%~~gen
+%~~gen ^^^ Types110
 %~~vis
 \begin{xten}
 class Cell[T] {
@@ -308,7 +308,7 @@ all instances of \xcd`C` but not
 A {\em struct declaration} \Sref{XtenStructs} introduces a {\em struct type}
 containing all instances of the struct.  The \xcd`Coords` struct below gives
 an immutable position in 3-space: 
-%~~gen
+%~~gen ^^^ Types120
 % package Types.Structs.Coords;
 %~~vis
 \begin{xten}
@@ -351,7 +351,7 @@ interfaces cannot specify that implementing classes must provide
 static members or constructors.
 
 An interface may extend multiple interfaces.  
-%~~gen
+%~~gen ^^^ Types130
 %package Types.For.Snipes.Interfaces;
 %~~vis
 \begin{xten}
@@ -379,7 +379,7 @@ defined in the interface. For example, \xcd`KimThePoint` implements
 error if \xcd`KimThePoint` had no \xcd`name` method, unless \xcd`KimThePoint` were also
 declared \xcd`abstract`.
 
-%~~gen
+%~~gen ^^^ Types140
 %interface Named {
 %   def name():String;
 % }
@@ -413,7 +413,7 @@ following code declares a class named \xcd"Coords" with properties
 \xcd"x" and \xcd"y" and a \xcd"move" method. The properties are bound
 using the \xcd"property" statement in the constructor.
 
-%~~gen
+%~~gen ^^^ Types150
 %package not.x10.lang;
 %~~vis
 \begin{xten}
@@ -452,9 +452,9 @@ A class, interface, method, or type definition  may have type
 parameters.  Type parameters can be used as types, and will be bound to types
 on instantiation.  For example, a generic stack class may be defined as 
 \xcd`Stack[T]{...}`.  Stacks can hold values of any type; \eg, 
-%~~type~~`~~`~~ ~~class Stack[T]{}
+%~~type~~`~~`~~ ~~class Stack[T]{} ^^^ Types160
 \xcd`Stack[Int]` is a stack of integers, and 
-%~~type~~`~~`~~ ~~class Stack[T]{}
+%~~type~~`~~`~~ ~~class Stack[T]{} ^^^ Types170
 \xcd`Stack[Point {self!=null}]` is a stack of non-null \xcd`Point`s.
 Generics {\em must} be instantiated when they are used: \xcd`Stack`, by
 itself, is not a valid type.
@@ -476,9 +476,9 @@ can be used to form a type by supplying $k$ types as type arguments within
 %%used like any other type. 
 For example,
 \xcd`Stack` is a generic class, 
-%~~type~~`~~`~~ ~~class Stack[T]{}
+%~~type~~`~~`~~ ~~class Stack[T]{} ^^^ Types180
 \xcd`Stack[Int]` is a type, and can be used as one: 
-%~~stmt~~`~~`~~ ~~class Stack[T]{}
+%~~stmt~~`~~`~~ ~~class Stack[T]{} ^^^ Types190
 \xcd`var stack : Stack[Int];`
 
 A \xcd`Cell[T]` is a generic object, capable of holding a value of type
@@ -488,7 +488,7 @@ only hold non-zero numbers.
 %% vj: Dont know what this saying: bound immutably... but mutable?
 %% \xcd`Cell`s are actually useful in situations
 %%where values must be bound immutably for one reason, but need to be mutable.
-%~~gen
+%~~gen ^^^ Types200
 % package ch4;
 %~~vis
 \begin{xten}
@@ -519,7 +519,7 @@ the type parameters explicitly (\eg, \xcd`first[Int](z)`).
 type parameters may
 be omitted and are inferred by the compiler (\Sref{TypeInference}).
 
-%~~gen
+%~~gen ^^^ Types210
 % package Types.For.Cripes.Sake.Generic.Methods;
 % import x10.util.*;
 %~~vis
@@ -654,11 +654,11 @@ and combinations of types.
 With value arguments, type arguments, and constraints, the syntax for \Xten{}
 types can often be verbose. 
 For example, a non-null list of non-null strings is \\
-%~~type~~`~~`~~ ~~import x10.util.*;
+%~~type~~`~~`~~ ~~import x10.util.*; ^^^ Types220
 \xcd`List[String{self!=null}]{self!=null}`.
 
 We could name that type: 
-%~~gen
+%~~gen ^^^ Types230
 % package TypeDefs.glip.first;
 % import x10.util.*;
 % class LnSn {
@@ -672,7 +672,7 @@ static type LnSn = List[String{self!=null}]{self!=null};
 %~~neg
 Or, we could abstract it somewhat, defining a type constructor
 \xcd`Nonnull[T]` for the type of \xcd`T`'s which are not null:
-%~~gen
+%~~gen ^^^ Types240
 % package TypeDefs.glip.second;
 % import x10.util.*;
 % 
@@ -689,10 +689,10 @@ class Example {
 
 Type definitions can also refer to values, in particular, inside 
 constraints.  The type of \xcd`n`-element \xcd`Array[Int](1)`s  is 
-%~~type~~`~~`~~n:Int ~~
+%~~type~~`~~`~~n:Int ~~ ^^^ Types250
 \xcd`Array[Int]{self.rank==1 && self.size == n}`
 but it is often convenient to give a shorter name: 
-%~~gen
+%~~gen ^^^ Types260
 % package TypeDefs.glip.third;
 % class Xmpl {
 % def example() {
@@ -707,7 +707,7 @@ var example : Vec(78);
 
 %
 The following examples are legal type definitions, given \xcd`import x10.util.*`:
-%~~gen
+%~~gen ^^^ Types270
 % package Types.TypeDef.Examples;
 % import x10.util.*;
 %~~vis
@@ -730,7 +730,7 @@ The following code illustrates that type definitions are applicative rather
 than generative.  \xcd`B` and \xcd`C` are both aliases for \xcd`String`,
 rather than new types, and so are interchangeable with each other and with
 \xcd`String`. Similarly, \xcd`A` and \xcd`Int` are equivalent.
-%~~gen
+%~~gen ^^^ Types280
 % package Types.TypeDef.Example.NonGenerative;
 % import x10.util.*;
 % class TypeDefNonGenerative {
@@ -794,17 +794,17 @@ available.)  The values of type \xcd`T{e}` are the values of \xcd`T` for which
 \xcd`e` is true.  For example: 
 
 \begin{itemize}
-%~~type~~`~~`~~ ~~
+%~~type~~`~~`~~ ~~ ^^^ Types290
 \item \xcd`String{self != null}` is the type of non-null strings.  \xcd`self`
       is a special variable available only in constraints; it refers to the
       datum being constrained, and its type is the type to which the
       constraint is attached.
 \item If \xcd`Matrix` has properties \xcd`rows` and \xcd`cols`, 
-%~~type~~`~~`~~ ~~class Matrix(rows:Int,cols:Int){}
+%~~type~~`~~`~~ ~~class Matrix(rows:Int,cols:Int){} ^^^ Types300
       \xcd`Matrix{self.rows == self.cols}` is the type of square matrices.
 \item One way to say that \xcd`a` has the same number of columns that \xcd`b`
       has rows (so that \xcd`a*b` is a valid matrix product), one could say: 
-%~~gen
+%~~gen ^^^ Types310
 % package Types.cripes.whered.you.get.those.gripes;
 % class Matrix(rows:Int, cols:Int){
 % public static def someMatrix(): Matrix = null;
@@ -832,7 +832,7 @@ type \xcd"T" is called the {\em base type} and \xcd"e" is called the {\em
   base type is unconstrained.
 
 Constraints may refer to immutable values in the local environment: 
-%~~gen
+%~~gen ^^^ Types320
 % class ConstraintsMayReferToValues {
 % def thoseValues() {
 %~~vis
@@ -1020,7 +1020,7 @@ entails \xcd`false` if \xcd`a`, \xcd`b`, and \xcd`c` are of type
 Certain other constraint entailments are prohibitively expensive to calculate.  The issues
 concern constraints that connect different levels of recursively-defined
 types, such as the following.  
-%~~gen
+%~~gen ^^^ Types330
 % package Types.Entailment.EntailFail;
 %~~vis
 \begin{xten}
@@ -1150,7 +1150,7 @@ which might have the same coordinates.
 }
 
 
-%~~gen
+%~~gen ^^^ Types340
 % package triangleExample.partOne;
 %~~vis
 \begin{xten}
@@ -1168,7 +1168,7 @@ constraint on \xcd`Line`.  However, not all degenerate cases can be excluded
 by the type system; in particular, it is impossible to check that the three
 vertices are not collinear. 
 
-%~~gen
+%~~gen ^^^ Types350
 %package triangleExample.partTwo;
 % struct Position(x: Int, y: Int) {
 %    def this(x:Int,y:Int){property(x,y);}
@@ -1259,7 +1259,7 @@ result.  X10 functions, like other X10 code, can change mutable state and
 throw exceptions.  Closures (\Sref{Closures}) and method
 selectors (\Sref{MethodSelectors}) are of function type.
 Typical functions are the reciprocal function: 
-%~~gen
+%~~gen ^^^ Types360
 % package Types.Functions;
 % class RecipEx {
 % static 
@@ -1306,10 +1306,10 @@ The names \xcdmath"x$_i$" of the formal parameters are not relevant.  Types
 which differ only in the names of formals (following the usual rules for
 renaming of variables, as in {$\alpha$}-renaming in the {$\lambda$} calculus
 \bard{cite something}) are considered equal.  \Eg, the two function types
-%~~type~~`~~`~~ ~~
+%~~type~~`~~`~~ ~~ ^^^ Types370
 \xcd`(a:Int, b:Array[String](1){b.size==a}) => Boolean`
 and \\
-%~~type~~`~~`~~ ~~
+%~~type~~`~~`~~ ~~ ^^^ Types380
 \xcd`(b:Int, a:Array[String](1){a.size==b}) => Boolean`
 are equivalent.
 
@@ -1324,7 +1324,7 @@ and in the return type.
 Value parameters names may be
 omitted if they are not used; the type of the reciprocal function can be
 written as
-%~~type~~`~~`~~ ~~
+%~~type~~`~~`~~ ~~ ^^^ Types390
 \xcd`(Double)=>Double`. 
 
 A function type is covariant in its result type and contravariant in
@@ -1394,7 +1394,7 @@ on a {\em type context}, \viz. a set of constraints on type parameters
 and variables that occur in the type.
 For example: 
 
-%~~gen
+%~~gen ^^^ Types400
 % package Types.subtyping.cons;
 % NOCOMPILE
 %~~vis
@@ -1527,16 +1527,16 @@ There are several situations where X10 must find a type \xcd`T` that describes
 values of two or more different types.  This arises when X10 is trying to find
 a good type to describe: 
 \begin{itemize}
-%~~exp~~`~~`~~test:Boolean ~~
+%~~exp~~`~~`~~test:Boolean ~~ ^^^ Types410
 \item Conditional expressions, like \xcd`test ? 0 : "non-zero"` or even 
-%~~exp~~`~~`~~test:Boolean ~~
+%~~exp~~`~~`~~test:Boolean ~~ ^^^ Types420
       \xcd`test ? 0 : 1`;
-%~~exp~~`~~`~~ ~~
+%~~exp~~`~~`~~ ~~ ^^^ Types430
 \item Array construction, like \xcd`[0, "non-zero"]` and 
-%~~exp~~`~~`~~ ~~
+%~~exp~~`~~`~~ ~~ ^^^ Types440
       \xcd`[0,1]`;
 \item Functions with multiple returns, like
-%~~gen
+%~~gen ^^^ Types450
 % package Types_odd_inferred_return_type;
 % class Examplerator {
 %~~vis
@@ -1554,7 +1554,7 @@ def f(a:Int) {
 In some cases, there is a unique best type describing the expression.  For
 example, if \xcd`B` and \xcd`C` are direct subclasses of \xcd`A`, \xcd`pick`
 will have return type \xcd`A`: 
-%~~gen ^^^ Types_a_unique_best_type_exists
+%~~gen ^^^ Types_uniq
 % package Types.For.Gripes.About.Pipes.Full.Of.Wipes;
 %  class A {} class B extends A{} class C extends A{}
 % class D {
@@ -1583,7 +1583,7 @@ sublanguage had \xcd`||`, we could give it the type
 No X10 type is the best description of {$E$}; there is always a better one.
 
 Similarly, consider two unrelated interfaces: 
-%~~gen
+%~~gen ^^^ Types460
 % package Types.For.Gripes.About.Snipes;
 %~~vis
 \begin{xten}
@@ -1687,10 +1687,10 @@ The type of a \xcd`val` variable declaration can be omitted if the
 declaration has an initializer.  The inferred type of the
 variable is the computed type of the initializer.
 For example, 
-%~~stmt~~`~~`~~ ~~
+%~~stmt~~`~~`~~ ~~ ^^^ Types470
 \xcd`val seven = 7;`
 is identical to 
-%~~stmt~~`~~`~~ ~~
+%~~stmt~~`~~`~~ ~~ ^^^ Types480
 \xcd`val seven: Int{self==7} = 7;`
 Note that type inference gives the most precise X10 type, which might be more
 specific than the type that a programmer would write.
@@ -1707,9 +1707,9 @@ The return type of a method can be omitted if the method has a body (\ie, is
 not \xcd"abstract" or \xcd"native"). The inferred return type is the computed
 type of the body.  In the following example, the return type inferred for
 \xcd`isTriangle` is 
-%~~type~~`~~`~~ ~~
+%~~type~~`~~`~~ ~~ ^^^ Types490
 \xcd`Boolean{self==false}`
-%~~gen
+%~~gen ^^^ Types500
 % package Types.Inferred.Return;
 %~~vis
 \begin{xten}
@@ -1746,7 +1746,7 @@ statement, if any, or to the unconstrained class type.
 For example, the \xcd`Spot` class has two constructors, the first of which has
 inferred return type \xcd`Spot{x==0}` and the second of which has 
 inferred return type \xcd`Spot{x==xx}`. 
-%~~gen
+%~~gen ^^^ Types510
 % package Types.Inferred.By.Phone;
 %~~vis
 \begin{xten}
@@ -1772,7 +1772,7 @@ be used as the argument of a generic type. However, \xcd`void` takes the
 syntactic place of a type. A method returning \xcd`void` can be specified by
 \xcd`def m():void`: 
 
-%~~gen
+%~~gen ^^^ Types520
 % package Types.voidd;
 % class voidddd {
 % static 
@@ -1789,7 +1789,7 @@ lumped in with types; \eg, we may say ``return type of a method'' rather than
 the formally correct but rather more awkward ``return type of a method, or
 \xcd`void`''.   Despite this informal usage, \xcd`void` is not a type.  For
 example, given 
-%~~gen
+%~~gen ^^^ Types530
 % package Types.void_is_not_a_type;
 % class EEEEVil {
 %~~vis
@@ -1832,7 +1832,7 @@ string.
 However, the type argument can be elided.  Suppose that \xcd`Sub <: Super`;
 then the following compiles: 
 
-%~~gen
+%~~gen ^^^ Types540
 % package Types.GenericInference;
 % class Exampllll{ 
 %~~vis

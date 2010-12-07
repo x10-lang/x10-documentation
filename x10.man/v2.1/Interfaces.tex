@@ -105,7 +105,7 @@ $\mathit{inv}($\xcd"I"$)$.
 
 An interface may declare a \xcd`val` field, with a value.  This field is implicitly
 \xcd`public static val`: 
-%~~gen
+%~~gen ^^^ Interfaces10
 % package Interface.Field;
 %~~vis
 \begin{xten}
@@ -120,7 +120,7 @@ interface KnowsPi {
 Classes and structs implementing such an interface get the interface's fields as
 \xcd`public static` fields.  Unlike properties and methods, there is no need
 for the implementing class to declare them. 
-%~~gen
+%~~gen ^^^ Interfaces20
 % package Interface.Field.Two;
 % interface KnowsPi {PI = 3.14159265358;}
 %~~vis
@@ -154,7 +154,7 @@ class Example implements E3 {
 
 If the {\em same} field \xcd`a` is inherited through many paths, there is no need to
 disambiguate it:
-%~~gen ^^^ Interfaces_mult_inher_field
+%~~gen ^^^ Interfaces_multi
 % package Interfaces.Mult.Inher.Field;
 %~~vis
 \begin{xten}

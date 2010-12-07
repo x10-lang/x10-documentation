@@ -30,7 +30,7 @@ and \xcd`norm()` gives the distance between the entity and the origin. A
 \xcd`PlanePoint`s have a sensible \xcd`norm()` method, and implement
 \xcd`Normed`.
 
-%~~gen
+%~~gen ^^^ Overview10
 % package Overview;
 %~~vis
 \begin{xten}
@@ -106,7 +106,7 @@ which squares an \xcd`Int`.  \xcd`of4` takes an \xcd`Int`-to-\xcd`Int`
 function and applies it to the number \xcd`4`.  So, \xcd`fourSquared` computes
 \xcd`of4(square)`, which is \xcd`square(4)`, which is 16, in a fairly
 complicated way.
-%~~gen
+%~~gen ^^^ Overview20
 % package Overview.of.Functions.one;
 % class Whatever{
 % def chkplz() {
@@ -130,7 +130,7 @@ the array, and the second being a function which computes the initial value of
 the \xcd`i`{$^{th}$} element.  The following code constructs a 1-dimensional
 array 
 initialized to the squares of 0,1,...,9: \xcd`r(0) == 0`, \xcd`r(5)==25`, etc. 
-%~~gen
+%~~gen ^^^ Overview30
 % package Overview.of.Functions.two;
 % class Whatevermore {
 %  def plzchk(){
@@ -161,7 +161,7 @@ For example, an implementation of matrices \xcd`Mat` might have the numbers of
 rows and columns as properties.  A little bit of care in definitions allows
 the definition of a \xcd`+` operation that works on matrices of the same
 shape, and \xcd`*` that works on matrices with appropriately matching shapes.
-%~~gen
+%~~gen ^^^ Overview40
 %package Overview.Mat2;
 %~~vis
 \begin{xten}
@@ -187,7 +187,7 @@ abstract class Mat(rows:Int, cols:Int) {
 
 The following code typechecks, but an attempt to compute \xcd`axb1 + bxc` or
 \xcd`bxc * axb1` would result in a compile-time type error:
-%~~gen
+%~~gen ^^^ Overview50
 %package Overview.Mat1;
 %abstract class Mat(rows:Int, cols:Int) {
 %  static type Mat(r:Int, c:Int) = Mat{rows==r&&cols==c};
@@ -261,7 +261,7 @@ is thus possible to make a list of integers \xcd`List[Int]`, a list of
 non-zero integers \xcd`List[Int{self != 0}]`, or a list of people
 \xcd`List[Person]`.  In the definition of \xcd`List`, \xcd`T` is a type
 parameter; it can be instantiated with any type.
-%~~gen
+%~~gen ^^^ Overview60
 %~~vis
 \begin{xten}
 class List[T] {
@@ -298,7 +298,7 @@ raise exceptions and \xcd`try...catch` to handle them, and so on.
 X10 has both implicit coercions and explicit conversions, and both can be
 defined on user-defined types.  Explicit conversions are written with the
 \xcd`as` operation: \xcd`n as Int`.  The types can be constrained: 
-%~~exp~~`~~`~~n:Int~~
+%~~exp~~`~~`~~n:Int~~ ^^^ Overview70
 \xcd`n as Int{self != 0}` converts \xcd`n` to a non-zero integer, and throws a
 runtime exception if its value as an integer is zero.
 

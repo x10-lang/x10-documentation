@@ -15,7 +15,7 @@ The empty statement \xcd";" does nothing.  It is useful when a
 loop header is evaluated for its side effects.  For example,
 the following code sums the elements of a 1-dimensional array.
 
-%~~gen
+%~~gen ^^^ Statements10
 % package statements.emptystatement;
 % class EmptyStatementExample {
 % def summizmo (a:Array[Int](1)){
@@ -54,7 +54,7 @@ described in \Sref{VariableDeclarations}. Local variables may be declared only
 within a block statement (\Sref{Blocks}). The scope of a local variable
 declaration is the statement itself and the subsequent statements in the
 block.
-%~~gen
+%~~gen ^^^ Statements20
 % package statements.should.have.locals;
 % class LocalExample {
 % def example(a:Int) {
@@ -92,7 +92,7 @@ A block statement consists of a sequence of statements delimited by
 of it are evaluated in order.  Blocks are useful for putting several
 statements in a place where X10 asks for a single one, such as the consequent
 of an \xcd`if`, and for limiting the scope of local variables.
-%~~gen
+%~~gen ^^^ Statements30
 % package statements.FOR.block.heads;
 % class Example {
 % def example(b:Boolean, S1:(Int)=>void, S2:(Int)=>void ) {
@@ -129,7 +129,7 @@ if (b) {
 The expression statement evaluates an expression.  The value of the expression
 is not used.
 Side effects of the expression occur.  
-%~~gen
+%~~gen ^^^ Statements40
 % package Sta.tem.ent.s.expressions;
 % import x10.util.*;
 %~~vis
@@ -168,7 +168,7 @@ constructor invocations.
 
 Loop statements (\xcd`for`, \xcd`while`, \xcd`do`, \xcd`ateach`) may be labeled. The label may be used as the target of a break
 or continue statement. The scope of a label is the statement labeled.
-%~~gen
+%~~gen ^^^ Statements50
 % package state.meant.labe.L;
 % class Example {
 % def example(a:(Int,Int) => Int, do_things_to:(Int)=>Int) {
@@ -204,7 +204,7 @@ method, constructor, initializer, or closure.
 The following code searches for an element of a two-dimensional
 array and breaks out of the loop when it is found:
 
-%~~gen
+%~~gen ^^^ Statements60
 % package statements.come.from.banks.and.cranks;
 % class LabelledBreakeyBreakyHeart {
 % def findy(a:Array[Array[Int](1)](1), v:Int): Boolean {
@@ -312,7 +312,7 @@ constants.  Case labels cannot be duplicated within the
 
 In the following example, case \xcd`1` falls through to case \xcd`2`.  The
 other cases are separated by \xcd`break`s.
-%~~gen
+%~~gen ^^^ Statements70
 % package Statement.Case;
 % class Example {
 % def example(i : Int, println: (String)=>void) {
@@ -347,7 +347,7 @@ reaching the end or via a \xcd"continue" statement with the loop header as
 target), the condition is reevaluated and the loop repeats if \xcd"true". If
 the condition is \xcd"false", the loop exits.
 
-%~~gen
+%~~gen ^^^ Statements80
 % package Statements.AreFor.Flatements;
 % class Example {
 % def example(var n:Int) {
@@ -448,7 +448,7 @@ or destructurable from a value of type \xcd`T`
 Each iteration of the loop
 binds the iteration variable to another element of the collection.
 
-%~~gen
+%~~gen ^^^ Statements90
 % package statements.for_for;
 % class Example {
 % def example(n:Int) {
@@ -498,7 +498,7 @@ false, throws an \xcd`x10.lang.Error` exception with \xcd`F`'s value attached
 to it. 
 
 For example, 
-%~~gen
+%~~gen ^^^ Statements100
 % package Statements.Assert;
 % 
 %~~vis
@@ -563,7 +563,7 @@ instance of a subtype of \xcd`x10.lang.Throwable`.
 For example, the following code checks if an index is in range and
 throws an exception if not.
 
-%~~gen
+%~~gen ^^^ Statements110
 % package Statements_index_check;
 % class ThrowStatementExample {
 % def thingie(i:Int, x:Array[Boolean](1))  {

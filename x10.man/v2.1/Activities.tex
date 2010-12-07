@@ -13,7 +13,7 @@ activity}
 
 Activities coordinate their execution by various control and data structures.
 For example, 
-%~~stmt~~`~~`~~x:Int, var y:Int ~~
+%~~stmt~~`~~`~~x:Int, var y:Int ~~ ^^^ Activities10
 \xcd`when(x==0);` blocks the current activity until some other activity
 sets \xcd`x` to zero.  However, activities determine the places at which they
 may be blocked and resumed, by \xcd`when` and similar constructs.  There are
@@ -53,7 +53,7 @@ activity has been created.)  It is said to terminate globally when it
 has terminated locally and all activities that it may have spawned at
 any place have, recursively, terminated globally.
 For example, consider: 
-%~~gen
+%~~gen ^^^ Activities20
 % package Activites.Are.For.Whacktivities;
 % class Example {
 % def example( s1:() => void, s2 : () => void ) {
@@ -317,7 +317,7 @@ and {$a_1(1)$} is observed to change.  In \xcd`(D)`-\xcd`(F)`, the copy
 refer to the same \xcd`Cell[Int]` {$c_2$}.  However, the test at \xcd`(G)`
 shows that {$c_2$} is a different cell from {$c_1$}, because changes to
 {$c_2$} did not propagate to {$c_1$}.  
-%~~gen
+%~~gen ^^^ Activities30
 %package Activities.AtCopy2;
 %class example {
 %static def Example() {
@@ -356,7 +356,7 @@ when the \xcd`Trans` value \xcd`this` is copied at \xcd`at(here){...}` in
 \xcd`Int`, 0, is used instead.  
 Note that we could not make a transient field \xcd`c : Int{c != 0}`, since the
 type has no default value, and copying would in fact set it to zero.
-%~~gen
+%~~gen ^^^ Activities40
 %package Activities_transient_a;
 %~~vis
 \begin{xten}
@@ -394,7 +394,7 @@ the enclosed value \xcd`o` is passed.
 The following example does not copy the value \xcd`huge`.  However, \xcd`huge`
 would have been copied if it had been put into a \xcd`Cell`, or simply used
 directly. 
-%~~gen
+%~~gen ^^^ Activities50
 %package Activities.copyingblockingwithglobref;
 % class GR {
 %  static def use(Any){}
@@ -421,7 +421,7 @@ need to placeshift back to the home place of the reference, often with
 \xcd`at(g.home)`.   For example, the following  program modifies the
 command-line argument array.
 
-%~~gen
+%~~gen ^^^ Activities60
 % package Activities.Atsome.Globref2;
 % class GR2 {
 %~~vis
@@ -485,7 +485,7 @@ minimal information across \xcd`at` boundaries; in particular we do not
 send the discriminant back to \xcd`h`.  When the intermediate results are
 large and the desired data small, the savings can be substantial.
 
-%~~gen
+%~~gen ^^^ Activities70
 % package Activities.AtAndVariables; 
 % abstract class Example {
 % abstract def mathProcessor() : Place;
@@ -713,7 +713,7 @@ executed simultaneously.
 
 However, this often results in excessive communication and parallelism. Instead the
 programmer may want to write: 
-%~~gen
+%~~gen ^^^ Activities80
 % package Activities.Activities.Activities;
 % class EquivCode {
 % static def S(pt:Point) {}
@@ -760,7 +760,7 @@ no method calls on \xcd`r` are active.
 
 If the \xcd`add` method on \xcd`Redund` (which adds an element to the list) 
 were defined as: 
-%~~gen
+%~~gen ^^^ Activities90
 % package Activities.Atomic.Redund.One;
 % import x10.util.*;
 % class Redund[T] {
@@ -797,7 +797,7 @@ invariant must be true, but it is not.
 In this case, the invariant can be maintained by making the increment atomic.
 Doing so forbids that sequence of events; the \xcd`atomic` block cannot be
 stopped partway.  
-%~~gen
+%~~gen ^^^ Activities100
 % package Activities.Atomic.Redund.Two;
 % import x10.util.*;
 % class Redund[T] {
@@ -894,7 +894,7 @@ forever, but they are guaranteed not to deadlock.
 The following class method implements a (generic) compare and swap (CAS) operation:
 
 
-%~~gen
+%~~gen ^^^ Activities110
 % package Activities.And.Protein;
 % class CASSizer{
 %~~vis
@@ -923,7 +923,7 @@ satisfied before executing an atomic block. For example, consider a
 \xcd`Redund` class holding a list \xcd`r.list` and, redundantly, its length
 \xcd`r.size`.  A \xcd`pop` operation will delay until the \xcd`Redund` is
 nonempty, and then remove an element and update the length.  
-%~~gen
+%~~gen ^^^ Activities120
 % package Activities.Condato.Example.Not.A.Tree;
 % import x10.util.*;
 % class Redund[T] {
@@ -1029,7 +1029,7 @@ then puts \xcd`ob` into it.  Dually, \xcd`buf.receive()` waits until the
 buffer has something in it, and then returns that thing.
 
 
-%~~gen
+%~~gen ^^^ Activities130
 % package Activities;
 %~~vis
 \begin{xten}

@@ -12,7 +12,7 @@ fields and methods of its containing class.
 
 Nested interfaces and static structs are permitted as well.
 
-%~~gen
+%~~gen ^^^ InnerClasses10
 % package Classes.StaticNested;
 %~~vis
 \begin{xten}
@@ -66,7 +66,7 @@ Its \xcd`hasNext()` method refers to the outer class's \xcd`m` field, which is
 not shadowed.
 
 
-%~~gen
+%~~gen ^^^ InnerClasses20
 % package Classes.InnerClasses_a;
 %~~vis
 \begin{xten}
@@ -113,7 +113,7 @@ another class \xcd`IC2`. However, since an \xcd`IC1` only exists as a
 dependent of an \xcd`OC1`, each \xcd`IC2` must be associated with an \xcd`OC1`
 --- or a subtype thereof --- as well.   For example, one often extends an
 inner class when one extends its outer class: 
-%~~gen
+%~~gen ^^^ InnerClasses30
 % package Classes.Innerclasses.Are.For.Innermasses;
 %~~vis
 \begin{xten}
@@ -136,7 +136,7 @@ They are still accessible via
 \xcd`Outer.this.doit()`, but not simply via \xcd`doit()`.  The following code
 is correct, but would not be correct if the ERROR line were uncommented.
 
-%~~gen
+%~~gen ^^^ InnerClasses40
 % package Classes.Innerclasses.StupidOverloading;
 %~~vis
 \begin{xten}
@@ -164,7 +164,7 @@ class Outer {
 If \xcd`IC` is an inner class of \xcd`OC`, then instance code in the body of
 \xcd`OC` can create instances of \xcd`IC` simply by calling a constructor
 \xcd`new IC(...)`: 
-%~~gen
+%~~gen ^^^ InnerClasses50
 % package Classes.Innerclasses.Constructors.Easy;
 %~~vis
 \begin{xten}
@@ -183,7 +183,7 @@ Instances of \xcd`IC` can be constructed from elsewhere as well.  Since every
 instance of \xcd`IC` is associated with an instance of \xcd`OC`, an \xcd`OC`
 must be supplied to the \xcd`IC` constructor.  The syntax for doing so is: 
 \xcd`oc.new IC()`.  For example: 
-%~~gen
+%~~gen ^^^ InnerClasses60
 % package Classes.Inner_a;
 %~~vis
 \begin{xten}
@@ -252,7 +252,7 @@ extract \xcd`c`'s class, name it, and make it an inner class.)  The call to
 \xcd`c.choose(true)`  will call \xcd`c.yes()`, incrementing \xcd`n()`, in a
 rather roundabout manner.
 
-%~~gen
+%~~gen ^^^ InnerClasses70
 % package ClassInnnerclassAnonclassOw; 
 %~~vis
 \begin{xten}
