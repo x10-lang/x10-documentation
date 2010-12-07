@@ -16,6 +16,7 @@ import re;
 clue = "%~~"
 sep="~~"
 files = []
+maxLengthOfTestName = 74 # Magic number imposed by CatTrack.
 currentLine = 0
 genTestCases = True
 
@@ -155,7 +156,7 @@ def doStmt(cmd, args, f, line, basename, fileroot):
           "  def check(" + formals + ")  {",
           "    " + stmt,
           "  }}"])
-    writeX10File("stmtsome." + classname, classname, code, fileroot)
+    writeX10File("stmtsome_" + classname, classname, code, fileroot)
 
 # IN:
 #   %~~exp~~xcd`~~`~~a:Int
@@ -182,7 +183,7 @@ def doExp(cmd, args, f, line, basename, fileroot):
           "class " + classname + "TestExp{",
           "  def check(" + formals + ")  = " + exp + ";"
           "  }"])
-    writeX10File("expsome." + classname, classname, code, fileroot)
+    writeX10File("expsome_" + classname, classname, code, fileroot)
 
 # IN:
 #   %~~genexp~~xcd`~~`~~T~~a:T, f:(T)=>Int
@@ -210,7 +211,7 @@ def doGenExp(cmd, args, f, line, basename, fileroot):
           "class " + classname + "GenexpTest{",
           "  def check[" + generics + "](" + formals + ")  = " + exp + ";"
           "  }"])
-    writeX10File("genexpsome." + classname, classname, code, fileroot)
+    writeX10File("genexpsome_" + classname, classname, code, fileroot)
 
 # IN:
 #   %~~type~~xcd`~~`~~a:Int
@@ -240,7 +241,7 @@ def doType(cmd, args, f, line, basename, fileroot):
           "  def check(" + formals + ")  { ",
           "     var checkycheck : " + typer + ";"
           "  }}"])
-    writeX10File("typesome." + classname, classname, code, fileroot)
+    writeX10File("typesome_" + classname, classname, code, fileroot)
 
 
 # IN: 
@@ -285,7 +286,7 @@ def doGen(cmd, args, f, line, basename, fileroot):
     if len(args) >= 1:
         classname = args[0];
     fullcode = "\n".join(prelude + body + postlude)
-    (packagename, code) = dissectOutPackageName(fullcode)
+    (packagename, code) = dissectOutPackageName(fullcode, fileroot, classname)
     writeX10File(packagename, classname, code, fileroot)
 
 # IN
@@ -322,22 +323,24 @@ def doLongexp(cmd, args, f, line, basename, fileroot):
     #print "longexp: starter = '" + starter + "', ender = '" + ender + "', exp='" + exp + "'"
     fullcode = "\n\n" + "\n".join(prelude + [exp] + postlude)
     #print "longexp: fullcode = " + fullcode
-    (packagename, code) = dissectOutPackageName(fullcode)
+    (packagename, code) = dissectOutPackageName(fullcode, fileroot, classname)
     writeX10File(packagename, classname, code, fileroot)
 
 
 packagepattern = re.compile(" *package(.*);")
-def dissectOutPackageName(fullcode):
+
+def dissectOutPackageName(fullcode, fileroot, classname):
     splut = fullcode.splitlines()
     for i in range(len(splut)):
         matcho = packagepattern.match(splut[i])
         #print "LINE = " + splut[i] + " -> " + str(matcho)
         if matcho != None:
             otherlines = splut[0:i-1] + splut[i+1:len(splut)]
-            pck = matcho.group(1)
+            pck = matcho.group(1).replace(".", "_")
             #print "\n\n IN " + fullcode + "\n ---> PACKAGE=" + pck
             return (pck, "\n".join(otherlines))
-    return ("no_package_given", fullcode)
+    defaulteriffic_package = fileroot + "_" + classname
+    return (defaulteriffic_package, fullcode)
 
 
 # Read lines from f.  Return the substring of f
@@ -426,7 +429,7 @@ class Hook {
 def assembleTestCase(packageline, classname, code, fileroot):
     testclass = testHarness % (fileroot, fileroot)
     hook = "" if code.find(findHookPat) > -1 else standardHookCode
-    bits = [packageline, testPrelude, code, hook, testclass]
+    bits = [packageline, testPrelude, testclass, code, hook]
     return "\n".join(bits)
 
 def findAndDelete(corpus, substring):
@@ -438,12 +441,22 @@ def findAndDelete(corpus, substring):
 
 def writeX10File(packagename, classname, code, fileroot):
     global files
-    packageline =  "package " + packagename + ";\n"
+    packageline =  "package " + packagename.strip() + ";\n"
     code1 = packageline + code;
     fn = gennedFileDir + "/" + fileroot + ".x10"
-    cramCodeIntoFile( fn, code1, NOCOMPILE_pattern)
-    testcasecode = assembleTestCase(packageline, classname, code, fileroot)
-    cramCodeIntoFile( testCaseDir + "/" + fileroot + ".x10", testcasecode, NOTEST_pattern)
+    cramCodeIntoFile(fn, code1, NOCOMPILE_pattern)
+    NOpackageline = "/* Current test harness gets confused by packages, but it would be in " + packageline + "*/"
+    testcasecode = assembleTestCase(NOpackageline, classname, code, fileroot)
+    if len(testCaseDir) > maxLengthOfTestName-20:
+        print "A doom for me! The test case dir " + testCaseDir + " is too long, at " + str(len(testCaseDir))
+    if len(fileroot) > maxLengthOfTestName-20:
+        print "A Doom for you!  The name of " + fileroot + " is too long, at " + str(len(fileroot))
+    subdir_for_this_test_case = testCaseDir + "/" + (fileroot.strip())
+
+    if os.path.exists(subdir_for_this_test_case):
+        print "OH NO! Duplicate package! Here's the second one:\n"  + code
+    os.mkdir(subdir_for_this_test_case)
+    cramCodeIntoFile(subdir_for_this_test_case + "/" + fileroot + ".x10", testcasecode, NOTEST_pattern)
     files.append(fn)
     
     
