@@ -141,7 +141,7 @@ For example, the following is correct, but would not be if the fields were
 reversed:
 
 %~~gen
-%package Classes.Are.For.Lasses.Structs.Are.For.Bucks;
+%package Classes_field_init_expr_a;
 %~~vis
 \begin{xten}
 class Fld{
@@ -306,7 +306,7 @@ public val x : T;
 %~~neg
 \noindent It also defines a nullary getter method, 
 %~~gen
-% package Classes.For.Masses.Of.NevermindTheRest;
+% package Classes_nullary_getter_a;
 % class Exampllll[T] {
 % public val x : T;
 % def this(y:T) { x=y; }
@@ -448,7 +448,7 @@ statically-determinable conditions.  For example, \xcd`example(x)` is only
 well-defined when \xcd`x != null`, as \xcd`null.toString()` throws a null
 pointer exception: 
 %~~gen
-% package Classes.Make.Passes.At.Girls.Who.Wear.Glasses;
+% package Classes.methodwithconstraintthingie;
 %~~vis
 \begin{xten}
 class Example {
@@ -473,7 +473,7 @@ checking, there is no runtime cost.  Indeed, this code can be more efficient
 than usual, as it is statically provable that \xcd`x != null`.)
 This may require a cast: 
 %~~gen
-% package Classes.Make.Asses.Of.Girls.With.Fake.Passes;
+% package Classes.methodguardnadacastthingie;
 % class Example {var f : String = ""; def example(x:Object){x != null} = {this.f = x.toString();}}
 % class Eyample {
 %~~vis
@@ -577,7 +577,7 @@ the \xcd"def" keyword.  That is, the following are equivalent:
 
 
 %~~gen
-% package classes.not.harpoons.instead.of.python;
+% package classes.waifsome1;
 % class Waif(rect:Boolean, onePlace:Place, zeroBased:Boolean) {
 %~~vis
 \begin{xten}
@@ -588,7 +588,7 @@ property def rail(): Boolean = rect && onePlace == here && zeroBased;
 %~~neg
 and
 %~~gen
-% package classes.not.muskrats.instead.of.blueberry.cake.with.honey;
+% package classes.waifsome2;
 % class Waif(rect:Boolean, onePlace:Place, zeroBased:Boolean) {
 %~~vis
 \begin{xten}
@@ -1249,7 +1249,7 @@ argument \xcd`x`.  We would like to write code thus:
 Writing the same code with method calls, while possible, is far less elegant: 
 %~~gen
 
-%package Classes.In.Poly101;
+%package Classes.In.Remedial.Poly101;
 % // Integer-coefficient polynomials of one variable.
 % class UglyPoly {
 %   public val coeff : Array[Int](1);
@@ -1587,7 +1587,7 @@ Explicit type conversions, \xcd`e as T{c}`, can be defined as operators on
 class \xcd`T`.
 
 %~~gen
-% package Classes.And.Type.Conversions.For.Sea.Urchins;
+% package Classes_explicit_type_conversions_a;
 %~~vis
 \begin{xten}
 class Poly {
@@ -1739,7 +1739,7 @@ coordinates.  \xcd`a(i,j)=b` assigns different values to \xcd`a(i)` and
 \xcd`a(j)`, purely for the sake of the example.
 
 %~~gen
-% package Classes.Assignments.Are.Not.From.Any.Course.Of.Study;
+% package Classes.Assignments1_oddvec;
 %~~vis
 \begin{xten}
 class Oddvec {
@@ -1924,7 +1924,7 @@ version of \Xcd{x10.array.Region}.  The \xcd`mockUnion` method
 has the type that a true \xcd`union` method would have.
 
 %~~gen
-%package Classes.Are.For.Wussies.Wimps.And.People.With.Vowels.In.Their.Names;
+%package Classes.SimplifiedRegion;
 %~~vis
 \begin{xten}
 class MyRegion(rank:Int) {

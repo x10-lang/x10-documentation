@@ -1273,8 +1273,8 @@ val recip = (x : Double) => 1/x;
 and a function which increments  element \xcd`i` of an array \xcd`r`, or throws an exception
 if there is no such element, where, for the sake of example, we constrain the
 type of \xcd`i`:  
-%~~gen
-% package Types.Functions;
+%~~gen ^^^ Types_constraint_b;
+% package Types_constraint_b;
 % class IncrElEx {
 % static def example()  {
 %~~vis
@@ -1394,17 +1394,18 @@ on a {\em type context}, \viz. a set of constraints on type parameters
 and variables that occur in the type.
 For example: 
 
-%~fails~gen
+%~~gen
 % package Types.subtyping.cons;
-%~fails~vis
+% NOCOMPILE
+%~~vis
 \begin{xten}
 class ConsTy[T,U] {
    def upcast(t:T){T <: U} :U = t;
 }
 \end{xten}
-%~fails~siv
+%~~siv
 %
-%~fails~neg
+%~~neg
 \noindent
 Inside \xcd`upcast`, \xcd`T` is constrained to be a subtype of \xcd`U`, and so
 \xcd`T <: U` is true, and \xcd`t` can be treated as a value of type \xcd`U`.  
@@ -1536,7 +1537,7 @@ a good type to describe:
       \xcd`[0,1]`;
 \item Functions with multiple returns, like
 %~~gen
-% package Types.For.Gripes.About.Pipes;
+% package Types_odd_inferred_return_type;
 % class Examplerator {
 %~~vis
 \begin{xten}
@@ -1553,8 +1554,8 @@ def f(a:Int) {
 In some cases, there is a unique best type describing the expression.  For
 example, if \xcd`B` and \xcd`C` are direct subclasses of \xcd`A`, \xcd`pick`
 will have return type \xcd`A`: 
-%~~gen
-% package Types.For.Gripes.About.Pipes;
+%~~gen ^^^ Types_a_unique_best_type_exists
+% package Types.For.Gripes.About.Pipes.Full.Of.Wipes;
 %  class A {} class B extends A{} class C extends A{}
 % class D {
 %~~vis
@@ -1789,7 +1790,7 @@ the formally correct but rather more awkward ``return type of a method, or
 \xcd`void`''.   Despite this informal usage, \xcd`void` is not a type.  For
 example, given 
 %~~gen
-% package Types.voidd;
+% package Types.void_is_not_a_type;
 % class EEEEVil {
 %~~vis
 \begin{xten}

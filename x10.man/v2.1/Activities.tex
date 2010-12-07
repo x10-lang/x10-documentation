@@ -271,10 +271,10 @@ inside of \xcd`S`.  In this way the body \xcd`S` is in a separate block with
 different variable bindings.
 
 For example, consider the following program.
-%~~gen
+%~~gen ^^^ Activities_implicit_copy_from_at_example_1
 % package Activities.implicitcopyfromat;
 % class Example {
-% def example() {
+% static def example() {
 %~~vis
 \begin{xten}
 val c = new Cell[Int](9); // (1)
@@ -287,6 +287,7 @@ assert(c() == 9);         // (6)
 \end{xten}
 %~~siv
 %}}
+% class Hook{ def run() { Example.example(); return true; } }
 %~~neg
 The \xcd`at` statement implicitly copies the \xcd`Cell` and its contents.  
 After \xcd`(1)`, \xcd`c` is a \xcd`Cell` containing 9; call that cell {$c_1$}
@@ -356,7 +357,7 @@ when the \xcd`Trans` value \xcd`this` is copied at \xcd`at(here){...}` in
 Note that we could not make a transient field \xcd`c : Int{c != 0}`, since the
 type has no default value, and copying would in fact set it to zero.
 %~~gen
-%package Activities.Transient.Noir.Orbital.Potatoes;
+%package Activities_transient_a;
 %~~vis
 \begin{xten}
 class Trans {

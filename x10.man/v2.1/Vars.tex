@@ -306,7 +306,7 @@ val q[l,m] = [44,55]; // coerces an array to a point.
 
 A useful idiom for iterating over a range of numbers is: 
 %~~gen
-%package Vars.For.Bears;
+%package Vars.For.Swear.Bears;
 % class ForBear {
 % def forbear() {
 %~~vis
@@ -376,7 +376,7 @@ inferred from the initializer type (\Sref{TypeInference}).
 The variable declaration \xcd`val x:T=e;` confirms that \xcd`e`'s value is of
 type \xcd`T`, and then introduces the variable \xcd`x` with type \xcd`T`.  For
 example, consider a class Tub with a property \xcd`p`.
-%~~gen
+%~~gen ^^^ Vars_Tub
 % package Vars.Local;
 %~~vis
 \begin{xten}
@@ -406,8 +406,14 @@ has the same effect as \xcd`val t = e`, giving \xcd`t` the full type inferred
 from \xcd`e`; but it also confirms statically that that type is at least
 \xcd`T`.  For example, the following gives \xcd`t` the type \xcd`Tub{self.p==3}` as
 desired: 
-%~~gen
-% package Vars.Local;
+%~~gen ^^^ Vars_Var_Bounded
+% package Vars.Local.not.the.express.plz;
+% class Tub(p:Int){
+%   def this(pp:Int):Tub{self.p==pp} {property(pp);}
+%   def example() {
+%     val t : Tub = new Tub(3);
+%   }
+% }
 % class TubBounded{
 % def example() {
 %~~vis
@@ -425,7 +431,7 @@ Variables do not need to be initialized at the time of definition -- not even
 only be assigned to once. The X10 compiler performs static checks guaranteeing
 this restriction. The following is correct, albeit obtuse: 
 %~~gen
-%package Vars.Local;
+%package Vars.Local.lyproducedproduce;
 % class NotInitVal {
 %~~vis
 \begin{xten}

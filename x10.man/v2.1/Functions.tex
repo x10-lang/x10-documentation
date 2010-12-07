@@ -67,7 +67,7 @@ So, the following are equivalent, where \xcd`e` is an expression involving
   \xcd`e`, and everything in sight had better typecheck properly.}
 
 %~~gen
-% package functions2.why.is.there.a.two;
+% package Functions.function_literal_a;
 % abstract class FunctionsTooManyFlippingFunctions[T, T1, T2]{
 % abstract def arg1():T1;
 % abstract def arg2():T2;
@@ -86,7 +86,7 @@ So, the following are equivalent, where \xcd`e` is an expression involving
 %~~neg
 and 
 %~~gen
-% package functions2.why.is.there.a.two.but.here.is.the.other.one;
+% package functions2_b;
 % abstract class FunctionsTooManyFlippingFunctions[T, T1, T2]{
 % abstract def arg1():T1;
 % abstract def arg2():T2;
@@ -273,7 +273,7 @@ Note that \xcd`a` is not a local \xcd`var` variable. It is a field of
 \xcd`this`. A reference to \xcd`a` is simply short for \xcd`this.a`, which is
 a use of a \xcd`val` variable (\xcd`this`).  
 %~~gen
-% package Functions.areLikeGrunctions.fromConjunctionJunctions;
+% package Functions.scoping_rules;
 %~~vis
 \begin{xten}
 class Lambda {

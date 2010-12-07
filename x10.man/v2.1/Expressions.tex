@@ -6,10 +6,6 @@ Expression evaluation may have side effects, such as change of the value of a
 \xcd`var` variable or a data structure, allocation of new values, or throwing
 an exception. 
 
-%%WRONG%% Evaluation is performed left to right, wherever possible.  For example, in 
-%%WRONG%% %~x~exp~~`~~`~~f:() => ((Int,Int)=>Int), a:()=>Int, b:()=>Int ~~
-%%WRONG%% \xcd`f()(a(),b())`, \xcd`f()` is evaluated, then \xcd`a()`, then \xcd`b()`,
-%%WRONG%% and then the application.  
 
 \section{Literals}
 \index{literal}

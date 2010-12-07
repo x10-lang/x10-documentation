@@ -77,7 +77,7 @@ types that classes do.  For example, the \xcd`Pair` type below provides pairs
 of values; the \xcd`diag()` method applies only when the two elements of the
 pair are equal, and returns that common value: 
 %~~gen
-% package Structs.For.Muckts;
+% package Structs.For.Gruckts;
 %~~vis
 \begin{xten}
 struct Pair[T,U](t:T, u:U) {
@@ -273,7 +273,17 @@ struct Struct2Class {
       following program succeed.  After converting and fixing constructors,
       both of them fail.
 %~~gen
-%package Structs.Converting;
+%package Structs.Converting.And.Conniving;
+% class Class2Struct {
+%   val a : Int;
+%   def this(a:Int) { this.a = a; }
+%   def m() = a;
+% }
+% struct Struct2Class { 
+%   val a : Int;
+%   def this(a:Int) { this.a = a; }
+%   def m() = a;
+% }
 %class Example {
 % static def Examplle() {
 %~~vis

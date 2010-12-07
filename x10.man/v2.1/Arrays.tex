@@ -21,7 +21,7 @@ integers.  The \xcd`rank`
 property of a point gives its dimensionality.  Points can be constructed from
 integers or \xcd`Array[Int](1)`s by
 the \xcd`Point.make` factory methods:
-%~~gen
+%~~gen ^^^ArraysPointsExample1
 % package Arrays.Points.Example1;
 % class Example1 {
 % def example1() {
@@ -389,7 +389,7 @@ thus the rank of every point that the distribution applies to.
 
 
 %~~gen
-%package Arrays.Dists.Examples.Examples.EXAMPLESDAMMIT;
+%package Arrays.Dist_example_a;
 % class Example{
 % def example() {
 %~~vis
@@ -785,7 +785,7 @@ a distributed or non-distributed array, returning a new distributed array with
 the same distribution, or a non-distributed array with the same region.
 For example, the following produces an array of cubes: 
 %~~gen
-%package Arrays.arrays.ginungagap.bakery.treats;
+%package Arrays_pointwise_a;
 %class Example{
 %def example() {
 %~~vis
@@ -803,7 +803,7 @@ val B = A.map(cube);
 A variant operation lets you specify the array \Xcd{B} into which the result
 will be stored.   
 %~~gen
-%package Arrays.arrays.ginungagap.bakery.treats.doomed;
+%package Arrays.map_with_result;
 %class Example{
 %def example() {
 %~~vis
@@ -823,7 +823,7 @@ This is convenient if you have an already-allocated array lying around unused.
 In particular, it can be used if you don't need \Xcd{A} afterwards and want to
 reuse its space:
 %~~gen
-%package Arrays.arrays.ginungagap.bakery.treats.doomed.spackled;
+%package Arrays.map_reusing_space;
 %class Example{
 %def example() {
 %~~vis
