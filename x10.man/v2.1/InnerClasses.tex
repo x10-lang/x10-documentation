@@ -13,7 +13,8 @@ fields and methods of its containing class.
 Nested interfaces and static structs are permitted as well.
 
 %~~gen ^^^ InnerClasses10
-% package Classes.StaticNested;
+% package Classes.StaticNested; 
+% NOTEST
 %~~vis
 \begin{xten}
 class Outer {
@@ -67,7 +68,8 @@ not shadowed.
 
 
 %~~gen ^^^ InnerClasses20
-% package Classes.InnerClasses_a;
+% package Classes.InnerClasses_a; 
+% NOTEST
 %~~vis
 \begin{xten}
 class Range(m:Int, n:Int) implements Iterable[Int]{
@@ -137,7 +139,8 @@ They are still accessible via
 is correct, but would not be correct if the ERROR line were uncommented.
 
 %~~gen ^^^ InnerClasses40
-% package Classes.Innerclasses.StupidOverloading;
+% package Classes.Innerclasses.StupidOverloading; 
+% NOTEST
 %~~vis
 \begin{xten}
 class Outer {
@@ -184,10 +187,11 @@ instance of \xcd`IC` is associated with an instance of \xcd`OC`, an \xcd`OC`
 must be supplied to the \xcd`IC` constructor.  The syntax for doing so is: 
 \xcd`oc.new IC()`.  For example: 
 %~~gen ^^^ InnerClasses60
-% package Classes.Inner_a;
+% package Classes.Inner_a; 
+% NOTEST
 %~~vis
 \begin{xten}
-class OC {
+/*NONSTATIC*/class OC {
   class IC {}
   static val oc1 = new OC();
   static val oc2 = new OC();

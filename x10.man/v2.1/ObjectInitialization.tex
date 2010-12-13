@@ -70,6 +70,29 @@ possible order of events is the following:
       initializing \Xcd{shouldBe8} --- too late.
 \end{enumerate}
 
+The \xcd`at` statement (\Sref{AtStatement}) introduces the potential for
+escape as well. The following class prints an uninitialized value: 
+%~~gen ^^^ ThisEscapingViaAt_MustFailCompile
+% package ObjInit_at;
+% NOCOMPILE
+%~~vis
+\begin{xten}
+class Example {
+  val a: Int;
+  def this() { 
+    at(here.next()) {
+      // Recall that 'this' is a copy of 'this' outside 'at'.
+      Console.OUT.println("this.a = " + this.a);
+    }
+    this.a = 1;
+  }
+}
+\end{xten}
+%~~siv
+%
+%~~neg
+
+
 X10 must protect against such possibilities.  The rules explaining how
 constructors can be written are somewhat intricate; they are designed to allow
 as much programming as possible without leading to potential problems.
@@ -287,7 +310,8 @@ is} illegal.  It would leak \Xcd{this}.  There is no special rule in effect
 preventing this; a constructor call of an inner class is no
 different from a method as far as leaking is concerned.
 %~~gen ^^^ ObjectInitialization30
-% package ObjInit.InnerClass;
+% package ObjInit.InnerClass; 
+% NOTEST
 %~~vis
 \begin{xten}
 class Outer {
@@ -309,20 +333,28 @@ class Outer {
 \subsubsection{Initialization and Closures}
 \index{constructor!closure in}
 
-Closures in constructors are valid if they were invoked (or inlined) at the
-place of creation. For example, \Xcd{closure} below is acceptable because it
-only refers to fields defined at the point it was written.  \Xcd{badClosure}
-would not be acceptable, because it refers to fields that were not defined at
-that point, although they were defined later.
+Closures in constructors may not refer to \xcd`this`.  They may not even refer
+to fields of \xcd`this` that have been initialized.   For example, the
+closure \xcd`bad1` is not allowed because it refers to \xcd`this`; \xcd`bad2`
+is not allowed because it mentions \xcd`a` --- which is, of course, identical
+to \xcd`this.a`. 
+
+%%-deleted-%% valid if they were invoked (or inlined) at the
+%%-deleted-%%place of creation. For example, \Xcd{closure} below is acceptable because it
+%%-deleted-%%only refers to fields defined at the point it was written.  \Xcd{badClosure}
+%%-deleted-%%would not be acceptable, because it refers to fields that were not defined at
+%%-deleted-%%that point, although they were defined later.
 %~~gen ^^^ ObjectInitialization40
-% package ObjectInitialization.Closures;
+% package ObjectInitialization.Closures; 
 %~~vis
 \begin{xten}
 class C {
-  val a = 3;
-  val closure = () => a*10; // This is OK
-  //val badClosure = () => b*10;
-  val b = 4;
+  val a:Int;
+  def this() {
+    this.a = 1;
+    // val bad1 = () => this; 
+    // val bad2 = () => a*10;
+  }
 }
 \end{xten}
 %~~siv

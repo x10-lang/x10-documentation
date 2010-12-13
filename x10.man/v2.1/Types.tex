@@ -171,7 +171,7 @@ class Outer {
 %
 %~~neg
 then 
-%~~exp~~`~~`~~ ~~ class Outer {class Inner { /* ... */ }} ^^^ Types60
+%~~exp~~`~~`~~ ~~ NOTEST class Outer {class Inner { /* ... */ }} ^^^ Types60
 \xcd`(new Outer()).new Inner()` creates a value of type 
 %~~type~~`~~`~~ ~~class Outer {class Inner { /* ... */ }} ^^^ Types70
 \xcd`Outer.Inner`.
@@ -1273,9 +1273,10 @@ val recip = (x : Double) => 1/x;
 and a function which increments  element \xcd`i` of an array \xcd`r`, or throws an exception
 if there is no such element, where, for the sake of example, we constrain the
 type of \xcd`i`:  
-%~~gen ^^^ Types_constraint_b;
+%~~gen ^^^ Types_constraint_b
 % package Types_constraint_b;
-% class IncrElEx {
+% NOTEST
+% /*NONSTATIC*/class IncrElEx {
 % static def example()  {
 %~~vis
 \begin{xten}

@@ -26,6 +26,11 @@ genTestCases = True
 NOTEST_pattern = "NOTEST"
 NOCOMPILE_pattern = "NOCOMPILE"
 
+# Clue indicating that a class should *not* be made a static inner class
+# in a testcase
+# BEWARE! This is a comment. It's entangled in the code later on.
+# NONSTATIC = "/*NONSTATIC*/
+
 
 
 texsource = "/Users/bard/x10/manual/x10.man/v2.1" # os.path.abspath("..") #
@@ -395,6 +400,8 @@ def cramCodeIntoFile(filename, code, forbidFlag):
         f.write(deflaggedCode)
         f.flush()
         f.close()
+#    else:
+        # print "Forbidden: " + filename
 
 testPrelude = '''
 /*
@@ -410,14 +417,16 @@ testPrelude = '''
 
 import harness.x10Test;
 '''
-testHarness = '''
+testHarnessBegin = '''
 public class %s extends x10Test {
    public def run() : boolean = (new Hook()).run();
    public static def main(var args: Array[String](1)): void = {
         new %s().execute();
     }
-}    
+
 '''
+
+testHarnessEnd = "}"
 
 findHookPat = ("class Hook")
 standardHookCode = '''
@@ -426,10 +435,39 @@ class Hook {
 }
 '''
 
+def nonStaticRepl(matchobj):
+    #print "nonStaticRepl(%s)..." % matchobj.group(0)
+    if matchobj.group(0).startswith("/*NONSTATIC*/"):
+        return matchobj.group(2)
+    else:
+        return " static " + matchobj.group(0)
+
+innerClassUlizeRE = re.compile("(/\\*NONSTATIC\\*/)? *\\b(class|interface|struct)\\b")
+def innerClassIcate(code):
+    s = re.sub(innerClassUlizeRE, nonStaticRepl, code)
+    return s
+
+def extractImportLines(code):
+    imp = []
+    non = []
+    for L in code.splitlines():
+        if L.find("import") > -1:
+            imp = imp + [L]
+            #print "IMPORT -> " + L
+        else:
+            non = non + [L]
+            #print "NON -> " + L
+    return ["\n".join(imp), "\n".join(non)]
+        
+
 def assembleTestCase(packageline, classname, code, fileroot):
-    testclass = testHarness % (fileroot, fileroot)
-    hook = "" if code.find(findHookPat) > -1 else standardHookCode
-    bits = [packageline, testPrelude, testclass, code, hook]
+    [importlines, deimp_code]  = extractImportLines(code)
+    #print "ATC: " + importlines + "\n ////// \n" + deimp_code
+    testclassbeginning = testHarnessBegin % (fileroot, fileroot)
+    testclassend = testHarnessEnd
+    hook = "" if deimp_code.find(findHookPat) > -1 else standardHookCode
+    innercode = innerClassIcate(deimp_code + "\n" + hook )
+    bits = [packageline, testPrelude, importlines, testclassbeginning, innercode, testclassend]
     return "\n".join(bits)
 
 def findAndDelete(corpus, substring):
@@ -446,7 +484,9 @@ def writeX10File(packagename, classname, code, fileroot):
     fn = gennedFileDir + "/" + fileroot + ".x10"
     cramCodeIntoFile(fn, code1, NOCOMPILE_pattern)
     NOpackageline = "/* Current test harness gets confused by packages, but it would be in " + packageline + "*/"
+    
     testcasecode = assembleTestCase(NOpackageline, classname, code, fileroot)
+    # print "\n\n\ntestcasecode=" + testcasecode
     if len(testCaseDir) > maxLengthOfTestName-20:
         print "A doom for me! The test case dir " + testCaseDir + " is too long, at " + str(len(testCaseDir))
     if len(fileroot) > maxLengthOfTestName-20:
@@ -455,8 +495,9 @@ def writeX10File(packagename, classname, code, fileroot):
 
     if os.path.exists(subdir_for_this_test_case):
         print "OH NO! Duplicate package! Here's the second one:\n"  + code
-    os.mkdir(subdir_for_this_test_case)
-    cramCodeIntoFile(subdir_for_this_test_case + "/" + fileroot + ".x10", testcasecode, NOTEST_pattern)
+    # os.mkdir(subdir_for_this_test_case)
+    # ... subdir_for_this_test_case + "/" ... 
+    cramCodeIntoFile( testCaseDir + "/" + fileroot + ".x10", testcasecode, NOTEST_pattern)
     files.append(fn)
     
     
