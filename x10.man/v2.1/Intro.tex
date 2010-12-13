@@ -1,39 +1,55 @@
 \chapter{Introduction}
 
 \subsection*{Background}
-Larger computational problems require more powerful computers capable of
-performing a larger number of operations per second. The era of
-increasing performance by simply increasing clocking frequency now
-seems to be behind us. It has become increasingly difficult
-to manage chip power and heat.  Instead, computer
-designers are starting to look at {\em scale out} systems in which the
-system's computational capacity is increased by adding additional
-nodes of comparable power to existing nodes, and connecting nodes with
-a high-speed communication network.
 
-A central problem with scale out systems is a definition of the {\em
-memory model}, that is, a model of the interaction between shared
-memory and  simultaneous (read, write) operations on that
-memory by multiple processors. The traditional ``one operation at a
-time, to completion'' model that underlies Lamport's notion of {\em
-sequential consistency} (SC) proves too expensive to implement in
-hardware, at scale. Various models of {\em relaxed consistency} have
-proven too difficult for programmers to work with.  
 
-One response to this problem has been to move to a {\em fragmented
-memory model}. Multiple processors are made to interact via a
-relatively language-neutral message-passing format such as MPI
-\cite{mpi}. This model has enjoyed some success: several
-high-performance applications have been written in this
+%%OLDINTRO%% Larger computational problems require more powerful computers capable of
+%%OLDINTRO%% performing a larger number of operations per second. The era of
+%%OLDINTRO%% increasing performance by simply increasing clocking frequency now
+%%OLDINTRO%% seems to be behind us. It has become increasingly difficult
+%%OLDINTRO%% to manage chip power and heat.  Instead, computer
+%%OLDINTRO%% designers are starting to look at {\em scale out} systems in which the
+%%OLDINTRO%% system's computational capacity is increased by adding additional
+%%OLDINTRO%% nodes of comparable power to existing nodes, and connecting nodes with
+%%OLDINTRO%% a high-speed communication network.
+%%OLDINTRO%% 
+%%OLDINTRO%% A central problem with scale out systems is a definition of the {\em
+%%OLDINTRO%% memory model}, that is, a model of the interaction between shared
+%%OLDINTRO%% memory and  simultaneous (read, write) operations on that
+%%OLDINTRO%% memory by multiple processors. The traditional ``one operation at a
+%%OLDINTRO%% time, to completion'' model that underlies Lamport's notion of {\em
+%%OLDINTRO%% sequential consistency} (SC) proves too expensive to implement in
+%%OLDINTRO%% hardware, at scale. Various models of {\em relaxed consistency} have
+%%OLDINTRO%% proven too difficult for programmers to work with.  
+
+The era of the mighty single-processor computer is over. Now, when more
+computing power is needed, one does not buy a faster uniprocessor---one buys
+another processor just like those one already has, or another hundred, or
+another million, and connects them with a high-speed communication network.
+Or, perhaps, one rents them instead, with a cloud computer. This gives one
+whatever quantity of computer cycles that one can desire and afford.
+
+Then, one has the problem of how to use those computer cycles effectively.
+Programming a multiprocessor is far more agonizing than programming a
+uniprocessor.   One can use models of computation which give somewhat of the
+illusion of programming a uniprocessor.  Unfortunately, the models which give
+the closest imitations of uniprocessing are very expensive to implement,
+either increasing the monetary cost of the computer tremendously, or slowing
+it down dreadfully. 
+
+One response to this problem has been to move to a {\em fragmented memory
+  model}. Multiple processors are programmed largely as if they were
+uniprocessors, but are made to interact via a relatively language-neutral
+message-passing format such as MPI \cite{mpi}. This model has enjoyed some
+success: several high-performance applications have been written in this
 style. Unfortunately, this model leads to a {\em loss of programmer
-productivity}: the message-passing format is integrated into the host
+  productivity}: the message-passing format is integrated into the host
 language by means of an application-programming interface (API), the
-programmer must explicitly represent and manage the interaction
-between multiple processes and choreograph their data exchange; large
-data-structures (such as distributed arrays, graphs, hash-tables) that
-are conceptually unitary must be thought of as fragmented across
-different nodes; all processors must generally execute the same code
-(in an SPMD fashion) etc.
+programmer must explicitly represent and manage the interaction between
+multiple processes and choreograph their data exchange; large data-structures
+(such as distributed arrays, graphs, hash-tables) that are conceptually
+unitary must be thought of as fragmented across different nodes; all
+processors must generally execute the same code (in an SPMD fashion) etc.
 
 One response to this problem has been the advent of the {\em
 partitioned global address space} (PGAS) model underlying languages
