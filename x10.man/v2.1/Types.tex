@@ -539,6 +539,24 @@ class NonGeneric {
 \limitation{ \XtenCurrVer{}'s C++ back end requires generic methods to be
 static or final; the Java back end can accomodate generic instance methods as well. }
 
+Unlike other kinds of variables, type parameters may {\em not} be shadowed.  
+If name \xcd`X` is in scope as a type, \xcd`X` may not be rebound as a type
+variable.  
+For example, neither \xcd`class B` nor \xcd`class C[B]` are allowed in the
+following code, because they both shadow the type variable \xcd`B`.
+%~~gen ^^^ TypesNoShadow
+% package TypesNoShadow;
+%~~vis
+\begin{xten}
+class A[B] {
+  // ILLEGAL: class B{} 
+  // ILLEGAL: class C[B]{} 
+}
+\end{xten}
+%~~siv
+%
+%~~neg
+
 
 \subsection{Variance of Type Parameters}
 \index{covariant}

@@ -157,17 +157,20 @@ constructor invocations.
 \index{label}
 \index{statement label}
 
+
+% TODO The following grammar is inconsistent with the grammar in the appendix.
 \begin{bbgrammar}
- LabeledStatement    \: Id \xcd":" LoopStatement & (\ref{prod:LabeledStatement})\\%<FROM #(prod:LabeledStatement)#
- LoopStatement    \: ForStatement & (\ref{prod:LoopStatement})\\%<FROM #(prod:LoopStatement)#
-    \| WhileStatement\\
-    \| DoStatement\\
-    \| AtEachStatement\\
+ LabeledStatement    \: Id \xcd":" Statement 
 \end{bbgrammar}
 
 
-Loop statements (\xcd`for`, \xcd`while`, \xcd`do`, \xcd`ateach`) may be labeled. The label may be used as the target of a break
-or continue statement. The scope of a label is the statement labeled.
+Statements may be labeled. The label may be used to describe the target of a
+\xcd`break` statement appearing within a substatement (which, when executed,
+ends the labeled statement) , or, in the case of a loop, a \xcd`continue` as
+well (which, when executed, proceeds to the next iteration of the loop). The
+scope of a label is the statement labeled.
+
+
 %~~gen ^^^ Statements50
 % package state.meant.labe.L;
 % class Example {
@@ -185,6 +188,36 @@ lbl : for ([i] in 1..10) {
 %~~siv
 %} } 
 %~~neg
+
+In particular, a block statement may be labeled: \xcd` L:{S}`.  This allows
+the use of \xcd`break L` within \xcd`S` to leave \xcd`S`, which can, if
+carefully used, avoid deeply-nested \xcd`if`s: 
+
+%~~gen ^^^ Statements51
+% package statements51;
+% abstract class Example {
+% abstract def phase1(String):void;
+% abstract def phase2(String):void;
+% abstract def phase3(String):void;
+% abstract def suitable_for_phase_2(String):Boolean;
+% abstract def suitable_for_phase_3(String):Boolean;
+% def example(filename: String) {
+%~~vis
+\begin{xten}
+multiphase: {
+  if (!exists(filename)) break multiphase;
+  phase1(filename);
+  if (!suitable_for_phase_2(filename)) break multiphase;
+  phase2(filename);
+  if (!suitable_for_phase_3(filename)) break multiphase;
+  phase3(filename);
+}
+// Now the file has been phased as much as possible
+\end{xten}
+%~~siv
+%}
+%~~neg
+
 
 
 \section{Break statement}
