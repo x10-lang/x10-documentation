@@ -1,4 +1,4 @@
-\chapter{Lexical structure}
+\chapter{Lexical and Grammatical structure}
 
 
 Lexically a program consists of a stream of white space, comments,
@@ -265,3 +265,50 @@ f &=& b x
 
 
 
+\section{Grammatical Notation}
+
+In this manual, ordinary BNF notation is used to specify grammatical
+constructions, with a few minor extensions. 
+Grammatical rules look like this: \\
+\begin{bbgrammar}
+Adj \: Adv\opt \mbox{\xcd`happy`}\\
+    \| Adv\opt \mbox{\xcd`sad`}\\ 
+Adv \: \mbox{\xcd`very`}\\
+    \| Adv Adv 
+\end{bbgrammar}
+
+Terms in {\em italics} are called {\bf non-terminals}.  They 
+represent kinds of phrases; for example, {\em ForStatement}
+(\ref{prod:ForStatement}) describes all \xcd`for` statements.  
+Equation numbers refer to the full X10 grammar, in \Sref{Grammar}.  
+The small example has two non-terminals, {\em Adv} and {\em Adj}.  
+
+Terms in \xcd`fixed-width font` are {\bf terminals}.  They represent the words
+and symbols of the language itself.  In X10, the terminals are the words
+described in this chapter.
+
+A single grammatical rule has the form {$ A \mathrel{::=} X_1 X_2 ... X_n $},
+where the $X_i$'s are either terminals or nonterminals.  This indicates that
+the non-terminal $A$ could be an instance of $X_1$, followed by an instance of
+$X_2$, \ldots, followed by an instance of $X_n$.  Multiple rules for the same
+$A$ are allowed, giving several possible phrasings of $A$'s.  For brevity,
+two rules with the same left-hand side are written with the left-hand side
+appearing once, and the right-hand sides 
+separated by $|$.  
+
+In the {\em Adj} example, there are two rules for {\it Adv}, 
+$Adv \mathrel{::=} \mbox{\xcd`very`}$ and
+$Adv \mathrel{::=} Adv~Adv$.  So, an adverb could be \xcd`very`, or (by three
+uses of the rule) \xcd`very very`, or, one or more \xcd`very`s.  
+
+The notation $A^{?}$ indicates an optional $A$.  This is an ordinary
+non-terminal, defined by the rules:\\ 
+\begin{bbgrammar}
+A\opt \:  \\
+    \| A
+\end{bbgrammar}
+The first rule says that $A^?$ can amount to nothing; the second, that it can
+amount to an $A$.  This concept shows up so often that it is worth having a
+separate notation for it.  In the {\em Adj} example, an adjective phrase may be
+preceded by an optional adverb. Thus, it may be \xcd`happy`, or 
+\xcd`very happy`, or \xcd`very very sad`, etc. 
