@@ -651,3 +651,46 @@ exception is rethrown.
 
 
 
+\section{Assert}
+
+The \xcd`assert` statement 
+%~~stmt~~`~~`~~B:Boolean ~~
+\xcd`assert B;` 
+checks that the Boolean expression \xcd`B` evaluates to true.  If so,
+computation proceeds.  If not, it throws \xcd`x10.lang.AssertionError`.
+
+The extended form 
+%~~stmt~~`~~`~~B:Boolean, A:Any ~~ 
+\xcd`assert B:A;`
+is similar, but provides more debugging information.  The value of the
+expression \xcd`A` is available as part of the \xcd`AssertionError`, \eg, to
+be printed on the console.
+
+\begin{ex}
+\xcd`assert` is useful for confirming properties that you believe to be true
+and wish to rely on.  In particular, well-chosen \xcd`assert`s make a program
+robust in the face of code changes and unexpected uses of methods.
+For example, the following method compute percent differences, but asserts
+that it is not dividing by zero.  If the mean is zero, it throws an exception,
+including the values of the numbers as potentially useful debugging
+information. 
+%~~gen ^^^ StmtAssert10
+%package StmtAssert10;
+% class Example {
+%~~vis
+\begin{xten}
+static def percentDiff(x:Double, y:Double) {
+  val diff = x-y;
+  val mean = (x+y)/2;
+  assert mean != 0.0  : [x,y]; 
+  return Math.abs(100 * (diff / mean));
+}
+\end{xten}
+%~~siv
+% }
+%~~neg
+
+
+
+\end{ex}
+
