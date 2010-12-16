@@ -690,7 +690,10 @@ static def percentDiff(x:Double, y:Double) {
 % }
 %~~neg
 
-
-
 \end{ex}
 
+
+At times it may be considered important not to check \xcd`assert` statements;
+\eg, if the test is expensive and the code is sufficiently well-tested.  The
+\xcd`-noassert` command line option causes the compiler to ignore all
+\xcd`assert` statements. 
