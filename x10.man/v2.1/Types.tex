@@ -915,7 +915,8 @@ Only the following forms of expression are allowed in constraints.
 \item \xcd`here`, if the constraint is in a place where \xcd`here` is defined;
 \item \xcd`self`;
 \item Calls to property methods, where the receiver and arguments must be
-      value expressions acceptable in constraints.
+      value expressions acceptable in constraints;
+\item \xcd`T haszero`, if \xcd`T` is any type expression.
 \end{enumerate}
 For an expression \xcd`self.p` to be legal in a constraint, 
 \xcd`p` must be 
@@ -1246,6 +1247,53 @@ because \xcd`0 != 4` satisfies the constraint on \xcd`x`.
 The fact that \xcd`Int{y==4}` has precisely one value, \viz{} 4, doesn't
 matter; the only candidate for its default value, as for any subtype of
 \xcd`Int`, is 0. \xcd`y` must be initialized before it is used.
+
+The predicate \xcd`T haszero` tells if the type \xcd`T` has a default value.
+\xcd`haszero` may be used in constraints. 
+
+\begin{ex}
+The following code defines a sort of cell holding a single value of type
+\xcd`T`. The cell is initially empty -- that is, has \xcd`T`'s zero value --
+but may be filled later. 
+%~~gen ^^^ TypesHaszero10
+% package TypesHaszero10;
+%~~vis
+\begin{xten}
+class Cell0[T]{T haszero} {
+  public var contents : T;
+  public def put(t:T) { contents = t; }
+}
+\end{xten}
+%~~siv
+%
+%~~neg
+\end{ex}
+
+The built-in type \xcd`Zero` has the method \xcd`get[T]()` which
+returns the default value of type \xcd`T`.  
+
+\begin{ex}
+A variant \xcd`Cell1[T]` which can be initialized with a value of an arbitrary
+type
+\xcd`T`, or, if \xcd`T` has a default value, can be created with the default
+value, is given below.  Note that \xcd`T haszero` is a constraint on one of
+the constructors, not the whole type:  
+%~~gen ^^^ TypesHaszero20
+% package TypesHaszero20;
+%~~vis
+\begin{xten}
+class Cell1[T] {
+  public var contents: T;
+  def this(t:T) { contents = t; }
+  def this(){T haszero} { contents = Zero.get[T](); }
+  public def put(t:T) {contents = t;}
+}
+\end{xten}
+%~~siv
+%
+%~~neg
+
+\end{ex}
 
 \section{Function types}
 \label{FunctionTypes}
