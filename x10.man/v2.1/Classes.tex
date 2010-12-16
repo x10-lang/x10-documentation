@@ -719,361 +719,97 @@ a method \xcdmath"M$_2$" in a superclass \xcd"D" if
 \xcdmath"M$_1$" and \xcdmath"M$_2$" have the same signature with constraints erased.
 Methods are overriden on a signature-by-signature basis.
 
-% Yoav says that the following needs complete revision.  I think the method 
-% resolution section is that complet revision.
-%%SEE-METHOD-RESOLUTION%% A method invocation \xcdmath"o.m(e$_1$, $\dots$, e$_n$)"
-%%SEE-METHOD-RESOLUTION%% is said to have the {\em static signature}
-%%SEE-METHOD-RESOLUTION%% \xcdmath"<T, T$_1$, $\dots$, T$_n$>" where \xcd"T" is the static type of
-%%SEE-METHOD-RESOLUTION%% \xcd"o", and
-%%SEE-METHOD-RESOLUTION%% \xcdmath"T$_1$",
-%%SEE-METHOD-RESOLUTION%% \dots,
-%%SEE-METHOD-RESOLUTION%% \xcdmath"T$_n$"
-%%SEE-METHOD-RESOLUTION%% are the static types of \xcdmath"e$_1$", \dots, \xcdmath"e$_n$",
-%%SEE-METHOD-RESOLUTION%% respectively.  
-%%SEE-METHOD-RESOLUTION%% It must be the case that the compiler can determine a single
-%%SEE-METHOD-RESOLUTION%% method defined on \xcd"T" with argument type
-%%SEE-METHOD-RESOLUTION%% \xcdmath"T$_1$", \dots \xcdmath"T$_n$"; otherwise, a
-%%SEE-METHOD-RESOLUTION%% compile-time error is declared. However,  the \Xten{} type \xcd"T"
-%%SEE-METHOD-RESOLUTION%% may be a dependent type \xcd"C{c}". Therefore, given a class definition for
-%%SEE-METHOD-RESOLUTION%% \xcd"C" we must determine which methods of \xcd"C" are available at a type
-%%SEE-METHOD-RESOLUTION%% \xcd"C{c}". But the answer to this question is clear: exactly those methods
-%%SEE-METHOD-RESOLUTION%% defined on \xcd"C" are available at the type \xcd"C{c}"
-%%SEE-METHOD-RESOLUTION%% whose guard \xcd"d" is implied by \xcd"c".
+\section{Constructors}
+\index{constructor}
+
+Instances of classes are created by the \xcd`new` expression: 
+%##(ClassInstCreationExp
+%##)
+
+This constructs a new object, and calls some code, called a {\em constructor},
+to initialize the newly-created object properly.
+
+Constructors are defined like methods, except that they are named \xcd`this`
+and ordinary methods may not be.    The content of a constructor body has
+certain capabilities (\eg, \xcd`val` fields of the object may be initialized)
+and certain restrictions (\eg, most methods cannot be called); see
+\Sref{ObjectInitialization} for the details.
+
+The following class provides two constructors.  The unary constructor 
+\xcd`def this(b : Int)` allows initialization of the \xcd`a` field to an 
+arbitrary value.  The nullary constructor \xcd`def this()` gives it a default
+value of 10.  The \xcd`example` method illustrates both of these calls.
+\begin{ex}
+%~~gen ^^^ ClassesCtor10
+% package ClassesCtor10;
+%~~vis
+\begin{xten}
+class C {
+  public val a : Int;
+  def this(b : Int) { a = b; } 
+  def this() { a = 10; }
+  static def example() {
+     val two = new C(2);
+     assert two.a == 2;
+     val ten = new C(); 
+     assert ten.a == 10;
+  }
+}
+\end{xten}
+%~~siv
+%
+%~~neg
+\end{ex}
+
+\subsection{Automatic Generation of Constructors}
+\index{constructor!generated}
+
+Classes that have no constructors written in the class declaration are
+automatically given a constructor which sets the class properties and does
+nothing else. If this automatically-generated constructor is not valid (\eg,
+if the class has \xcd`val` fields that need to be initialized in a
+constructor), the class has no constructor, which is a static error.
+
+\begin{eg}
+The following class has no explicit constructor.   
+
+%~~gen ^^^ ClassesCtor20
+% package ClassesCtor20;
+%~~vis
+\begin{xten}
+class C(x:Int) {
+  static def example() {
+    val c : C = new C(4);
+    assert c.x == 4;
+  }
+}
+\end{xten}
+%~~siv
+%
+%~~neg
+
+%~~gen ^^^ ClassCtor30_MustFailCompile
+% NOCOMPILE
+%~~vis
+\begin{xten}
+class C(x:Int) {
+  val d: Int;
+  static def example() {
+    val thisShouldBeWrong = new C(40);
+  }
+}
+\end{xten}
+%~~siv
+%
+%~~neg
 
 
-%%OUTDATED%% \section{Instance Initialization}
-%%OUTDATED%% 
-%%OUTDATED%% \section{Constructors}
-%%OUTDATED%% 
-%%OUTDATED%% Constructors allow the initialization of objects by the execution of
-%%OUTDATED%% almost-arbitrary code.  Like methods, constructors can have formal parameters,
-%%OUTDATED%% a constraint, a return type, 
-%%OUTDATED%% and a body. The formals and constraint
-%%OUTDATED%%  are identical to those for a method.
-%%OUTDATED%% A constructor is declared by \xcd`def this()...`; that is, as if it were a
-%%OUTDATED%% method whose name were the reserved word \xcd`this`.  
-%%OUTDATED%% 
-%%OUTDATED%% 
-%%OUTDATED%% \subsection{Constructor Return Types}
-%%OUTDATED%% 
-%%OUTDATED%% The return type of a constructor describes the values that constructor can
-%%OUTDATED%% create.  While all constructors for class \xcd`C` create objects of base class
-%%OUTDATED%% \xcd`C`, some individual constructors may construct objects with more specific
-%%OUTDATED%% constraints.    For example, in
-%%OUTDATED%% %~x~gen
-%%OUTDATED%% % package Classes.Are.For.Grasses;
-%%OUTDATED%% %~x~vis
-%%OUTDATED%% \begin{xten}
-%%OUTDATED%% class Crate(n:Int) {
-%%OUTDATED%%   def this() : Crate{self.n==0} = { property(0); }
-%%OUTDATED%%   def this(b:Boolean) : Crate{self.n==1} = { property(1); }
-%%OUTDATED%% }
-%%OUTDATED%% \end{xten}
-%%OUTDATED%% %~x~siv
-%%OUTDATED%% %
-%%OUTDATED%% %~x~neg
-%%OUTDATED%% \noindent
-%%OUTDATED%% the nullary constructor call \xcd`new Crate()` will return a value of type 
-%%OUTDATED%% \xcd`Crate{self.n == 0}`--- the \xcd`n` field is zero and the compiler knows
-%%OUTDATED%% it.  The unary Boolean constructor will return an object of type 
-%%OUTDATED%% \xcd`Crate{self.n==1}`.
-%%OUTDATED%% A less trivial example might be a specialized constructor for a square matrix, 
-%%OUTDATED%% which returned type \xcd`Matrix{self.rows==self.cols}`.  
-%%OUTDATED%% 
-%%OUTDATED%% If the constructor type is omitted, the constructor returns 
-%%OUTDATED%% the type of its class, constrained by the actual parameters to the
-%%OUTDATED%% \xcd`property` call in the constructor.  That is, the first constructor 
-%%OUTDATED%% call above could be abbreviated:
-%%OUTDATED%% %~x~gen
-%%OUTDATED%% % package Classes.Are.For.Grasses.In.Mountain.Passes;
-%%OUTDATED%% % class Crate(n:Int) {
-%%OUTDATED%% %~x~vis
-%%OUTDATED%% \begin{xten}
-%%OUTDATED%%   def this() { property(0); }
-%%OUTDATED%%   // And to prove that the nullary constructor knows n==0: 
-%%OUTDATED%%   static def confirm() {
-%%OUTDATED%%     val v : Crate{self.n == 0} = new Crate();
-%%OUTDATED%%   }
-%%OUTDATED%% \end{xten}
-%%OUTDATED%% %~x~siv
-%%OUTDATED%% % }
-%%OUTDATED%% %~x~neg
-%%OUTDATED%% 
-%%OUTDATED%% \subsection{Constructor Bodies}
-%%OUTDATED%% 
-%%OUTDATED%% Constructors have many restrictions, designed to ensure that objects behave
-%%OUTDATED%% sanely while being constructed. Constructors initialize fields of objects and
-%%OUTDATED%% establish object invariants.  It should never be possible to observe an
-%%OUTDATED%% uninitialized object outside of a constructor call.  However, without some
-%%OUTDATED%% restrictions, it would be possible to do so quite easily.  A constructor could
-%%OUTDATED%% put \Xcd{this} into a data structure before initializing it, and a concurrent
-%%OUTDATED%% activity could read it before the initialization is finished.  If the 
-%%OUTDATED%% line marked \Xcd{ILLEGAL} were uncommented, the following program would
-%%OUTDATED%% exhibit the problem: 
-%%OUTDATED%% %~x~gen
-%%OUTDATED%% % package Classes.ConstructorBodies.Methane.Ammonia.Atmosphere;
-%%OUTDATED%% % import x10.util.*;
-%%OUTDATED%% %~x~vis
-%%OUTDATED%% \begin{xten}
-%%OUTDATED%% class Escaper {
-%%OUTDATED%%    static val all = new ArrayList[Escaper]();
-%%OUTDATED%%    val fld : String;
-%%OUTDATED%%    def this() {
-%%OUTDATED%%       //ILLEGAL: all.add(this);
-%%OUTDATED%%       this.fld = "initialized";
-%%OUTDATED%%    }
-%%OUTDATED%%    def Main(Array[String](1)):void {
-%%OUTDATED%%       finish{
-%%OUTDATED%%         async {new Escaper();}
-%%OUTDATED%%         async {
-%%OUTDATED%%           for (e in Escaper.all) 
-%%OUTDATED%%             assert(e.fld == "initialized");
-%%OUTDATED%%         }
-%%OUTDATED%%       }
-%%OUTDATED%%    }
-%%OUTDATED%% }
-%%OUTDATED%% \end{xten}
-%%OUTDATED%% %~x~siv
-%%OUTDATED%% %
-%%OUTDATED%% %~x~neg
-%%OUTDATED%% 
-%%OUTDATED%% \subsubsection{Initialization of Fields}
-%%OUTDATED%% 
-%%OUTDATED%% All fields of an object must be given a value before they are used.  There are
-%%OUTDATED%% several ways that this can be accomplished: 
-%%OUTDATED%% \begin{itemize}
-%%OUTDATED%% \item A \Xcd{var} field of a type with a default value, if not otherwise
-%%OUTDATED%%       initialized, 
-%%OUTDATED%%       will have its type's default value. (\Xcd{val} fields may not use this
-%%OUTDATED%%       option; they must be given values explicitly, either by an initializer
-%%OUTDATED%%       or by a constructor.)  For example, \Xcd{(new C()).zero}
-%%OUTDATED%%       in the example below will be zero, the default value of an \Xcd{Int}.
-%%OUTDATED%% %~x~gen
-%%OUTDATED%% % package Classes.Initofields.One;
-%%OUTDATED%% %~x~vis
-%%OUTDATED%% \begin{xten}
-%%OUTDATED%% class C {
-%%OUTDATED%%   var zero : Int;
-%%OUTDATED%% }
-%%OUTDATED%% \end{xten}
-%%OUTDATED%% %~x~siv
-%%OUTDATED%% %
-%%OUTDATED%% %~x~neg
-%%OUTDATED%% 
-%%OUTDATED%% \item A field may have an explicit initializer, in which case its value is the
-%%OUTDATED%%       value of the initializer.  \Xcd{(new D()).one} is one.
-%%OUTDATED%% %~x~gen
-%%OUTDATED%% % package Classes.Initofields.Two;
-%%OUTDATED%% %~x~vis
-%%OUTDATED%% \begin{xten}
-%%OUTDATED%% class D {
-%%OUTDATED%%   val one = 1;
-%%OUTDATED%% }
-%%OUTDATED%% \end{xten}
-%%OUTDATED%% %~x~siv
-%%OUTDATED%% %
-%%OUTDATED%% %~x~neg
-%%OUTDATED%% 
-%%OUTDATED%% \item A field may be given a value in a constructor, or in a method called
-%%OUTDATED%%       from a constructor.  \Xcd{(new E()).x} is two; \Xcd{(new E(3)).x} is
-%%OUTDATED%%       three. 
-%%OUTDATED%% %~x~gen
-%%OUTDATED%% % package Classes.Initofields.Three;
-%%OUTDATED%% %~x~vis
-%%OUTDATED%% \begin{xten}
-%%OUTDATED%% class E {
-%%OUTDATED%%    var x : Int;
-%%OUTDATED%%    def this() { x = 2; }
-%%OUTDATED%%    def this(n: Int) { 
-%%OUTDATED%%       this.setX(n);
-%%OUTDATED%%    }
-%%OUTDATED%%    private final def setX(n:Int) {
-%%OUTDATED%%      this.x = n;
-%%OUTDATED%%    }
-%%OUTDATED%% }
-%%OUTDATED%% \end{xten}
-%%OUTDATED%% %~x~siv
-%%OUTDATED%% %
-%%OUTDATED%% %~x~neg
-%%OUTDATED%% 
-%%OUTDATED%% 
-%%OUTDATED%% \end{itemize}
-%%OUTDATED%% 
-%%OUTDATED%% \subsubsection{Calling Another Constructor}
-%%OUTDATED%% 
-%%OUTDATED%% A constructor for class \Xcd{C} can call another constructor, either of
-%%OUTDATED%% \Xcd{C} itself or of \Xcd{C}'s supertype.  The call to the other constructor
-%%OUTDATED%% must be the first statement of the constructor body.
-%%OUTDATED%% 
-%%OUTDATED%% %~x~gen
-%%OUTDATED%% % package Classical.Constructorical.Calling.Another.One;
-%%OUTDATED%% %~x~vis
-%%OUTDATED%% \begin{xten}
-%%OUTDATED%% class C {
-%%OUTDATED%%   val a : Int;
-%%OUTDATED%%   def this(a:Int) { this.a = a; }
-%%OUTDATED%%   def this() { 
-%%OUTDATED%%      this(0); // call another constructor of C
-%%OUTDATED%%   }
-%%OUTDATED%% }
-%%OUTDATED%% class D extends C {
-%%OUTDATED%%   val b : Int; 
-%%OUTDATED%%   def this(a:Int, b:Int) {
-%%OUTDATED%%      super(a); // call superclass constructor
-%%OUTDATED%%      this.b = b;
-%%OUTDATED%%   }
-%%OUTDATED%% }
-%%OUTDATED%% \end{xten}
-%%OUTDATED%% %~x~siv
-%%OUTDATED%% %
-%%OUTDATED%% %~x~neg
-%%OUTDATED%% 
-%%OUTDATED%% No fields of \Xcd{this} may be read before the optional \Xcd{this}- or
-%%OUTDATED%% \Xcd{super}-call. For example, having \Xcd{super(this.x);} as the
-%%OUTDATED%% constructor-call is illegal, since it reads \Xcd{this.x} before the
-%%OUTDATED%% constructor-call.
-%%OUTDATED%% 
-%%OUTDATED%% \subsubsection{\Xcd{property} Statement}
-%%OUTDATED%% 
-%%OUTDATED%% The \Xcd{property} statement sets the properties of \Xcd{this}; note that
-%%OUTDATED%% properties may not be assigned to directly.  For example, 
-%%OUTDATED%% \Xcd{(new C(10)).x == 10}.
-%%OUTDATED%% %~x~gen
-%%OUTDATED%% % package Classes.Propertystatement.Squid.Stuffing;
-%%OUTDATED%% %~x~vis
-%%OUTDATED%% \begin{xten}
-%%OUTDATED%% class C(x:Int, y:Boolean) {
-%%OUTDATED%%    def this(x:Int) {
-%%OUTDATED%%       property(x, true);
-%%OUTDATED%%    }
-%%OUTDATED%% }
-%%OUTDATED%% 
-%%OUTDATED%% \end{xten}
-%%OUTDATED%% %~x~siv
-%%OUTDATED%% %
-%%OUTDATED%% %~x~neg
-%%OUTDATED%% 
-%%OUTDATED%% The properties of \Xcd{this} may be read after the \Xcd{property} statement,
-%%OUTDATED%% but not before it: 
-%%OUTDATED%% %~x~gen
-%%OUTDATED%% % package Classes.Propertystatement.Squid.Stuffing.Pillows;
-%%OUTDATED%% %~x~vis
-%%OUTDATED%% \begin{xten}
-%%OUTDATED%% class C(x:Int, y:Boolean) {
-%%OUTDATED%%    val z : Int;
-%%OUTDATED%%    def this(x:Int) {
-%%OUTDATED%%       // x cannot be read here.
-%%OUTDATED%%       property(x, true);
-%%OUTDATED%%       this.z = x+3;
-%%OUTDATED%%    }
-%%OUTDATED%% }
-%%OUTDATED%% \end{xten}
-%%OUTDATED%% %~x~siv
-%%OUTDATED%% %
-%%OUTDATED%% %~x~neg
-%%OUTDATED%% 
-%%OUTDATED%% 
-%%OUTDATED%% \subsubsection{Use of \Xcd{this} in a Constructor Body}
-%%OUTDATED%% 
-%%OUTDATED%% After the optional constructor-call and optional \Xcd{property} statement,
-%%OUTDATED%% \Xcd{this} {\em can} be used, subject to certain restrictions. 
-%%OUTDATED%% We say that a method is {\em constructor-like} if it is \Xcd{private},
-%%OUTDATED%% \Xcd{final}, and obeys the following restrictions.
-%%OUTDATED%% 
-%%OUTDATED%% \begin{itemize}
-%%OUTDATED%% \item \Xcd{this} may not be assigned to anything. This prevents problematic
-%%OUTDATED%%       cases such as: 
-%%OUTDATED%% %~x~gen
-%%OUTDATED%% % package Classes.Usethisinactorbodytwo;
-%%OUTDATED%% %~x~vis
-%%OUTDATED%% \begin{xten}
-%%OUTDATED%% class Outer {
-%%OUTDATED%%    var leak : Inner;
-%%OUTDATED%%    class Inner {
-%%OUTDATED%%       def this() {
-%%OUTDATED%%         //ILLEGAL: Outer.this.leak = this;
-%%OUTDATED%%       }
-%%OUTDATED%%    }
-%%OUTDATED%% }
-%%OUTDATED%% \end{xten}
-%%OUTDATED%% %~x~siv
-%%OUTDATED%% %
-%%OUTDATED%% %~x~neg
-%%OUTDATED%% (It also prevents harmless cases, such as \Xcd{val nonleak = this;}
-%%OUTDATED%% 
-%%OUTDATED%% \item \Xcd{this} may only be used as an argument or receiver of a
-%%OUTDATED%%       constructor-like method call.  The following class definition is legal.
-%%OUTDATED%% %~x~gen
-%%OUTDATED%% % package Classes.Usethisinactorbodyone; 
-%%OUTDATED%% %~x~vis
-%%OUTDATED%% \begin{xten}
-%%OUTDATED%% class C {
-%%OUTDATED%%   private final def ctorLike() {
-%%OUTDATED%%     x10.io.Console.OUT.println("constructed");
-%%OUTDATED%%   }
-%%OUTDATED%%   def this() {
-%%OUTDATED%%     this.ctorLike();
-%%OUTDATED%%   }
-%%OUTDATED%% }
-%%OUTDATED%% \end{xten}
-%%OUTDATED%% %~x~siv
-%%OUTDATED%% %
-%%OUTDATED%% %~x~neg
-%%OUTDATED%%       It would not be legal if \Xcd{private} or \Xcd{final} were omitted, or
-%%OUTDATED%%       if \Xcd{ctorLike} called \Xcd{x10.io.Console.OUT.println(this +
-%%OUTDATED%%       "constructed");}.  (The implicit \Xcd{this.toString()} call is a call to
-%%OUTDATED%%       a non-constructor-like method.)
-%%OUTDATED%% \end{itemize}
-%%OUTDATED%% 
-%%OUTDATED%% Constructor code may refer to fields of \Xcd{this} only after they have been
-%%OUTDATED%% definitely assigned.\Sref{DefiniteAssign}  For example: 
-%%OUTDATED%% %~x~gen
-%%OUTDATED%% %package Classes.ctordefassignuse;
-%%OUTDATED%% %~x~vis
-%%OUTDATED%% \begin{xten}
-%%OUTDATED%% class C {
-%%OUTDATED%%   val d : Int, e:Int; var f: Int;
-%%OUTDATED%%   def this() {
-%%OUTDATED%%     // ILLEGAL: f = d - 1; 
-%%OUTDATED%%     d = 1;
-%%OUTDATED%%     e = d + 2;
-%%OUTDATED%%     
-%%OUTDATED%%   }
-%%OUTDATED%% }
-%%OUTDATED%% \end{xten}
-%%OUTDATED%% %~x~siv
-%%OUTDATED%% %
-%%OUTDATED%% %~x~neg
-%%OUTDATED%% 
-%%OUTDATED%% 
-%%OUTDATED%% The bodies of constructor-like methods called from constructors may only read
-%%OUTDATED%% fields of \Xcd{this} which have been initialized at the point that the method
-%%OUTDATED%% was called.  They differ from true constructor bodies in that only 
-%%OUTDATED%% constructor bodies, not constructor-like methods, may assign to \Xcd{val}
-%%OUTDATED%% fields. 
-%%OUTDATED%% %~x~gen
-%%OUTDATED%% % package Classes.Usethisinactorbodythree;
-%%OUTDATED%% %~x~vis
-%%OUTDATED%% \begin{xten}
-%%OUTDATED%% class C {
-%%OUTDATED%%   val m: Int;
-%%OUTDATED%%   var n:Int; 
-%%OUTDATED%%   private final def ctorLike() {
-%%OUTDATED%%      n = m + 3;
-%%OUTDATED%%      }
-%%OUTDATED%%   def this() { 
-%%OUTDATED%%      //ILLEGAL: ctorLike();
-%%OUTDATED%%      m = 7;
-%%OUTDATED%%      ctorLike();
-%%OUTDATED%%      }
-%%OUTDATED%% }
-%%OUTDATED%% \end{xten}
-%%OUTDATED%% %~x~siv
-%%OUTDATED%% %
-%%OUTDATED%% %~x~neg
-%%OUTDATED%% 
-%%OUTDATED%% 
-%%OUTDATED%% 
+Thus, it has an implicit constructor: 
+\xcd`def this(x:Int){property(x);}`
+\end{eg}
+
+
+
 \section{Static initialization}
 \label{StaticInitialization}
 \index{initialization!static}
