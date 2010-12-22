@@ -209,18 +209,52 @@ class Elsewhere{
 %~~neg
 
 
+\section{Local Classes}
+
+Classes can be defined and instantiated in the middle of methods and other
+code blocks. Local classes are local to the block in which they are defined.
+They have access to almost everything defined at that point in the method; the
+one exception is that they cannot use \xcd`var` variables. Local classes
+cannot be \xcd`public` \xcd`protected`, or \xcd`private`, because they are
+only visible from within the block of declaration. They cannot be
+\xcd`static`.
+
+\begin{ex}
+The following example illustrates the use of a local class \xcd`Local`, 
+defined inside the body of method \xcd`m()`. 
+%~~gen ^^^ InnerClasses5p9v
+% package InnerClasses5p9v;
+%~~vis
+\begin{xten}
+class Outer {
+  val a = 1;
+  def m() {
+    val a = -2; 
+    val b = 2;
+    class Local {
+      val a = 3;
+      def m() = 100*Outer.this.a + 10*b + a; 
+    }
+    val l : Local = new Local();
+    assert l.m() == 123;
+  }//end of m()
+}
+\end{xten}
+%~~siv
+%
+%~~neg
+Note that the middle \xcd`a`,
+whose value is \xcd`-2`, is not accessible inside of \xcd`Local`; it is
+shadowed by \xcd`Local`'s \xcd`a` field.  \xcd`Outer`'s \xcd`a` is also
+shadowed, but the notation \xcd`Outer.this` gives a reference to the enclosing
+\xcd`Outer` object.  There is no corresponding notation to access shadowed local
+variables from the enclosing block; if you need to get them, rename the fields
+of \xcd`Local`.    
+\end{ex}
 
 
-%%LOCAL-CLASSES%% \section{Local Classes}
-%%LOCAL-CLASSES%% 
-%%LOCAL-CLASSES%% Classes can be defined and instantiated in the middle of methods and other
-%%LOCAL-CLASSES%% code blocks. Local classes are local to the block in which they are defined.
-%%LOCAL-CLASSES%% They have access to almost everything defined at that point in the method; the
-%%LOCAL-CLASSES%% one exception is that they cannot use \xcd`var` variables.  Local classes
-%%LOCAL-CLASSES%% cannot be \xcd`public` or \xcd`protected`, because they are only visible from
-%%LOCAL-CLASSES%% within the block of declaration. They cannot be \xcd`static`.
-%%LOCAL-CLASSES%% 
-%%LOCAL-CLASSES%% 
+
+
 
 \section{Anonymous Classes}
 \index{class!anonymous}
