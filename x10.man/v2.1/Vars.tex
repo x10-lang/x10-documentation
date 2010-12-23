@@ -85,6 +85,10 @@ keyword. \xcd`val` variables may be declared by the \xcd`val` keyword; when a
 variable declaration does not include either \xcd`var` or \xcd`val`, it is
 considered \xcd`val`. 
 
+A variable---even a \xcd`val` -- can be declared in one statement, and then
+initialized later on.  It must be initialized before it can be used
+(\Sref{sect:DefiniteAssignment}).  
+
 
 \begin{ex}
 The following example illustrates many of the variations on variable
@@ -101,6 +105,8 @@ val c = 0;                     // Type inferred
 var d : Int = 0;               // Full 'var' syntax
 var e : Int;                   // Not initialized
 var f : Int{self != 100} = 0;  // Constrained type
+val g : Int;                   // Init. deferred
+if (a > b) g = 1; else g = 2;  // Init. done here.
 \end{xten}
 %~~siv
 %}}
@@ -125,15 +131,17 @@ var f : Int{self != 100} = 0;  // Constrained type
     \| Mods\opt VarKeyword FormalDeclarators\\
 \end{bbgrammar}
 
-Immutable (\xcd`val`) variables can be given values (by initialization or assignment) at
-most once, and must be given values before they are used.  Usually this is
+An immutable (\xcd`val`) variable can be given a value (by initialization or
+assignment) at 
+most once, and must be given a value before it is used.  Usually this is
 achieved by declaring and initializing the variable in a single statement, 
 such as \Xcd{val x = 3}, with syntax 
 (\ref{prod:LocalVariableDecl}) using the {\it VariableDeclarators} or {\it
 VariableDeclaratorsWithType} alternatives.
 
 \begin{ex}
-After these declarations, \xcd`a` and \xcd`b` cannot be assigned to further: 
+After these declarations, \xcd`a` and \xcd`b` cannot be assigned to further,
+or even redeclared:  
 %~~gen ^^^ Vars30
 % package Vars.In.Snares;
 % class ABitTedious{
@@ -142,6 +150,8 @@ After these declarations, \xcd`a` and \xcd`b` cannot be assigned to further:
 \begin{xten}
 val a : Int = 10;
 val b = (a+1)*(a-1);
+// NO: a = 11;  --- vals cannot be assigned to.
+// NO: val a = 11; --- no redeclaration.
 \end{xten}
 %~~siv
 %}}
