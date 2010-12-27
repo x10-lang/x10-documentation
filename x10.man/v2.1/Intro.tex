@@ -3,24 +3,6 @@
 \subsection*{Background}
 
 
-%%OLDINTRO%% Larger computational problems require more powerful computers capable of
-%%OLDINTRO%% performing a larger number of operations per second. The era of
-%%OLDINTRO%% increasing performance by simply increasing clocking frequency now
-%%OLDINTRO%% seems to be behind us. It has become increasingly difficult
-%%OLDINTRO%% to manage chip power and heat.  Instead, computer
-%%OLDINTRO%% designers are starting to look at {\em scale out} systems in which the
-%%OLDINTRO%% system's computational capacity is increased by adding additional
-%%OLDINTRO%% nodes of comparable power to existing nodes, and connecting nodes with
-%%OLDINTRO%% a high-speed communication network.
-%%OLDINTRO%% 
-%%OLDINTRO%% A central problem with scale out systems is a definition of the {\em
-%%OLDINTRO%% memory model}, that is, a model of the interaction between shared
-%%OLDINTRO%% memory and  simultaneous (read, write) operations on that
-%%OLDINTRO%% memory by multiple processors. The traditional ``one operation at a
-%%OLDINTRO%% time, to completion'' model that underlies Lamport's notion of {\em
-%%OLDINTRO%% sequential consistency} (SC) proves too expensive to implement in
-%%OLDINTRO%% hardware, at scale. Various models of {\em relaxed consistency} have
-%%OLDINTRO%% proven too difficult for programmers to work with.  
 
 The era of the mighty single-processor computer is over. Now, when more
 computing power is needed, one does not buy a faster uniprocessor---one buys
@@ -95,7 +77,6 @@ execution. An activity may synchronously (and {\em atomically}) use
 one or more memory locations in the place in which it resides,
 leveraging current symmetric multiprocessor (SMP) technology.  
 An activity may shift to another place to execute a statement block.
-%TODO yoav: ``using ``at'' one can update another place synchronously
 \Xten{} provides weaker ordering guarantees for
 inter-place data access, enabling applications to scale.  
 Multiple memory locations in multiple places cannot be
@@ -112,17 +93,4 @@ system tracks which memory accesses are local. The programmer may
 introduce place casts which verify the access is local at run time.
 Linking with native code is supported.
 
-%%OBSOLETE?%% \XtenCurrVer builds on v1.7 to support the following features: {\em
-%%OBSOLETE?%%   structs} (i.e., ``header-less'', inlinable objects), type rules for
-%%OBSOLETE?%% preventing escape of \xcd{this} from a constructor, 
-%%OBSOLETE?%% the introduction of a global object model, permitting user-specified
-%%OBSOLETE?%% (immutable) fields to be replicated with the object reference.
-%%OBSOLETE?%% \xcd{value} classes are no longer supported; their functionality is
-%%OBSOLETE?%% accomplished by using structs or global fields and methods.
-%%OBSOLETE?%% 
-
-%%OBSOLETE?%% Several representative idioms for concurrency and communication have
-%%OBSOLETE?%% already found pleasant expression in \Xten. We intend to develop
-%%OBSOLETE?%% several full-scale applications to get better experience with the
-%%OBSOLETE?%% language, and revisit the design in the light of this experience.
 

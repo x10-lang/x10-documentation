@@ -462,12 +462,14 @@ def extractImportLines(code):
 
 def assembleTestCase(packageline, classname, code, fileroot):
     [importlines, deimp_code]  = extractImportLines(code)
+    warning = "// Warning: This file is auto-generated from the TeX source of the language spec.\n"
+    warning += "// If you need it changed, work with the specification writers.\n"
     #print "ATC: " + importlines + "\n ////// \n" + deimp_code
     testclassbeginning = testHarnessBegin % (fileroot, fileroot)
     testclassend = testHarnessEnd
     hook = "" if deimp_code.find(findHookPat) > -1 else standardHookCode
     innercode = innerClassIcate(deimp_code + "\n" + hook )
-    bits = [packageline, testPrelude, importlines, testclassbeginning, innercode, testclassend]
+    bits = [packageline, warning, testPrelude, importlines, testclassbeginning, innercode, testclassend]
     return "\n".join(bits)
 
 def findAndDelete(corpus, substring):

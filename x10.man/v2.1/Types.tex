@@ -28,10 +28,6 @@ flexibility is that the operations of accessing a field and invoking a
 method are more expensive than simply reading a register and
 invoking a static function.
 
-%% TODO vj: discussion is still somewhat awkward. Need a term like
-%% linking that can be used uniformly for objects nad structs to
-%% represent the connection between the entity and its contained
-%% value. 
 
 Structs are instances of {\em struct types} (\Sref{StructClasses}).  A
 struct is represented without the extra level of indirection, with a
@@ -49,33 +45,29 @@ that fields can be stored in registers or local variables, and
 and method invocation is implemented by invoking a static function.
 
 Functions, called closures or lambda-expressions in other languages, are
-instances of {\em function types|} (\Sref{Functions}). 
-%% TODO vj: Check awk English.
-A function has zero or more {\em arguments} and a {\em body}, which is
-an expression that can reference these arguments and also other
+instances of {\em function types} (\Sref{Functions}). 
+A function has zero or more {\em formal parameters} (or {\em arguments}) and a
+{\em body}, which is 
+an expression that can reference the formal parameters and also other
 variables in the surrounding block. For instance, \xcd`(x:Int)=>x*y`
 is a unary integer function which multiplies its argument by the
 variable \xcd`y` from the surrounding block.  Functions may be freely
-copied from place to place and may be repeatedly applied to a set of
-arguments.
+copied from place to place and may be repeatedly applied. 
 
 These runtime entities are classified by {\em types}. Types are used in
 variable declarations, coercions and  explicit conversions, object creation,
 array creation, static state and method accessors, and
 \xcd"instanceof" and \xcd`as` expressions.
 
-%% vj: We cannot use ``instantiation'' because technically it means
-%% something different. instantiation is the relationship between an
-%% object and a type. e.g. null instanceof C fails.
 
 The basic relationship between values and types is the {\em is an
-  element of} relation.  We also often say ``$e$ has type $T$'' to
+element of} relation.  We also often say ``$e$ has type $T$'' to
 mean ``$e$ is an element of type $T$''.  For example, \xcd`1` has type
 \xcd`Int` (the type of all integers representible in 32 bits). It also
 has type \xcd`Any` (since all entitites have type \xcd`Any`), type
 \xcd`Int{self != 0}` (the type of nonzero integers), type
 \xcd`Int{self == 1}` (the type of integers which are equal to \xcd`1`, which
-contains only one element), etc. 
+contains only one element), and many others. 
 
 The basic relationship between types is {\em subtyping}: \xcd`T <: U`
 holds if every instance of \xcd`T` is also an instance of \xcd`U`. Two
@@ -101,10 +93,7 @@ of subtyping in X10.
 \subsection{Type System}
 \index{type system}
 The types in X10 are as follows.  
-%% TODO vj: semantic is  a wonderful but very misused word. Lets use some
-%% other term here -- if we need to. I would actually just prefer not
-%% making a distinction. Lets just define all types here, following
-%% the syntax.
+
 These are the {\em elementary} types. Other
 syntactic forms for types exist, but they are simply abbreviations for types
 in the following system.  For example, \xcd`Array[Int](1)` is the type of
@@ -115,14 +104,17 @@ one-dimensional integer-valued arrays; it is an abbreviation for
 % snag the argument of \label{X}
 % change the (\arabic{equation}) into (\ref{X})
 
+%##(Type FunctionType ConstrainedType
 \begin{bbgrammar}
  Type   \: FunctionType & (\ref{prod:Type})\\
     \| ConstrainedType\\
  FunctionType   \: TypeParams\opt \xcd"(" FormalParamList\opt \xcd")" WhereClause\opt Offers\opt \xcd"=>" Type & (\ref{prod:FunctionType})\\
-
 \end{bbgrammar}
+%##)
 
-The type {\em TypeName} refers to a defined type.  For example, 
+
+Types may be given by name. 
+For example, 
 %~~type~~`~~`~~ ~~ ^^^ Types10
 \xcd`Int`
 is the type of 32-bit integers.
@@ -1915,34 +1907,110 @@ then the following compiles:
 %~~neg
 
 
+\subsubsection{Sketch of X10 Type Inference for Method Calls}
 
-%%DUNNO%% Given \xcd"Set[T] <: Collection[T]", 
-%%DUNNO%% \xcd"List[T] <: Collection[T]",
-%%DUNNO%% and \xcd"SubClass <: SuperClass",
-%%DUNNO%% in the following snippet, the algorithm will infer the type
-%%DUNNO%% \xcd"Collection[Any]" for \xcd"x".
-%%DUNNO%% \begin{xten}
-%%DUNNO%% def m(intSet: Set[Int], stringList: List[String]) {
-%%DUNNO%%   val x = choose(intSet, stringList);
-%%DUNNO%% ...
-%%DUNNO%% }
-%%DUNNO%% \end{xten}
-%%DUNNO%% %
-%%DUNNO%% And in this snippet, the algorithm should infer the type
-%%DUNNO%% \xcd"Collection[Int]" for \xcd"y".
-%%DUNNO%% \begin{xten}
-%%DUNNO%% def m(intSet: Set[Int], intList: List[Int]) {
-%%DUNNO%%   val y = choose(intSet, intList);
-%%DUNNO%%   ...
-%%DUNNO%% }
-%%DUNNO%% \end{xten}
-%%DUNNO%% %
-%%DUNNO%% Finally, in this snippet, the algorithm should infer the type
-%%DUNNO%% \xcd"Collection{T <: SuperClass}" for \xcd"z".
-%%DUNNO%% \begin{xten}
-%%DUNNO%% def m(intSet: Set[SubClass], numList: List{T <: SuperClass}) {
-%%DUNNO%%   val z = choose(intSet, numList);
-%%DUNNO%%   ...
-%%DUNNO%% }
-%%DUNNO%% \end{xten}
-%%DUNNO%% 
+When the X10 compiler sees a method call 
+\xcdmath"a.m(b$_1$, $\ldots$,b$_n$)", and attempts to infer type parameters to see if it could be use of a
+method \xcdmath"def m[X$_1$, $\ldots$, X$_t$](y$_1$: S$_1$, $\ldots$, y$_n$:S$_n$)", 
+it reasons as follows. 
+
+
+
+Suppose that \xcdmath"b$_i$" has type \xcdmath"T$_i$".  Then, X10 is seeking a
+set of type {$B$} bindings \xcdmath"X$_j$ = U$_j$", for $1 \le j \le t$, such that 
+\xcdmath"T$_i$ <: S$^*_i$" for {$1 \le i \le n$}, where \xcdmath"S$^*$" is
+\xcd`S` with each type variable \xcdmath"X$_j$" replaced by the corresponding
+\xcdmath"U$_j$".  If it can find such a {$B$}, it has a usable choice of type
+arguments and can do the type inference.  If it cannot find {$B$}, then it
+cannot do type inference.    (Note that X10's type inference algorithm is
+incomplete -- there may {\em be} such a {$B$} that X10 cannot find.  If this
+occurs in your program, you will have to write down the type arguments
+explicitly.) 
+
+Let $B_0$ be the set {$\{ T_i \subtype S_i | 1 \le i \le n\}$}.  Let
+{$B_{n+1}$} be {$B_n$} with one element {$F \subtype G$} or 
+{$F \typeeq G$} removed, and
+{$C(F \subtype G)$} 
+or {$C(F \typeeq G)$} (defined below) added.  Repeat this until 
+{$B_n$} consists entirely of comparisons with type variables (\viz, 
+\xcdmath"Y$_j$ == U", 
+\xcdmath"Y$_j$ <: U", and
+\xcdmath"Y$_j$ :> U"), 
+or until some {$n$} exceeds a predefined compiler limit. 
+
+The candidate inferred types may be read off of {$B_n$}.  The guessed binding
+for \xcdmath"X$_j$" is: 
+\begin{itemize}
+\item If there is an equality \xcdmath"X$_j$==W" in {$B_n$}, then guess the
+      binding \xcdmath"X$_j$=W".  Note that there may be several such
+      equalities with different choices of \xcd`W`, but, if the inference is
+      to work, all the choices of \xcd`W` must be equal types anyways.
+\item Otherwise, if there is one or more upper bounds 
+\xcdmath"X$_j$ <: V$_k$" in {$B_n$}, guess the binding 
+\xcdmath"X$_j$ = V$_+$", where 
+\xcdmath"V$_+$" is the computed lower bound of all the \xcdmath"V$_k$"'s.
+\item Otherwise, if there is one or more lower bounds 
+\xcdmath"R$_k$ <: X$_j$", guess that
+\xcdmath"X$_j$ = R$_+$", where 
+\xcdmath"R$_+$" is the computed upper bound of all the \xcdmath"R$_k$"'s.
+\end{itemize}
+If this does not yield a binding for some variable \xcdmath"X$_j$", then type
+inference fails.  Furthermore, if every variable \xcdmath"X$_j$" is given a
+binding \xcdmath"U$_j$", but the 
+bindings do not work --- 
+that is, if 
+\xcdmath"a.m[U$_1$, $\ldots$, U$_t$](b$_1$, $\ldots$,b$_n$)"
+is not a call of 
+the original method 
+\xcdmath"def m[X$_1$, $\ldots$, X$_t$](y$_1$: S$_1$, $\ldots$, y$_n$:S$_n$)"
+--- then type inference also fails.
+
+\paragraph{Computation of the Replacement Elements}
+
+Given a type relation
+{$r$} of the form {$F \subtype G$}
+or {$F \typeeq G$}, we compute the set {$C(r)$} of
+replacement constraints.  There are a number of cases; we present only the
+interesting ones. 
+
+\begin{itemize}
+\item If $F$ has the form \xcdmath"$F'${c}" 
+\xcdmath"$C(r)$" is defined to be
+ \xcdmath"$F'$ == $G$" if $r$ is an equality, or 
+ \xcdmath"$F'$ <: $G$" if {$r$} is a subtyping.
+That is, we erase type constraints.  
+Validity is not an issue at this point in the algorithm, as 
+we check at the end that the result is valid.
+However, in important cases, the replacement is valid, in the sense that the 
+solutions of {$B_{k+1}$} are precisely the solutions of {$B_k$}.
+Specifically, if the equation had the form \xcdmath"Z{c} == A", it could be
+solved by \xcd`Z==A` or by \xcd`Z = A{c}`.  By dropping constraints in this
+rule, we choose the former solution. 
+
+\item Similarly, we drop constraints on {$G$} as well.
+
+\item If {$F$} has the form \xcdmath"K[F$_1$, $\ldots$, F$_k$]"
+and 
+{$G$}
+has the form \xcdmath"K[G$_1$, $\ldots$, G$_k$]", 
+then {$C(r)$} has one type relation comparing each parameter of 
+{$F$} with the corresponding one of {$G$}. 
+
+If {$r$} is a type equality {$F \typeeq G$}, then 
+{$C(r) = \{ F_l \typeeq G_l | 1 \le l \le k$}.
+
+If {$r$} is a type comparison, and the {$l^{th}$} type parameter of \xcd`K` is
+invariant (resp. covariant or contravariant), then 
+{$C(r)$} has {$F_l \typeeq G_l$}
+(resp {$F_l \subtype G_l$} or {$G_l \subtype F_l $}. 
+
+
+For example, the constraint \xcdmath"List[X] == List[Y]" produces the
+constraint \xcd`X==Y`, because \xcd`List` is nonvariant.  
+If \xcd`Contra[X]` is contravariant, 
+the constraint \xcd`Contra[X] <: Contra[List[Y]]` 
+produces the constraint \xcd`List[Y] <: X`.  
+
+
+
+\end{itemize}

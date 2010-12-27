@@ -421,14 +421,35 @@ if \xcd`p` does not lie in the underlying region.
 %%NO-R2D2-CONV%% standing for \xcd`D.region`.
 
 
+\subsection{{\tt PlaceGroup}s}
+
+A \xcd`PlaceGroup` represents an ordered set of \xcd`Place`s.
+\xcd`PlaceGroup`s exist for performance and scaleability: they are more
+efficient, in certain critical places, than general collections of
+\xcd`Place`. \xcd`PlaceGroup` implements \xcd`Sequence[Place]`, and thus
+provides familiar operations -- \xcd`pg.size()` for the number of places,
+\xcd`pg.iterator()` to iterate over them, etc.  
+
+\xcd`PlaceGroup` is an abstract class.  The concrete class
+\xcd`SparsePlaceGroup` is intended for a small group of places: 
+in particular, 
+%~~exp~~`~~`~~ somePlace:Place ~~ ^^^Arrays1j6q
+\xcd`new SparsePlaceGroup(somePlace)` is a good \xcd`PlaceGroup` containing
+one place.  
+%~~exp~~`~~`~~ seqPlaces: Sequence[Place] ~~ ^^^Arrays9g6f
+\xcd`new SparsePlaceGroup(seqPlaces)`
+constructs a sparse place group from a sorted sequence of places.
+
 \subsection{Operations returning distributions}
 \index{distribution!operations}
 
-Let \xcd`R` be a region, \xcd`Q` a Sequence of places \{\xcd`p1`, \dots,
-\xcd`pk`\} (enumerated in canonical order), and \xcd`P` a place.
+
+
+Let \xcd`R` be a region, \xcd`Q` 
+a \xcd`PlaceGroup`, and \xcd`P` a place.
 
 \paragraph{Unique distribution} \index{distribution!unique}
-%~~exp~~`~~`~~Q:Sequence[Place] ~~ ^^^ Arrays290
+%~~exp~~`~~`~~Q:PlaceGroup ~~ ^^^ Arrays290
 The distribution \xcd`Dist.makeUnique(Q)` is the unique distribution from the
 region \xcd`1..k` to \xcd`Q` mapping each point \xcd`i` to \xcd`pi`.
 
