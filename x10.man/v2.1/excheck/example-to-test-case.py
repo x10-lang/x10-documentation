@@ -13,6 +13,7 @@ from __future__ import with_statement
 import os;
 import os.path;
 import re;
+currentFileName = "this gets overwritten before use"
 clue = "%~~"
 sep="~~"
 files = []
@@ -481,6 +482,7 @@ def findAndDelete(corpus, substring):
 
 def writeX10File(packagename, classname, code, fileroot):
     global files
+    global currentFileName
     packageline =  "package " + packagename.strip() + ";\n"
     code1 = packageline + code;
     fn = gennedFileDir + "/" + fileroot + ".x10"
@@ -497,9 +499,13 @@ def writeX10File(packagename, classname, code, fileroot):
 
     if os.path.exists(subdir_for_this_test_case):
         print "OH NO! Duplicate package! Here's the second one:\n"  + code
-    # os.mkdir(subdir_for_this_test_case)
-    # ... subdir_for_this_test_case + "/" ... 
-    cramCodeIntoFile( testCaseDir + "/" + fileroot + ".x10", testcasecode, NOTEST_pattern)
+    (testCaseSubDir, dummy)  = os.path.splitext(currentFileName)
+    print testCaseSubDir
+    subdir = testCaseDir + "/" + testCaseSubDir 
+    if not os.path.exists(subdir) :
+        os.makedirs(subdir)
+    wholeFileName =  subdir + "/" + fileroot + ".x10"
+    cramCodeIntoFile(wholeFileName, testcasecode, NOTEST_pattern)
     files.append(fn)
     
     
@@ -541,8 +547,10 @@ def extractExamplesFrom(tf):
 
 def extractExamplesFromAllFiles():
     global totalTestCases
+    global currentFileName
     texfiles = [ fn  for fn in os.listdir(texsource) if fn.endswith(".tex") ]
     for tf in texfiles:
+        currentFileName = tf
         extractExamplesFrom(tf)
     print str(totalTestCases) + " test cases."
         
