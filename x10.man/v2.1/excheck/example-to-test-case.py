@@ -500,7 +500,6 @@ def writeX10File(packagename, classname, code, fileroot):
     if os.path.exists(subdir_for_this_test_case):
         print "OH NO! Duplicate package! Here's the second one:\n"  + code
     (testCaseSubDir, dummy)  = os.path.splitext(currentFileName)
-    print testCaseSubDir
     subdir = testCaseDir + "/" + testCaseSubDir 
     if not os.path.exists(subdir) :
         os.makedirs(subdir)
