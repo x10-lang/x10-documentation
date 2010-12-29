@@ -53,7 +53,8 @@ Short-lived variables are introduced by local variables declarations, as
 described in \Sref{VariableDeclarations}. Local variables may be declared only
 within a block statement (\Sref{Blocks}). The scope of a local variable
 declaration is the statement itself and the subsequent statements in the
-block.
+block.  Variables declared in such statements shadow variables of the same
+name declared elsewhere.
 %~~gen ^^^ Statements20
 % package statements.should.have.locals;
 % class LocalExample {
@@ -500,6 +501,9 @@ over.  For example, iterating over a \xcd`Region` iterates the \xcd`Point`s in
 the region, and iterating over a \xcd`DistArray` iterates over the
 \xcd`Point`s at which the distributed array is defined.
 
+Iteration variables have the \xcd`for` statement as scope.  They shadow other
+variables of the same names.
+
 
 
 \section{Return statement}
@@ -650,7 +654,8 @@ matching \xcd"catch" block, if any, and then the
 exception is rethrown.
 
 
-
+The parameter of a \xcd`catch` block has the block as scope.  It shadows other
+variables of the same name.
 
 \section{Assert}
 
