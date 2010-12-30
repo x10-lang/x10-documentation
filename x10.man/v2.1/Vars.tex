@@ -124,12 +124,16 @@ if (a > b) g = 1; else g = 2;  // Init. done here.
 \index{variable!val}
 \index{val}
 
+%##(LocalVariableDeclStatement LocalVariableDecl
 \begin{bbgrammar}
- LocalVariableDeclStatement    \: LocalVariableDecl \xcd";" & (\ref{prod:LocalVariableDeclStatement})\\%<FROM #(prod:LocalVariableDeclStatement)#
- LocalVariableDecl    \: Mods\opt VarKeyword VariableDeclarators & (\ref{prod:LocalVariableDecl})\\%<FROM #(prod:LocalVariableDecl)#
-    \| Mods\opt VariableDeclaratorsWithType\\
-    \| Mods\opt VarKeyword FormalDeclarators\\
+%(FROM #(prod:LocalVariableDeclStatement)#)
+LocalVariableDeclStatement \: LocalVariableDecl \xcd";" & (\ref{prod:LocalVariableDeclStatement}) \\
+%(FROM #(prod:LocalVariableDecl)#)
+   LocalVariableDecl \: Mods\opt VarKeyword VariableDeclarators & (\ref{prod:LocalVariableDecl}) \\
+                    \| Mods\opt VariableDeclaratorsWithType \\
+                    \| Mods\opt VarKeyword FormalDeclarators \\
 \end{bbgrammar}
+%##)
 
 An immutable (\xcd`val`) variable can be given a value (by initialization or
 assignment) at 
@@ -464,30 +468,37 @@ static def main(r: Array[String](1)):void {
 \index{struct!field}
 \index{class!field}
 
+%##(FieldDeclarators FieldDecl FieldDeclarator HasResultType FieldKeyword Mod
 \begin{bbgrammar}
- FieldDeclarators    \: FieldDeclarator & (\ref{prod:FieldDeclarators})\\%<FROM #(prod:FieldDeclarators)#
-    \| FieldDeclarators \xcd"," FieldDeclarator\\
- FieldDecl    \: Mods\opt FieldKeyword FieldDeclarators \xcd";" & (\ref{prod:FieldDecl})\\%<FROM #(prod:FieldDecl)#
-    \| Mods\opt FieldDeclarators \xcd";"\\
- FieldDeclarator    \: Id HasResultType & (\ref{prod:FieldDeclarator})\\%<FROM #(prod:FieldDeclarator)#
-    \| Id HasResultType\opt \xcd"=" VariableInitializer\\
- HasResultType    \: \xcd":" Type & (\ref{prod:HasResultType})\\%<FROM #(prod:HasResultType)#
-    \| \xcd"<:" Type\\
- FieldKeyword    \: \xcd"val" & (\ref{prod:FieldKeyword})\\%<FROM #(prod:FieldKeyword)#
-    \| \xcd"var"\\
- Mod    \: \xcd"abstract" & (\ref{prod:Mod})\\%<FROM #(prod:Mod)#
-    \| Annotation\\
-    \| \xcd"atomic"\\
-    \| \xcd"final"\\
-    \| \xcd"native"\\
-    \| \xcd"private"\\
-    \| \xcd"protected"\\
-    \| \xcd"public"\\
-    \| \xcd"static"\\
-    \| \xcd"transient"\\
-    \| \xcd"clocked"\\
-
+%(FROM #(prod:FieldDeclarators)#)
+    FieldDeclarators \: FieldDeclarator & (\ref{prod:FieldDeclarators}) \\
+                    \| FieldDeclarators \xcd"," FieldDeclarator \\
+%(FROM #(prod:FieldDecl)#)
+           FieldDecl \: Mods\opt FieldKeyword FieldDeclarators \xcd";" & (\ref{prod:FieldDecl}) \\
+                    \| Mods\opt FieldDeclarators \xcd";" \\
+%(FROM #(prod:FieldDeclarator)#)
+     FieldDeclarator \: Id HasResultType & (\ref{prod:FieldDeclarator}) \\
+                    \| Id HasResultType\opt \xcd"=" VariableInitializer \\
+%(FROM #(prod:HasResultType)#)
+       HasResultType \: \xcd":" Type & (\ref{prod:HasResultType}) \\
+                    \| \xcd"<:" Type \\
+%(FROM #(prod:FieldKeyword)#)
+        FieldKeyword \: \xcd"val" & (\ref{prod:FieldKeyword}) \\
+                    \| \xcd"var" \\
+%(FROM #(prod:Mod)#)
+                 Mod \: \xcd"abstract" & (\ref{prod:Mod}) \\
+                    \| Annotation \\
+                    \| \xcd"atomic" \\
+                    \| \xcd"final" \\
+                    \| \xcd"native" \\
+                    \| \xcd"private" \\
+                    \| \xcd"protected" \\
+                    \| \xcd"public" \\
+                    \| \xcd"static" \\
+                    \| \xcd"transient" \\
+                    \| \xcd"clocked" \\
 \end{bbgrammar}
+%##)
 
 Like most other kinds of variables in X10, 
 the fields of an object can be either \xcd`val` or \xcd`var`. 

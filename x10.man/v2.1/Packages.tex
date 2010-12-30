@@ -281,13 +281,16 @@ without need for further specification.
 
 \section{Conventions on Type Names}
 
+%##(TypeName PackageName
 \begin{bbgrammar}
- TypeName    \: Id & (\ref{prod:TypeName})\\%<FROM #(prod:TypeName)#
-    \| TypeName \xcd"." Id\\
- PackageName    \: Id & (\ref{prod:PackageName})\\%<FROM #(prod:PackageName)#
-    \| PackageName \xcd"." Id\\
+%(FROM #(prod:TypeName)#)
+            TypeName \: Id & (\ref{prod:TypeName}) \\
+                    \| TypeName \xcd"." Id \\
+%(FROM #(prod:PackageName)#)
+         PackageName \: Id & (\ref{prod:PackageName}) \\
+                    \| PackageName \xcd"." Id \\
 \end{bbgrammar}
-
+%##)
 
 
 While not enforced by the compiler, classes and interfaces
@@ -304,5 +307,3 @@ Names of methods, fields, value properties, and packages are in camelCase and
 begin with a lowercase letter. 
 Names of \xcd"static val" fields are in all uppercase with words
 separated by \xcd"_"'s.
-
-

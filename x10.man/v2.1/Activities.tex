@@ -128,8 +128,10 @@ with care.
 
 %##(AtStatement AtExp
 \begin{bbgrammar}
- AtStatement    \: at PlaceExpSingleList Statement & (\ref{prod:AtStatement})\\%<FROM #(prod:AtStatement)#
- AtExp    \: at PlaceExpSingleList ClosureBody & (\ref{prod:AtExp})\\%<FROM #(prod:AtExp)#
+%(FROM #(prod:AtStatement)#)
+         AtStatement \: \xcd"at" PlaceExpSingleList Statement & (\ref{prod:AtStatement}) \\
+%(FROM #(prod:AtExp)#)
+               AtExp \: \xcd"at" PlaceExpSingleList ClosureBody & (\ref{prod:AtExp}) \\
 \end{bbgrammar}
 %##)
 
@@ -523,13 +525,15 @@ operations.)
 
 An activity is created by executing the \xcd`async` statement: 
 
+%##(AsyncStatement ClockedClause
 \begin{bbgrammar}
- AsyncStatement    \: \xcd"async" ClockedClause\opt Statement & (\ref{prod:AsyncStatement})\\%<FROM #(prod:AsyncStatement)#
-    \| \xcd"clocked" \xcd"async" Statement\\
-
- ClockedClause    \: \xcd"clocked" \xcd"(" ClockList \xcd")" & (\ref{prod:ClockedClause})\\%<FROM #(prod:ClockedClause)#
+%(FROM #(prod:AsyncStatement)#)
+      AsyncStatement \: \xcd"async" ClockedClause\opt Statement & (\ref{prod:AsyncStatement}) \\
+                    \| \xcd"clocked" \xcd"async" Statement \\
+%(FROM #(prod:ClockedClause)#)
+       ClockedClause \: \xcd"clocked" \xcd"(" ClockList \xcd")" & (\ref{prod:ClockedClause}) \\
 \end{bbgrammar}
-
+%##)
 
 
 The basic form of \xcd`async` is \xcd`async S`, which starts a new activity
@@ -581,10 +585,13 @@ such, it may reference variables in lexically enclosing scopes.
 The statement \xcd"finish S" converts global termination to local
 termination.
 
+%##(FinishStatement
 \begin{bbgrammar}
- FinishStatement    \: \xcd"finish" Statement & (\ref{prod:FinishStatement})\\%<FROM #(prod:FinishStatement)#
-    \| \xcd"clocked" \xcd"finish" Statement\\
+%(FROM #(prod:FinishStatement)#)
+     FinishStatement \: \xcd"finish" Statement & (\ref{prod:FinishStatement}) \\
+                    \| \xcd"clocked" \xcd"finish" Statement \\
 \end{bbgrammar}
+%##)
 
 An activity $A$ executes \xcd"finish S" by executing \xcd"S" and
 then waiting for all activities spawned by \xcd`S` (directly or
@@ -691,15 +698,20 @@ places.)
 \index{ateach}
 \deprecated{} The \xcd`ateach` construct is deprecated.
 
+%##(AtEachStatement LoopIndexDeclarator LoopIndex 
 \begin{bbgrammar}
- AtEachStatement    \: \xcd"ateach" \xcd"(" LoopIndex \xcd"in" Exp \xcd")" ClockedClause\opt Statement & (\ref{prod:AtEachStatement})\\%<FROM #(prod:AtEachStatement)#
-    \| \xcd"ateach" \xcd"(" Exp \xcd")" Statement\\
- LoopIndexDeclarator    \: Id HasResultType\opt & (\ref{prod:LoopIndexDeclarator})\\%<FROM #(prod:LoopIndexDeclarator)#
-    \| \xcd"[" IdList \xcd"]" HasResultType\opt\\
-    \| Id \xcd"[" IdList \xcd"]" HasResultType\opt\\
- LoopIndex    \: Mods\opt LoopIndexDeclarator & (\ref{prod:LoopIndex})\\%<FROM #(prod:LoopIndex)#
-    \| Mods\opt VarKeyword LoopIndexDeclarator\\
+%(FROM #(prod:AtEachStatement)#)
+     AtEachStatement \: \xcd"ateach" \xcd"(" LoopIndex \xcd"in" Exp \xcd")" ClockedClause\opt Statement & (\ref{prod:AtEachStatement}) \\
+                    \| \xcd"ateach" \xcd"(" Exp \xcd")" Statement \\
+%(FROM #(prod:LoopIndexDeclarator)#)
+ LoopIndexDeclarator \: Id HasResultType\opt & (\ref{prod:LoopIndexDeclarator}) \\
+                    \| \xcd"[" IdList \xcd"]" HasResultType\opt \\
+                    \| Id \xcd"[" IdList \xcd"]" HasResultType\opt \\
+%(FROM #(prod:LoopIndex)#)
+           LoopIndex \: Mods\opt LoopIndexDeclarator & (\ref{prod:LoopIndex}) \\
+                    \| Mods\opt VarKeyword LoopIndexDeclarator \\
 \end{bbgrammar}
+%##)
 In \xcd`ateach(p in D) S`, \xcd`D` must be either of type \xcd"Dist"
 (see \Sref{XtenDistributions}) or of type \xcd`DistArray[T]` (see
 \Sref{XtenArrays}), and \xcd`p` will be of type \xcd"Point" (see
@@ -749,10 +761,14 @@ A programmer may use atomic blocks to guarantee that invariants of
 shared data-structures are maintained even as they are being accessed
 simultaneously by multiple activities running in the same place.  
 
+%##(AtomicStatement WhenStatement
 \begin{bbgrammar}
- AtomicStatement    \: \xcd"atomic" Statement & (\ref{prod:AtomicStatement})\\%<FROM #(prod:AtomicStatement)#
- WhenStatement    \: \xcd"when" \xcd"(" Exp \xcd")" Statement & (\ref{prod:WhenStatement})\\%<FROM #(prod:WhenStatement)#
+%(FROM #(prod:AtomicStatement)#)
+     AtomicStatement \: \xcd"atomic" Statement & (\ref{prod:AtomicStatement}) \\
+%(FROM #(prod:WhenStatement)#)
+       WhenStatement \: \xcd"when" \xcd"(" Exp \xcd")" Statement & (\ref{prod:WhenStatement}) \\
 \end{bbgrammar}
+%##)
 
 For example, consider a class \xcd`Redund[T]`, which encapsulates a list
 \xcd`list` and, (redundantly) keeps the size of the list in a second field
@@ -1058,4 +1074,3 @@ class OneBuffer[T] {
 %
 %~~neg
 \end{example}
-

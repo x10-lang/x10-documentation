@@ -106,9 +106,15 @@ one-dimensional integer-valued arrays; it is an abbreviation for
 
 %##(Type FunctionType ConstrainedType
 \begin{bbgrammar}
- Type   \: FunctionType & (\ref{prod:Type})\\
-    \| ConstrainedType\\
- FunctionType   \: TypeParams\opt \xcd"(" FormalParamList\opt \xcd")" WhereClause\opt Offers\opt \xcd"=>" Type & (\ref{prod:FunctionType})\\
+%(FROM #(prod:Type)#)
+                Type \: FunctionType & (\ref{prod:Type}) \\
+                    \| ConstrainedType \\
+%(FROM #(prod:FunctionType)#)
+        FunctionType \: TypeParams\opt \xcd"(" FormalParamList\opt \xcd")" WhereClause\opt Offers\opt \xcd"=>" Type & (\ref{prod:FunctionType}) \\
+%(FROM #(prod:ConstrainedType)#)
+     ConstrainedType \: NamedType & (\ref{prod:ConstrainedType}) \\
+                    \| AnnotatedType \\
+                    \| \xcd"(" Type \xcd")" \\
 \end{bbgrammar}
 %##)
 
@@ -598,12 +604,18 @@ circumvents these limitations.)
 A type definition can be thought of as a type-valued function,
 mapping type parameters and value parameters to a concrete type.
 
+%##(TypeDefDecl TypeParams FormalParams WhereClause
 \begin{bbgrammar}
- TypeDefDecl    \: Mods\opt \xcd"type" Id TypeParams\opt FormalParams\opt WhereClause\opt \xcd"=" Type \xcd";" & (\ref{prod:TypeDefDecl})\\%<FROM #(prod:TypeDefDecl)#
- TypeParams    \: \xcd"[" TypeParamList \xcd"]" & (\ref{prod:TypeParams})\\%<FROM #(prod:TypeParams)#
- FormalParams    \: \xcd"(" FormalParamList\opt \xcd")" & (\ref{prod:FormalParams})\\%<FROM #(prod:FormalParams)#
- WhereClause    \: DepParams & (\ref{prod:WhereClause})\\%<FROM #(prod:WhereClause)#
+%(FROM #(prod:TypeDefDecl)#)
+         TypeDefDecl \: Mods\opt \xcd"type" Id TypeParams\opt FormalParams\opt WhereClause\opt \xcd"=" Type \xcd";" & (\ref{prod:TypeDefDecl}) \\
+%(FROM #(prod:TypeParams)#)
+          TypeParams \: \xcd"[" TypeParamList \xcd"]" & (\ref{prod:TypeParams}) \\
+%(FROM #(prod:FormalParams)#)
+        FormalParams \: \xcd"(" FormalParamList\opt \xcd")" & (\ref{prod:FormalParams}) \\
+%(FROM #(prod:WhereClause)#)
+         WhereClause \: DepParams & (\ref{prod:WhereClause}) \\
 \end{bbgrammar}
+%##)
 
 \noindent 
 During type-checking the compiler replaces the use of such a defined
@@ -1293,9 +1305,12 @@ class Cell1[T] {
 \index{function!types}
 \index{type!function}
 
+%##(FunctionType
 \begin{bbgrammar}
- FunctionType    \: TypeParams\opt \xcd"(" FormalParamList\opt \xcd")" WhereClause\opt Offers\opt \xcd"=>" Type & (\ref{prod:FunctionType})\\%<FROM #(prod:FunctionType)#
+%(FROM #(prod:FunctionType)#)
+        FunctionType \: TypeParams\opt \xcd"(" FormalParamList\opt \xcd")" WhereClause\opt Offers\opt \xcd"=>" Type & (\ref{prod:FunctionType}) \\
 \end{bbgrammar}
+%##)
 
 
 For every sequence of types \xcd"T1,..., Tn,T", and \xcd"n" distinct variables

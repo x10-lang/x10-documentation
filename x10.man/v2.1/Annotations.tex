@@ -29,11 +29,15 @@ one or more of its interface's properties.
 
 The annotation syntax consists of an ``\texttt{@}'' followed by an interface type.
 
+%##(Annotations Annotation
 \begin{bbgrammar}
- Annotations    \: Annotation & (\ref{prod:Annotations})\\%<FROM #(prod:Annotations)#
-    \| Annotations Annotation\\
- Annotation    \: \xcd"@" NamedType & (\ref{prod:Annotation})\\%<FROM #(prod:Annotation)#
+%(FROM #(prod:Annotations)#)
+         Annotations \: Annotation & (\ref{prod:Annotations}) \\
+                    \| Annotations Annotation \\
+%(FROM #(prod:Annotation)#)
+          Annotation \: \xcd"@" NamedType & (\ref{prod:Annotation}) \\
 \end{bbgrammar}
+%##)
 
 Annotations can be applied to most syntactic constructs in the language
 including class declarations, constructors, methods, field declarations,
@@ -211,5 +215,3 @@ Annotations on particular static entities must extend the corresponding
 %%PLUGINNERY%%  
 %%PLUGINNERY%%  % \clearpage
 %%PLUGINNERY%%  
-
-

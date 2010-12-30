@@ -34,20 +34,23 @@ for (var i: Int = 0; i < a.size; i++, sum += a(i))
 \index{var}
 \index{val}
 
+%##(LocalVariableDeclStatement VariableDeclaratorsWithType VariableDeclarators VariableInitializer FormalDeclarators
 \begin{bbgrammar}
- LocalVariableDeclStatement    \: LocalVariableDecl \xcd";" & (\ref{prod:LocalVariableDeclStatement})\\%<FROM #(prod:LocalVariableDeclStatement)#
- LocalVariableDecl    \: Mods\opt VarKeyword VariableDeclarators & (\ref{prod:LocalVariableDecl})\\%<FROM #(prod:LocalVariableDecl)#
-    \| Mods\opt VariableDeclaratorsWithType\\
-    \| Mods\opt VarKeyword FormalDeclarators\\
- VariableDeclaratorsWithType    \: VariableDeclaratorWithType & (\ref{prod:VariableDeclaratorsWithType})\\%<FROM #(prod:VariableDeclaratorsWithType)#
-    \| VariableDeclaratorsWithType \xcd"," VariableDeclaratorWithType\\
- VariableDeclarators    \: VariableDeclarator & (\ref{prod:VariableDeclarators})\\%<FROM #(prod:VariableDeclarators)#
-    \| VariableDeclarators \xcd"," VariableDeclarator\\
- VariableInitializer    \: Exp & (\ref{prod:VariableInitializer})\\%<FROM #(prod:VariableInitializer)#
- FormalDeclarators    \: FormalDeclarator & (\ref{prod:FormalDeclarators})\\%<FROM #(prod:FormalDeclarators)#
-    \| FormalDeclarators \xcd"," FormalDeclarator\\
-
+%(FROM #(prod:LocalVariableDeclStatement)#)
+LocalVariableDeclStatement \: LocalVariableDecl \xcd";" & (\ref{prod:LocalVariableDeclStatement}) \\
+%(FROM #(prod:VariableDeclaratorsWithType)#)
+VariableDeclaratorsWithType \: VariableDeclaratorWithType & (\ref{prod:VariableDeclaratorsWithType}) \\
+                    \| VariableDeclaratorsWithType \xcd"," VariableDeclaratorWithType \\
+%(FROM #(prod:VariableDeclarators)#)
+ VariableDeclarators \: VariableDeclarator & (\ref{prod:VariableDeclarators}) \\
+                    \| VariableDeclarators \xcd"," VariableDeclarator \\
+%(FROM #(prod:VariableInitializer)#)
+ VariableInitializer \: Exp & (\ref{prod:VariableInitializer}) \\
+%(FROM #(prod:FormalDeclarators)#)
+   FormalDeclarators \: FormalDeclarator & (\ref{prod:FormalDeclarators}) \\
+                    \| FormalDeclarators \xcd"," FormalDeclarator \\
 \end{bbgrammar}
+%##)
 
 Short-lived variables are introduced by local variables declarations, as
 described in \Sref{VariableDeclarations}. Local variables may be declared only
@@ -78,15 +81,20 @@ name declared elsewhere.
 \index{block}
 \label{Blocks}
 
+%##(Block BlockStatements BlockStatement
 \begin{bbgrammar}
- Block    \: \xcd"{" BlockStatements\opt \xcd"}" & (\ref{prod:Block})\\%<FROM #(prod:Block)#
- BlockStatements    \: BlockStatement & (\ref{prod:BlockStatements})\\%<FROM #(prod:BlockStatements)#
-    \| BlockStatements BlockStatement\\
- BlockStatement    \: LocalVariableDeclStatement & (\ref{prod:BlockStatement})\\%<FROM #(prod:BlockStatement)#
-    \| ClassDecl\\
-    \| TypeDefDecl\\
-    \| Statement\\
+%(FROM #(prod:Block)#)
+               Block \: \xcd"{" BlockStatements\opt \xcd"}" & (\ref{prod:Block}) \\
+%(FROM #(prod:BlockStatements)#)
+     BlockStatements \: BlockStatement & (\ref{prod:BlockStatements}) \\
+                    \| BlockStatements BlockStatement \\
+%(FROM #(prod:BlockStatement)#)
+      BlockStatement \: LocalVariableDeclStatement & (\ref{prod:BlockStatement}) \\
+                    \| ClassDecl \\
+                    \| TypeDefDecl \\
+                    \| Statement \\
 \end{bbgrammar}
+%##)
 
 
 A block statement consists of a sequence of statements delimited by
@@ -115,18 +123,20 @@ if (b) {
 
 \section{Expression statement}
 
+%##(ExpStatement StatementExp
 \begin{bbgrammar}
- ExpStatement    \: StatementExp \xcd";" & (\ref{prod:ExpStatement})\\%<FROM #(prod:ExpStatement)#
- StatementExp    \: Assignment & (\ref{prod:StatementExp})\\%<FROM #(prod:StatementExp)#
-    \| PreIncrementExp\\
-    \| PreDecrementExp\\
-    \| PostIncrementExp\\
-    \| PostDecrementExp\\
-    \| MethodInvocation\\
-    \| ClassInstCreationExp\\
-
+%(FROM #(prod:ExpStatement)#)
+        ExpStatement \: StatementExp \xcd";" & (\ref{prod:ExpStatement}) \\
+%(FROM #(prod:StatementExp)#)
+        StatementExp \: Assignment & (\ref{prod:StatementExp}) \\
+                    \| PreIncrementExp \\
+                    \| PreDecrementExp \\
+                    \| PostIncrementExp \\
+                    \| PostDecrementExp \\
+                    \| MethodInvocation \\
+                    \| ClassInstCreationExp \\
 \end{bbgrammar}
-
+%##)
 
 The expression statement evaluates an expression.  The value of the expression
 is not used.
@@ -161,10 +171,12 @@ constructor invocations.
 
 
 % TODO The following grammar is inconsistent with the grammar in the appendix.
+%##(LabeledStatement
 \begin{bbgrammar}
- LabeledStatement    \: Id \xcd":" Statement 
+%(FROM #(prod:LabeledStatement)#)
+    LabeledStatement \: Id \xcd":" LoopStatement & (\ref{prod:LabeledStatement}) \\
 \end{bbgrammar}
-
+%##)
 
 Statements may be labeled. The label may be used to describe the target of a
 \xcd`break` statement appearing within a substatement (which, when executed,
@@ -225,9 +237,12 @@ multiphase: {
 \section{Break statement}
 \index{break}
 
+%##(BreakStatement
 \begin{bbgrammar}
- BreakStatement    \: \xcd"break" Id\opt \xcd";" & (\ref{prod:BreakStatement})\\%<FROM #(prod:BreakStatement)#
+%(FROM #(prod:BreakStatement)#)
+      BreakStatement \: \xcd"break" Id\opt \xcd";" & (\ref{prod:BreakStatement}) \\
 \end{bbgrammar}
+%##)
 
 
 An unlabeled break statement exits the currently enclosing loop or switch
@@ -261,10 +276,12 @@ outer: for (var i: Int = 0; i < a.size; i++)
 \section{Continue statement}
 \index{continue}
 
+%##(ContinueStatement
 \begin{bbgrammar}
- ContinueStatement    \: \xcd"continue" Id\opt \xcd";" & (\ref{prod:ContinueStatement})\\%<FROM #(prod:ContinueStatement)#
+%(FROM #(prod:ContinueStatement)#)
+   ContinueStatement \: \xcd"continue" Id\opt \xcd";" & (\ref{prod:ContinueStatement}) \\
 \end{bbgrammar}
-
+%##)
 An unlabeled \xcd`continue` skips the rest of the current iteration of the
 innermost enclosing loop, and proceeds on to the next.  A labeled
 \xcd`continue` does the same to the enclosing loop with that label.
@@ -274,10 +291,14 @@ method, constructor, initializer, or closure.
 \section{If statement}
 \index{if}
 
+%##(IfThenStatement IfThenElseStatement
 \begin{bbgrammar}
- IfThenStatement    \: \xcd"if" \xcd"(" Exp \xcd")" Statement & (\ref{prod:IfThenStatement})\\%<FROM #(prod:IfThenStatement)#
- IfThenElseStatement    \: \xcd"if" \xcd"(" Exp \xcd")" Statement  \xcd"else" Statement  & (\ref{prod:IfThenElseStatement})\\%<FROM #(prod:IfThenElseStatement)#
+%(FROM #(prod:IfThenStatement)#)
+     IfThenStatement \: \xcd"if" \xcd"(" Exp \xcd")" Statement & (\ref{prod:IfThenStatement}) \\
+%(FROM #(prod:IfThenElseStatement)#)
+ IfThenElseStatement \: \xcd"if" \xcd"(" Exp \xcd")" Statement  \xcd"else" Statement  & (\ref{prod:IfThenElseStatement}) \\
 \end{bbgrammar}
+%##)
 
 An if statement comes in two forms: with and without an else
 clause.
@@ -313,21 +334,25 @@ This example is interpreted as
 \section{Switch statement}
 \index{switch}
 
+%##(SwitchStatement SwitchBlock SwitchBlockStatementGroups SwitchBlockStatementGroup SwitchLabels SwitchLabel
 \begin{bbgrammar}
- SwitchStatement    \: \xcd"switch" \xcd"(" Exp \xcd")" SwitchBlock & (\ref{prod:SwitchStatement})\\%<FROM #(prod:SwitchStatement)#
-
-
- SwitchBlock    \: \xcd"{" SwitchBlockStatementGroups\opt SwitchLabels\opt \xcd"}" & (\ref{prod:SwitchBlock})\\%<FROM #(prod:SwitchBlock)#
- SwitchBlockStatementGroups    \: SwitchBlockStatementGroup & (\ref{prod:SwitchBlockStatementGroups})\\%<FROM #(prod:SwitchBlockStatementGroups)#
-    \| SwitchBlockStatementGroups SwitchBlockStatementGroup\\
- SwitchBlockStatementGroup    \: SwitchLabels BlockStatements & (\ref{prod:SwitchBlockStatementGroup})\\%<FROM #(prod:SwitchBlockStatementGroup)#
- SwitchLabels    \: SwitchLabel & (\ref{prod:SwitchLabels})\\%<FROM #(prod:SwitchLabels)#
-    \| SwitchLabels SwitchLabel\\
- SwitchLabel    \: \xcd"case" ConstantExp \xcd":" & (\ref{prod:SwitchLabel})\\%<FROM #(prod:SwitchLabel)#
-    \| \xcd"default" \xcd":"\\
-
+%(FROM #(prod:SwitchStatement)#)
+     SwitchStatement \: \xcd"switch" \xcd"(" Exp \xcd")" SwitchBlock & (\ref{prod:SwitchStatement}) \\
+%(FROM #(prod:SwitchBlock)#)
+         SwitchBlock \: \xcd"{" SwitchBlockStatementGroups\opt SwitchLabels\opt \xcd"}" & (\ref{prod:SwitchBlock}) \\
+%(FROM #(prod:SwitchBlockStatementGroups)#)
+SwitchBlockStatementGroups \: SwitchBlockStatementGroup & (\ref{prod:SwitchBlockStatementGroups}) \\
+                    \| SwitchBlockStatementGroups SwitchBlockStatementGroup \\
+%(FROM #(prod:SwitchBlockStatementGroup)#)
+SwitchBlockStatementGroup \: SwitchLabels BlockStatements & (\ref{prod:SwitchBlockStatementGroup}) \\
+%(FROM #(prod:SwitchLabels)#)
+        SwitchLabels \: SwitchLabel & (\ref{prod:SwitchLabels}) \\
+                    \| SwitchLabels SwitchLabel \\
+%(FROM #(prod:SwitchLabel)#)
+         SwitchLabel \: \xcd"case" ConstantExp \xcd":" & (\ref{prod:SwitchLabel}) \\
+                    \| \xcd"default" \xcd":" \\
 \end{bbgrammar}
-
+%##)
 
 A switch statement evaluates an index expression and then branches to
 a case whose value equal to the value of the index expression.
@@ -371,10 +396,12 @@ switch (i) {
 \section{While statement}
 \index{while}
 
+%##(WhileStatement
 \begin{bbgrammar}
- WhileStatement    \: \xcd"while" \xcd"(" Exp \xcd")" Statement & (\ref{prod:WhileStatement})\\%<FROM #(prod:WhileStatement)#
+%(FROM #(prod:WhileStatement)#)
+      WhileStatement \: \xcd"while" \xcd"(" Exp \xcd")" Statement & (\ref{prod:WhileStatement}) \\
 \end{bbgrammar}
-
+%##)
 
 A while statement evaluates a \xcd`Boolean`-valued condition and executes a
 loop body if \xcd"true". If the loop body completes normally (either by
@@ -399,10 +426,12 @@ the condition is \xcd"false", the loop exits.
 \section{Do--while statement}
 \index{do}
 
+%##(DoStatement
 \begin{bbgrammar}
- DoStatement    \: \xcd"do" Statement \xcd"while" \xcd"(" Exp \xcd")" \xcd";" & (\ref{prod:DoStatement})\\%<FROM #(prod:DoStatement)#
+%(FROM #(prod:DoStatement)#)
+         DoStatement \: \xcd"do" Statement \xcd"while" \xcd"(" Exp \xcd")" \xcd";" & (\ref{prod:DoStatement}) \\
 \end{bbgrammar}
-
+%##)
 
 
 A do-while statement executes a loop body, and then evaluates a
@@ -414,19 +443,26 @@ Otherwise, the loop exits.
 \section{For statement}
 \index{for}
 
+%##(ForStatement BasicForStatement ForInit ForUpdate StatementExpList EnhancedForStatement
 \begin{bbgrammar}
- ForStatement    \: BasicForStatement & (\ref{prod:ForStatement})\\%<FROM #(prod:ForStatement)#
-    \| EnhancedForStatement\\
- BasicForStatement    \: \xcd"for" \xcd"(" ForInit\opt \xcd";" Exp\opt \xcd";" ForUpdate\opt \xcd")" Statement & (\ref{prod:BasicForStatement})\\%<FROM #(prod:BasicForStatement)#
- ForInit    \: StatementExpList & (\ref{prod:ForInit})\\%<FROM #(prod:ForInit)#
-    \| LocalVariableDecl\\
- ForUpdate    \: StatementExpList & (\ref{prod:ForUpdate})\\%<FROM #(prod:ForUpdate)#
- StatementExpList    \: StatementExp & (\ref{prod:StatementExpList})\\%<FROM #(prod:StatementExpList)#
-    \| StatementExpList \xcd"," StatementExp\\
- EnhancedForStatement    \: \xcd"for" \xcd"(" LoopIndex \xcd"in" Exp \xcd")" Statement & (\ref{prod:EnhancedForStatement})\\%<FROM #(prod:EnhancedForStatement)#
-    \| \xcd"for" \xcd"(" Exp \xcd")" Statement\\
+%(FROM #(prod:ForStatement)#)
+        ForStatement \: BasicForStatement & (\ref{prod:ForStatement}) \\
+                    \| EnhancedForStatement \\
+%(FROM #(prod:BasicForStatement)#)
+   BasicForStatement \: \xcd"for" \xcd"(" ForInit\opt \xcd";" Exp\opt \xcd";" ForUpdate\opt \xcd")" Statement & (\ref{prod:BasicForStatement}) \\
+%(FROM #(prod:ForInit)#)
+             ForInit \: StatementExpList & (\ref{prod:ForInit}) \\
+                    \| LocalVariableDecl \\
+%(FROM #(prod:ForUpdate)#)
+           ForUpdate \: StatementExpList & (\ref{prod:ForUpdate}) \\
+%(FROM #(prod:StatementExpList)#)
+    StatementExpList \: StatementExp & (\ref{prod:StatementExpList}) \\
+                    \| StatementExpList \xcd"," StatementExp \\
+%(FROM #(prod:EnhancedForStatement)#)
+EnhancedForStatement \: \xcd"for" \xcd"(" LoopIndex \xcd"in" Exp \xcd")" Statement & (\ref{prod:EnhancedForStatement}) \\
+                    \| \xcd"for" \xcd"(" Exp \xcd")" Statement \\
 \end{bbgrammar}
-
+%##)
 
 \xcd`for` statements provide bounded iteration, such as looping over a list.
 It has two forms: a basic form allowing near-arbitrary iteration, {\em a la}
@@ -510,9 +546,12 @@ variables of the same names.
 \label{ReturnStatement}
 \index{return}
 
+%##(ReturnStatement
 \begin{bbgrammar}
- ReturnStatement    \: \xcd"return" Exp\opt \xcd";" & (\ref{prod:ReturnStatement})\\%<FROM #(prod:ReturnStatement)#
+%(FROM #(prod:ReturnStatement)#)
+     ReturnStatement \: \xcd"return" Exp\opt \xcd";" & (\ref{prod:ReturnStatement}) \\
 \end{bbgrammar}
+%##)
 
 Methods and closures may return values using a return statement.
 If the method's return type is expliclty declared \xcd"void",
@@ -523,11 +562,13 @@ a value of the appropriate type.
 \section{Assert statement} 
 \index{assert}
 
+%##(AssertStatement
 \begin{bbgrammar}
- AssertStatement    \: \xcd"assert" Exp \xcd";" & (\ref{prod:AssertStatement})\\%<FROM #(prod:AssertStatement)#
-    \| \xcd"assert" Exp  \xcd":" Exp  \xcd";"\\
-
+%(FROM #(prod:AssertStatement)#)
+     AssertStatement \: \xcd"assert" Exp \xcd";" & (\ref{prod:AssertStatement}) \\
+                    \| \xcd"assert" Exp  \xcd":" Exp  \xcd";" \\
 \end{bbgrammar}
+%##)
 
 The statement \xcd`assert E` checks that the Boolean expression \xcd`E`
 evaluates to true, and, if not, throws an \xcd`x10.lang.Error`  exception.  
@@ -589,10 +630,12 @@ any method can, potentially, throw any exception.
 \section{Throw statement}
 \index{throw}
 
+%##(ThrowStatement
 \begin{bbgrammar}
- ThrowStatement    \: \xcd"throw" Exp \xcd";" & (\ref{prod:ThrowStatement})\\%<FROM #(prod:ThrowStatement)#
+%(FROM #(prod:ThrowStatement)#)
+      ThrowStatement \: \xcd"throw" Exp \xcd";" & (\ref{prod:ThrowStatement}) \\
 \end{bbgrammar}
-
+%##)
 
 \index{Exception}
 \xcd"throw E" throws an exception whose value is \xcd`E`, which must be an
@@ -620,15 +663,22 @@ if (i < 0 || i >= x.size)
 \index{catch}
 \index{finally}
 \index{exception}
-\begin{bbgrammar}
- TryStatement    \: \xcd"try" Block Catches & (\ref{prod:TryStatement})\\%<FROM #(prod:TryStatement)#
-    \| \xcd"try" Block Catches\opt Finally\\
- Catches    \: CatchClause & (\ref{prod:Catches})\\%<FROM #(prod:Catches)#
-    \| Catches CatchClause\\
- CatchClause    \: \xcd"catch" \xcd"(" FormalParam \xcd")" Block & (\ref{prod:CatchClause})\\%<FROM #(prod:CatchClause)#
- Finally    \: \xcd"finally" Block & (\ref{prod:Finally})\\%<FROM #(prod:Finally)#
 
+%##(TryStatement Catches CatchClause Finally
+\begin{bbgrammar}
+%(FROM #(prod:TryStatement)#)
+        TryStatement \: \xcd"try" Block Catches & (\ref{prod:TryStatement}) \\
+                    \| \xcd"try" Block Catches\opt Finally \\
+%(FROM #(prod:Catches)#)
+             Catches \: CatchClause & (\ref{prod:Catches}) \\
+                    \| Catches CatchClause \\
+%(FROM #(prod:CatchClause)#)
+         CatchClause \: \xcd"catch" \xcd"(" FormalParam \xcd")" Block & (\ref{prod:CatchClause}) \\
+%(FROM #(prod:Finally)#)
+             Finally \: \xcd"finally" Block & (\ref{prod:Finally}) \\
 \end{bbgrammar}
+%##)
+
 Exceptions are handled with a \xcd"try" statement.
 A \xcd"try" statement consists of a \xcd"try" block, zero or more
 \xcd"catch" blocks, and an optional \xcd"finally" block.

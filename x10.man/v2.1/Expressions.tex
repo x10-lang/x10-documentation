@@ -21,10 +21,23 @@ is of type \xcd`Int{self==1}`, and \xcd`true` is of type
 \index{this}
 \index{\Xcd{this}}
 
+%##(Primary
 \begin{bbgrammar}
- Primary    \:      \xcd"this" & (\ref{prod:Primary})\\%<FROM #(prod:Primary)#
-    \| ClassName \xcd"." \xcd"this"\\
+%(FROM #(prod:Primary)#)
+             Primary \: \xcd"here" & (\ref{prod:Primary}) \\
+                    \| \xcd"[" ArgumentList\opt \xcd"]" \\
+                    \| Literal \\
+                    \| \xcd"self" \\
+                    \| \xcd"this" \\
+                    \| ClassName \xcd"." \xcd"this" \\
+                    \| \xcd"(" Exp \xcd")" \\
+                    \| ClassInstCreationExp \\
+                    \| FieldAccess \\
+                    \| MethodInvocation \\
+                    \| MethodSelection \\
+                    \| OperatorFunction \\
 \end{bbgrammar}
+%##)
 
 The expression \xcd"this" is a  local \xcd`val` containing a reference
 to an instance of the lexically enclosing class.
@@ -73,9 +86,12 @@ body or in supertypes, are accessible through \xcd"this".
 
 \section{Local variables}
 
+%##(Id
 \begin{bbgrammar}
- Id    \: identifier & (\ref{prod:Id})\\%<FROM #(prod:Id)#
+%(FROM #(prod:Id)#)
+                  Id \: identifier & (\ref{prod:Id}) \\
 \end{bbgrammar}
+%##)
 
 A local variable expression consists simply of the name of the local variable,
 field of the current object, formal parameter in scope, etc. It evaluates to
@@ -100,11 +116,17 @@ val m = n + 56;
 \label{FieldAccess}
 \index{field!access to}
 
+%##(FieldAccess
 \begin{bbgrammar}
- FieldAccess    \: Primary \xcd"." Id & (\ref{prod:FieldAccess})\\%<FROM #(prod:FieldAccess)#
-    \| \xcd"super" \xcd"." Id\\
-    \| ClassName \xcd"." \xcd"super"  \xcd"." Id
+%(FROM #(prod:FieldAccess)#)
+         FieldAccess \: Primary \xcd"." Id & (\ref{prod:FieldAccess}) \\
+                    \| \xcd"super" \xcd"." Id \\
+                    \| ClassName \xcd"." \xcd"super"  \xcd"." Id \\
+                    \| Primary \xcd"." \xcd"class"  \\
+                    \| \xcd"super" \xcd"." \xcd"class"  \\
+                    \| ClassName \xcd"." \xcd"super"  \xcd"." \xcd"class"  \\
 \end{bbgrammar}
+%##)
 
 A field of an object instance may be  accessed
 with a field access expression.
@@ -182,16 +204,22 @@ Function literals are described in \Sref{Functions}.
 \index{method!invoking}
 
 
+%##(MethodInvocation ArgumentList
 \begin{bbgrammar}
- MethodInvocation    \: MethodName TypeArguments\opt \xcd"(" ArgumentList\opt \xcd")" & (\ref{prod:MethodInvocation})\\%<FROM #(prod:MethodInvocation)#
-    \| Primary \xcd"." Id TypeArguments\opt \xcd"(" ArgumentList\opt \xcd")"\\
-    \| \xcd"super" \xcd"." Id TypeArguments\opt \xcd"(" ArgumentList\opt \xcd")"\\
-    \| ClassName \xcd"." \xcd"super"  \xcd"." Id TypeArguments\opt \xcd"(" ArgumentList\opt \xcd")"\\
-    \| Primary TypeArguments\opt \xcd"(" ArgumentList\opt \xcd")"\\
- ArgumentList    \: Exp & (\ref{prod:ArgumentList})\\%<FROM #(prod:ArgumentList)#
-    \| ArgumentList \xcd"," Exp\\
+%(FROM #(prod:MethodInvocation)#)
+    MethodInvocation \: MethodPrimaryPrefix \xcd"(" ArgumentList\opt \xcd")" & (\ref{prod:MethodInvocation}) \\
+                    \| MethodSuperPrefix \xcd"(" ArgumentList\opt \xcd")" \\
+                    \| MethodClassNameSuperPrefix \xcd"(" ArgumentList\opt \xcd")" \\
+                    \| MethodName TypeArguments\opt \xcd"(" ArgumentList\opt \xcd")" \\
+                    \| Primary \xcd"." Id TypeArguments\opt \xcd"(" ArgumentList\opt \xcd")" \\
+                    \| \xcd"super" \xcd"." Id TypeArguments\opt \xcd"(" ArgumentList\opt \xcd")" \\
+                    \| ClassName \xcd"." \xcd"super"  \xcd"." Id TypeArguments\opt \xcd"(" ArgumentList\opt \xcd")" \\
+                    \| Primary TypeArguments\opt \xcd"(" ArgumentList\opt \xcd")" \\
+%(FROM #(prod:ArgumentList)#)
+        ArgumentList \: Exp & (\ref{prod:ArgumentList}) \\
+                    \| ArgumentList \xcd"," Exp \\
 \end{bbgrammar}
-
+%##)
 
 
 A \grammarrule{MethodInvocation} may be to either a \xcd"static" method, an
@@ -255,26 +283,30 @@ class DivideBy(denom:Int) {
 
 \section{Assignment}\index{assignment}\label{AssignmentStatement}
 
+%##(Assignment LeftHandSide AssignmentOperator
 \begin{bbgrammar}
- Assignment    \: LeftHandSide AssignmentOperator AssignmentExp & (\ref{prod:Assignment})\\%<FROM #(prod:Assignment)#
-    \| ExpName  \xcd"(" ArgumentList\opt \xcd")" AssignmentOperator AssignmentExp\\
-    \| Primary  \xcd"(" ArgumentList\opt \xcd")" AssignmentOperator AssignmentExp\\
- LeftHandSide    \: ExpName & (\ref{prod:LeftHandSide})\\%<FROM #(prod:LeftHandSide)#
-    \| FieldAccess\\
- AssignmentOperator    \: \xcd"=" & (\ref{prod:AssignmentOperator})\\%<FROM #(prod:AssignmentOperator)#
-    \| \xcd"*="\\
-    \| \xcd"/="\\
-    \| \xcd"%="\\
-    \| \xcd"+="\\
-    \| \xcd"-="\\
-    \| \xcd"<<="\\
-    \| \xcd">>="\\
-    \| \xcd">>>="\\
-    \| \xcd"&="\\
-    \| \xcd"^="\\
-    \| \xcd"|="
+%(FROM #(prod:Assignment)#)
+          Assignment \: LeftHandSide AssignmentOperator AssignmentExp & (\ref{prod:Assignment}) \\
+                    \| ExpName  \xcd"(" ArgumentList\opt \xcd")" AssignmentOperator AssignmentExp \\
+                    \| Primary  \xcd"(" ArgumentList\opt \xcd")" AssignmentOperator AssignmentExp \\
+%(FROM #(prod:LeftHandSide)#)
+        LeftHandSide \: ExpName & (\ref{prod:LeftHandSide}) \\
+                    \| FieldAccess \\
+%(FROM #(prod:AssignmentOperator)#)
+  AssignmentOperator \: \xcd"=" & (\ref{prod:AssignmentOperator}) \\
+                    \| \xcd"*=" \\
+                    \| \xcd"/=" \\
+                    \| \xcd"%=" \\
+                    \| \xcd"+=" \\
+                    \| \xcd"-=" \\
+                    \| \xcd"<<=" \\
+                    \| \xcd">>=" \\
+                    \| \xcd">>>=" \\
+                    \| \xcd"&=" \\
+                    \| \xcd"^=" \\
+                    \| \xcd"|=" \\
 \end{bbgrammar}
-
+%##)
 
 
 
@@ -561,10 +593,16 @@ than negative infinity.
 \index{expression!conditional}
 \label{Conditional}
 
+%##(ConditionalExp
 \begin{bbgrammar}
- ConditionalExp    \: 
-     ConditionalOrExp \xcd"?" Exp \xcd":" ConditionalExp& (\ref{prod:ConditionalExp})\\%<FROM #(prod:ConditionalExp)#
+%(FROM #(prod:ConditionalExp)#)
+      ConditionalExp \: ConditionalOrExp & (\ref{prod:ConditionalExp}) \\
+                    \| ClosureExp \\
+                    \| AtExp \\
+                    \| FinishExp \\
+                    \| ConditionalOrExp \xcd"?" Exp \xcd":" ConditionalExp \\
 \end{bbgrammar}
+%##)
 
 A conditional expression evaluates its first subexpression (the
 condition); if \xcd"true"
@@ -637,15 +675,15 @@ after evaluation of \xcd`a` and \xcd`b`.
 \index{struct!construction}
 \index{instantation}
 
-
+%##(ClassInstCreationExp
 \begin{bbgrammar}
- ClassInstCreationExp    \: \xcd"new" TypeName TypeArguments\opt \xcd"(" ArgumentList\opt \xcd")" ClassBody\opt & (\ref{prod:ClassInstCreationExp})\\%<FROM #(prod:ClassInstCreationExp)#
-    \| \xcd"new" TypeName \xcd"[" Type \xcd"]" \xcd"[" ArgumentList\opt \xcd"]"\\
-    \| Primary \xcd"." \xcd"new" Id TypeArguments\opt \xcd"(" ArgumentList\opt \xcd")" ClassBody\opt\\
-
-    \| AmbiguousName \xcd"." \xcd"new" Id TypeArguments\opt \xcd"(" ArgumentList\opt \xcd")" ClassBody\opt\\
-
+%(FROM #(prod:ClassInstCreationExp)#)
+ClassInstCreationExp \: \xcd"new" TypeName TypeArguments\opt \xcd"(" ArgumentList\opt \xcd")" ClassBody\opt & (\ref{prod:ClassInstCreationExp}) \\
+                    \| \xcd"new" TypeName \xcd"[" Type \xcd"]" \xcd"[" ArgumentList\opt \xcd"]" \\
+                    \| Primary \xcd"." \xcd"new" Id TypeArguments\opt \xcd"(" ArgumentList\opt \xcd")" ClassBody\opt \\
+                    \| AmbiguousName \xcd"." \xcd"new" Id TypeArguments\opt \xcd"(" ArgumentList\opt \xcd")" ClassBody\opt \\
 \end{bbgrammar}
+%##)
 
 An allocation expression creates a new instance of a class and
 invokes a constructor of the class.
@@ -683,10 +721,14 @@ possibility of a {\em ClassBody}.
 
 The cast operation may be used to cast an expression to a given type:
 
+%##(CastExp
 \begin{bbgrammar}
- CastExp    \: 
-     CastExp \xcd"as" Type & (\ref{prod:CastExp})\\%<FROM #(prod:CastExp)#\\
+%(FROM #(prod:CastExp)#)
+             CastExp \: Primary & (\ref{prod:CastExp}) \\
+                    \| ExpName \\
+                    \| CastExp \xcd"as" Type \\
 \end{bbgrammar}
+%##)
 
 The result of this operation is a value of the given type if the cast
 is permissible at run time, and either a compile-time error or a runtime
@@ -771,10 +813,19 @@ type \xcd`Int{self==2}`.
 \Xten{} permits types to be used in an in instanceof expression
 to determine whether an object is an instance of the given type:
 
+%##(RelationalExp
 \begin{bbgrammar}
- RelationalExp    \:  RelationalExp \xcd"instanceof" Type
- & (\ref{prod:RelationalExp})\\%<FROM #(prod:RelationalExp)#
+%(FROM #(prod:RelationalExp)#)
+       RelationalExp \: RangeExp & (\ref{prod:RelationalExp}) \\
+                    \| SubtypeConstraint \\
+                    \| RelationalExp \xcd"<" RangeExp \\
+                    \| RelationalExp \xcd">" RangeExp \\
+                    \| RelationalExp \xcd"<=" RangeExp \\
+                    \| RelationalExp \xcd">=" RangeExp \\
+                    \| RelationalExp \xcd"instanceof" Type \\
+                    \| RelationalExp \xcd"in" ShiftExp \\
 \end{bbgrammar}
+%##)
 
 In the above expression, \grammarrule{Type} is any type. At run time, the
 result of this operator is \xcd"true" if the
@@ -808,10 +859,13 @@ rejects it.
 \index{subtype!test}
 
 
+%##(SubtypeConstraint
 \begin{bbgrammar}
- SubtypbeConstraint    \: Type  \xcd"<:" Type  & (\ref{prod:SubtypeConstraint})\\%<FROM #(prod:SubtypeConstraint)#
-    \| Type  \xcd":>" Type \\
+%(FROM #(prod:SubtypeConstraint)#)
+   SubtypeConstraint \: Type  \xcd"<:" Type  & (\ref{prod:SubtypeConstraint}) \\
+                    \| Type  \xcd":>" Type  \\
 \end{bbgrammar}
+%##)
 
 The subtyping expression \xcdmath"T$_1$ <: T$_2$" evaluates to \xcd"true"
 \xcdmath"T$_1$" is a subtype of \xcdmath"T$_2$".
@@ -849,11 +903,19 @@ class OrderedList[T]{T <: x10.util.Ordered[T]} {
 \section{Contains expressions}
 \index{in}
 
+%##(RelationalExp
 \begin{bbgrammar}
- RelationalExp    \: RelationalExp \xcd"in" ShiftExp& (\ref{prod:RelationalExp})\\%<FROM #(prod:RelationalExp)#\\
-
+%(FROM #(prod:RelationalExp)#)
+       RelationalExp \: RangeExp & (\ref{prod:RelationalExp}) \\
+                    \| SubtypeConstraint \\
+                    \| RelationalExp \xcd"<" RangeExp \\
+                    \| RelationalExp \xcd">" RangeExp \\
+                    \| RelationalExp \xcd"<=" RangeExp \\
+                    \| RelationalExp \xcd">=" RangeExp \\
+                    \| RelationalExp \xcd"instanceof" Type \\
+                    \| RelationalExp \xcd"in" ShiftExp \\
 \end{bbgrammar}
-
+%##)
 
 The expression \xcd"p in r" tests if a value \xcd"p" is in a collection
 \xcd"r"; it evaluates to \xcd"r.contains(p)".
@@ -866,12 +928,28 @@ be of type \xcd"T".
 \index{array!construction}
 \index{array!literal}
 
+%##(Primary ClassInstCreationExp
 \begin{bbgrammar}
- Primary    \: \xcd"[" ArgumentList\opt \xcd"]"& (\ref{prod:Primary})\\%<FROM
-                                %#(prod:Primary)#
- ClassInstCreationExp    \:\xcd"new" TypeName \xcd"[" Type \xcd"]" \xcd"[" ArgumentList\opt \xcd"]"& (\ref{prod:ClassInstCreationExp})\\%<FROM #(prod:ClassInstCreationExp)#
-
+%(FROM #(prod:Primary)#)
+             Primary \: \xcd"here" & (\ref{prod:Primary}) \\
+                    \| \xcd"[" ArgumentList\opt \xcd"]" \\
+                    \| Literal \\
+                    \| \xcd"self" \\
+                    \| \xcd"this" \\
+                    \| ClassName \xcd"." \xcd"this" \\
+                    \| \xcd"(" Exp \xcd")" \\
+                    \| ClassInstCreationExp \\
+                    \| FieldAccess \\
+                    \| MethodInvocation \\
+                    \| MethodSelection \\
+                    \| OperatorFunction \\
+%(FROM #(prod:ClassInstCreationExp)#)
+ClassInstCreationExp \: \xcd"new" TypeName TypeArguments\opt \xcd"(" ArgumentList\opt \xcd")" ClassBody\opt & (\ref{prod:ClassInstCreationExp}) \\
+                    \| \xcd"new" TypeName \xcd"[" Type \xcd"]" \xcd"[" ArgumentList\opt \xcd"]" \\
+                    \| Primary \xcd"." \xcd"new" Id TypeArguments\opt \xcd"(" ArgumentList\opt \xcd")" ClassBody\opt \\
+                    \| AmbiguousName \xcd"." \xcd"new" Id TypeArguments\opt \xcd"(" ArgumentList\opt \xcd")" ClassBody\opt \\
 \end{bbgrammar}
+%##)
 
 X10 includes short syntactic forms for constructing one-dimensional arrays.
 The shortest form is to enclose some expressions in brackets: 
@@ -997,9 +1075,14 @@ val eels <: Array[Eel{self != null}](1) =
 
 \subsection{Coercions}
 
+%##(CastExp
 \begin{bbgrammar}
- CastExp    \:  CastExp \xcd"as" Type& (\ref{prod:CastExp})\\%<FROM #(prod:CastExp)#
+%(FROM #(prod:CastExp)#)
+             CastExp \: Primary & (\ref{prod:CastExp}) \\
+                    \| ExpName \\
+                    \| CastExp \xcd"as" Type \\
 \end{bbgrammar}
+%##)
 
 
 A {\em coercion} does not change object identity; a coerced object may

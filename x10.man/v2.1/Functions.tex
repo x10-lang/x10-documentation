@@ -146,20 +146,28 @@ functions, since the class it is an instance of may implement any
 \emph{closures}, \emph{operator functions}, and \emph{method
   selectors}.
 
+%##(ClosureExp FormalParams WhereClause DepParams ExistentialList HasResultType ClosureBody
 \begin{bbgrammar}
- ClosureExp    \: FormalParams WhereClause\opt HasResultType\opt Offers\opt \xcd"=>" ClosureBody & (\ref{prod:ClosureExp})\\%<FROM #(prod:ClosureExp)#
- FormalParams    \: \xcd"(" FormalParamList\opt \xcd")" & (\ref{prod:FormalParams})\\%<FROM #(prod:FormalParams)#
- WhereClause    \: DepParams & (\ref{prod:WhereClause})\\%<FROM #(prod:WhereClause)#
- DepParams    \: \xcd"{" ExistentialList\opt Conjunction\opt \xcd"}" & (\ref{prod:DepParams})\\%<FROM #(prod:DepParams)#
- ExistentialList    \: FormalParam & (\ref{prod:ExistentialList})\\%<FROM #(prod:ExistentialList)#
-    \| ExistentialList \xcd";" FormalParam\\
- HasResultType    \: \xcd":" Type & (\ref{prod:HasResultType})\\%<FROM #(prod:HasResultType)#
-    \| \xcd"<:" Type\\
- ClosureBody    \: ConditionalExp & (\ref{prod:ClosureBody})\\%<FROM #(prod:ClosureBody)#
-    \| Annotations\opt \xcd"{" BlockStatements\opt LastExp \xcd"}"\\
-    \| Annotations\opt Block\\
+%(FROM #(prod:ClosureExp)#)
+          ClosureExp \: FormalParams WhereClause\opt HasResultType\opt Offers\opt \xcd"=>" ClosureBody & (\ref{prod:ClosureExp}) \\
+%(FROM #(prod:FormalParams)#)
+        FormalParams \: \xcd"(" FormalParamList\opt \xcd")" & (\ref{prod:FormalParams}) \\
+%(FROM #(prod:WhereClause)#)
+         WhereClause \: DepParams & (\ref{prod:WhereClause}) \\
+%(FROM #(prod:DepParams)#)
+           DepParams \: \xcd"{" ExistentialList\opt Conjunction\opt \xcd"}" & (\ref{prod:DepParams}) \\
+%(FROM #(prod:ExistentialList)#)
+     ExistentialList \: FormalParam & (\ref{prod:ExistentialList}) \\
+                    \| ExistentialList \xcd";" FormalParam \\
+%(FROM #(prod:HasResultType)#)
+       HasResultType \: \xcd":" Type & (\ref{prod:HasResultType}) \\
+                    \| \xcd"<:" Type \\
+%(FROM #(prod:ClosureBody)#)
+         ClosureBody \: ConditionalExp & (\ref{prod:ClosureBody}) \\
+                    \| Annotations\opt \xcd"{" BlockStatements\opt LastExp \xcd"}" \\
+                    \| Annotations\opt Block \\
 \end{bbgrammar}
-
+%##)
 
 Functions have zero or more formal parameters and an optional return type.
 The body has the 
@@ -375,12 +383,15 @@ and nine.  It could also be written
 %~~exp~~`~~`~~ digit:Span~~class Span(low:Int, high:Int) {def this(low:Int, high:Int) {property(low,high);} def between(n:Int) = low <= n && n <= high;} ^^^ Functions100
 \xcd`(n:Int) => digit.between(n)`.
 
+%##(MethodSelection
 \begin{bbgrammar}
- MethodSelection    \: Primary \xcd"." Id \xcd"." \xcd"(" FormalParamList\opt \xcd")" & (\ref{prod:MethodSelection})\\%<FROM #(prod:MethodSelection)#
-    \| ClassName \xcd"." \xcd"super"  \xcd"." Id \xcd"." \xcd"(" FormalParamList\opt \xcd")"\\
-
+%(FROM #(prod:MethodSelection)#)
+     MethodSelection \: MethodName \xcd"." \xcd"(" FormalParamList\opt \xcd")" & (\ref{prod:MethodSelection}) \\
+                    \| Primary \xcd"." Id \xcd"." \xcd"(" FormalParamList\opt \xcd")" \\
+                    \| \xcd"super" \xcd"." Id \xcd"." \xcd"(" FormalParamList\opt \xcd")" \\
+                    \| ClassName \xcd"." \xcd"super"  \xcd"." Id \xcd"." \xcd"(" FormalParamList\opt \xcd")" \\
 \end{bbgrammar}
-
+%##)
 
 The \emph{method selector expression} \Xcd{e.m.(T1,...,Tn)} is type
 correct only if  the static type of \Xcd{e} is a
@@ -581,5 +592,3 @@ respect \xcd`equals` and the basic contracts of \xcd`Any`.
 \index{function!home}
 \index{function!at(Place)}
 \index{function!at(Object)}
-
-
