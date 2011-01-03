@@ -341,6 +341,7 @@ assert(a(0)() == 6 && a(1)() == 6);     // (G)
 \end{xten}
 %~~siv
 %}}
+%class Hook{ def run() { example.Example(); return true; } }
 %~~neg
 
 \subsubsection{Copying and Transient Fields}
@@ -377,7 +378,7 @@ class Trans {
 }
 \end{xten}
 %~~siv
-%
+%class Hook{ def run() { (new Trans()).example(); return true; } }
 %~~neg
 
 
@@ -414,6 +415,7 @@ at (here) {
 \end{xten}
 %~~siv
 %}
+% class Hook{ def run() { GR.example(); return true; } }
 %~~neg
 
 
@@ -442,7 +444,8 @@ command-line argument array.
   }
 \end{xten}
 %~~siv
-%}
+%} 
+% class Hook{ def run() { GR2.main(["what, me weasel?"]); }}
 %~~neg
 
 
@@ -539,31 +542,6 @@ An activity is created by executing the \xcd`async` statement:
 The basic form of \xcd`async` is \xcd`async S`, which starts a new activity
 located \xcd`here` executing \xcd`S`.   (For the clocked form, see
 \Sref{ClockedFinish}.)  
-
-
-%%OBSOLETE%% \bard{The followingin para is under investigation:}
-%%OBSOLETE%% In many cases the compiler may infer the unique place at which the
-%%OBSOLETE%% statement is to be executed by an analysis of the types of the
-%%OBSOLETE%% variables occurring in the statement. (The place must be such that the
-%%OBSOLETE%% statement can be executed safely, without generating a
-%%OBSOLETE%% \xcd"BadPlaceException".) In such cases the programmer may omit the
-%%OBSOLETE%% place designator; the compiler will throw an error if it cannot
-%%OBSOLETE%% determine the unique designated place.\footnote{\XtenCurrVer{} does
-%%OBSOLETE%% not specify a particular algorithm; this will be fixed in future
-%%OBSOLETE%% versions.}
-%%OBSOLETE%% 
-%%OBSOLETE%% An activity $A$ executes the statement \xcd"async (P) S" by launching
-%%OBSOLETE%% a new activity $B$ at place \xcd`P` (or \xcd`P.home` if \xcd`P` is of an
-%%OBSOLETE%% object type), to execute \xcd`S`. The statement terminates locally as soon as $B$ is
-%%OBSOLETE%% launched.  The activation path for $B$ is that of $A$ augmented by the
-%%OBSOLETE%% information that {$A$} is the parent of {$B$}. 
-%%OBSOLETE%% $B$
-%%OBSOLETE%% terminates normally when $S$ terminates normally.  It terminates
-%%OBSOLETE%% abruptly if $S$ throws an uncaught exception. The exception is
-%%OBSOLETE%% propagated to $A$ if $A$ is a root activity (see \Sref{finish}),
-%%OBSOLETE%% otherwise it is propagated through $A$ to $A$'s root activity. Note that while
-%%OBSOLETE%% {$A$} is running, exceptions thrown by activities it has already
-%%OBSOLETE%% spawned may propagate through it up to its root activity, without {$A$} noticing.
 
 Multiple activities launched by a single activity at another place are not
 ordered in any way. They are added to the set of activities at the target

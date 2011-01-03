@@ -71,7 +71,7 @@ Each region \xcd`R` has a property \xcd`R.rank`, giving the dimensionality of
 all the points in it.
 
 %~~gen ^^^ Arrays40
-% package Arrays.Some.Examples.Fidget.Fidget;
+% package Arrays40;
 % class Example {
 % static def example() {
 %~~vis
@@ -197,15 +197,6 @@ irrelevant.
 For example, \xcd`1..10 && 2..20` is \Xcd{2..10}.
 
 
-%%NO-DIFF%% \xcdmath`R1 - R2` is the set difference of \xcdmath`R1` and
-%%NO-DIFF%% \xcdmath`R2`; \viz, the points in \xcdmath`R1` which are not in
-%%NO-DIFF%% \xcdmath`R2`.\index{region!set difference}
-%%NO-DIFF%% For example, 
-%%NO-DIFF%% ~~exp~~`~~`~~ ~~
-%%NO-DIFF%% \xcd`(1..10) - (1..3)` 
-%%NO-DIFF%% is 
-%%NO-DIFF%% \Xcd{4..10}.
-
 \xcdmath`R1 * S` is the Cartesian product of \xcdmath`R1` and
 \xcdmath`S`,  formed by pairing each point in \xcdmath`R1` with every  point in \xcdmath`S`.
 \index{region!product}
@@ -262,6 +253,12 @@ static def addInto(src: Array[Int], dest:Array[Int])
 \end{xten}
 %~~siv
 %}
+% class Hook{
+%   def run() { 
+%     val a = [1,2,3]; val b = [10, 20, 30] as Array[Int]{self.region == a.region};
+%     Example.addInto(a, b);
+%     return b(0) == 11 && b(1) == 22 && b(2) == 33;
+% }}
 %~~neg
 \noindent
 Since \Xcd{p} is a \Xcd{Point}, it can hold as many coordinates as are
@@ -339,7 +336,7 @@ function application, and, indeed, arrays may be used as functions.
 Sometimes it is more convenient to subscript by integers.  Arrays of rank 1-4
 can, in fact, be accessed by integers: 
 %~~gen ^^^ Arrays240
-%package Arrays.Arrays.wombatsfromlemuria;
+%package Arrays240;
 %class Example{
 %def example(){
 %~~vis
@@ -360,15 +357,16 @@ array's region.  If you want to use the values in the array, you have to
 subscript it.  For example, you could double every element of an
 \Xcd{Array[Int]} by: 
 %~~gen ^^^ Arrays250
-%package Arrays.Arrays.mostly_dire_dreams_tonight;
+%package Arrays250;
 %class Example{
-%def example(A:Array[Int]) {
+%static def example(A:Array[Int]) {
 %~~vis
 \begin{xten}
 for (p in A) A(p) = 2*A(p);
 \end{xten}
 %~~siv
 %}}
+% class Hook{ def run() { val a = [1,2]; Example.example(a); return a(0)==2 && a(1)==4; }}
 %~~neg
 
 
