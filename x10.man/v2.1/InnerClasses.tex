@@ -5,7 +5,9 @@
 \index{static nested class}
 
 One class (or struct or interface) may be nested within another.  The simplest
-way to do this is as a \xcd`static` nested class. 
+way to do this is as a \xcd`static` nested class, written by putting one class
+definition at top level inside another, with the inner one having a
+\xcd`static` modifier.  
 For most purposes, a static nested class behaves like a top-level class.
 However, a static inner class has access to private static
 fields and methods of its containing class.  
@@ -106,7 +108,7 @@ with no special restrictions. \xcd`super` inside an inner class refers to the
 inner class's superclass. If it is necessary to refer to the outer classes's
 superclass, use a qualified name of the form {\em Outer}\xcd`.super`.
 
-The only restriction placed on the members of inner classes is that static
+The only restriction placed on the members of inner classes is that the static
 fields of an inner class must be compile-time constant expressions. 
 
 \index{inner class!extending}
@@ -212,7 +214,10 @@ class Elsewhere{
 \section{Local Classes}
 
 Classes can be defined and instantiated in the middle of methods and other
-code blocks. Local classes are local to the block in which they are defined.
+code blocks.
+A local class in a static method is a static class; a local class in an
+instance method is an inner class.
+ Local classes are local to the block in which they are defined.
 They have access to almost everything defined at that point in the method; the
 one exception is that they cannot use \xcd`var` variables. Local classes
 cannot be \xcd`public` \xcd`protected`, or \xcd`private`, because they are
@@ -241,7 +246,11 @@ class Outer {
 }
 \end{xten}
 %~~siv
-%
+% class Hook{ def run() {
+%   val o <: Outer = new Outer();
+%   o.m();
+%   return true;
+% } }
 %~~neg
 Note that the middle \xcd`a`,
 whose value is \xcd`-2`, is not accessible inside of \xcd`Local`; it is
@@ -264,7 +273,7 @@ It is possible to define a new class and instantiate it as part of an
 expression.  The new class can extend an extant class or interface.  Its body
 can include all of the usual members of a class. It can refer to any
 identifiers available at that point in the expression --- except for \xcd`var`
-variables.  
+variables.  An anonymous class in a static context is a static inner class.
 
 Anonymous classes are useful when you want to package several pieces of
 behavior together (a single piece of behavior can often be expressed as a
