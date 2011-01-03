@@ -161,6 +161,21 @@ than X10 code, however. These types are:
 Boolean, Char, Byte, Short, Int, Long
 Float, Double, UByte, UShort, UInt, ULong
 \end{xten}
+
+\subsection{Signed and Unsigned Integers}
+\index{types!unsigned}
+\index{integers!unsigned}
+\index{unsigned}
+
+X10 has an unsigned integer type corresponding to each integer type:
+\xcd`UInt` is an unsigned \xcd`Int`, and so on.  These types can be used for
+binary programming, or when an extra bit of precision is needed in integer
+arithmetic.    However, X10 does not otherwise encourage the use of unsigned
+arithmetic.  
+
+
+
+
  
 \section{Generic programming with structs}
 \index{struct!generic}
