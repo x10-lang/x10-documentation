@@ -228,9 +228,14 @@ An example of such a function is \xcd`(x:Int) => x+1`.
 \index{declaration!class declaration}
 \index{declaration!reference class declaration}
 
-A {\em class declaration} (\Sref{XtenClasses}) introduces a {\em class type}
-containing all instances of the class.  The \xcd`Position` class below
-could describe the position of a slider control, for example.
+A {\em class declaration} (\Sref{XtenClasses}) declares a {\em class type},
+giving its name, behavior, data, and relationships to other classes and
+interfaces. 
+
+\begin{ex}
+
+The \xcd`Position` class below could describe the position of a slider
+control
 
 %~~gen ^^^ Types100
 % package Types.By.Cripes.Classes;
@@ -245,14 +250,15 @@ class Position {
 %~~siv
 %
 %~~neg
-
-Class instances, also called objects, are created via constructor calls. Class
+\end{ex}
+Class instances, also called objects, are created by constructor calls: 
+\xcd`new Position()`. Class
 instances have fields and methods, type members, and value properties bound at
 construction time. In addition, classes have static members: static \xcd`val` fields,
 methods, type definitions, and member classes and member interfaces.
 
-Classes may be {\em generic}, i.e.{} defined with one or more type
-parameters (\Sref{TypeParameters}).
+Classes may be {\em generic}, \ie, defined with one or more type
+parameters (\Sref{TypeParameters}).  
 
 %~~gen ^^^ Types110
 %~~vis
@@ -348,6 +354,35 @@ definitions, and member classes, structs and interfaces.  However,
 interfaces cannot specify that implementing classes must provide
 static members or constructors.
 
+\begin{ex}
+In the following interface, \xcd`PI` is a static field, 
+\xcd`Vec` a static type definition, 
+\xcd`Pair` a static member class.
+It can't insist that implementations provide a static method 
+like \xcd`meth`, or a nullary constructor.
+%~~gen ^^^ Types2y3i
+% package Types2y3i;
+%~~vis
+\begin{xten}
+interface Stat {
+  static val PI = 3.14159; 
+  static type R = Double;
+  static class Pair(x:R, y:R) {}
+  // ERROR: static def meth():Int;
+  // ERROR: static def this();
+}
+class Example {
+  static def example() {
+     val p : Stat.Pair = new Stat.Pair(Stat.PI, Stat.PI);
+  }
+}
+\end{xten}
+%~~siv
+%
+%~~neg
+
+\end{ex}
+
 An interface may extend multiple interfaces.  
 %~~gen ^^^ Types130
 %package Types.For.Snipes.Interfaces;
@@ -403,10 +438,16 @@ class KimThePoint implements Person {
 \index{property}
 \label{properties}
 
-Classes, interfaces, and structs may have {\em properties}, public
-\xcd`val` instance fields that can be used in types.
-%  bound on object creation. 
-For example, the
+Classes, interfaces, and structs may have {\em properties}, specified in
+parentheses after the type name. Properties are much like public \xcd`val`
+instance fields. They have certain restrictions on their use, however, which
+allows the compiler to understand them much better than other public \xcd`val`
+fields. In particular, they can be used in types.  \Eg, the number of elements
+in an array is a property of the array, and an X10 program can specify that
+two arrays have the same number of elements.
+
+\begin{ex}
+The
 following code declares a class named \xcd"Coords" with properties
 \xcd"x" and \xcd"y" and a \xcd"move" method. The properties are bound
 using the \xcd"property" statement in the constructor.
@@ -426,7 +467,7 @@ class Coords(x: Int, y: Int) {
 \end{xten}
 %~~siv
 %~~neg
-
+\end{ex}
 Properties, unlike other public \xcd`val` fields, can be used  
 at compile time in {constraints}. This allows us
 to specify subtypes based on properties, by appending a boolean expression to
