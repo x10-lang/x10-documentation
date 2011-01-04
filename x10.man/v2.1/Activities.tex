@@ -815,9 +815,13 @@ def add(x:T) {
 \subsection{Unconditional atomic blocks}
 The simplest form of an atomic block is the {\em unconditional
 atomic block}: \xcd`atomic S`.
-It is executed by an activity as if in a single step
-during which all other concurrent activities in the same place are
-blocked. If execution of the statement may throw an exception, it is
+When \xcd`atomic S` is executing at some place \xcd`p`, no other activity at
+\xcd`p` may enter an atomic block.  
+So, other activities may continue, even at the same place, but code protected
+by atomic blocks is not subject to interference from other code in atomic
+blocks. 
+
+If execution of the statement may throw an exception, it is
 the programmer's responsibility to wrap the atomic block within a
 \xcd"try"/\xcd"finally" clause and include undo code in the finally
 clause. Thus the \xcd"atomic" statement only guarantees atomicity on
@@ -1052,3 +1056,81 @@ class OneBuffer[T] {
 %
 %~~neg
 \end{example}
+
+\section{Use of Atomic Blocks}
+
+The semantics of atomicity is chosen as a compromise between programming
+simplicity and efficient implementation.  Unlike some possible definitions of
+``atomic'', atomic blocks do not provide absolute atomicity.  
+
+Atomic blocks are atomic with respect to {\em each other}.
+%~~gen ^^^ Activities4c2r
+% package Activities4c2r;
+% class Example {
+% def example() {
+%~~vis
+\begin{xten}
+var n : Int = 0;
+finish {
+  async atomic n = n + 1; //(a)
+  async atomic n = n + 2; //(b)
+}
+\end{xten}
+%~~siv
+%}}
+%~~neg
+This program has only two possible interleavings: either \xcd`(a)` entirely
+precedes \xcd`(b)` or \xcd`(b)` entirely precedes \xcd`(a)`.  Both end up with
+\xcd`n==3`. 
+
+
+However, atomic blocks are not atomic with respect to non-atomic code.  It we
+remove the  \xcd`atomic`s on \xcd`(a)`, we get far messier semantics.
+%~~gen ^^^ Activities5u4q
+% package Activities5u4q;
+% class Example {
+% def example() {
+%~~vis
+\begin{xten}
+var n : Int = 0;
+finish {
+  // LEGAL BUT UNWISE 
+  async n = n + 1;          //(a)
+  async atomic n = n + 2;   //(b)
+}
+\end{xten}
+%~~siv
+%}}
+%~~neg
+
+If X10 had absolute atomic semantics, this program would be guaranteed to
+treat the atomic increment as a single statement.  This would permit three
+interleavings: the two possible from the fully atomic program, or a third one
+with the events:  \xcd`(a)`'s read of \xcd`0` from \xcd`n`, the entirety of
+\xcd`(b)`, and then \xcd`(a)`'s write of \xcd`0+1` back to \xcd`n`.  This
+interleaving results in \xcd`n==1`. So, with absolute atomic semantics,
+\xcd`n==1` or \xcd`n==3` are the possible results.
+
+However, X10's semantics are weaker than that.  Atomic statements are atomic
+with respect to each other --- but there is no guarantee about how they
+interact with non-atomic statements at all.  In particular, the following
+fourth interleaving is possible: \xcd`(a)`'s read of \xcd`0` from \xcd`n`, 
+\xcd`(b)`'s read of \xcd`0` from \xcd`n`, \xcd`(a)`'s write of \xcd`1` to
+\xcd`n`, and \xcd`(b)`'s write of \xcd`2` to \xcd`n`.   Thus, \xcd`n==2` is
+permissible as a result in X10.
+
+X10's semantics permit more efficient implementation than absolute atomicity.
+Absolute atomicity would, in principle, require all activities at place
+\xcd`p` to stop whenever one of them enters an atomic section, which would
+seriously curtail concurrency.  X10 simply requires that, when one activity is
+in an atomic section, that other activities stop {\em when they are trying to
+enter an atomic section} --- which is to say, they can continue computing on
+their own all they like.  The difference can be substantial.
+
+However, X10's semantics do impose a certain burden on the programmer.  A
+sufficient rule of thumb is that, if {\em any} access to a
+variable is done in an atomic section, then {\em all} accesses to it must be
+in atomic sections.  
+
+
+
