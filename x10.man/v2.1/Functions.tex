@@ -17,17 +17,15 @@ execute in several places, and so on. X10 functions are not mathematical
 functions: the \xcd`f(1)` may return \xcd`true` on one call and \xcd`false` on
 an immediately following call.
 
-It is a limitation of \XtenCurrVer{} that functions do not support
-type arguments. This limitation may be removed in future versions of
-the language.
+
 
 A \emph{function literal} \xcd"(x1:T1,..,xn:Tn){c}:T=>e" creates a function of
 type\\ \xcd"(x1:T1,...,xn:Tn){c}=>T" (\Sref{FunctionType}).  For example, 
-\xcd`(x:Int) => x*x` is a function literal describing the squaring function on
+\xcd`(x:Int):Int => x*x` is a function literal describing the squaring function on
 integers.   
 \xcd`null` is also a function value.
 
-\limitationx{} Function literals do not currently support guards. 
+\limitation{X10 functions cannot have type arguments or constraints.}
 
 Function application is written \xcd`f(a,b,c)`, following common mathematical
 usage. 
@@ -37,7 +35,7 @@ usage.
 The function body may be a block.  To compute integer squares by repeated
 addition (inefficiently), one may write: 
 %~~gen ^^^ Functions10
-% package Functions.Are.For.Spunctions;
+% package Functions10;
 % class Examplllll {
 % static 
 %~~vis
@@ -52,13 +50,14 @@ val sq: (Int) => Int
 \end{xten}
 %~~siv
 %}
+% class Hook{ def run() { return Examplllll.sq(5) == 25; } }
 %~~neg
 
 
 
 
-A function literal evaluates to a function entity {$\phi$}. When {$\phi$} is
-applied to a suitable list of actual parameters \xcd`a1`-\xcd`an`, it
+A function literal evaluates to a function entity $f$. When {$f$} is
+applied to a suitable list of actual parameters \xcd`a1` through \xcd`an`, it
 evaluates \xcd`e` with the formal parameters bound to the actual parameters.
 So, the following are equivalent, where \xcd`e` is an expression involving
 \xcd`x1` and \xcd`x2`\footnote{Strictly, there are a few other requirements;
@@ -107,13 +106,10 @@ and
 %}}
 %~~neg
 \noindent
-This doesn't quite work if the body is a statement rather than an expression.
+This equivalence does not hold if the body is a statement rather than an expression.
 A few language features are forbidden (\xcd`break` or \xcd`continue` of a loop
 that surrounds the function literal) or mean something different (\xcd`return`
-inside a function returns from the function). 
-
-
-
+inside a function returns from the function, not the surrounding block). 
 
 
 The \emph{method selector expression} \Xcd{e.m.(x1:T1,...,xn:Tn)} (\Sref{MethodSelectors})
@@ -126,6 +122,32 @@ definitions. Instances of such classes may be used as functions of the
 given type.  Indeed, an object may behave like any (fixed) number of
 functions, since the class it is an instance of may implement any
 (fixed) number of function types.
+\begin{eg}
+Instances of the \xcd`Funny` class behave like two functions: 
+a constant function on Booleans, and a linear function on 
+pairs of \xcd`Int`s.  
+%~~gen ^^^ Functions6w6w
+% package Functions6w6w;
+%~~vis
+\begin{xten}
+class Funny implements (Boolean) => Int, 
+                       (Int, Int) => Int
+{
+  public def apply(Boolean) = 1;
+  public def apply(x:Int, y:Int) = 10*x+y;
+  static def example() {
+    val f <: Funny  = new Funny();
+    assert f(true) == 1; // (Boolean)=>Int behavior
+    assert f(1,2) == 12; // (Int,Int)=>Int behavior
+  }
+}
+\end{xten}
+%~~siv
+% class Hook{ def run() { Funny.example(); return true; }}
+%~~neg
+
+\end{eg}
+
 
 %\section{Implementation Notes}
 %\begin{itemize}
@@ -181,15 +203,34 @@ cases the
 return type \Xcd{T} is also optional and defaults to the type of the
 body. If a formal \Xcd{xi} does not occur in any
 \Xcd{Tj}, \Xcd{c}, \Xcd{T} or \Xcd{e}, the declaration \Xcd{xi:Ti} may
-be replaced by just \Xcd{Ti}: \xcd`(Int)=>7` is the integer function returning
+be replaced by just \Xcd{Ti}. \Eg,  \xcd`(Int)=>7` is the integer function returning
 7 for all inputs.
 
 \label{ClosureGuard}
+
 
 As with methods, a function may declare a guard to
 constrain the actual parameters with which it may be invoked.
 The guard may refer to the type parameters, formal parameters,
 and any \xcd`val`s in scope at the function expression.
+
+\begin{ex}
+%~~gen ^^^ Functions5g5m
+% package Functions5g5m;
+% class clogua {
+%  public static def main(argv:Array[String](1)) {
+%~~vis
+\begin{xten}
+    val n = 3;
+    val f : (x:Int){x != n} => Int  
+          = (x:Int){x != n} => (12/(n-x));
+    Console.OUT.println("f(5)=" + f(5));    
+\end{xten}
+%~~siv
+%}} 
+%~~neg
+
+\end{ex}
 
 The body of the function is evaluated when the function is
 invoked by a call expression (\Sref{Call}), not at the function's
@@ -200,7 +241,7 @@ have a terminating expression.
 If the return type is omitted, it is inferred, as described in
 \Sref{TypeInference}.
 It is a static error if the return type cannot be inferred.  \Eg,
-\xcd`(Int)=>null` is not well-defined; X10 does not know which type of
+\xcd`(Int)=>null` is not well-specified; X10 does not know which type of
 \xcd`null` is intended.  
 %~~exp~~`~~`~~ ~~ ^^^ Functions40
 But \xcd`(Int):Array[Double](1) => null` is legal.
@@ -262,7 +303,7 @@ the types \xcdmath"T$_i$", the guard \xcd"c" and the body \xcd"s"
 may access many, though not all, sorts of variables from outer scopes.  
 Specifically, they can access: 
 \begin{itemize}
-\item All fields of the enclosing object and class;
+\item All fields of the enclosing object(s) and class(es);
 \item All type parameters;
 \item All \xcd`val` variables;
 \end{itemize}
@@ -275,7 +316,9 @@ the syntax \xcd"C.this", where \xcd"C" is the name of the
 enclosing class.  \xcd`this` refers to the instance of the immediately
 enclosing class, as usual.
 
-For example, the following is legal.  
+
+\begin{eg}
+ The following is legal.  
 However, the commented-out line would not be legal.
 Note that \xcd`a` is not a local \xcd`var` variable. It is a field of
 \xcd`this`. A reference to \xcd`a` is simply short for \xcd`this.a`, which is
@@ -301,50 +344,7 @@ class Lambda {
 %~~siv
 %
 %~~neg
-
-%%SHARED%% 
-%%SHARED%% 
-%%SHARED%% Access to variables is not automatically atomic.  As
-%%SHARED%% with any code that might mutate shared data concurrently, be sure to protect
-%%SHARED%% references to mutable shared state with \xcd`atomic`. For example, the
-%%SHARED%% following code returns a pair of closures which operate on the same shared
-%%SHARED%% variable \xcd`a`, which are concurrency-safe---even if invoked many times
-%%SHARED%% simultaneously. Without \xcd`atomic`, it would no longer be concurrency-safe.
-%%SHARED%% 
-%%SHARED%% 
-%%SHARED%% %~s~gen
-%%SHARED%% % package Functions2.Are.All.Too.Much;
-%%SHARED%% % class Fun2Frivols {
-%%SHARED%% %~s~vis
-%%SHARED%% \begin{xten}
-%%SHARED%%   def counters() {
-%%SHARED%%       var a : Int = 0;
-%%SHARED%%        return [
-%%SHARED%%           () => {atomic a ++;},
-%%SHARED%%           () => {atomic return a;}
-%%SHARED%%           ];
-%%SHARED%%    }
-%%SHARED%% \end{xten}
-%%SHARED%% %~s~siv
-%%SHARED%% %}
-%%SHARED%% %
-%%SHARED%% %~s~neg
-
-
-%SHARED% \begin{note}
-%SHARED% The main activity may run in parallel with any
-%SHARED% functions it creates. Hence even the read of an outer variable by the
-%SHARED% body of a function may result in a race condition. Since functions are
-%SHARED% first-class, the analysis of whether a function may execute in parallel
-%SHARED% with the activity that created it may be difficult.
-%SHARED% \end{note}
-
-%% vj: This should be verified.
-%\begin{note}
-%The rule for accessing outer variables from function bodies
-%should be the same as the rule for accessing outer variables from local
-%or anonymous classes.
-%\end{note}
+\end{eg}
 
 \section{Method selectors}
 \label{MethodSelectors}
@@ -353,7 +353,9 @@ class Lambda {
 
 A method selector expression allows a method to be used as a
 first-class function, without writing a function expression for it.
-For example, consider a class \xcd`Span` defining ranges of integers.  
+
+\begin{ex}
+Consider a class \xcd`Span` defining ranges of integers.  
 
 %~~gen ^^^ Functions80
 % package Functions2.Span;
@@ -362,15 +364,15 @@ For example, consider a class \xcd`Span` defining ranges of integers.
 class Span(low:Int, high:Int) {
   def this(low:Int, high:Int) {property(low,high);}
   def between(n:Int) = low <= n && n <= high;
-  def example() {
+  static def example() {
     val digit = new Span(0,9);
     val isDigit : (Int) => Boolean = digit.between.(Int);
-    if (isDigit(8)) Console.OUT.println("8 is!");
+    assert isDigit(8);
   }
 }
 \end{xten}
 %~~siv
-%
+% class Hook{ def run() {Span.example(); return true;}}
 %~~neg
 \noindent
 
@@ -382,6 +384,8 @@ is a unary function testing whether its argument is between zero
 and nine.  It could also be written 
 %~~exp~~`~~`~~ digit:Span~~class Span(low:Int, high:Int) {def this(low:Int, high:Int) {property(low,high);} def between(n:Int) = low <= n && n <= high;} ^^^ Functions100
 \xcd`(n:Int) => digit.between(n)`.
+\end{ex}
+
 
 %##(MethodSelection
 \begin{bbgrammar}
@@ -403,7 +407,6 @@ which, when applied to an argument list \Xcd{(a1,...,an)} (of the right
 type) yields the value obtained by evaluating \Xcd{v.m(a1,...,an)}.
 
 Thus, the method selector
-
 \begin{xtenmath}
 e.m.(T$_1$, $\dots$, T$_n$)
 \end{xtenmath}
@@ -452,11 +455,11 @@ selected using the ``\xcd`.`'' syntax:
 
 
 \begin{xtenmath}
-String.+             $\equiv$ (x: String, y: String): String => x + y
-Long.-               $\equiv$ (x: Long, y: Long): Long => x - y
-Float.-              $\equiv$ (x: Float, y: Float): Float => x - y
-Boolean.&            $\equiv$ (x: Boolean, y: Boolean): Boolean => x & y
-Int.<                $\equiv$ (x: Int, y: Int): Boolean => x < y
+String.+    $\equiv$ (x: String, y: String): String => x + y
+Long.-      $\equiv$ (x: Long, y: Long): Long => x - y
+Float.-     $\equiv$ (x: Float, y: Float): Float => x - y
+Boolean.&   $\equiv$ (x: Boolean, y: Boolean): Boolean => x & y
+Int.<       $\equiv$ (x: Int, y: Int): Boolean => x < y
 \end{xtenmath}
 
 %~~gen ^^^ Functions110
@@ -477,90 +480,12 @@ Int.<                $\equiv$ (x: Int, y: Int): Boolean => x < y
 %~~neg
 
 
-%%TODO -- fix commented-out lines!
-
-%~~gen ^^^ Functions120
-% package Functions2.For.The.Lose;
-% class TypecheckThatSillyExample {
-%   def checker() {
-%    val l1 : (String, String) => String = String.+;
-%    val r1 : (String, String) => String = (x: String, y: String): String => x + y;
-%    val l2 : (Long,Long) => Long = Long.-;
-%    val r2 : (Long,Long) => Long = (x: Long, y: Long): Long => x - y;
-%//var v1 : (Float,Float) => Float = Float.-(Float,Float) ;
-%var v2 : (Float,Float) => Float = (x: Float, y: Float): Float => x - y;
-%//var v3 : (Int) => Int =  Int.-(Int)     ;      ;
-%var v4  : (Int) => Int  =  (x: Int): Int => -x;
-%var v5 : (Boolean,Boolean) => Boolean = Boolean.&            ;
-%var v6 : (Boolean,Boolean) => Boolean =  (x: Boolean, y: Boolean): Boolean => x & y;
-%//var v7 : (Boolean) => Boolean = Boolean.!            ;
-%var v8 : (Boolean) => Boolean =  (x: Boolean): Boolean => !x;
-%//var v9 : (Int,Int) => Boolean = Int.<(Int,Int)       ;
-%var v10: (Int,Int) => Boolean =  (x: Int, y: Int): Boolean => x < y;
-%//var v11 : (Dist,Place)=>Dist = Dist.|(Place)        ;
-%var v12 : (Dist,Place)=>Dist=  (d: Dist, p: Place): Dist => d | p;
-%}
-% }
-%~~vis
-%~~siv
-%
-%~~neg
-
 Unary and binary promotion (\Sref{XtenPromotions}) is not performed
 when invoking these
 operations; instead, the operands are coerced individually via implicit
 coercions (\Sref{XtenConversions}), as appropriate.
 
 
-%%WE-NEVER-GOT-TO-IT%%  \begin{planned}
-%%WE-NEVER-GOT-TO-IT%%  
-%%WE-NEVER-GOT-TO-IT%%  {\bf The following is not implemented in version 2.0.3:}
-%%WE-NEVER-GOT-TO-IT%%  
-%%WE-NEVER-GOT-TO-IT%%  Additionally, for every expression \xcd"e" of a type \xcd"T" at which a binary
-%%WE-NEVER-GOT-TO-IT%%  operator \xcd"OP" is defined, the expression \xcd"e.OP" or
-%%WE-NEVER-GOT-TO-IT%%  \xcd"e.OP(T)" represents the function
-%%WE-NEVER-GOT-TO-IT%%  defined by:
-%%WE-NEVER-GOT-TO-IT%%  
-%%WE-NEVER-GOT-TO-IT%%  \begin{xten}
-%%WE-NEVER-GOT-TO-IT%%  (x: T): T => { e OP x }
-%%WE-NEVER-GOT-TO-IT%%  \end{xten}
-%%WE-NEVER-GOT-TO-IT%%  
-%%WE-NEVER-GOT-TO-IT%%  \begin{grammar}
-%%WE-NEVER-GOT-TO-IT%%  Primary \: Expr \xcd"." Operator \xcd"(" Formals\opt \xcd")" \\
-%%WE-NEVER-GOT-TO-IT%%          \| Expr \xcd"." Operator \\
-%%WE-NEVER-GOT-TO-IT%%  \end{grammar}
-%%WE-NEVER-GOT-TO-IT%%  
-%%WE-NEVER-GOT-TO-IT%%  %% For every expression \xcd"e" of a type \xcd"T" at which a unary
-%%WE-NEVER-GOT-TO-IT%%  %%operator \xcd"OP" is defined, the expression \xcd"e.OP()"
-%%WE-NEVER-GOT-TO-IT%%  %% represents the function defined by:
-%%WE-NEVER-GOT-TO-IT%%  
-%%WE-NEVER-GOT-TO-IT%%  %% \begin{xten}
-%%WE-NEVER-GOT-TO-IT%%  %% (): T => { OP e }
-%%WE-NEVER-GOT-TO-IT%%  %% \end{xten}
-%%WE-NEVER-GOT-TO-IT%%  
-%%WE-NEVER-GOT-TO-IT%%  For example,
-%%WE-NEVER-GOT-TO-IT%%  one may write an expression that adds one to each member of a
-%%WE-NEVER-GOT-TO-IT%%  list \xcd"xs" by:
-%%WE-NEVER-GOT-TO-IT%%  
-%%WE-NEVER-GOT-TO-IT%%  %%TODO -- when this topic works, make the example wwork too.
-%%WE-NEVER-GOT-TO-IT%%  %~x~gen
-%%WE-NEVER-GOT-TO-IT%%  % package Functions2.Wants.A.Dinner.Reservation;
-%%WE-NEVER-GOT-TO-IT%%  % import x10.util.*;
-%%WE-NEVER-GOT-TO-IT%%  % class Reservation {
-%%WE-NEVER-GOT-TO-IT%%  % def smerp() {
-%%WE-NEVER-GOT-TO-IT%%  %   val xs = new ArrayList[Int]();
-%%WE-NEVER-GOT-TO-IT%%  %~x~vis
-%%WE-NEVER-GOT-TO-IT%%  \begin{xten}
-%%WE-NEVER-GOT-TO-IT%%  xs.map(1.+);
-%%WE-NEVER-GOT-TO-IT%%  \end{xten}
-%%WE-NEVER-GOT-TO-IT%%  %~x~siv
-%%WE-NEVER-GOT-TO-IT%%  % }
-%%WE-NEVER-GOT-TO-IT%%  % }
-%%WE-NEVER-GOT-TO-IT%%  %
-%%WE-NEVER-GOT-TO-IT%%  %~x~neg
-%%WE-NEVER-GOT-TO-IT%%  \end{planned}
-%%WE-NEVER-GOT-TO-IT%%  
-%%WE-NEVER-GOT-TO-IT%%  
 \section{Functions as objects of type {\tt Any}}
 \label{FunctionAnyMethods}
 
