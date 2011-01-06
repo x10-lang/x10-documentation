@@ -2,9 +2,7 @@
 \label{XtenInterfaces}\index{interface}
 
 An interface specifies signatures for public methods, properties,
-\xcd`static val`s, and an invariant. It may extend several interfaces, giving
-X10 a large fraction of the power of multiple inheritance at a tiny fraction
-of the cost.
+\xcd`static val`s, and an invariant. 
 
 The following puny example illustrates all these features: 
 % TODO Well, it would if there weren't a compiler bug in the way.
@@ -13,11 +11,11 @@ The following puny example illustrates all these features:
 % NOCOMPILE
 %~~vis
 \begin{xten}
-interface Pushable(text:String, prio:Int) {
+interface Pushable(text:String, prio:Int){prio != 0} {
   def push(): void;
   static val MAX_PRIO = 100;
 }
-class MessageButton(text:String, prio:Int) 
+class MessageButton(text:String, prio:Int){
   implements Pushable{self.prio==Pushable.MAX_PRIO} {
   public def push() { 
     x10.io.Console.OUT.println(text + " pushed");
@@ -28,7 +26,8 @@ class MessageButton(text:String, prio:Int)
 %
 %~~neg
 \noindent
-\xcd`Pushable` defines two properties, a method, and a static value.  
+\xcd`Pushable` defines two properties, a method, and a static value.  It also
+establishes an invariant, that \xcd`prio != 0`. 
 \xcd`MessageButton` implements a constrained version of \xcd`Pushable`,
 \viz\ one with maximum priority.  It also has \xcd`Pushable`'s properties.  It
 defines the \xcd`push()` method given in the interface, as a \xcd`public`
@@ -39,10 +38,59 @@ typically by having all the methods and properties that the interface
 requires.
 
 A variable may be declared to be of interface type.  Such a variable has all
-the fields and methods declared (directly or indirectly) by the interface;
-nothing else is statically available.  Values of a concrete type which
+the properties and methods declared (directly or indirectly) by the interface;
+nothing else is statically available.  Values of any concrete type which
 implement the interface may be stored in the variable.  
 
+\begin{ex}
+The following code puts two quite different objects into the variable
+\xcd`star`, both of which satisfy the interface \xcd`Star`.
+%~~gen ^^^ Interfaces6l3f
+% package Interfaces6l3f;
+%~~vis
+\begin{xten}
+interface Star { def rise():void; }
+class AlphaCentauri implements Star {
+   public def rise() {}
+}
+class ElvisPresley implements Star {
+   public def rise() {}
+}
+class Example {
+   static def example() {
+      var star : Star;
+      star = new AlphaCentauri();
+      star.rise();
+      star = new ElvisPresley();
+      star.rise();
+   }
+}
+\end{xten}
+%~~siv
+%
+%~~neg
+\end{ex}
+An interface may extend several interfaces, giving
+X10 a large fraction of the power of multiple inheritance at a tiny fraction
+of the cost.
+
+\begin{ex}
+%~~gen ^^^ Interfaces6g4u
+% package Interfaces6g4u;
+%~~vis
+\begin{xten}
+interface Star{}
+interface Dog{}
+class Sirius implements Dog, Star{}
+class Lassie implements Dog, Star{}
+\end{xten}
+%~~siv
+%
+%~~neg
+\end{ex}
+
+
+\section{Interface Syntax}
 
 \label{DepType:Interface}
 
@@ -92,7 +140,7 @@ another definition of a method \xcd`p()`.
 
 
 
-A class \xcd"C" is said to implement an interface \xcd"I" if
+A class \xcd"C"  implements an interface \xcd"I" if
 \begin{itemize}
 \item \xcd`I`, or a subtype of \xcd`I`, appears in the \xcd`implements` list
       of \xcd`C`, 
@@ -104,8 +152,12 @@ A class \xcd"C" is said to implement an interface \xcd"I" if
       \xcd`abstract` if \xcd`C` is \xcd`abstract`.
 \end{itemize}
 
-Note that, by definition of $\mathit{inv}(\cdot)$ (see \Sref{DepType:ClassGuardDef}, \xcd`C`'s class invariant $\mathit{inv}($\xcd"C"$)$ implies
-$\mathit{inv}($\xcd"I"$)$.
+
+If \xcd`C` implements \xcd`I`, then the class invariant
+(\Sref{DepType:ClassGuardDef}) for \xcd`C`,   $\mathit{inv}($\xcd"C"$)$, implies
+the class invariant for \xcd`I`, $\mathit{inv}($\xcd"I"$)$.  That is, if the
+interface \xcd`I` specifies some requirement, then every class \xcd`C` that
+implements it satisfies that requirement.
 
 \section{Field Definitions}
 \index{interface!field definition in}
