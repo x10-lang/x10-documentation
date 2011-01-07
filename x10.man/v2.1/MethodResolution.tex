@@ -50,6 +50,8 @@ So, a typical \xcd`M` might look like
 \xcdmath"def m[G$_1$,$\ldots$, G$_g$](x$_1$:T$_1$,$\ldots$, x$_f$:T$_f$){c} =...".  The code body \xcd`...` is irrelevant for the purpose of whether a
 given method call means \xcd`M` or not, so we ignore it for this section.
 
+All that matters about a method definition, for the purposes of method
+resolution, is: 
 \begin{enumerate}
 \item The method name \xcd`m`;
 \item The generic type parameters of the method \xcd`M`,  \xcdmath"G$_1$,$\ldots$, G$_g$".  If there
@@ -81,7 +83,7 @@ All that matters about an invocation \xcd`I` is:
 \begin{enumerate}
 \item The method name \xcdmath"m$'$";
 \item The generic type parameters \xcdmath"G$'_1$,$\ldots$, G$'_g$".  If there
-      are no generic type parameters, {$x=0$}.  
+      are no generic type parameters, {$g=0$}.  
 \item The names and types \xcdmath"x$_1$:T$'_1$,$\ldots$, x$_f$:T$'_f$" of the actual parameters.  If
       there are no actual parameters, {$f=0$}. In the case of an instance
       method, the receiver is the first actual parameter.
@@ -105,7 +107,7 @@ The procedure for computing \xcd`resolve(invo, context)` is:
       \item The method's type parameters are bound to the invocation's for the
             remainder of the acceptability test.
       \item The actual parameter types must be subtypes of the formal
-            parameter types:  \xcdmath"T$'_i$ <: T$i_i$" for each {\em i}. 
+            parameter types:  \xcdmath"T$'_i$ <: T$_i$" for each {\em i}. 
       \item The formal constraint \xcd`c` must be satisfied in the invoking
             context. 
       \end{itemize}
