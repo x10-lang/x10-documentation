@@ -2094,3 +2094,38 @@ class Example {
 %~~neg
 
 \end{ex}
+
+\section{Type Dependencies}
+
+Type definitions may not be circular, in the sense that no type may be its own
+supertype, nor may it be a container for a supertype. This forbids interfaces
+like \xcd`interface Loop extends Loop`, and indirect self-references such as
+\xcd`interface A extends B.C` where \xcd`interface B extends A`.  
+
+The formal definition of this is based on Java's.  
+
+An {\em entity type} is a class, interface, or struct type.   
+
+Entity type $E$ {\em directly depends on} entity type $F$ if $F$ is mentioned
+in the \xcd`extends` or \xcd`implements` clause of $E$, either by itself or as
+a qualifier within a super-entity-type name.  
+\begin{eg}
+In the following, \xcd`A` directly depends on \xcd`B`, \xcd`C`, \xcd`D`, 
+\xcd`E`, and \xcd`F`.    It does not directly depend on \xcd`G`.
+%~~gen ^^^ Types6a9m
+% package Types6a9m;
+%~~vis
+\begin{xten}
+class A extends B.C implements D.E, F[G] {}
+\end{xten}
+%~~siv
+%
+%~~neg
+\end{eg}
+
+Entity type $E$ {\em depends on} entity type $F$ if
+either $E$ directly depends on $F$, or $E$ directly depends on an entity type
+that depends on $F$.   That is, the relation ``depends on'' is the transitive
+closure of the relation ``directly depends on''.  
+
+It is a static error if any entity type $E$ depends on itself.

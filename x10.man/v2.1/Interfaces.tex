@@ -323,3 +323,11 @@ The members of an interface \xcd`I` are the union of the following sets:
 \item The members of \xcd`Any`.
 \end{enumerate}
 
+\section{Interface Dependencies}
+
+Interface definitions must not be circular.  This forbids 
+interfaces like 
+\xcd`interface Loop extends Loop`, 
+and indirect self-references such as 
+\xcd`interface A extends B.C` where \xcd`interface B extends A`.  
+
