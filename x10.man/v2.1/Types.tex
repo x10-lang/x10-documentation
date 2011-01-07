@@ -2121,6 +2121,26 @@ class A extends B.C implements D.E, F[G] {}
 %~~siv
 %
 %~~neg
+It is an ordinary programming idiom to use \xcd`A` as an argument to a generic
+interface that \xcd`A` implements.  For example, \xcd`ComparableTo[T]`
+describes things which can be compared to a value of type \xcd`T`. Saying that
+\xcd`A` implements \xcd`ComparableTo[A]` means that one \xcd`A` can be
+compared to another, which is reasonable and useful: 
+%~~gen ^^^ Types2x6d
+% package Types2x6d;
+%~~vis
+\begin{xten}
+interface ComparableTo[T] {
+  def eq(T):Boolean;
+}
+class A implements ComparableTo[A] {
+  def eq(other:A) = this.equals(other);
+}
+\end{xten}
+%~~siv
+%
+%~~neg
+
 \end{eg}
 
 Entity type $E$ {\em depends on} entity type $F$ if
