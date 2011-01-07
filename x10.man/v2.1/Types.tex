@@ -2114,6 +2114,10 @@ In the following, \xcd`A` directly depends on \xcd`B`, \xcd`C`, \xcd`D`,
 \xcd`E`, and \xcd`F`.    It does not directly depend on \xcd`G`.
 %~~gen ^^^ Types6a9m
 % package Types6a9m;
+% class B{ static class C{}}
+% class D{ static interface E{}}
+% interface F[X]{}
+% class G{}
 %~~vis
 \begin{xten}
 class A extends B.C implements D.E, F[G] {}
@@ -2134,7 +2138,7 @@ interface ComparableTo[T] {
   def eq(T):Boolean;
 }
 class A implements ComparableTo[A] {
-  def eq(other:A) = this.equals(other);
+  public def eq(other:A) = this.equals(other);
 }
 \end{xten}
 %~~siv
