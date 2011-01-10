@@ -597,6 +597,42 @@ class A[B] {
 %~~neg
 
 
+\subsection{Use of Generics}
+
+An unconstrained type variable \Xcd{X} can be instantiated any type. Within a
+generic struct or class, all the operations of \Xcd{Any} are available on a
+variable of type unconstrained \Xcd{X}. Additionally, variables of type
+\Xcd{X} may be used with \Xcd{==, !=}, in \Xcd{instanceof}, and casts.  
+
+If a type variable is constrained, the operations implied by its constraint
+are available as well.
+
+\begin{ex}
+The interface \xcd`Named` describes entities which know their own name.  The
+class \xcd`NameMap[T]` is a specialized map which stores and retrieves
+\xcd`Named` entities by name.  The call \xcd`t.name()` in \xcd`put()` is only
+valid because the constraint \xcd`{T <: Named}` implies that \xcd`T` is a
+subtype of \xcd`Named`, and hence provides all the operations of \xcd`Named`. 
+%~~gen ^^^ Types6e6x
+% package Types6e6x;
+% import x10.util.*;
+%~~vis
+\begin{xten}
+interface Named { def name():String; }
+class NameMap[T]{T <: Named} {
+   val m = new HashMap[String, T]();
+   def put(t:T) { m.put(t.name(), t); }
+   def get(s:String):T = m.getOrThrow(s);
+}
+\end{xten}
+%~~siv
+%
+%~~neg
+
+
+\end{ex}
+
+
 \subsection{Variance of Type Parameters}
 \index{covariant}
 \index{contravariant}

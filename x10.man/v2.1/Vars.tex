@@ -325,6 +325,12 @@ A point is a sequence of zero or more \xcd`Int`-valued coordinates.
 It is often useful to get at the coordinates directly, in variables. 
 
 %##(VariableDeclarator
+\begin{bbgrammar}
+%(FROM #(prod:VariableDeclarator)#)
+  VariableDeclarator \: Id HasResultType\opt \xcd"=" VariableInitializer & (\ref{prod:VariableDeclarator}) \\
+                    \| \xcd"[" IdList \xcd"]" HasResultType\opt \xcd"=" VariableInitializer \\
+                    \| Id \xcd"[" IdList \xcd"]" HasResultType\opt \xcd"=" VariableInitializer \\
+\end{bbgrammar}
 %##)
 
 The syntax \xcdmath"val [a$_1$, $\ldots$, a$_n$] = e;" declares {$n$}

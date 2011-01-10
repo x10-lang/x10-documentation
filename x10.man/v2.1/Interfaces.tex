@@ -210,8 +210,8 @@ class UsesPi {
 
 \subsection{Fine Points of Fields}
 
-It can happen that two parent interfaces give fields of the same name.  In
-that case, those fields must be referred to by qualified names.
+If two parent interfaces give different fields of the same name, 
+those fields must be referred to by qualified names.
 %~~gen ^^^ Interface_field_name_collision
 % 
 %~~vis
@@ -248,7 +248,7 @@ class Example implements I4 {
 The initializer of a field in an interface may be any expression.  It is
 evaluated under the same rules as a \xcd`static` field of a class. 
 
-\begin{eg}
+\begin{ex}
 In this example, a local class (\Sref{sect:LocalClasses}) \xcd`B` is defined,
 with an inner interface \xcd`I`.  The field \xcd`V` of \xcd`I` uses a variable
 \xcd`n` which is global to \xcd`B`.   In this case it is a truly baroque way
@@ -270,7 +270,7 @@ class A {
 %~~siv
 % class Hook{ def run() { return A.example(5) == 26; }}
 %~~neg
-\end{eg}
+\end{ex}
 
 \section{Generic Interfaces}
 
@@ -305,12 +305,9 @@ interfaces.
 struct that has \xcd`I` in its \xcd`implements` clause also implements all of
 \xcd`I`'s superinterfaces. 
 
-\noo{Can we do this generically, for structs and classes and interfaces all together?}
 
 
 
-\noo{Do we need to define method overriding for interfaces, as in java spec
-267-8?  Or is that covered elsewhere?}
 
 
 \section{Members of an Interface}
@@ -323,3 +320,4 @@ The members of an interface \xcd`I` are the union of the following sets:
 \item The members of \xcd`Any`.
 \end{enumerate}
 
+Overriding for instances is defined as for classes, \Sref{MethodOverload}

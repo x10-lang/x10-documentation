@@ -7,9 +7,9 @@
 X10 objects are a powerful general-purpose programming tool. However, the
 power must be paid for in space and time. In space, a typical object
 implementation requires some extra memory for run-time class information, as
-well as a pointer for each reference to the object.  In time, a typical object
-requires an extra indirection to read or write data, and some computation to
-figure out which method body to call.  
+well as a pointer for each reference to the object. In time, a typical object
+requires an extra indirection to read or write data, and some run-time
+computation to figure out which method body to call.
 
 For high-performance computing, this overhead may not be acceptable for all
 objects. X10 provides structs, which are stripped-down objects. They are less
@@ -39,14 +39,25 @@ structs (unlike classes) do not have default values.
 
 \section{Struct declaration}
 \index{struct!declaration}
-A struct declaration has the structure: 
-\begin{xtenmath}
-$\mbox{\emph{StructModifiers}}^{\mbox{?}}$
-struct C[X$_1$, $\ldots$, X$_n$](p$_1$:T$_1$, $\ldots$, p$_n$:T$_n$){c} 
-   implements I$_1$, $\ldots$, I$_k$ {
-$\mbox{\emph{StructBody}}$
-}
-\end{xtenmath}
+
+%##(StructDecl TypeParamsWithVariance Properties WhereClause Interfaces ClassBody
+\begin{bbgrammar}
+%(FROM #(prod:StructDecl)#)
+          StructDecl \: Mods\opt \xcd"struct" Id TypeParamsWithVariance\opt Properties\opt WhereClause\opt Interfaces\opt ClassBody & (\ref{prod:StructDecl}) \\
+%(FROM #(prod:TypeParamsWithVariance)#)
+TypeParamsWithVariance \: \xcd"[" TypeParamWithVarianceList \xcd"]" & (\ref{prod:TypeParamsWithVariance}) \\
+%(FROM #(prod:Properties)#)
+          Properties \: \xcd"(" PropertyList \xcd")" & (\ref{prod:Properties}) \\
+%(FROM #(prod:WhereClause)#)
+         WhereClause \: DepParams & (\ref{prod:WhereClause}) \\
+%(FROM #(prod:Interfaces)#)
+          Interfaces \: \xcd"implements" InterfaceTypeList & (\ref{prod:Interfaces}) \\
+%(FROM #(prod:ClassBody)#)
+           ClassBody \: \xcd"{" ClassBodyDecls\opt \xcd"}" & (\ref{prod:ClassBody}) \\
+\end{bbgrammar}
+%##)
+
+
 
 All fields of a struct must be \xcd`val`.
 
@@ -58,7 +69,9 @@ block of memory of size equal to the sum of the sizes of its fields.
 
 Values of a struct \Xcd{C} type can be created by invoking a constructor
 defined in \Xcd{C}.  Unlike for classes, the  \Xcd{new} keyword is optional
-for struct constructors: 
+for struct constructors.
+
+\begin{ex}
 %~~gen ^^^ Structs10
 % package Structs.For.Muckts;
 %~~vis
@@ -66,20 +79,22 @@ for struct constructors:
 struct Polar(r:Double, theta:Double){
   def this(r:Double, theta:Double) {property(r,theta);}
   static val Origin = Polar(0,0);
-  static val x0y1 = Polar(1, 3.14159/2);
-  static val x1y0 = new Polar(1, 0); 
+  static val x0y1   = Polar(1, 3.14159/2);
+  static val x1y0   = new Polar(1, 0); 
 }
 \end{xten}
 %~~siv
 %
 %~~neg
-
+\end{ex}
 Structs support the same notions of generics, properties, and constrained
-types that classes do.  For example, the \xcd`Pair` type below provides pairs
+types that classes do.  
+
+\begin{ex}The \xcd`Pair` type below provides pairs
 of values; the \xcd`diag()` method applies only when the two elements of the
 pair are equal, and returns that common value: 
 %~~gen ^^^ Structs20
-% package Structs.For.Gruckts;
+% package Structs20;
 %~~vis
 \begin{xten}
 struct Pair[T,U](t:T, u:U) {
@@ -88,9 +103,12 @@ struct Pair[T,U](t:T, u:U) {
 }
 \end{xten}
 %~~siv
-%
+% class Hook{ def run() {
+%   val p = Pair(3,3); 
+%   return p.diag() == 3;
+% }}
 %~~neg
-
+\end{ex}
 
 \section{Boxing of structs}
 \index{auto-boxing!struct to interface}
@@ -168,10 +186,10 @@ Float, Double, UByte, UShort, UInt, ULong
 \index{unsigned}
 
 X10 has an unsigned integer type corresponding to each integer type:
-\xcd`UInt` is an unsigned \xcd`Int`, and so on.  These types can be used for
-binary programming, or when an extra bit of precision is needed in integer
-arithmetic.    However, X10 does not otherwise encourage the use of unsigned
-arithmetic.  
+\xcd`UInt` is an unsigned \xcd`Int`, and so on. These types can be used for
+binary programming, or when an extra bit of precision for counters or other
+non-negative numbers is needed in integer arithmetic. However, X10 does not
+otherwise encourage the use of unsigned arithmetic.
 
 
 
@@ -181,14 +199,9 @@ arithmetic.
 \index{struct!generic}
 \index{generic!struct}
 
-An unconstrained type variable \Xcd{X} can be instantiated with \Xcd{Object} or
-its subclasses or structs or functions.
 
-Within a generic struct, all the operations of \Xcd{Any} are available
-on a variable of type \Xcd{X}. Additionally, variables of type \Xcd{X} may
-be used with \Xcd{==, !=}, in \Xcd{instanceof}, and casts.
 
-\bard{The rest of this section is under discussion.  The example is wrong; it
+\noo{The rest of this section is under discussion.  The example is wrong; it
 ignores the fact that values can be functions.}
 The programmer must be aware of the different interpretations of
 equality for structs and classes and ensure that the code is correctly
@@ -213,10 +226,14 @@ if (x instanceof Object) { // x is a real object
 suitable for use in a library.  For a shorter example, we define the
 \xcd`Pair` struct---available in \xcd`x10.util.Pair`.  A \xcd`Pair` packages
 two values of possibly unrelated type together in a single value, \eg, to
-return two values from a function.
+return two values from a function.  
 
+\xcd`divmod` computes the quotient and remainder of \xcd`a \div b` (naively).
+It returns both, packaged as a \xcd`Pair[UInt, UInt]`.  Note that the
+constructor uses type inference, and that the quotient and remainder are
+accessed through the \xcd`first` and \xcd`second` fields.
 %~~gen ^^^ Structs30
-% package Structs.Pairs.Are.For.Squares;
+% package Structs30Pair;
 %~~vis
 \begin{xten}
 struct Pair[T,U] {
@@ -226,13 +243,23 @@ struct Pair[T,U] {
         this.first = first;
         this.second = second;
     }
-    public def toString():String {
-        return "(" + first + ", " + second + ")";
-    }
+    public def toString() = "(" + first + ", " + second + ")";
+}
+class Example {
+  static def divmod(var a:UInt, b:UInt): Pair[UInt, UInt] {
+     assert b > 0;
+     var q : UInt = 0;
+     while (a > b) {q++; a -= b;}
+     return Pair(q, a); 
+  }
+  static def example() {
+     val qr = divmod(22, 7);
+     assert qr.first == 3 && qr.second == 1;
+  }
 }
 \end{xten}
 %~~siv
-%
+%class Hook{ def run() { Example.example(); return true; } } 
 %~~neg
 
 \section{Nested Structs}
@@ -280,8 +307,8 @@ struct Struct2Class {
 \begin{enumerate}
 
 \item Class constructors require the \xcd`new` keyword; struct constructors
-      forbid it.  \xcd`new Class2Struct(3)` will need to be converted to
-      \xcd`Class2Struct(3)`, and \xcd`Struct2Class(3)` to 
+      allow  it but do not require it.  
+      \xcd`Struct2Class(3)` to will need to be converted to 
       \xcd`new Struct2Class(3)`.
 
 \item Objects and structs have different notions of \xcd`==`.  
