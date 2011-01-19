@@ -22,23 +22,13 @@ is of type \xcd`Int{self==1}`, and \xcd`true` is of type
 \index{this}
 \index{\Xcd{this}}
 
-%##(Primary
 \begin{bbgrammar}
 %(FROM #(prod:Primary)#)
-             Primary \: \xcd"here" & (\ref{prod:Primary}) \\
-                    \| \xcd"[" ArgumentList\opt \xcd"]" \\
-                    \| Literal \\
-                    \| \xcd"self" \\
+             Primary \: \xcd"this" (\ref{prod:Primary}) \\
                     \| \xcd"this" \\
                     \| ClassName \xcd"." \xcd"this" \\
-                    \| \xcd"(" Exp \xcd")" \\
-                    \| ClassInstCreationExp \\
-                    \| FieldAccess \\
-                    \| MethodInvocation \\
-                    \| MethodSelection \\
-                    \| OperatorFunction \\
 \end{bbgrammar}
-%##)
+
 
 The expression \xcd"this" is a  local \xcd`val` containing a reference
 to an instance of the lexically enclosing class.
@@ -186,7 +176,8 @@ If the field target is a class name, a static field is selected.
 It is illegal to access  a field that is not visible from
 the current context.
 It is illegal to access a non-static field
-through a static field access expression.
+through a static field access expression.  However, it is legal to access a
+static field through a non-static reference.
 
 \section{Function Literals}
 Function literals are described in \Sref{Functions}.
@@ -263,7 +254,8 @@ A closure call \xcdmath"e($\dots$)" is shorthand for a method call
 
 Method selection rules are given in \Sref{sect:MethodResolution}.
 
-It is a static error if a method's \grammarrule{Guard} is not satisfied by the
+It is a static error if a method's \grammarrule{Guard} is not statically
+satisfied by the 
 caller.  For example: 
 %~~gen ^^^ Expressions60
 %package Expressions.Calls.Guarded.By.Walls;
@@ -272,13 +264,13 @@ caller.  For example:
 class DivideBy(denom:Int) {
   def doIt(numer:Int){denom != 0} = numer / denom;
   def example() {
-     //ERROR: denom might be zero: this.doIt(100); 
+     //ERROR: this.doIt(100); 
      (this as DivideBy{self.denom != 0}).doIt(100);
   }
 }
 \end{xten}
 %~~siv
-%
+% class Hook{ def run() { (new DivideBy(1)).example(); return true; } }
 %~~neg
 
 
@@ -328,7 +320,7 @@ initialized once.
   x = 1;
   y = 2; // Correct; initializes y
   x = 3; 
-  // Incorrect: y = 4;
+  // ERROR: y = 4;
 \end{xten}
 %~~siv
 % } } 

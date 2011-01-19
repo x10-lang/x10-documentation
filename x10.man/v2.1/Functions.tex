@@ -55,6 +55,7 @@ val sq: (Int) => Int
 
 
 
+\noo{Note that 'apply' is no longer the function-ish thing!}
 
 A function literal evaluates to a function entity $f$. When {$f$} is
 applied to a suitable list of actual parameters \xcd`a1` through \xcd`an`, it
@@ -133,8 +134,8 @@ pairs of \xcd`Int`s.
 class Funny implements (Boolean) => Int, 
                        (Int, Int) => Int
 {
-  public def apply(Boolean) = 1;
-  public def apply(x:Int, y:Int) = 10*x+y;
+  public operator this(Boolean) = 1;
+  public operator this(x:Int, y:Int) = 10*x+y;
   static def example() {
     val f <: Funny  = new Funny();
     assert f(true) == 1; // (Boolean)=>Int behavior
