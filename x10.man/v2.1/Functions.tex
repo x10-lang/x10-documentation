@@ -55,7 +55,6 @@ val sq: (Int) => Int
 
 
 
-\noo{Note that 'apply' is no longer the function-ish thing!}
 
 A function literal evaluates to a function entity $f$. When {$f$} is
 applied to a suitable list of actual parameters \xcd`a1` through \xcd`an`, it
@@ -119,7 +118,9 @@ the method \Xcd{m}, which takes arguments of type \Xcd{(x1:T1,..., xn:Tn)}.
 Within this function, \Xcd{this} is bound to the result of evaluating \Xcd{e}.
 
 Function types may be used in \Xcd{implements} clauses of class
-definitions. Instances of such classes may be used as functions of the
+definitions. Suitable operator definitions must be supplied, with 
+\xcdmath"public operator this(x1:T1, $\ldots$, xn:Tn)" declarations.
+Instances of such classes may be used as functions of the
 given type.  Indeed, an object may behave like any (fixed) number of
 functions, since the class it is an instance of may implement any
 (fixed) number of function types.
