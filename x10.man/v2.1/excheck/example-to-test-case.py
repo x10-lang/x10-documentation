@@ -26,6 +26,7 @@ genTestCases = True
 #If NOCOMPILE does, do not generate a compileCheck.
 NOTEST_pattern = "NOTEST"
 NOCOMPILE_pattern = "NOCOMPILE"
+KNOWN_FAIL_pattern = "KNOWNFAIL"
 
 # Clue indicating that a class should *not* be made a static inner class
 # in a testcase
@@ -396,7 +397,8 @@ def doom(msg):
 
 def cramCodeIntoFile(filename, code, forbidFlag):
     forbidFlagThere, deflaggedCode = findAndDelete(code, forbidFlag)
-    if not forbidFlagThere: 
+    knownFailFlagThere, deflaggedCode = findAndDelete(deflaggedCode, KNOWN_FAIL_pattern)
+    if not forbidFlagThere and not knownFailFlagThere: 
         f = open(filename, 'w')
         f.write(deflaggedCode)
         f.flush()
