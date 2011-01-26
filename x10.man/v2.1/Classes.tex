@@ -475,6 +475,7 @@ well-defined when \xcd`x != null`, as \xcd`null.toString()` throws a null
 pointer exception: 
 %~~gen ^^^ Classes80
 % package Classes.methodwithconstraintthingie;
+% KNOWNFAIL
 %~~vis
 \begin{xten}
 class Example {
@@ -500,6 +501,7 @@ than usual, as it is statically provable that \xcd`x != null`.)
 This may require a cast: 
 %~~gen ^^^ Classes90
 % package Classes.methodguardnadacastthingie;
+% KNOWNFAIL
 % class Example {var f : String = ""; def example(x:Object){x != null} = {this.f = x.toString();}}
 % class Eyample {
 %~~vis

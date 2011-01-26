@@ -4,30 +4,34 @@ This chapter describes the statements in the sequential core of
 \Xten{}.  Statements involving concurrency and distribution
 are described in \Sref{XtenActivities}.
 
-
-
-
-
 \section{Empty statement}
 
+The empty statement \xcd";" does nothing.  
 
-The empty statement \xcd";" does nothing.  It is useful when a
-loop header is evaluated for its side effects.  For example,
-the following code sums the elements of a 1-dimensional array.
-
+\begin{ex}
+Sometimes, the syntax of X10 requires a statement in some position, but you do
+not actually want to do any computation there.   
+The following code searches the array \xcd`a` for the value \xcd`v`, assumed
+to appear somewhere in \xcd`a`, and returns the index at which it was found.  
+There is no computation to do in the loop body, so we use an empty statement
+there. 
 %~~gen ^^^ Statements10
 % package statements.emptystatement;
 % class EmptyStatementExample {
-% def summizmo (a:Array[Int](1)){
 %~~vis
 \begin{xten}
-var sum: Int = 0;
-for (var i: Int = 0; i < a.size; i++, sum += a(i))
-    ;
+static def search[T](a: Array[T](1), v: T):Int {
+  var i : Int;
+  for(i = a.region.min(0); a(i) != v; i++)
+     ;
+  return i;
+}
 \end{xten}
 %~~siv
-%}}
+%}
 %~~neg
+
+\end{ex}
 
 \section{Local variable declaration}
 \index{variable!declaration}
@@ -56,8 +60,7 @@ Short-lived variables are introduced by local variables declarations, as
 described in \Sref{VariableDeclarations}. Local variables may be declared only
 within a block statement (\Sref{Blocks}). The scope of a local variable
 declaration is the statement itself and the subsequent statements in the
-block.  Variables declared in such statements shadow variables of the same
-name declared elsewhere.
+block. 
 %~~gen ^^^ Statements20
 % package statements.should.have.locals;
 % class LocalExample {
@@ -75,6 +78,8 @@ name declared elsewhere.
 %} }
 %~~neg
 
+Variables declared in such statements shadow variables of the same
+name declared elsewhere.
 A local variable of a given name, say \xcd`x`, cannot shadow another local
 variable or parameter named \xcd`x` unless there is an intervening method or
 closure declaration, or unless the inner \xcd`x` is declared inside an
@@ -96,20 +101,20 @@ class Shadow{
      this.x = x; 
   }
   def example(y:Int) {
-     val x = "shadow field";
-     // ERROR: val y = "shadow param";
+     val x = "shadows a field";
+     // ERROR: val y = "shadows a param";
      val z = "local";
      for (a in [1,2,3]) {
-        // ERROR: val x = "can't shadow";
+        // ERROR: val x = "can't shadow local var";
      }
      async {
-        val x = "shadow through async";
+        val x = "can shadow through async";
      }        
      at (here) {
-        val x = "shadow through at";
+        val x = "can shadow through at";
      }        
      val f = () => { 
-       val x = "shadow through closure";
+       val x = "can shadow through closure";
        x
      };
   }
@@ -183,9 +188,14 @@ if (b) {
 \end{bbgrammar}
 %##)
 
-The expression statement evaluates an expression.  The value of the expression
-is not used.
-Side effects of the expression occur.  
+The expression statement evaluates an expression. The value of the expression
+is not used. Side effects of the expression occur, and may produce results
+used by following statements. Indeed, statement expressions which terminate
+without side effects cannot have any visible effect on the results of the
+computation. 
+
+
+\begin{ex}
 %~~gen ^^^ Statements40
 % package Sta.tem.ent.s.expressions;
 % import x10.util.*;
@@ -205,9 +215,14 @@ class StmtEx {
 %~~siv
 %
 %~~neg
-Only selected forms of expression can appear in expression
-statements: assignments, increments, decrements, method invocations, and
-constructor invocations. 
+\end{ex}
+
+
+Only selected forms of expression can appear in expression statements:
+assignments, increments, decrements, method invocations, and constructor
+invocations. Most other forms of expression, such as literals and variable and
+field references, cannot have side effects and are thus pointless as
+expression statements.
 
 
 \section{Labeled statement}
@@ -215,21 +230,22 @@ constructor invocations.
 \index{statement label}
 
 
-% TODO The following grammar is inconsistent with the grammar in the appendix.
-%##(LabeledStatement
 \begin{bbgrammar}
-%(FROM #(prod:LabeledStatement)#)
-    LabeledStatement \: Id \xcd":" LoopStatement & (\ref{prod:LabeledStatement}) \\
+    LabeledStatement \: Id \xcd":" Statement 
 \end{bbgrammar}
-%##)
+
 
 Statements may be labeled. The label may be used to describe the target of a
 \xcd`break` statement appearing within a substatement (which, when executed,
-ends the labeled statement) , or, in the case of a loop, a \xcd`continue` as
+ends the labeled statement), or, in the case of a loop, a \xcd`continue` as
 well (which, when executed, proceeds to the next iteration of the loop). The
 scope of a label is the statement labeled.
 
-
+\begin{ex}
+The label on the outer \xcd`for` statement allows \xcd`continue` and
+\xcd`break` statements to continue or break it.  Without the label,
+\xcd`continue` or \xcd`break` would only continue or break the inner \xcd`for`
+loop. 
 %~~gen ^^^ Statements50
 % package state.meant.labe.L;
 % class Example {
@@ -247,11 +263,13 @@ lbl : for ([i] in 1..10) {
 %~~siv
 %} } 
 %~~neg
+\end{ex}
 
 In particular, a block statement may be labeled: \xcd` L:{S}`.  This allows
 the use of \xcd`break L` within \xcd`S` to leave \xcd`S`, which can, if
-carefully used, avoid deeply-nested \xcd`if`s: 
+carefully used, avoid deeply-nested \xcd`if`s. 
 
+\begin{ex}
 %~~gen ^^^ Statements51
 % package statements51;
 % abstract class Example {
@@ -261,6 +279,7 @@ carefully used, avoid deeply-nested \xcd`if`s:
 % abstract def suitable_for_phase_2(String):Boolean;
 % abstract def suitable_for_phase_3(String):Boolean;
 % def example(filename: String) {
+% KNOWNFAIL
 %~~vis
 \begin{xten}
 multiphase: {
@@ -276,8 +295,9 @@ multiphase: {
 %~~siv
 %}
 %~~neg
+\end{ex}
 
-
+\limitation{Blocks cannot currently be labeled.}
 
 \section{Break statement}
 \index{break}
@@ -296,9 +316,9 @@ statement with the given label.
 It is illegal to break out of a statement not defined in the current
 method, constructor, initializer, or closure.  
 
+\begin{ex}
 The following code searches for an element of a two-dimensional
 array and breaks out of the loop when it is found:
-
 %~~gen ^^^ Statements60
 % package statements.come.from.banks.and.cranks;
 % class LabelledBreakeyBreakyHeart {
@@ -317,6 +337,7 @@ outer: for (var i: Int = 0; i < a.size; i++)
 % return found;
 %}}
 %~~neg
+\end{ex}
 
 \section{Continue statement}
 \index{continue}
@@ -332,6 +353,8 @@ innermost enclosing loop, and proceeds on to the next.  A labeled
 \xcd`continue` does the same to the enclosing loop with that label.
 It is illegal to continue a loop not defined in the current
 method, constructor, initializer, or closure.
+
+\noo{Example}
 
 \section{If statement}
 \index{if}
@@ -415,7 +438,8 @@ and must be compile-time
 constants.  Case labels cannot be duplicated within the
 \xcd"switch" statement.
 
-In the following example, case \xcd`1` falls through to case \xcd`2`.  The
+\begin{ex}
+In this \xcd`switch`, case \xcd`1` falls through to case \xcd`2`.  The
 other cases are separated by \xcd`break`s.
 %~~gen ^^^ Statements70
 % package Statement.Case;
@@ -436,7 +460,7 @@ switch (i) {
 %~~siv
 % } } 
 %~~neg
-
+\end{ex}
 
 \section{While statement}
 \index{while}
@@ -454,6 +478,10 @@ reaching the end or via a \xcd"continue" statement with the loop header as
 target), the condition is reevaluated and the loop repeats if \xcd"true". If
 the condition is \xcd"false", the loop exits.
 
+\begin{ex}
+A loop to execute the process in the Collatz conjecture (a.k.a. 3n+1 problem,
+Ulam conjecture, Kakutani's problem, Thwaites conjecture, Hasse's algorithm,
+and Syracuse problem) can be written as follows:
 %~~gen ^^^ Statements80
 % package Statements.AreFor.Flatements;
 % class Example {
@@ -467,7 +495,7 @@ the condition is \xcd"false", the loop exits.
 %~~siv
 % } } 
 %~~neg
-
+\end{ex}
 \section{Do--while statement}
 \index{do}
 
@@ -479,10 +507,9 @@ the condition is \xcd"false", the loop exits.
 %##)
 
 
-A do-while statement executes a loop body, and then evaluates a
+A \Xcd{do-while} statement executes the loop body, and then evaluates a
 \xcd`Boolean`-valued condition expression. If \xcd"true", the loop repeats.
 Otherwise, the loop exits.
-
 
 
 \section{For statement}
@@ -514,7 +541,8 @@ It has two forms: a basic form allowing near-arbitrary iteration, {\em a la}
 C, and an enhanced form designed to iterate over a collection.
 
 A basic \xcd`for` statement provides for arbitrary iteration in a somewhat
-more organized fashion than a \xcd`while`.  \xcd`for(init; test; step)body` is
+more organized fashion than a \xcd`while`.  The loop 
+\xcd`for(init; test; step)body` is
 equivalent to: 
 \begin{xten}
 {
@@ -558,11 +586,83 @@ An enhanced for statement is used to iterate over a collection, or other
 structure designed to support iteration by implementing the interface
 \xcd`Iterable[T]`.    The loop variable must be of type \xcd`T`, 
 or destructurable from a value of type \xcd`T`
-(\Sref{exploded-syntax}; in practice, this means that 
-\xcd`for ([i] in 1..10)` iterates over numbers from 1 to 10, while 
-\xcd`for (i in 1..10` iterates over \xcd`Point`s from 1 to 10).
+(\Sref{exploded-syntax}).  
 Each iteration of the loop
 binds the iteration variable to another element of the collection.
+The loop \xcd`for(x in c)S` behaves like: 
+%~~gen ^^^ Statements5e4u
+% package Statements5e4u;
+% class ForAll {
+% def forall[T](c:Iterable[T], S: () => void) {
+%~~vis
+\begin{xten}
+val iterator: Iterator[T] = c.iterator();
+while (iterator.hasNext()) {
+  val x : T = iterator.next();
+  S();
+}
+\end{xten}
+%~~siv
+%} }
+%~~neg
+
+A number of library classes implement \xcd`Iterable`, and thus can be iterated
+over.  For example, iterating over a \xcd`Region` iterates the \xcd`Point`s in
+the region, and iterating over an \xcd`Array` iterates over the
+\xcd`Point`s at which the  array is defined.
+
+\begin{ex}
+This loop adds up the elements of a \xcd`List[Int]`.
+Note that iterating over a list yields the elements of the list, as specified
+in the \xcd`List` API. 
+%~~gen ^^^ Statements3d9l
+% package Statements3d9l;
+% class Example {
+%~~vis
+\begin{xten}
+static def sum(a:x10.util.List[Int]):Int {
+  var s : Int = 0;
+  for(x in a) s += x;
+  return s;
+}
+\end{xten}
+%~~siv
+%}
+%~~neg
+
+The following code sums the elements of an integer array.  Note that the
+\xcd`for` loop iterates over the indices of the array, not the elements, as
+specified in the \xcd`Array` API.  
+%~~gen ^^^ Statements2d4h
+% package Statements2d4h;
+% class Example { 
+%~~vis
+\begin{xten}
+static def sum(a: Array[Int]): Int {
+  var s : Int = 0;
+  for(p in a) s += a(p);
+  return s;
+}
+\end{xten}
+%~~siv
+%}
+%~~neg
+
+
+
+\end{ex}
+
+Iteration variables have the \xcd`for` statement as scope.  They shadow other
+variables of the same names.
+
+\begin{ex}
+In practice, the ability to do destructuring in a \xcd`for` statement is
+mainly used for iterate over ranges of numbers.  
+\xcd`for ([i] in 1..10)` iterates over numbers from 1 to 10.
+The brackets are important. 
+\xcd`for (i in 1..10` iterates over \xcd`Point`s from 
+\xcd`[1] as Point` to \xcd`[10] as Point`.
+
 
 %~~gen ^^^ Statements90
 % package statements.for_for;
@@ -576,15 +676,7 @@ binds the iteration variable to another element of the collection.
 %~~siv
 % } } 
 %~~neg
-
-A number of library classes implement \xcd`Iterable`, and thus can be iterated
-over.  For example, iterating over a \xcd`Region` iterates the \xcd`Point`s in
-the region, and iterating over a \xcd`DistArray` iterates over the
-\xcd`Point`s at which the distributed array is defined.
-
-Iteration variables have the \xcd`for` statement as scope.  They shadow other
-variables of the same names.
-
+\end{ex}
 
 
 \section{Return statement}
@@ -599,9 +691,32 @@ variables of the same names.
 %##)
 
 Methods and closures may return values using a return statement.
-If the method's return type is expliclty declared \xcd"void",
+If the method's return type is explicitely declared \xcd"void",
 the method must return without a value; otherwise, it must return
 a value of the appropriate type.
+
+\begin{ex}
+The following code illustrates returning values from a closure and a method.
+The \xcd`return` inside of \xcd`closure` returns from \xcd`closure`, not from
+\xcd`method`.  
+%~~gen ^^^ Statements2j1d
+% package Statements2j1d;
+% class Example {
+%~~vis
+\begin{xten}
+def method(x:Int) {
+  val closure = (y:Int) => {return x+y;}; 
+  val res = closure(0);
+  assert res == x;
+  return res == x;
+}
+\end{xten}
+%~~siv
+%}
+%~~neg
+
+
+\end{ex}
 
 
 \section{Assert statement} 

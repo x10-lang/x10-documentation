@@ -316,6 +316,7 @@ guarantee that \xcd`denom != 0`.  Casting \xcd`this` to a type
 whose constraint implies \xcd`denom != 0` permits the method call.
 %~~gen ^^^ Expressions60
 %package Expressions.Calls.Guarded.By.Walls;
+% KNOWNFAIL
 %~~vis
 \begin{xten}
 class DivideBy(denom:Int) {
@@ -1070,11 +1071,10 @@ Other types can provide them as well:
 class Cont {
    operator this in (Int) = true;
    operator (String) in this = false;
-   static operator (Array[Cont]) in (b:Boolean) = b;
+   static operator (Cont) in (b:Boolean) = b;
    static def example() {
       val c:Cont = new Cont();
-      val ac : Array[Cont] = [c];
-      assert c in 4 && !("odd" in c) && (ac in true);
+      assert c in 4 && !("odd" in c) && (c in true);
    }
 }
 \end{xten}
@@ -1372,6 +1372,7 @@ Users may define coercions from arbitrary types into the container type
 
 %~~gen ^^^ Expressions2j7z
 % package Expressions2j7z;
+% KNOWNFAIL
 %~~vis
 \begin{xten}
 class Bee {
