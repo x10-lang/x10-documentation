@@ -736,7 +736,8 @@ The annotated assertion \xcd`assert E : F;` checks \xcd`E`, and, if it is
 false, throws an \xcd`x10.lang.Error` exception with \xcd`F`'s value attached
 to it. 
 
-For example, 
+\begin{ex}
+The following code compiles properly.  
 %~~gen ^^^ Statements100
 % package Statements.Assert;
 % 
@@ -752,11 +753,12 @@ class Example {
 %~~siv
 %~~neg
 \noindent
-compiles properly, but prints a stack trace starting with 
+However, when run, it 
+prints a stack trace starting with 
 \begin{xten}
 x10.lang.Error: Changed my mind about a
 \end{xten}
-
+\end{ex}
 
 \section{Exceptions in X10}
 \index{exception}
@@ -801,7 +803,8 @@ any method can, potentially, throw any exception.
 \xcd"throw E" throws an exception whose value is \xcd`E`, which must be an
 instance of a subtype of \xcd`x10.lang.Throwable`. 
 
-For example, the following code checks if an index is in range and
+\begin{ex}
+The following code checks if an index is in range and
 throws an exception if not.
 
 %~~gen ^^^ Statements110
@@ -817,6 +820,7 @@ if (i < 0 || i >= x.size)
 %} }
 % class MyIndexOutOfBoundsException extends Exception {}
 %~~neg
+\end{ex}
 
 \section{Try--catch statement}
 \index{try}
@@ -866,6 +870,34 @@ exception is rethrown.
 
 The parameter of a \xcd`catch` block has the block as scope.  It shadows other
 variables of the same name.
+
+\begin{ex}
+The \xcd`example()` method below executes without any assertion errors
+%~~gen ^^^ Statements9x3m
+% package Statements9x3m;
+%~~vis
+\begin{xten}
+class Exn extends Throwable{}
+class SubExn(n:Int) extends Exn{}
+class Example {
+  static def example() {
+    var correct : Boolean = false;
+    try {
+       throw new SubExn(4);
+    }
+    catch (e : SubExn{n==1}) { assert false; }
+    catch (e : Exn)          { correct = true; }
+    catch (e : SubExn)       { assert false; }
+    catch (e : Throwable)    { assert false; }
+    assert correct; 
+  }
+}
+\end{xten}
+%~~siv
+% class Hook { def run() { Example.example(); return true; } }
+%~~neg
+
+\end{ex}
 
 \section{Assert}
 
