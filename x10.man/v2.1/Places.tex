@@ -35,7 +35,8 @@ They can be {\em copied} to other places, and the special library struct
 \index{FIRST\_PLACE}
 
 %~~exp~~`~~`~~ ~~ ^^^ Places10
-Places are numbered 0 through \xcd`Place.MAX_PLACES-1`, stored in the field
+Places are numbered 0 through \xcd`Place.MAX_PLACES-1`; the number is stored
+in the field 
 \xcd`pl.id`.  The \xcd`Sequence[Place]` \xcd`Place.places()` contains the places of the
 program, in numeric order. 
 The program starts by executing a \xcd`main` method at
@@ -63,9 +64,14 @@ The variable \xcd"here" is always bound to the place at which the current
 computation is running, in the same way that \xcd`this` is always bound to the
 instance of the current class (for non-static code), or \xcd`self` is bound to
 the instance of the type currently being constrained.  
-\xcd`here` may denote different places in the same method body, due to
-place-shifting operations, just as \Xcd{self} denotes 
-two different values in \xcd`List[Int{self!=0}]{self!=null}`. In the following
+\xcd`here` may denote different places in the same method body or even the
+same expression, due to
+place-shifting operations.
+
+
+This is not unusual for automatic variables:  \Xcd{self} denotes 
+two different values (one \xcd`List`, one \xcd`Int`) in
+\xcd`List[Int{self!=0}]{self!=null}`. In the following 
 code, \xcd`here` has one value at 
 \xcd`h0`, and a different one at \xcd`h1` (unless there is only one place).
 %~~gen ^^^ Places60

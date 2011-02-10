@@ -262,11 +262,15 @@ f &=& b x
 <:  :>  @   ..
 \end{xten}
 
-The precedence of the binary operators is as follows.  Earlier rows of the
+The precedence of the operators is as follows.  Earlier rows of the
 table have higher precedence than later rows, binding more tightly.  
-For example, \xcd`a+b*c<d` parses as \xcd`(a+(b*c))<d`.
+For example, \xcd`a+b*c<d` parses as \xcd`(a+(b*c))<d`, 
+and \xcd`-1 as Byte` parses as \xcd`-(1 as Byte)`. 
 
 \begin{tabular}{l}
+\xcd`as T`, postfix \xcd`++`, postfix \xcd`--`\\
+unary \xcd`-`, unary \xcd`+`, prefix \xcd`++`, prefix \xcd`--`\\
+\xcd`!`, \xcd`~`\\
 \xcd`? :` \\
 \xcd`||` \\
 \xcd`&&` \\
