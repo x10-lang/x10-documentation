@@ -1,0 +1,376 @@
+Constructing an object in a safe way is not easy:
+    it is well known that dynamic dispatching
+    or leaking \this during object construction
+    is error-prone~\cite{Dean:1996,Seo:2007:SBD:1522565.1522587,Gil:2009:WRS:1615184.1615216},
+    and various type systems and verifiers have been proposed to
+    handle safe object initialization~\cite{Hubert:2010:ESO:1888881.1888890,Zibin:2010:OIG:1869459.1869509,Fahndrich:2007:EOI:1297027.1297052,XinQi:2009}.
+As languages become more and more complex,
+    new pitfalls are created due to the interactions between
+    language features.
+
+X10 is an object oriented programming language with a sophisticated
+    type system (constraints, class invariants, non-erased generics, closures)
+    and concurrency constructs (asynchronous activities, multiple places, global references).
+This paper shows that object initialization is a cross-cutting concern
+    that interact with other features in the language.
+We discuss several language designs that restrict these interactions,
+    and explain why we chose the \emph{hardhat} design for X10.
+
+{Hardhat} was termed in~\cite{Gil:2009:WRS:1615184.1615216}
+    and it describes a design that prohibits dynamic dispatching or leaking \this during construction.
+A hardhat design limits the user
+    but also protects her from future bugs.
+X10's hardhat design is even stricter due to additional language features
+    such as concurrency, places, and closures.
+
+On the other end of the spectrum,
+    Java and C\# allow
+    dynamic dispatching and leaking \this
+    and still maintain type- and runtime- safety
+    by relying on the fact that every type has a default zero value
+    (whether that zero is 0, false, or \code{null}),
+    and all fields are zero-initialized before the constructor begins.
+As a consequence,
+    a half-baked object can leak before all its fields are set. %\cite{Seo:2007:SBD:1522565.1522587} - reading uninitialized field references
+Phrased differently,
+    when reading a final field, one can read the default value initially and later read a different value.
+Another source of subtle bugs is due to the synchronization barrier
+    at the end of a constructor~\cite{JSR133}
+    after which all assignments to final fields are guaranteed to be written.
+The programmer is warned (in the documentation only!)
+    that objects with final fields are thread-safe only if
+    \this does not escape its constructor.
+%Before JSR 133~\cite{JSR133},
+%    immutable objects could have different values in different threads
+%    if synchronization was not used properly.
+Finally, if the type-system is augmented, for example, with non-null types, then
+    a default value no longer exists,
+    which leads to complicated type-systems for initialization~\cite{Fahndrich:2007:EOI:1297027.1297052,XinQi:2009}.
+
+\mbox{C++}, as usual, gives you enough rope to hang yourself.
+Fields are not zero-initialized, and therefore if \this leaks,
+    one can read an uninitialized field.
+Moreover, method calls are statically bound during construction,
+    which may result in an exception at runtime
+    if one tries to invoke a virtual method of an abstract class (see \Ref{Figure}{Dynamic-dispatch} below).
+(Determining whether this happens is an intractable problem~\cite{Gil:1998:CTA:646155.679689}.)
+
+
+The remainder of this introduction presents examples in X10
+    that slowly add language features and describes their interaction with
+    object initialization.
+The examples below show X10 code, and the lines marked with \code{//err}
+    match errors issued by the compiler according to the hardhat design that
+    will be described in \Ref{Section}{designs}.
+
+\subsection{Constructors and inheritance}
+%Methods in X10 are denoted by \code{def}, and \code{val} denotes a final field.
+Object initialization begins by invoking a constructor, denoted by \code{def this()}.
+
+Consider \Ref{Figure}{Escaping-this}.
+The first leak causes a problem because field \code{a} was not assigned yet.
+However, leaking is still a problem even after all fields have been assigned,
+    because fields in a subclass might not have been initialized yet.
+
+\begin{figure}
+\begin{lstlisting}
+class A {
+  val a:Int;
+  def this() {
+    LeakIt.foo(this); //err
+    a = 1;
+    LeakIt.foo(this); //err
+  }
+}
+class B extends A {
+  val b:Int;
+  def this() {
+    super();
+    b = 2;
+  }
+}
+\end{lstlisting}
+\caption{Escaping \this example.
+    X10: a raw \this cannot escape.}
+\label{Figure:Escaping-this}
+\end{figure}
+
+In X10, \this cannot leak.
+
+%\begin{figure}
+%\begin{lstlisting}
+%class A {
+%  static val INSTANCES = new ArrayList[A]();
+%  def this() { // constructor
+%    // initialize A's fields
+%    INSTANCES.add(this);
+%  }
+%}
+%\end{lstlisting}
+%\caption{Static-container paradigm that leaks \this.}
+%\label{Figure:Static-container-paradigm}
+%\end{figure}
+
+\subsection{Dynamic dispatch}
+
+
+\begin{figure}
+\begin{lstlisting}
+abstract class A {
+  def this() {
+    init(); //err
+  }
+  abstract def init():void;
+}
+class B extends A {
+  val b:Int;
+  def this(i:Int) {
+    super(i);
+    b = 3;
+  }
+  def init():void {
+    val x = b;
+  }
+}
+\end{lstlisting}
+\caption{Dynamic dispatch example.
+    X10: a raw \this can be the receiver only for private or final methods.}
+\label{Figure:Dynamic-dispatch}
+\end{figure}
+
+
+In X10, you can call only private or final methods
+    during construction,
+    therefore there is no dynamic dispatching during construction.
+
+In C++ it gives an error that you called a pure virtual function.
+
+In Java you get the default value of b, not 3.
+This is undesired in Java, and Java tries to catch some of these cases by
+    forbidding a call to a member function before the super object was initialized.
+For example, the following is illegal in Java (and X10) if \code{f} is a member function:
+\begin{lstlisting}
+class B extends A { B() {super(f()); }}
+\end{lstlisting}
+
+
+
+\subsection{Exceptions}
+
+
+\begin{figure}
+\begin{lstlisting}
+try {super();} catch(Throwable e){}
+\end{lstlisting}
+\caption{Exceptions example.
+    X10: if the construction of an object finished normally, then all constructor
+        calls have finished normally.}
+\label{Figure:Exceptions}
+\end{figure}
+
+This is also checked in Java, that prohibits any statement before a super call.
+Failure to implement this verification properly led to a famous attack~\cite{Dean:1996}
+
+
+\subsection{Concurrency}
+Explain async+finish.
+If the finish was removed, then it would be an error ...
+
+\begin{figure}
+\begin{lstlisting}
+class A {
+  val a:Int;
+  val b:Int;
+  def this() {
+    finish {
+      async a = 1;
+    }
+    async b = 2; //err
+  }
+}
+\end{lstlisting}
+\caption{Asynchronously assigned fields example.
+    X10: all field assignments must finish when the constructor finishes.}
+\label{Figure:Asynchronously-init}
+\end{figure}
+
+
+\subsection{Multiple Places}
+Places require serialization and deserialization (both custom and automatic) across "at".
+
+\begin{figure}
+\begin{lstlisting}
+class A {
+  val a:Int;
+  def this() {
+    // Execute at another place
+    at (here.next())
+      this.a = 1; //err
+  }
+}
+\end{lstlisting}
+\caption{Multi-place initialization example.
+    X10: a raw \this cannot cross to another place.}
+\label{Figure:Multi-place}
+\end{figure}
+
+
+\subsection{Global references}
+Special GlobalRef class: let \this escape and it creates a cycle.
+We allow a raw \this to escape iff
+* field is private with a field initializer.
+* cannot be used with a raw \this receiver.
+
+\begin{figure}
+\begin{lstlisting}
+class A {
+  private val root =
+   new GlobalRef(this);
+  def me() = root();
+}
+class B extends A {
+  def this() {
+    val alias = me(); //err
+  }
+}
+\end{lstlisting}
+\caption{\code{GlobalRef} example.
+    X10: ...}
+\label{Figure:GlobalRef}
+\end{figure}
+
+If \code{me()} was prefixed with
+\code{@NonEscaping public final}
+then accessing \code{root} would be an error.
+%Cannot use 'root' because a GlobalRef[...](this) cannot be used in a field initializer, constructor, or methods called from a constructor.
+
+\subsection{Constraints}
+Constraints and default values.
+The following types do not have a default value:
+\code{Int\lb self!=0\rb}
+\code{String\lb self!=null\rb}
+
+Therefore the fields of an object cannot be zero-initialized in X10.
+
+\begin{figure}
+\begin{lstlisting}
+class A {
+  var a:Int{self!=0}; //err
+}
+\end{lstlisting}
+\caption{No default value example.
+    X10: you must assign to \code{var} fields without a default value.}
+\label{Figure:Constraints}
+\end{figure}
+
+
+\subsection{Properties}
+Properties are final values that can be used in constraints,
+    e.g., \code{Array} has a \code{size} property,
+    so an array of size 2 can be expressed as: \code{Array\lb self.size==2\rb}.
+
+Properties are final fields that are initialized before all other fields.
+
+
+\begin{figure}
+\begin{lstlisting}
+class A(a:Int) {
+  def this() {
+    property(42);
+  }
+}
+class B(b:Int) {b!=0} extends A {
+  val f1 = a+b;
+  val f2:Int;
+  def this() {
+    super();
+    f2 = f1; // err
+    property(3);
+  }
+}
+\end{lstlisting}
+\caption{Properties example.
+    X10: properties must be initialized before fields.}
+\label{Figure:Properties}
+\end{figure}
+
+
+%\subsection{Class Invariant}
+% Should I talk about interface and abstract property methods? Doesn't relate to initialization...
+The \emph{class invariant} may refer only to properties of the class,
+    and it must be satisfied after the property call in every constructor.
+
+
+\subsection{Closures}
+
+\begin{figure}
+\begin{lstlisting}
+class A {
+  val a = 3;
+  def this() {
+    val local = this.a;
+    val closure1 =
+      ()=>local;
+    val closure2 =
+      ()=>this.a; //err
+    at (here.next())
+      closure2();
+  }
+}
+\end{lstlisting}
+\caption{Closure capture \this example.
+    X10: a closure cannot capture a raw \this.}
+\label{Figure:Closures}
+\end{figure}
+
+
+\subsection{Inner classes}
+\begin{figure}
+\begin{lstlisting}
+class A {
+  class Inner {
+    val b = a;
+  }
+  val inner =
+    this.new Inner(); //err
+  val a = 3;
+}
+\end{lstlisting}
+\caption{\this escapes as an outer instance.
+    X10: a raw \this cannot be a receiver of \code{new}.}
+\label{Figure:InnerClass}
+\end{figure}
+
+
+\subsection{Generics}
+\Ref{Figure}{Constraints} showed that a \code{var} must be assigned if
+    it does not contain the zero value.
+For generics, we added a \code{haszero} type condition that requires a type parameter to have the zero value.
+
+\begin{figure}
+\begin{lstlisting}
+class A[T] {
+  var a:T; //err
+}
+class B[T] {T haszero} {
+  var a:T;
+}
+class Usage {
+  var b1:B[Int];
+  var b1:B[String];
+  var b1:B[Int{self!=0}]; //err
+}
+\end{lstlisting}
+\caption{\code{haszero} type condition.
+    X10: statically checks a type has the zero value.}
+\label{Figure:Generics}
+\end{figure}
+
+
+examples for \code{Array}
+
+ \code{Zero.get[T]()}
+
+
+\subsection{Static initialization}
+todo
