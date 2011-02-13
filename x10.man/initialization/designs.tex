@@ -9,6 +9,10 @@ A proto modifier for locals
 allowed cyclic immutable objects.
 
 \subsection{Hardhat design}
+\label{Section:hardhat}
+
+Discuss why we didn't allow aliasing of \this (to avoid an alias analysis).
+
 A method is non-escaping, if it is called from a constructor or from another non-escaping method.
 A non-escaping method must be private, final, or in a final class.
 Constructors and non-escaping methods cannot leak \this.

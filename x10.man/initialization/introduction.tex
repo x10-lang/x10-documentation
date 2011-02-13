@@ -25,8 +25,8 @@ X10's hardhat design is even stricter due to additional language features
 
 On the other end of the spectrum,
     Java and C\# allow
-    dynamic dispatching and leaking \this
-    and still maintain type- and runtime- safety
+    dynamic dispatching and leaking \this.
+However, they still maintain type- and runtime- safety
     by relying on the fact that every type has a default zero value
     (whether that zero is 0, false, or \code{null}),
     and all fields are zero-initialized before the constructor begins.
@@ -59,9 +59,10 @@ Moreover, method calls are statically bound during construction,
 The remainder of this introduction presents examples in X10
     that slowly add language features and describes their interaction with
     object initialization.
-The examples below show X10 code, and the lines marked with \code{//err}
-    match errors issued by the compiler according to the hardhat design that
-    will be described in \Ref{Section}{designs}.
+The rules of the hardhat design are slowly introduced by example.
+Violation of the rules are marked with \code{//err},
+    and these match errors issued by the X10 compiler.
+The hardhat rules are summarized in \Ref{Section}{hardhat}.
 
 \subsection{Constructors and inheritance}
 %Methods in X10 are denoted by \code{def}, and \code{val} denotes a final field.
@@ -70,7 +71,15 @@ Object initialization begins by invoking a constructor, denoted by \code{def thi
 Consider \Ref{Figure}{Escaping-this}.
 The first leak causes a problem because field \code{a} was not assigned yet.
 However, leaking is still a problem even after all fields have been assigned,
-    because fields in a subclass might not have been initialized yet.
+    because fields in a subclass (field \code{b}) have not been initialized yet.
+Leaking and aliasing is not a problem if \this is not raw, e.g., in \code{m1()}.
+
+The fact that \code{m2} is non-escaping was implicitly inferred from the call to \code{m2}
+    in the constructor.
+(From Rule 2, because \code{m2} was called on a raw \this receiver.)
+The user could also mark \code{m2} explicitly as non-escaping by using the annotation
+    \code{@NonEscaping},
+    which is also useful for \code{super} calls (see \Ref{Figure}{Dynamic-dispatch}).
 
 \begin{figure}
 \begin{lstlisting}
@@ -78,7 +87,15 @@ class A {
   val a:Int;
   def this() {
     LeakIt.foo(this); //err
-    a = 1;
+    this.a = 1;
+    val me = this; //err
+    LeakIt.foo(me);
+    this.m2();
+  }
+  def m1() {
+    LeakIt.foo(this);
+  }
+  final def m2() {
     LeakIt.foo(this); //err
   }
 }
@@ -86,69 +103,100 @@ class B extends A {
   val b:Int;
   def this() {
     super();
-    b = 2;
+    this.b = 2;
   }
 }
 \end{lstlisting}
 \caption{Escaping \this example.
-    X10: a raw \this cannot escape.}
+    Rule 1: \this and \code{super} are raw in \emph{non-escaping} methods and in field initializers.
+    Rule 2: A method is \emph{non-escaping} if it is a constructor,
+            or a method that is called on a raw \this receiver.
+    Rule 3: A raw \this or \code{super} cannot escape or be aliased.
+    (The usage of \code{final} on \code{m2} will be explained in \Ref{Figure}{Dynamic-dispatch}.)}
 \label{Figure:Escaping-this}
 \end{figure}
 
-In X10, \this cannot leak.
 
-%\begin{figure}
-%\begin{lstlisting}
-%class A {
-%  static val INSTANCES = new ArrayList[A]();
-%  def this() { // constructor
-%    // initialize A's fields
-%    INSTANCES.add(this);
-%  }
-%}
-%\end{lstlisting}
-%\caption{Static-container paradigm that leaks \this.}
-%\label{Figure:Static-container-paradigm}
-%\end{figure}
 
 \subsection{Dynamic dispatch}
+Dynamic dispatching interacts with initialization by transferring control to the subclass
+    before the superclass completed its initialization.
+For example, if X10 would allow calling the non-final \code{m1} in \Ref{Figure}{Dynamic-dispatch},
+    then it would dynamically call the implementation in \code{B} that could read the field \code{a}
+    before it is initialized.
+
+The hardhat prevents dynamic dispatching by permitting only private and final non-escaping methods
+    (so overriding a non-escaping method is impossible).
+However, sometimes dynamic dispatching is required during construction.
+For example, if a subclass needs to refine initialization
+    of the superclass's fields.
+Such refinement cannot have any access to \this, and therefore
+    such methods are marked with \code{@NoThisAccess}.
+(Like in Java, \code{@} is used for annotations in X10.)
+\code{@NoThisAccess} prohibits any access to \this,
+    however, one could still access the method parameters.
+
 
 
 \begin{figure}
 \begin{lstlisting}
 abstract class A {
+  val a:Int;
   def this() {
-    init(); //err
+    this.a = m1(); //err
+    this.a = m2();
   }
-  abstract def init():void;
+  abstract def m1():Int;
+  @NoThisAccess abstract def m2():Int;
 }
 class B extends A {
-  val b:Int;
+  var b:Int = 3;
   def this(i:Int) {
     super(i);
-    b = 3;
   }
-  def init():void {
-    val x = b;
+  def m1() {
+    val y = this.b; // would have returned 0
+    return 1;
+  }
+  @NoThisAccess def m2() {
+    val x = super.a; //err
+    val y = this.b; //err
+    return 2;
+  }
+}
+class C {
+  @NonEscaping final def m3() {
+    LeakIt.foo(this); //err
+  }
+  final def m4() {
+    LeakIt.foo(this);
+  }
+}
+class D extends C {
+  def this(i:Int) {
+    super.m3();
+    super.m4(); //err
   }
 }
 \end{lstlisting}
-\caption{Dynamic dispatch example.
-    X10: a raw \this can be the receiver only for private or final methods.}
+\caption{Dynamic dispatch and calling \code{super} methods examples.
+    Revised rule 2: A method is \emph{non-escaping} if
+        it is annotated with \code{@NoThisAccess} or \code{@NonEscaping}.
+    Rule 4: a non-escaping method must be private or final, unless it has \code{@NoThisAccess}.
+    Rule 5: A method with \code{@NoThisAccess} cannot access \this or \code{super} (neither read nor write its fields).
+    Rule 6: A call on a raw \code{super} is allowed only for a \code{@NonEscaping} method.
+    }
 \label{Figure:Dynamic-dispatch}
 \end{figure}
 
+In C++, the call to \code{m1} is legal, but it gives you a runtime error
+    that you called a pure virtual function.
 
-In X10, you can call only private or final methods
-    during construction,
-    therefore there is no dynamic dispatching during construction.
-
-In C++ it gives an error that you called a pure virtual function.
-
-In Java you get the default value of b, not 3.
-This is undesired in Java, and Java tries to catch some of these cases by
-    forbidding a call to a member function before the super object was initialized.
-For example, the following is illegal in Java (and X10) if \code{f} is a member function:
+In Java, the call is also legal, but at runtime,
+    reading \code{b} in \code{B.m1} would return the default value (0) and not 3.
+This behavior is undesired in Java, and Java tries to discourage it by catching some of these cases.
+For example, Java prohibits calls to member functions before the super object was initialized,
+    as this example shows (it's also illegal in X10):
 \begin{lstlisting}
 class B extends A { B() {super(f()); }}
 \end{lstlisting}
@@ -160,17 +208,61 @@ class B extends A { B() {super(f()); }}
 
 \begin{figure}
 \begin{lstlisting}
-try {super();} catch(Throwable e){}
+class B extends A {
+  var i:Int=2;
+  def this() {
+    try { //err
+      super(i); //err
+    } catch(Throwable e){}
+  }
+}
 \end{lstlisting}
 \caption{Exceptions example.
-    X10: if the construction of an object finished normally, then all constructor
-        calls have finished normally.}
+    Rule 7: No statements can preceded a constructor call, i.e., either \code{super(...)} or \code{this(...)}.
+    Rule 8: \this and \code{super} can be used only after the (implicit or explicit) constructor call.}
 \label{Figure:Exceptions}
 \end{figure}
 
-This is also checked in Java, that prohibits any statement before a super call.
-Failure to implement this verification properly led to a famous attack~\cite{Dean:1996}
+Rules 7 and 8 are also checked in Java.
+Failure to implement this verification properly led to a famous attack~\cite{Dean:1996}.
 
+
+\subsection{Inner classes}
+\begin{figure}
+\begin{lstlisting}
+class A {
+  class Inner {
+    val b = a;
+  }
+  val inner =
+    this.new Inner(); //err
+  val a = 3;
+}
+\end{lstlisting}
+\caption{Inner class example.
+    Rule 8: a raw \this cannot be the receiver of \code{new}.}
+\label{Figure:InnerClass}
+\end{figure}
+
+
+\subsection{Static initialization}
+todo
+
+\subsection{Read and write order for final fields}
+Inter-procedural data flow
+todo
+
+
+\subsection{Read and write order for \emph{non}-final fields}
+Intra-procedural data flow
+todo
+
+
+
+
+We finally turn our attention to features that are unique to X10:
+    concurrency, parallelism,
+    and a sophisticated type system using constraints and properties.
 
 \subsection{Concurrency}
 Explain async+finish.
@@ -309,10 +401,8 @@ class A {
   val a = 3;
   def this() {
     val local = this.a;
-    val closure1 =
-      ()=>local;
-    val closure2 =
-      ()=>this.a; //err
+    val closure1 = ()=>local;
+    val closure2 = ()=>this.a; //err
     at (here.next())
       closure2();
   }
@@ -324,25 +414,13 @@ class A {
 \end{figure}
 
 
-\subsection{Inner classes}
-\begin{figure}
-\begin{lstlisting}
-class A {
-  class Inner {
-    val b = a;
-  }
-  val inner =
-    this.new Inner(); //err
-  val a = 3;
-}
-\end{lstlisting}
-\caption{\this escapes as an outer instance.
-    X10: a raw \this cannot be a receiver of \code{new}.}
-\label{Figure:InnerClass}
-\end{figure}
-
 
 \subsection{Generics}
+Generics are not unique to X10,
+    however the combination of generics and the lack of default values for all types
+    lead to new pitfalls.
+In addition, generics in X10 are \emph{not} erased as in Java.
+
 \Ref{Figure}{Constraints} showed that a \code{var} must be assigned if
     it does not contain the zero value.
 For generics, we added a \code{haszero} type condition that requires a type parameter to have the zero value.
@@ -370,7 +448,3 @@ class Usage {
 examples for \code{Array}
 
  \code{Zero.get[T]()}
-
-
-\subsection{Static initialization}
-todo
