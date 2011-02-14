@@ -5,10 +5,21 @@
 \CopyrightYear{2011}
 %\copyrightdata{}
 
-% Doesn't work in a caption!
-%\newcounter{RuleCounter}
+% \stepcounter Doesn't work in a caption!
+\newcounter{RuleCounter}
+\newcounter{RuleCounter2}
+\newcounter{RuleCounter3}
+\newcounter{RuleCounter4}
+\newcounter{RuleCounter5}
+\newcounter{RuleCounter6}
+
+\stepcounter{RuleCounter}\stepcounter{RuleCounter2}\stepcounter{RuleCounter3}\stepcounter{RuleCounter4}\stepcounter{RuleCounter5}\stepcounter{RuleCounter6}
+\stepcounter{RuleCounter2}\stepcounter{RuleCounter3}\stepcounter{RuleCounter4}\stepcounter{RuleCounter5}\stepcounter{RuleCounter6}
+\stepcounter{RuleCounter3}\stepcounter{RuleCounter4}\stepcounter{RuleCounter5}\stepcounter{RuleCounter6}
+\stepcounter{RuleCounter4}\stepcounter{RuleCounter5}\stepcounter{RuleCounter6}
+\stepcounter{RuleCounter5}\stepcounter{RuleCounter6}
+\stepcounter{RuleCounter6}
 %\stepcounter{RuleCounter}
-% \arabic{RuleCounter}
 \newcommand{\myrule}[2]{\textbf{Rule #1:} #2.}
 
 \input{commands}

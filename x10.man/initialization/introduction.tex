@@ -63,15 +63,22 @@ The remainder of this introduction introduce that
 The hardhat rules are summarized in \Ref{Section}{hardhat}.
 
 \subsection{Constructors and inheritance}
-%Methods in X10 are denoted by \code{def}, and \code{val} denotes a final field.
+Inheritance is the first feature that interacts with initialization:
+    when class \code{B} inherits from \code{A}
+    then every instance of \code{B} has a sub-object that is like an instance of \code{A}.
+When we initialize an instance of \code{B}, we must first initialize its \code{A} sub-object.
+We do this in X10 by forcing the constructors of \code{B} to make a super call,
+    i.e., call a constructor of \code{A}
+    (either explicitly or implicitly).
 
-Consider \Ref{Figure}{Escaping-this}, which demonstrates
-    why leaking \this during construction can cause bugs.
-Violation of the hardhat rules are marked with \code{//err},
-    and these match errors issued by the X10 compiler.
+\Ref{Figure}{Escaping-this} shows X10 code that demonstrates the interaction
+    between inheritance and initialization,
+    and explains by example why leaking \this during construction can cause bugs.
+In all the examples, errors issued by the X10 compiler are marked with \code{//err}.
 
-We say that object is \emph{raw} until its constructor ends,
+We say that object is \emph{raw} before its constructor ends,
     and afterward it is \emph{cooked}.
+Note that when an object is cooked, all the super calls ended, so all its sub-objects are cooked.
 X10 prohibits any aliasing or leaking of \this during construction,
     therefore only \this can be raw (any other variable is definitely cooked).
 
@@ -86,10 +93,16 @@ Note that leaking is not a problem if \this is not raw, e.g., in \code{m1()}.
 The fact that \code{m2} is non-escaping, and therefore cannot leak \this,
     was \emph{implicitly} inferred from the call to \code{m2}
     in the constructor.
-(See Rule 2: \code{m2} is non-escaping because it was called on a raw \this receiver.)
+(See rule 2: \code{m2} is non-escaping because it was called on a raw \this receiver.)
 The user could also mark \code{m2} \emph{explicitly} as non-escaping by using the annotation
-    \code{@NonEscaping},
-    which is also useful for \code{super} calls (see \Ref{Figure}{Dynamic-dispatch}).
+    \code{@NonEscaping}.
+We recommend to explicitly mark public methods as \code{@NonEscaping} to show intent,
+    as done on method \code{m3}.
+Without this annotation the call \code{super.m3()} in \code{B} would be illegal.
+(We could infer that \code{m3} must be non-escaping,
+    but that would cause a dependency from a subclass to a superclass,
+    which is not natural for people used to separate compilation.)
+
 
 \begin{figure}
 \begin{lstlisting}
@@ -100,12 +113,17 @@ class A {
     this.a = 1;
     val me = this; //err
     LeakIt.foo(me);
-    this.m2();
+    this.m2(); // so m2 is implicitly non-escaping
   }
   final def m1() {
     LeakIt.foo(this);
   }
+  // implicitly non-escaping
   final def m2() {
+    LeakIt.foo(this); //err
+  }
+  // explicitly non-escaping
+  @NonEscaping final def m3() {
     LeakIt.foo(this); //err
   }
 }
@@ -114,17 +132,26 @@ class B extends A {
   def this() {
     super();
     this.b = 2;
+    super.m3();
   }
 }
 \end{lstlisting}
 \caption{Escaping \this example.
-    \myrule{1}{\this and \code{super} are raw in \emph{non-escaping} methods and in field initializers}
-    \myrule{2}{A method is \emph{non-escaping} if it is a constructor,
+    \myrule{\arabic{RuleCounter}}{\this and \code{super} are raw in \emph{non-escaping} methods and in field initializers}
+    \myrule{\arabic{RuleCounter2}}{A method is \emph{non-escaping} if it is a constructor,
+            or annotated with \code{@NonEscaping} or \code{@NoThisAccess},
             or a method that is called on a raw \this receiver}
-    \myrule{3}{A raw \this or \code{super} cannot escape or be aliased}
-    (The usage of \code{\textbf{final}} will be explained in \Ref{Figure}{Dynamic-dispatch}.)}
+    \myrule{\arabic{RuleCounter3}}{A raw \this or \code{super} cannot escape or be aliased}
+    \myrule{\arabic{RuleCounter4}}{A call on a raw \code{super} is allowed only for a \code{@NonEscaping} method}
+    (\code{\textbf{final}} and \code{@NoThisAccess} are related
+        to dynamic-dispatching as shown in \Ref{Figure}{Dynamic-dispatch}.)}
+\stepcounter{RuleCounter}\stepcounter{RuleCounter2}\stepcounter{RuleCounter3}\stepcounter{RuleCounter4}\stepcounter{RuleCounter5}\stepcounter{RuleCounter6}
+\stepcounter{RuleCounter}\stepcounter{RuleCounter2}\stepcounter{RuleCounter3}\stepcounter{RuleCounter4}\stepcounter{RuleCounter5}\stepcounter{RuleCounter6}
+\stepcounter{RuleCounter}\stepcounter{RuleCounter2}\stepcounter{RuleCounter3}\stepcounter{RuleCounter4}\stepcounter{RuleCounter5}\stepcounter{RuleCounter6}
+\stepcounter{RuleCounter}\stepcounter{RuleCounter2}\stepcounter{RuleCounter3}\stepcounter{RuleCounter4}\stepcounter{RuleCounter5}\stepcounter{RuleCounter6}
 \label{Figure:Escaping-this}
 \end{figure}
+
 
 
 
@@ -189,8 +216,8 @@ class B extends A {
     super(i);
   }
   def m1() {
-    val x = super.a; // would have returned 0
-    val y = this.b; // would have returned 0
+    val x = super.a; // returns 0 in Java
+    val y = this.b; // returns 0 in Java
     return 1;
   }
   @NoThisAccess def m2() {
@@ -199,28 +226,15 @@ class B extends A {
     return 2;
   }
 }
-class C {
-  @NonEscaping final def m3() {
-    LeakIt.foo(this); //err
-  }
-  final def m4() {
-    LeakIt.foo(this);
-  }
-}
-class D extends C {
-  def this(i:Int) {
-    super.m3();
-    super.m4(); //err
-  }
-}
 \end{lstlisting}
-\caption{Dynamic dispatch and calling \code{super} methods examples.
-    \myrule{4}{A method is also \emph{non-escaping} if
-        it is annotated with \code{@NoThisAccess} or \code{@NonEscaping}}
-    \myrule{5}{a non-escaping method must be private or final, unless it has \code{@NoThisAccess}}
-    \myrule{6}{A method with \code{@NoThisAccess} cannot access \this or \code{super} (neither read nor write its fields)}
-    \myrule{7}{A call on a raw \code{super} is allowed only for a \code{@NonEscaping} method}
+\caption{Dynamic dispatching example.
+    \myrule{\arabic{RuleCounter2}}{A non-escaping method must be private or final, unless it has \code{@NoThisAccess}}
+    \myrule{\arabic{RuleCounter3}}{A method with \code{@NoThisAccess} cannot access \this or \code{super} (neither read nor write its fields)}
     }
+\stepcounter{RuleCounter}\stepcounter{RuleCounter2}\stepcounter{RuleCounter3}\stepcounter{RuleCounter4}\stepcounter{RuleCounter5}\stepcounter{RuleCounter6}
+\stepcounter{RuleCounter}\stepcounter{RuleCounter2}\stepcounter{RuleCounter3}\stepcounter{RuleCounter4}\stepcounter{RuleCounter5}\stepcounter{RuleCounter6}
+\stepcounter{RuleCounter}\stepcounter{RuleCounter2}\stepcounter{RuleCounter3}\stepcounter{RuleCounter4}\stepcounter{RuleCounter5}\stepcounter{RuleCounter6}
+\stepcounter{RuleCounter}\stepcounter{RuleCounter2}\stepcounter{RuleCounter3}\stepcounter{RuleCounter4}\stepcounter{RuleCounter5}\stepcounter{RuleCounter6}
 \label{Figure:Dynamic-dispatch}
 \end{figure}
 
@@ -230,9 +244,18 @@ class D extends C {
 \subsection{Exceptions}
 Constructing an object may not always end normally,
     e.g., building a date object from an illegal date string should throw an exception.
-Exceptions may also be caught and t
-    b
+Exceptions combined with inheritance interact with initialization in the following way:
+    a cooked object must have cooked sub-objects,
+    therefore if a constructor ends normally (thus returning a cooked object)
+    then all preceding constructor calls (either \code{super(\ldots)} or \code{this(\ldots)})
+    must end normally as well.
+Phrased differently, in a constructor it should not be possible to
+    recover from an exception thrown by a constructor call.
+This is one of the reason why a constructor call must be the first statement in Java;
+    failure to verify this led to a famous security attack~\cite{Dean:1996}.
 
+\Ref{Figure}{Exceptions} shows that it is an error to try to recover from an exception thrown
+    by a constructor call.
 \begin{figure}
 \begin{lstlisting}
 class B extends A {
@@ -241,47 +264,108 @@ class B extends A {
   }
 }
 \end{lstlisting}
-\caption{Exceptions example.
-    \myrule{8}{If a constructor ends normally (without throwing an exception),
-        then all preceding constructor calls ended normally as well}
+\caption{Exceptions example:
+    if a constructor ends normally (without throwing an exception),
+        then all preceding constructor calls ended normally as well.
+    \myrule{\arabic{RuleCounter}}{If a constructor does not call \code{super(\ldots)} or \code{this(\ldots)},
+        then an implicit \code{super()} is added at the beginning of the constructor;
+        the first statement in a constructor is a constructor call (either \code{super(\ldots)} or \code{this(\ldots)});
+        a constructor call may only appear as the first statement in a constructor
+        }
     }
+\stepcounter{RuleCounter}\stepcounter{RuleCounter2}\stepcounter{RuleCounter3}\stepcounter{RuleCounter4}\stepcounter{RuleCounter5}\stepcounter{RuleCounter6}
 \label{Figure:Exceptions}
 \end{figure}
 
-Rules 8 and 9 are also checked in Java.
-Failure to implement this verification properly led to a famous attack~\cite{Dean:1996}.
 
 
 \subsection{Inner classes}
+Inner classes usually read the outer instance's fields during construction,
+    e.g., a list iterator would read the list's header node.
+Therefore, X10 requires that the outer instance is cooked,
+    and prohibits creating an inner instance when the receiver is a raw \this.
+\Ref{Figure}{InnerClass} shows it is an error in X10 to create an inner instance
+    if the outer is raw,
+    but it is ok to create an instance of a static nested class,
+    because it has no outer instance.
+
+In fact, it is possible to view this rule as a special case to the rule that
+    prohibits leaking a raw \this
+    (because when you create an inner instance on a raw \this receiver,
+    you created an alias,
+    and now you have two raw objects: \code{Inner.this} and \code{Outer.this}).
+We wish to keep the invariant that only \this might be raw.
+
+\Ref{Figure}{InnerClass} todo...
+
 \begin{figure}
 \begin{lstlisting}
-class A {
-  class Inner {
-    val b = a;
+class Outer {
+  val a:Int;
+  def this() {
+    // Outer.this is raw
+    Outer.this. new Inner(); //err
+    new Nested(); // ok
+    a = 3;
   }
-  val inner =
-    this.new Inner(); //err
-  val a = 3;
+  class Inner {
+    val b:Int;
+    def this() {
+      // Inner.this is raw, but Outer.this is cooked
+      val x = Outer.this.a;
+    }
+  }
+  static class Nested {}
 }
 \end{lstlisting}
-\caption{Inner class example.
-    \myrule{10}{a raw \this cannot be the receiver of \code{new}}
+\caption{Inner class example: the outer instance is always cooked.
+    \myrule{\arabic{RuleCounter}}{a raw \this cannot be the receiver of \code{new}}
     }
+\stepcounter{RuleCounter}\stepcounter{RuleCounter2}\stepcounter{RuleCounter3}\stepcounter{RuleCounter4}\stepcounter{RuleCounter5}\stepcounter{RuleCounter6}
 \label{Figure:InnerClass}
 \end{figure}
 
 
 \subsection{Static initialization}
-todo
+X10 does not support dynamic class loading as opposed to Java,
+    and all static fields in X10 are final.
+Thus, initialization of static fields is a one-time phase, denoted the static-init phase,
+    that is done before the \code{main} method is executed.
+
+During the static-init phase we must finish writing to all static fields,
+    and reading a static field \emph{waits} until the field is initialized
+    (i.e., the current activity/thread blocks if the field was not written to,
+    and it resumes after another activity writes to it).
+Obviously, this may lead to deadlock as demonstrated by \Ref{Figure}{Static-init}.
+However, in practice, deadlock is rare,
+    and usually found quickly the first time a program is executed.
+
+\begin{figure}
+\begin{lstlisting}
+class A {
+  static val a:Int = B.b;
+}
+class B {
+  static val b:Int = A.a;
+}
+\end{lstlisting}
+\caption{Static initialization example:
+    the program will deadlock at run-time
+    during the static-init phase (before the \code{main} method is executed).
+    }
+\label{Figure:Static-init}
+\end{figure}
 
 
-\subsection{Constraints}
+\subsection{Constraints and default/zero values}
 Constraints and default values.
 The following types do not have a default value:
 \code{Int\lb self!=0\rb}
 \code{String\lb self!=null\rb}
 
 Therefore the fields of an object cannot be zero-initialized in X10.
+
+\Ref{Figure}{Constraints} todo ...
 
 \begin{figure}
 \begin{lstlisting}
@@ -290,14 +374,17 @@ class A {
 }
 \end{lstlisting}
 \caption{No default value example.
-    \myrule{11}{A type \emph{has-zero} if a it contains the zero value
+    \myrule{\arabic{RuleCounter}}{A type \emph{has-zero} if a it contains the zero value
         (which is either \code{null}, \code{false}, 0, or
             zero in all fields for user-defined structs, see \Ref{Section}{Generics-and-Structs})}
-    \myrule{12}{A \code{var} field whose type has-zero that lacks a field initializer,
+    \myrule{\arabic{RuleCounter2}}{A \code{var} field whose type has-zero that lacks a field initializer,
         is implicitly added an zero initializer}
     }
+\stepcounter{RuleCounter}\stepcounter{RuleCounter2}\stepcounter{RuleCounter3}\stepcounter{RuleCounter4}\stepcounter{RuleCounter5}\stepcounter{RuleCounter6}
+\stepcounter{RuleCounter}\stepcounter{RuleCounter2}\stepcounter{RuleCounter3}\stepcounter{RuleCounter4}\stepcounter{RuleCounter5}\stepcounter{RuleCounter6}
 \label{Figure:Constraints}
 \end{figure}
+
 
 \subsection{Read and write order of fields}
 final vs.\ non-final fields:
@@ -307,6 +394,8 @@ Intra-procedural data flow
 todo
 
 In Java it is legal...
+
+\Ref{Figure}{Read-Write-Order} todo ...
 
 \begin{figure}
 \begin{lstlisting}
@@ -343,12 +432,13 @@ class C {
 }
 \end{lstlisting}
 \caption{Read-Write order for fields examples.
-    \myrule{13}{A field can be read only after it was definitely written}
-    \myrule{14}{A constructor must write to all fields}
+    \myrule{\arabic{RuleCounter}}{A field can be read only after it was definitely written}
+    \myrule{\arabic{RuleCounter2}}{A constructor must write to all fields}
     }
+\stepcounter{RuleCounter}\stepcounter{RuleCounter2}\stepcounter{RuleCounter3}\stepcounter{RuleCounter4}\stepcounter{RuleCounter5}\stepcounter{RuleCounter6}
+\stepcounter{RuleCounter}\stepcounter{RuleCounter2}\stepcounter{RuleCounter3}\stepcounter{RuleCounter4}\stepcounter{RuleCounter5}\stepcounter{RuleCounter6}
 \label{Figure:Read-Write-Order}
 \end{figure}
-
 
 
 
@@ -361,6 +451,9 @@ We finally turn our attention to features that are unique to X10:
 \subsection{Concurrency}
 Explain async+finish.
 If the finish was removed, then it would be an error ...
+
+
+\Ref{Figure}{Asynchronously-init} todo ...
 
 \begin{figure}
 \begin{lstlisting}
@@ -376,14 +469,17 @@ class A {
 }
 \end{lstlisting}
 \caption{Asynchronously assigned fields example.
-    \myrule{15}{All field assignments must finish when the constructor ends}
+    \myrule{\arabic{RuleCounter}}{All field assignments must finish when the constructor ends}
     }
+\stepcounter{RuleCounter}\stepcounter{RuleCounter2}\stepcounter{RuleCounter3}\stepcounter{RuleCounter4}\stepcounter{RuleCounter5}\stepcounter{RuleCounter6}
 \label{Figure:Asynchronously-init}
 \end{figure}
 
 
 \subsection{Multiple Places}
 Places require serialization and deserialization (both custom and automatic) across "at".
+
+\Ref{Figure}{Multi-place} todo ...
 
 \begin{figure}
 \begin{lstlisting}
@@ -397,8 +493,9 @@ class A {
 }
 \end{lstlisting}
 \caption{Multi-place initialization example.
-    \myrule{16}{a raw \this cannot cross to another place}
+    \myrule{\arabic{RuleCounter}}{a raw \this cannot cross to another place}
     }
+\stepcounter{RuleCounter}\stepcounter{RuleCounter2}\stepcounter{RuleCounter3}\stepcounter{RuleCounter4}\stepcounter{RuleCounter5}\stepcounter{RuleCounter6}
 \label{Figure:Multi-place}
 \end{figure}
 
@@ -408,6 +505,9 @@ Special GlobalRef class: let \this escape and it creates a cycle.
 We allow a raw \this to escape iff
 * field is private with a field initializer.
 * cannot be used with a raw \this receiver.
+
+
+\Ref{Figure}{GlobalRef} todo ...
 
 \begin{figure}
 \begin{lstlisting}
@@ -423,16 +523,17 @@ class B extends A {
 }
 \end{lstlisting}
 \caption{\code{GlobalRef} example.
-    \myrule{17}{A raw \this can only escape to a global ref constructor in a field initializer,
+    \myrule{\arabic{RuleCounter}}{A raw \this can only escape to a global ref constructor in a field initializer,
         provided the field is private and is not read via a raw \this receiver}
     }
+\stepcounter{RuleCounter}\stepcounter{RuleCounter2}\stepcounter{RuleCounter3}\stepcounter{RuleCounter4}\stepcounter{RuleCounter5}\stepcounter{RuleCounter6}
 \label{Figure:GlobalRef}
 \end{figure}
 
 If \code{me()} was prefixed with
 \code{@NonEscaping public final}
 then accessing \code{root} would be an error.
-%Cannot use 'root' because a GlobalRef[...](this) cannot be used in a field initializer, constructor, or methods called from a constructor.
+%Cannot use 'root' because a GlobalRef[\ldots](this) cannot be used in a field initializer, constructor, or methods called from a constructor.
 
 
 
@@ -447,6 +548,8 @@ The \emph{class invariant} may refer only to properties of the class,
     and it must be satisfied after the property call in every constructor.
 
 
+\Ref{Figure}{Properties} todo ...
+
 \begin{figure}
 \begin{lstlisting}
 class A(a:Int) {
@@ -459,27 +562,32 @@ class B(b:Int) {b!=0} extends A {
   val f2:Int;
   def this() {
     super();
-    f2 = f1; // err
+    f2 = f1; //err
     property(3);
   }
 }
 \end{lstlisting}
-\caption{Properties and class invariant example.
-    \myrule{18}{If a constructor does not call \code{super(\ldots)} or \code{this(\ldots)},
-        then an implicit \code{super()} is added at the beginning of the constructor;
-        the first statement in a constructor is either \code{super(\ldots)} or \code{this(\ldots)}}
-    \myrule{19}{If a class does not define any properties, then
+\caption{Properties and class invariant example:
+        properties (e.g., \code{a} and \code{b})
+        are final fields that are initialized before all other fields
+        using a property call (\code{property(\ldots);} statement).
+    \myrule{\arabic{RuleCounter2}}{If a class does not define any properties, then
         an implicit \code{property()} is added
-        after \code{super(\ldots)}}
-    \myrule{20}{There must be exactly one
-        \code{property(\ldots)}, and it must be unconditionally executed
+        after (the implicit or explicit) \code{super(\ldots)}}
+    \myrule{\arabic{RuleCounter3}}{If a constructor does not call \code{this(\ldots)},
+        then it must have exactly one
+        property call, and it must be unconditionally executed
         (unless the constructor throws an exception);
-        the class invariant must hold after \code{property(\ldots)}}
-    \myrule{21}{Field initializers are executed after
-        \code{property(\ldots)}}
-    \myrule{22}{The super fields can only be accessed after \code{super(\ldots)},
-        and the fields of \this can be accessed only after \code{property(\ldots)}}
+        the class invariant must hold after the property call}
+    \myrule{\arabic{RuleCounter4}}{Field initializers are executed in their declaration order
+        after (the implicit or explicit) the property call}
+    \myrule{\arabic{RuleCounter5}}{The super fields can only be accessed after \code{super(\ldots)},
+        and the fields of \this can only be accessed after \code{property(\ldots)}}
     }
+\stepcounter{RuleCounter}\stepcounter{RuleCounter2}\stepcounter{RuleCounter3}\stepcounter{RuleCounter4}\stepcounter{RuleCounter5}\stepcounter{RuleCounter6}
+\stepcounter{RuleCounter}\stepcounter{RuleCounter2}\stepcounter{RuleCounter3}\stepcounter{RuleCounter4}\stepcounter{RuleCounter5}\stepcounter{RuleCounter6}
+\stepcounter{RuleCounter}\stepcounter{RuleCounter2}\stepcounter{RuleCounter3}\stepcounter{RuleCounter4}\stepcounter{RuleCounter5}\stepcounter{RuleCounter6}
+\stepcounter{RuleCounter}\stepcounter{RuleCounter2}\stepcounter{RuleCounter3}\stepcounter{RuleCounter4}\stepcounter{RuleCounter5}\stepcounter{RuleCounter6}
 \label{Figure:Properties}
 \end{figure}
 
@@ -487,6 +595,10 @@ class B(b:Int) {b!=0} extends A {
 
 
 \subsection{Closures}
+
+
+
+\Ref{Figure}{Closures} todo ...
 
 \begin{figure}
 \begin{lstlisting}
@@ -502,8 +614,9 @@ class A {
 }
 \end{lstlisting}
 \caption{Closure capture \this example.
-    \myrule{23}{A closure cannot capture a raw \this}
+    \myrule{\arabic{RuleCounter}}{A closure cannot capture a raw \this}
     }
+\stepcounter{RuleCounter}\stepcounter{RuleCounter2}\stepcounter{RuleCounter3}\stepcounter{RuleCounter4}\stepcounter{RuleCounter5}\stepcounter{RuleCounter6}
 \label{Figure:Closures}
 \end{figure}
 
@@ -527,6 +640,9 @@ for example, \code{Box[Byte]} and \code{Box[Int]}
     it does not contain the zero value.
 For generics, we added a \code{haszero} type condition that requires a type parameter to have the zero value.
 
+
+\Ref{Figure}{Generics} todo ...
+
 \begin{figure}
 \begin{lstlisting}
 class A[T] {
@@ -542,7 +658,9 @@ class Usage {
 }
 \end{lstlisting}
 \caption{\code{haszero} type condition.
-    X10: statically checks a type has the zero value.}
+    \myrule{\arabic{RuleCounter}}{statically checks a type has the zero value}
+    }
+\stepcounter{RuleCounter}\stepcounter{RuleCounter2}\stepcounter{RuleCounter3}\stepcounter{RuleCounter4}\stepcounter{RuleCounter5}\stepcounter{RuleCounter6}
 \label{Figure:Generics}
 \end{figure}
 
