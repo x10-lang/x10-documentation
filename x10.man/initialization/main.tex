@@ -5,9 +5,13 @@
 \CopyrightYear{2011}
 %\copyrightdata{}
 
+% Doesn't work in a caption!
+%\newcounter{RuleCounter}
+%\stepcounter{RuleCounter}
+% \arabic{RuleCounter}
+\newcommand{\myrule}[2]{\textbf{Rule #1:} #2.}
 
 \input{commands}
-
 
 \begin{document}
 
@@ -34,7 +38,7 @@
 \category{D.1.5}{Programming Techniques}{Object-oriented Programming}
 
 \terms
-Asynchronous,Initialization,Types,X10
+Asynchronous, Initialization, Types, X10
 
 % Keywords are not required in the paper itself - only in the submission system's meta data.
 % \keywords

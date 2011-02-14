@@ -56,28 +56,38 @@ Moreover, method calls are statically bound during construction,
 (Determining whether this happens is an intractable problem~\cite{Gil:1998:CTA:646155.679689}.)
 
 
-The remainder of this introduction presents examples in X10
-    that slowly add language features and describes their interaction with
+The remainder of this introduction introduce that
+    hardhat design in X10 by examples,
+    by slowly adding language features and describe their interaction with
     object initialization.
-The rules of the hardhat design are slowly introduced by example.
-Violation of the rules are marked with \code{//err},
-    and these match errors issued by the X10 compiler.
 The hardhat rules are summarized in \Ref{Section}{hardhat}.
 
 \subsection{Constructors and inheritance}
 %Methods in X10 are denoted by \code{def}, and \code{val} denotes a final field.
-Object initialization begins by invoking a constructor, denoted by \code{def this()}.
 
-Consider \Ref{Figure}{Escaping-this}.
-The first leak causes a problem because field \code{a} was not assigned yet.
-However, leaking is still a problem even after all fields have been assigned,
-    because fields in a subclass (field \code{b}) have not been initialized yet.
-Leaking and aliasing is not a problem if \this is not raw, e.g., in \code{m1()}.
+Consider \Ref{Figure}{Escaping-this}, which demonstrates
+    why leaking \this during construction can cause bugs.
+Violation of the hardhat rules are marked with \code{//err},
+    and these match errors issued by the X10 compiler.
 
-The fact that \code{m2} is non-escaping was implicitly inferred from the call to \code{m2}
+We say that object is \emph{raw} until its constructor ends,
+    and afterward it is \emph{cooked}.
+X10 prohibits any aliasing or leaking of \this during construction,
+    therefore only \this can be raw (any other variable is definitely cooked).
+
+Object initialization begins by invoking a constructor,
+    denoted by the method definition \code{def this()}.
+The first leak would cause a problem because field \code{a} was not assigned yet.
+However, even after all the fields of \code{A} have been assigned,
+    leaking is still a problem
+    because fields in a subclass (field \code{b}) have not yet been initialized.
+Note that leaking is not a problem if \this is not raw, e.g., in \code{m1()}.
+
+The fact that \code{m2} is non-escaping, and therefore cannot leak \this,
+    was \emph{implicitly} inferred from the call to \code{m2}
     in the constructor.
-(From Rule 2, because \code{m2} was called on a raw \this receiver.)
-The user could also mark \code{m2} explicitly as non-escaping by using the annotation
+(See Rule 2: \code{m2} is non-escaping because it was called on a raw \this receiver.)
+The user could also mark \code{m2} \emph{explicitly} as non-escaping by using the annotation
     \code{@NonEscaping},
     which is also useful for \code{super} calls (see \Ref{Figure}{Dynamic-dispatch}).
 
@@ -92,7 +102,7 @@ class A {
     LeakIt.foo(me);
     this.m2();
   }
-  def m1() {
+  final def m1() {
     LeakIt.foo(this);
   }
   final def m2() {
@@ -108,11 +118,11 @@ class B extends A {
 }
 \end{lstlisting}
 \caption{Escaping \this example.
-    Rule 1: \this and \code{super} are raw in \emph{non-escaping} methods and in field initializers.
-    Rule 2: A method is \emph{non-escaping} if it is a constructor,
-            or a method that is called on a raw \this receiver.
-    Rule 3: A raw \this or \code{super} cannot escape or be aliased.
-    (The usage of \code{final} on \code{m2} will be explained in \Ref{Figure}{Dynamic-dispatch}.)}
+    \myrule{1}{\this and \code{super} are raw in \emph{non-escaping} methods and in field initializers}
+    \myrule{2}{A method is \emph{non-escaping} if it is a constructor,
+            or a method that is called on a raw \this receiver}
+    \myrule{3}{A raw \this or \code{super} cannot escape or be aliased}
+    (The usage of \code{\textbf{final}} will be explained in \Ref{Figure}{Dynamic-dispatch}.)}
 \label{Figure:Escaping-this}
 \end{figure}
 
@@ -121,12 +131,14 @@ class B extends A {
 \subsection{Dynamic dispatch}
 Dynamic dispatching interacts with initialization by transferring control to the subclass
     before the superclass completed its initialization.
-For example, if X10 would allow calling the non-final \code{m1} in \Ref{Figure}{Dynamic-dispatch},
-    then it would dynamically call the implementation in \code{B} that could read the field \code{a}
-    before it is initialized.
+\Ref{Figure}{Dynamic-dispatch} demonstrates why dynamic dispatching is error-prone during construction:
+    calling \code{m1} in \code{A} would dynamically dispatch and
+    call the implementation in \code{B}
+    that would read the default value.
 
-The hardhat prevents dynamic dispatching by permitting only private and final non-escaping methods
-    (so overriding a non-escaping method is impossible).
+X10 prevents dynamic dispatching by requiring that non-escaping methods
+    must be private or final
+    (so overriding is impossible).
 However, sometimes dynamic dispatching is required during construction.
 For example, if a subclass needs to refine initialization
     of the superclass's fields.
@@ -136,6 +148,28 @@ Such refinement cannot have any access to \this, and therefore
 \code{@NoThisAccess} prohibits any access to \this,
     however, one could still access the method parameters.
 
+
+In C++, the call to \code{m1} is legal,
+    but at runtime
+    methods are statically bound,
+    so you will get an error for calling a pure virtual function.
+In Java, the call to \code{m1} is also legal,
+    but at runtime
+    methods are dynamically bound,
+    so the implementation of \code{m1} in \code{B}
+    will read the default value of \code{b}.
+%This behavior is undesired in Java,
+%    and Java discourages it by trying to catch statically most of these cases.
+%For example, Java prohibits calls to member functions before the super object was initialized,
+%    as this example shows (which is also illegal in X10):
+%\begin{lstlisting}
+%class B extends A { B() {super(f()); }}
+%\end{lstlisting}
+
+Finally, classes \code{C} and \code{D} show why it is sometimes required to mark
+    methods explicitly as \code{@NonEscaping}:
+    if a subclass (\code{D}) needs to call a method a method (\code{m3})
+    during construction, then it must be marked as non-escaping.
 
 
 \begin{figure}
@@ -155,6 +189,7 @@ class B extends A {
     super(i);
   }
   def m1() {
+    val x = super.a; // would have returned 0
     val y = this.b; // would have returned 0
     return 1;
   }
@@ -180,50 +215,40 @@ class D extends C {
 }
 \end{lstlisting}
 \caption{Dynamic dispatch and calling \code{super} methods examples.
-    Revised rule 2: A method is \emph{non-escaping} if
-        it is annotated with \code{@NoThisAccess} or \code{@NonEscaping}.
-    Rule 4: a non-escaping method must be private or final, unless it has \code{@NoThisAccess}.
-    Rule 5: A method with \code{@NoThisAccess} cannot access \this or \code{super} (neither read nor write its fields).
-    Rule 6: A call on a raw \code{super} is allowed only for a \code{@NonEscaping} method.
+    \myrule{4}{A method is also \emph{non-escaping} if
+        it is annotated with \code{@NoThisAccess} or \code{@NonEscaping}}
+    \myrule{5}{a non-escaping method must be private or final, unless it has \code{@NoThisAccess}}
+    \myrule{6}{A method with \code{@NoThisAccess} cannot access \this or \code{super} (neither read nor write its fields)}
+    \myrule{7}{A call on a raw \code{super} is allowed only for a \code{@NonEscaping} method}
     }
 \label{Figure:Dynamic-dispatch}
 \end{figure}
 
-In C++, the call to \code{m1} is legal, but it gives you a runtime error
-    that you called a pure virtual function.
-
-In Java, the call is also legal, but at runtime,
-    reading \code{b} in \code{B.m1} would return the default value (0) and not 3.
-This behavior is undesired in Java, and Java tries to discourage it by catching some of these cases.
-For example, Java prohibits calls to member functions before the super object was initialized,
-    as this example shows (it's also illegal in X10):
-\begin{lstlisting}
-class B extends A { B() {super(f()); }}
-\end{lstlisting}
 
 
 
 \subsection{Exceptions}
-
+Constructing an object may not always end normally,
+    e.g., building a date object from an illegal date string should throw an exception.
+Exceptions may also be caught and t
+    b
 
 \begin{figure}
 \begin{lstlisting}
 class B extends A {
-  var i:Int=2;
   def this() {
-    try { //err
-      super(i); //err
-    } catch(Throwable e){}
+    try { super(); } catch(Throwable e){} //err
   }
 }
 \end{lstlisting}
 \caption{Exceptions example.
-    Rule 7: No statements can preceded a constructor call, i.e., either \code{super(...)} or \code{this(...)}.
-    Rule 8: \this and \code{super} can be used only after the (implicit or explicit) constructor call.}
+    \myrule{8}{If a constructor ends normally (without throwing an exception),
+        then all preceding constructor calls ended normally as well}
+    }
 \label{Figure:Exceptions}
 \end{figure}
 
-Rules 7 and 8 are also checked in Java.
+Rules 8 and 9 are also checked in Java.
 Failure to implement this verification properly led to a famous attack~\cite{Dean:1996}.
 
 
@@ -240,7 +265,8 @@ class A {
 }
 \end{lstlisting}
 \caption{Inner class example.
-    Rule 8: a raw \this cannot be the receiver of \code{new}.}
+    \myrule{10}{a raw \this cannot be the receiver of \code{new}}
+    }
 \label{Figure:InnerClass}
 \end{figure}
 
@@ -248,14 +274,82 @@ class A {
 \subsection{Static initialization}
 todo
 
-\subsection{Read and write order for final fields}
+
+\subsection{Constraints}
+Constraints and default values.
+The following types do not have a default value:
+\code{Int\lb self!=0\rb}
+\code{String\lb self!=null\rb}
+
+Therefore the fields of an object cannot be zero-initialized in X10.
+
+\begin{figure}
+\begin{lstlisting}
+class A {
+  var a:Int{self!=0}; //err
+}
+\end{lstlisting}
+\caption{No default value example.
+    \myrule{11}{A type \emph{has-zero} if a it contains the zero value
+        (which is either \code{null}, \code{false}, 0, or
+            zero in all fields for user-defined structs, see \Ref{Section}{Generics-and-Structs})}
+    \myrule{12}{A \code{var} field whose type has-zero that lacks a field initializer,
+        is implicitly added an zero initializer}
+    }
+\label{Figure:Constraints}
+\end{figure}
+
+\subsection{Read and write order of fields}
+final vs.\ non-final fields:
 Inter-procedural data flow
-todo
-
-
-\subsection{Read and write order for \emph{non}-final fields}
+vs.\
 Intra-procedural data flow
 todo
+
+In Java it is legal...
+
+\begin{figure}
+\begin{lstlisting}
+class A {
+  val a:Int;
+  def this() {
+    m2();
+    a = 1;
+  }
+  final def m2() {
+    val x = a; //err
+  }
+}
+class B {
+  var i:Int; // implicitly initialized to 0
+  var j:Int{self!=0};
+  def this() {
+    i++;
+    j++; //err
+  }
+}
+class C {
+  var j:Int{self!=0};
+  def this() {
+    write();
+    read();
+  }
+  final def write() {
+    this.j = 1;
+  }
+  final def read() {
+    val x = this.j;
+  }
+}
+\end{lstlisting}
+\caption{Read-Write order for fields examples.
+    \myrule{13}{A field can be read only after it was definitely written}
+    \myrule{14}{A constructor must write to all fields}
+    }
+\label{Figure:Read-Write-Order}
+\end{figure}
+
+
 
 
 
@@ -282,7 +376,8 @@ class A {
 }
 \end{lstlisting}
 \caption{Asynchronously assigned fields example.
-    X10: all field assignments must finish when the constructor finishes.}
+    \myrule{15}{All field assignments must finish when the constructor ends}
+    }
 \label{Figure:Asynchronously-init}
 \end{figure}
 
@@ -302,7 +397,8 @@ class A {
 }
 \end{lstlisting}
 \caption{Multi-place initialization example.
-    X10: a raw \this cannot cross to another place.}
+    \myrule{16}{a raw \this cannot cross to another place}
+    }
 \label{Figure:Multi-place}
 \end{figure}
 
@@ -327,7 +423,9 @@ class B extends A {
 }
 \end{lstlisting}
 \caption{\code{GlobalRef} example.
-    X10: ...}
+    \myrule{17}{A raw \this can only escape to a global ref constructor in a field initializer,
+        provided the field is private and is not read via a raw \this receiver}
+    }
 \label{Figure:GlobalRef}
 \end{figure}
 
@@ -336,32 +434,17 @@ If \code{me()} was prefixed with
 then accessing \code{root} would be an error.
 %Cannot use 'root' because a GlobalRef[...](this) cannot be used in a field initializer, constructor, or methods called from a constructor.
 
-\subsection{Constraints}
-Constraints and default values.
-The following types do not have a default value:
-\code{Int\lb self!=0\rb}
-\code{String\lb self!=null\rb}
-
-Therefore the fields of an object cannot be zero-initialized in X10.
-
-\begin{figure}
-\begin{lstlisting}
-class A {
-  var a:Int{self!=0}; //err
-}
-\end{lstlisting}
-\caption{No default value example.
-    X10: you must assign to \code{var} fields without a default value.}
-\label{Figure:Constraints}
-\end{figure}
 
 
-\subsection{Properties}
+\subsection{Properties and the class invariant}
 Properties are final values that can be used in constraints,
     e.g., \code{Array} has a \code{size} property,
     so an array of size 2 can be expressed as: \code{Array\lb self.size==2\rb}.
 
 Properties are final fields that are initialized before all other fields.
+% Should I talk about interface and abstract property methods? Doesn't relate to initialization...
+The \emph{class invariant} may refer only to properties of the class,
+    and it must be satisfied after the property call in every constructor.
 
 
 \begin{figure}
@@ -381,16 +464,26 @@ class B(b:Int) {b!=0} extends A {
   }
 }
 \end{lstlisting}
-\caption{Properties example.
-    X10: properties must be initialized before fields.}
+\caption{Properties and class invariant example.
+    \myrule{18}{If a constructor does not call \code{super(\ldots)} or \code{this(\ldots)},
+        then an implicit \code{super()} is added at the beginning of the constructor;
+        the first statement in a constructor is either \code{super(\ldots)} or \code{this(\ldots)}}
+    \myrule{19}{If a class does not define any properties, then
+        an implicit \code{property()} is added
+        after \code{super(\ldots)}}
+    \myrule{20}{There must be exactly one
+        \code{property(\ldots)}, and it must be unconditionally executed
+        (unless the constructor throws an exception);
+        the class invariant must hold after \code{property(\ldots)}}
+    \myrule{21}{Field initializers are executed after
+        \code{property(\ldots)}}
+    \myrule{22}{The super fields can only be accessed after \code{super(\ldots)},
+        and the fields of \this can be accessed only after \code{property(\ldots)}}
+    }
 \label{Figure:Properties}
 \end{figure}
 
 
-%\subsection{Class Invariant}
-% Should I talk about interface and abstract property methods? Doesn't relate to initialization...
-The \emph{class invariant} may refer only to properties of the class,
-    and it must be satisfied after the property call in every constructor.
 
 
 \subsection{Closures}
@@ -409,17 +502,26 @@ class A {
 }
 \end{lstlisting}
 \caption{Closure capture \this example.
-    X10: a closure cannot capture a raw \this.}
+    \myrule{23}{A closure cannot capture a raw \this}
+    }
 \label{Figure:Closures}
 \end{figure}
 
 
 
-\subsection{Generics}
+\subsection{Generics and Structs}
+\label{Section:Generics-and-Structs}
+Structs in X10 ...
+Does not contain \code{null}, so \code{haszero} ...
+
 Generics are not unique to X10,
     however the combination of generics and the lack of default values for all types
     lead to new pitfalls.
-In addition, generics in X10 are \emph{not} erased as in Java.
+In addition, generics in X10 are \emph{not} erased as in Java
+    in order to make instantiations over structs efficient.
+
+for example, \code{Box[Byte]} and \code{Box[Int]}
+    would have the same size in Java but different sizes in X10.
 
 \Ref{Figure}{Constraints} showed that a \code{var} must be assigned if
     it does not contain the zero value.
