@@ -7,19 +7,9 @@
 
 % \stepcounter Doesn't work in a caption!
 \newcounter{RuleCounter}
-\newcounter{RuleCounter2}
-\newcounter{RuleCounter3}
-\newcounter{RuleCounter4}
-\newcounter{RuleCounter5}
-\newcounter{RuleCounter6}
-
-\stepcounter{RuleCounter}\stepcounter{RuleCounter2}\stepcounter{RuleCounter3}\stepcounter{RuleCounter4}\stepcounter{RuleCounter5}\stepcounter{RuleCounter6}
-\stepcounter{RuleCounter2}\stepcounter{RuleCounter3}\stepcounter{RuleCounter4}\stepcounter{RuleCounter5}\stepcounter{RuleCounter6}
-\stepcounter{RuleCounter3}\stepcounter{RuleCounter4}\stepcounter{RuleCounter5}\stepcounter{RuleCounter6}
-\stepcounter{RuleCounter4}\stepcounter{RuleCounter5}\stepcounter{RuleCounter6}
-\stepcounter{RuleCounter5}\stepcounter{RuleCounter6}
-\stepcounter{RuleCounter6}
-%\stepcounter{RuleCounter}
+\stepcounter{RuleCounter}
+\newcommand{\userule}[1]{\arabic{#1}}
+\newcommand{\definerule}[1]{\newcounter{#1}\addtocounter{#1}{\arabic{RuleCounter}}\stepcounter{RuleCounter}}
 \newcommand{\myrule}[2]{\textbf{Rule #1:} #2.}
 
 \input{commands}
@@ -33,9 +23,11 @@
 \title{Object Initialization in X10}
 
 
-\authorinfo{Yoav Zibin \and Igor Peshansky \and David Cunningham \and Vijay Saraswat}
+% \and Igor Peshansky \and David Cunningham
+%|$igorp$|$dcunnin$
+\authorinfo{Yoav Zibin \and Vijay Saraswat}
            {IBM research in TJ Watson}
-           {yzibin$|$igorp$|$dcunnin$|$vsaraswa@us.ibm.com}
+           {yzibin$|$vsaraswa@us.ibm.com}
 
 
 \maketitle
@@ -59,10 +51,13 @@ Asynchronous, Initialization, Types, X10
 \Section[introduction]{Introduction}
 \input{introduction}
 
-\Section[designs]{Object Initialization Designs}
+\Section[rules]{X10 Initialization Rules}
+\input{rules}
+
+\Section[designs]{Alternative Initialization Designs}
 \input{designs}
 
-\Section[implementation]{Hardhat implementation}
+\Section[implementation]{Implementation}
 \input{implementation}
 
 \Section[case-study]{Case Study}
