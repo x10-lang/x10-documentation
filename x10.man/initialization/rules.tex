@@ -6,8 +6,8 @@ We begin with object-oriented features found in mainstream languages,
     and static fields.
 We then proceed to X10 type-system features,
     such as constraints, properties, class invariants, closures, (non-erased) generics, and structs.
-The parallel features of X10 include concurrency control (\code{finish} and \code{async}),
-    multiple places and place shifting (\code{at}), and global references.
+The parallel features of X10 allow writing concurrent code (using \code{finish} and \code{async}),
+    and distributed code (using \code{at} and global references).
 Finally, we conclude with an inter-procedural data-flow analysis that ensures that
     a field is read only after it was written.
 
@@ -509,9 +509,8 @@ examples for \code{Array}
 
 
 We now turn our attention to the parallel features of X10:
-    inter-place parallelism (\code{finish} and \code{async}),
-    place shifting (\code{at}),
-    and global references.
+    concurrent programming (\code{finish} and \code{async})
+    and distributed programming (\code{at} and global references).
 
 
 \subsection{Concurrency}
@@ -682,3 +681,51 @@ Therefore we have only have a single \this variable.
 * Only \code{@NoThisAccess} methods can be dynamically dispatched during construction. Reason: can only call private or final methods.
 * all field writes finish by the time the ctor ends. Reason: data flow ensures that any write within an async has an enclosing finish.
 * one cannot read an uninitialized field. Reason: reading from \this is ok by data-flow, any other read is from a cooked object.
+
+
+\subsection{Memory model and constructor barrier}
+
+todo: discuss final in Java and String class.
+(people think that removing final may only hurt performance, but it may be semantic changing.)
+
+type safety and the weak memory model:
+* in Java if you don't use final fields correctly or leak this, you will simply see default values (you don't lose type-safety)
+* in X10 it could break type safety (if we don't put a barrier at the end of a ctor).
+
+class Box[T] {T haszero} {
+  var value:T;
+}
+class A {
+  static val box = new Box[A]();
+
+  var f:Int{self!=0} = 1;
+}
+
+var a = new A();
+a.f = 2;
+A.box.value = a;
+
+Suppose another activity reads A.box.value.
+Should the writes to
+a.f
+and
+A.box.value
+be ordered? (I don't think we should order them without losing performance)
+
+Therefore, X10 needs a synchronization barrier at the end of a ctor that guarantees that all writes to the fields (both VAL and VAR) of the object has finished before the handle is returned.
+(This is different from Java that only promises this for final fields. And the barrier also happens again after deserialization - requiring this weird freeze operation and you could freeze a final field again even after the ctor ended due to deserialization.)
+
+
+Bowen proposes this transformation in order to inline ctors:
+class A {
+  static val box = new Box[A]();
+
+  var f:Int{self!=0} = 0;
+}
+
+
+var a = new A();
+a.f = 1;
+// INSERT BARRIER EXPLICITLY HERE
+a.f = 2;
+A.box.value = a;

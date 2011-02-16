@@ -55,6 +55,99 @@ Moreover, method calls are statically bound during construction,
     if one tries to invoke a virtual method of an abstract class (see \Ref{Figure}{Dynamic-dispatch} below).
 (Determining whether this happens is an intractable problem~\cite{Gil:1998:CTA:646155.679689}.)
 
+- useful examples, and sources of bugs
+- design tradeoff: less buggy (but strict) vs. more flexible (but error-prone)
+- properties the programmer wants (cannot read uninitialized fields, final fields has a single value)
+
+Common
+\begin{figure}
+\begin{lstlisting}
+class A {
+  static val INSTANCES = new HashSet[A]();
+  val a:Int; // final field
+  def this() { // constructor
+    a = initA();
+    INSTANCES.add(this);
+  }
+  def initA():Int { // instance method
+    return 1;
+  }
+}
+class B extends A {
+  val b:Int;
+  def this(b:Int) {
+    this.b = b;
+  }
+  def initA():Int {
+    return b;
+  }
+}
+\end{lstlisting}
+\caption{Two initialization pitfalls:
+    leaking \this and dynamic dispatch during construction.}
+\label{Figure:TwoPitfalls}
+\end{figure}
+
+\subsection{Initialization and Concurrency}
+\code{final} fields in Java actually mean more than just ``the field cannot be re-assigned".
+Give String example and final offset.
+Then talk about what would happen if this is leaked.
+
+Concurrency in X10 uses two constructs:
+\code{finish} and \code{async}
+
+Explain that with locals the code would be more elegant,
+    but we wanted to focus only on object initialization.
+\begin{figure}
+\begin{lstlisting}
+class Fib {
+  val fib_2:Int; // fib(n-2)
+  val fib_1:Int; // fib(n-1)
+  val fib:Int;   // fib(n)
+  def this(n:Int) {
+    finish {
+      async {
+        fib_2 = n<=1 ? 0 : new Fib(n-2).fib;
+      }
+      fib_1 = n<=0 ? 0 :
+              n<=1 ? 1 : new Fib(n-1).fib;
+    }
+    fib = fib_2+fib_1;
+  }
+}
+\end{lstlisting}
+\caption{Concurrent fibonacci example.}
+\label{Figure:ConcurrentFib}
+\end{figure}
+
+    Initialization pitfalls: ...
+
+\begin{figure}
+\begin{lstlisting}
+class Fib {
+  val fib_2:Int; // fib(n-2)
+  val fib_1:Int; // fib(n-1)
+  val fib:Int;   // fib(n)
+  def this(n:Int) {
+    fib_2 = at (here.next())
+      n<=1 ? 0 :
+      new Fib(n-2).fib;
+    fib_1 = at (here.next())
+      n<=0 ? 0 :
+      n<=1 ? 1 :
+      new Fib(n-1).fib;
+    fib = fib_2+fib_1;
+  }
+}
+\end{lstlisting}
+\caption{Distributed fibonacci example.}
+\label{Figure:DistributedFib}
+\end{figure}
+
+
+    Initialization pitfalls: \code{at (here.next()) fib\_2 = \ldots}
+
+
 The remainder of this paper is organized as follows.
 \Ref{Section}{rules} presents the hardhat initialization rules of X10 version 2.1
     using examples,
