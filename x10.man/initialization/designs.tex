@@ -102,7 +102,7 @@ instance is definitely fully constructed.  Thus, there is no subtype
 relationship between \texttt{proto C} and \texttt{C}.  It therefore makes no
 sense to allow casting between the two types, and one may not extend a proto
 type.  The only way to get an objedct of \texttt{proto} type is via the
-\texttt{this} keyword in a constructor.  
+\texttt{this} keyword in a constructor.
 
 We also do not allow fields to have \texttt{proto} type.  This is because the
 referenced object will eventually be fully-constructed and then there would be
@@ -143,26 +143,3 @@ system complexity and annotations were a reasonable price to pay for the
 additional expressiveness (i.e. the ability to construct immutable heap
 cycles).  We ultimately decided that immutable heap cycles are too rare in
 practice to justify including these extra mechanisms in the language.
-
-\subsection{Hardhat design}
-
-\subsection{Alternative property design}
-
-Property design (what would happen if we use val fields instead of properties.)
-
-Fields are partition into two: property fields and normal fields. Property fields are assigned together before any other field.
-\begin{lstlisting}
-class A(x:Int) {
-  val y:Int{self!=x};
-  val z = x*x;
-}
-\end{lstlisting}
-Vs.
-Fields are ordered, and all ctors need to assign in the same order as the fields declaration.
-\begin{lstlisting}
-class A {
-  val x:Int;
-  val y:Int{self!=x};
-  val z = x*x;
-}
-\end{lstlisting}

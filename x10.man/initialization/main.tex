@@ -83,3 +83,25 @@ Tested my serialization hypotheses using this Java code:
         ObjectOutput out2 = new ObjectOutputStream(new FileOutputStream("filename2.ser"));
         out2.writeObject("C".substring(1));
         out2.close(); // 7bytes!
+
+
+\subsection{Alternative property design}
+
+Property design (what would happen if we use val fields instead of properties.)
+
+Fields are partition into two: property fields and normal fields. Property fields are assigned together before any other field.
+\begin{lstlisting}
+class A(x:Int) {
+  val y:Int{self!=x};
+  val z = x*x;
+}
+\end{lstlisting}
+Vs.
+Fields are ordered, and all ctors need to assign in the same order as the fields declaration.
+\begin{lstlisting}
+class A {
+  val x:Int;
+  val y:Int{self!=x};
+  val z = x*x;
+}
+\end{lstlisting}
