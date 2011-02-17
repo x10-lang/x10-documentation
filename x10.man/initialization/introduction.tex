@@ -47,7 +47,7 @@ Finally, if the type-system is augmented, for example, with non-null types, then
     a default value no longer exists,
     which leads to complicated type-systems for initialization~\cite{Fahndrich:2007:EOI:1297027.1297052,XinQi:2009}.
 
-\mbox{C++}, as usual, gives you enough rope to hang yourself.
+\mbox{C++}, as usual, gives you enough rope to hang yourself, but in an amazing speed.
 Fields are not zero-initialized, and therefore if \this leaks,
     one can read an uninitialized field.
 Moreover, method calls are statically bound during construction,
@@ -96,14 +96,14 @@ A design for object initialization should have the following
 
   \item[Flexible]
     The user should be able to express the common idioms
-        found in other languages with minor changes.
+        found in other languages with minor variations.
 
   \item[Type safe]
     X10 has types without a default or zero value, such as \code{String\lb{}self!=null\rb}.
-    Type safety is violated if reading from a variable of such type returns \code{null}.
+    Type safety is violated if a read from a variable of such type returns \code{null}.
     Adding non-null types to Java~\cite{Fahndrich:2003:DCN:949305.949332,Fahndrich:2007:EOI:1297027.1297052,XinQi:2009}
         has been a challenge precisely due to
-        Java's relaxed initialization rules.
+        Java's too relaxed initialization rules.
 \end{description}
 We believe the hardhat design in X10 has these desirable properties,
     however they come at a cost of limiting flexibility:
@@ -201,13 +201,13 @@ This is the cause of surprise, because \emph{syntactically} the field initialize
     \code{super()},
     however it is executed after.
 During the \code{super()} call we perform two dynamic dispatches:
-    calling \code{initA()} and \code{toString()}
+    the two calls (\code{initA()} and \code{toString()})
     execute the implementation in \code{B} (and recall that \code{b} is still 0).
 Therefore, \code{initA()} returns 42, and \code{toString()} returns \code{a=42,b=0}.
 
 This bug might seem pretty harmless,
     however if we just change the type of \code{b} from \code{int} to \code{Integer},
-    then this code will now produce a \code{NullPointerException},
+    then this code will now throw a \code{NullPointerException},
     which is more severe.
 
 The second pitfall is leaking \this before the object is fully-initialized,
@@ -216,7 +216,7 @@ Note that we leak a partially-initialized object, i.e.,
     the fields of \code{B} have not been assigned yet and they contain their default values.
 Suppose that some other thread iterates over \code{INSTANCES} and prints them.
 Then that thread might read \code{b=0}.
-In fact, it might even read \code{a=0}, even though we just assigned 42 to \code{a}!
+In fact, it might even read \code{a=0}, even though we just assigned 42 to \code{a} two statements ago!
 The reason is that this write is guaranteed to be seen by other threads only
     after an implicit synchronization barrier that is executed after the constructor ends.
 \Ref{Section}{FinalFields} further explains about final fields in Java and this implicit synchronization barrier.
@@ -233,12 +233,12 @@ It is possible to fix the bugs in this example by following the hardhat initiali
     in the following way:
     (i)~Instead of leaking \this in the constructor,
         we should add factory methods to create instances of \code{A} and \code{B},
-        and add the new fully-initialized instance to \code{INSTANCES} in the factory method.
+        and add the new fully-initialized instance to \code{INSTANCES} in the factory methods.
     (ii)~We should mark \code{initA} as \code{@NoThisAccess},
         and therefore it can be overridden in \code{B}, but it cannot access field \code{b}.
     (iii)~We need to define a private or final method \code{toStringOnlyA};
         this method cannot be overridden so it can be called during construction;
-        method \code{toString} could delegate to \code{toStringOnlyA}.
+        the public non-final method \code{toString} could delegate to \code{toStringOnlyA}.
 
 
 
@@ -267,9 +267,9 @@ Without this barrier another thread might see the default value of a field
 For example, it is well-known that \code{String} is immutable in Java,
     and its implementation uses three {final} fields:
     \code{char[] value}, and two integers fields named \code{offset} and \code{count}.
-This code \code{"AB".substring(1)} will return a new string (\code{"B"})
+This code \code{"AB".substring(1)} will return a new string \code{"B"}
     that shares
-    the same \code{value} as the previous string, %\lb'A','B'\rb
+    the same \code{value} array as \code{"AB"}, %\lb'A','B'\rb
     but with \code{offset} and \code{count} equal to 1.
 Without the barrier, %or without the use of final fields in \code{String},
     another thread might see the default values for these three fields,
@@ -290,33 +290,44 @@ new Thread() {
 }.run();
 \end{lstlisting}
 
-The same bug might happen in \Ref{Figure}{TwoPitfalls}
-    because \this was leaked into \code{INSTANCES}.
+A similar bug might happen in \Ref{Figure}{TwoPitfalls}
+    because \this was leaked into \code{INSTANCES} before the barrier was executed.
 Consider another thread that iterates over \code{INSTANCES} and reads field \code{a}.
-It might read 0, because we leaked \this before the barrier was reached.
+It might read 0, because the assignment of 42 to \code{a} is guaranteed to be visible to other threads
+    only after the barrier was reached.
 
 Therefore, when creating an immutable class,
     Java's documentation recommends using final fields
     and avoid leaking \this in the constructor.
 However, \code{javac} does not even give a warning if that recommendation is violated.
 X10 rules prevent any leaking of \this,
-    thus making it safer to create immutable classes.
+    thus making it safe and easy to create immutable classes.
 
 To summarize, final fields in Java
-    enable thread-safe immutable objects.
-However, there are two other features in Java that prevents you from using {final} fields:
+    enable thread-safe immutable objects,
+    but the user must be careful from the pitfall of leaking \this.
+
+Moreover, there are two other features in Java that are incompatible with {final} fields:
     \emph{custom serialization} and \code{clone}.
-(These two features are connected,
+(These two features are conceptually connected,
     because a clone can be made by serializing and then de-serializing.)
+For example, below we will explain why adding custom serialization to \code{String}
+    would have forced us to remove \code{final} from all its fields,
+    thus making it thread-unsafe!
+Similarly, these two features prevent us from adding \code{final} to the \code{header}
+    field in \code{LinkedList}
+    (even though this field is never re-assigned).
 
 
-\subsubsection{Custom serialization}
+\subsubsection{Custom serialization and immutability}
 \emph{Default serialization} in Java of an object \code{o}
     will serialize the entire object graph reachable from \code{o}.
 Default serialization is not always efficient, e.g.,
     for a \code{LinkedList}, we only need to serialize the elements in the list,
     without serializing the nodes with their \code{next} and \code{prev} pointers.
-(It is possible to mark a field with \code{transient} to exclude it from serialization.)
+(It is possible to mark a field with \code{transient} to exclude it from serialization.
+    However, marking \code{next} and \code{prev} as transient would simply create nodes
+        that are disconnected.)
 
 \emph{Custom serialization} is done by defining a pair of methods called
     \code{writeObject} and \code{readObject}
@@ -331,39 +342,58 @@ It is possible to use reflection in Java to set a final field,
     and the new memory model (Java's spec, Section~17.5.3)
     even considers this:
 \begin{quote}
-In some cases, such as deserialization, the system will need to change
+``In some cases, such as deserialization, the system will need to change
     the final fields of an object after construction.
 \ldots
 Freezes of a final field occur both at the end of the constructor in which the final field is set,
-    and immediately after each modification of a final field via reflection or other special mechanism.
+    and immediately after each modification of a final field via reflection or other special mechanism."
 \end{quote}
+(The ``other special mechanism" is default serialization that has the privilege of assigning to final fields.)
 
 As another example, consider serializing the empty string \code{aVeryLongString.substring(0,0)}.
 The default serialization in Java will serialize the very long \code{char[]} with a zero \code{offset} and \code{count}.
 If one would have wanted to write a custom serializer for \code{String},
-    then she would have to remove the \code{final} keyword (making the class thread-unsafe),
-    or use reflection to set final fields.
+    then she would have to remove the \code{final} keyword (making it thread-unsafe!),
+    or use reflection to set final fields (making it inefficient).
 To summarize, custom serialization in Java is incompatible with final fields.
 
-X10 de-serialize an object by calling a \emph{constructor} with a \code{SerialData}
+On the other hand, X10 de-serialize an object by calling a \emph{constructor} with a \code{SerialData}
     argument (as opposed to \code{readObject} in Java which is a \emph{method}).
-Therefore, de-serialization in X10 can assign to final fields.
+Therefore, de-serialization in X10 can assign to final fields, without using reflection
+    and without special cases in the memory model (i.e., a freeze only happens at the end of a constructor).
 
+Currently, the \code{CustomSerialization} interfaces only specify the serialize method:
 
-\subsubsection{clone}
+~~~~~~~~\code{def serialize():SerialData; // for serializing}\\
+There is an RFC (for X10 version 2.2 in March 2011) for adding static method- and constructor- signatures to interfaces;
+    With that feature, the \code{CustomSerialization} interface would not be (partly) magical,
+    because it will contain also the de-serialize signature:
+
+~~~~~~~~\code{def this(data:SerialData); // for de-serializing}\\
+The X10 compiler currently auto-generates these two methods for every class (all classes are serializable by default in X10),
+    unless the user implemented \code{CustomSerialization} and wrote these two methods herself.
+
+\subsubsection{Cloning and immutability}
 Cloning in Java has the same incompatibility with final fields as serialization:
     \code{clone} is a method and therefore it cannot assign to final fields.
+However, \emph{immutable} objects (such as strings) have no use for cloning,
+    because you need to clone an object if you plan to \emph{mutate} the object or the clone.
+Therefore, cloning is less problematic than serialization with respect to final fields.
+
 X10 has no clone-magic as in Java.
 Instead, the user can clone an object using the serialization mechanism,
     which is invoked when a final variable is copied to another place
     (\Ref{Section}{Parallelism} explains about \code{at} and places in X10):
-\begin{lstlisting}
-def clone[T](o:T) {
-  return at (here) o;
-}
-\end{lstlisting}
+
+~~~~~~~~\code{def clone[T](o:T) \lb{} return at (here) o; \rb}
+
 Using serialization is less efficient than directly cloning an object,
-    and future work is planned to add cloning support to X10.
+    and future work is planned to add cloning support to X10
+    that would be compatible with final fields
+    (in a similar way as in serialization) by defining an interface \code{Clone} with:
+
+~~~~~~~~\code{def this(cloneFrom:CloneSource);}\\
+where \code{CloneSource} is a struct containing the target object we wish to clone.
 
 
 
