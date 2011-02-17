@@ -400,13 +400,27 @@ where \code{CloneSource} is a struct containing the target object we wish to clo
 
 \subsection{Parallelism and Initialization in X10}
 \label{Section:Parallelism}
+X10 supports parallelism in the form of both concurrent and distributed code.
 
-Concurrency in X10 uses two constructs:
-\code{finish} and \code{async}
+\emph{Concurrent code} uses asynchronous un-named activities that are created with the \code{async} construct,
+    and it is possible to wait for activities to finish with the \code{finish} construct.
+Informally, statement \code{async S} executes statement \code{S} asynchronously;
+    we say that the newly created activity \emph{locally terminated} when it finished executing \code{S},
+        and it \emph{globally terminated} when it locally terminated and any activity spawned in \code{S}
+            has also globally terminated.
+Statement \code{finish S} blocks until all the activities created in \code{S} globally terminated.
 
-Using local variables for \code{fib2} and \code{fib1} ...
-Explain that with locals the code would be more elegant,
-    but we wanted to focus only on object initialization.
+\emph{Distributed code} is run over multiple \emph{places} that do \emph{not} share memory,
+    therefore objects are (deeply) copied from one place to another.
+The expression \code{at(p) E} evaluates \code{p} to a place, then copies all captured references in \code{E} to place \code{p},
+    then evaluate \code{E} in place \code{p}, and finally copies the result back to the original place.
+Note that \code{at} is a synchronous construct, meaning the current activity is blocked until the \code{at} finishes.
+This construct can also be used as a statement, in which case there is no copy back
+    (but there is still a notification that is sent back when the \code{at} finishes, in order to release the blocked activity in the original place).
+\Ref{Section}{Global-references} describes how global references are used in distributed code
+    to allow objects in one place to point to objects in another place.
+
+
 
 %\begin{figure}
 %\begin{lstlisting}
@@ -481,10 +495,35 @@ class Fib {
 \label{Figure:DistributedFib}
 \end{figure}
 
+\Ref{Figure}{DistributedFib} shows how to calculate the fibonacci number \code{fib(n)}
+    using concurrent and distributed code.
+Note how \code{fib(n-2)} is calculated asynchronously at the next place,
+    while simultaneously calculating \code{fib(n-1)} in the current place.
+When both calculations finish, we sum their result into the \emph{final} field \code{fib}.
 
-X10 initialization rules prohibits the pitfalls in \Ref{Figure}{DistributedFib}:
-        concurrency: must wait for concurrent field writes to finish,
-        distributed: can not write to a copy of \this.
+We note that using \emph{final local variables} for \code{fib2} and \code{fib1} instead of fields
+    would have made this example
+    more elegant, however we choose the later because this paper focuses on \emph{object} initialization.
+X10 has similar initialization rules for final locals and final fields,
+    but it is outside the scope of this paper to present all forms of initialization in X10
+    (including local variables and static fields).
+Details of those can be found in X10's language specification.
+
+There are two possible pitfalls in this example.
+The first is a concurrency pitfall, where we forget to use finish,
+    and therefore we might read from a field before its assignment was definitely executed.
+Java has definite-assignment rules (using an intra-procedural data-flow analysis)
+    to ensure that a read can only happen after a write;
+    The hardhat design in X10 adopted those rules
+        and extended them in the face of concurrency to support the pattern of
+            \emph{asynchronous initialization}
+            where an \code{async} must have an enclosing \code{finish}
+    (see \Ref{Section}{Read-write-rules}).
+
+The second is a distributed pitfall, where
+    one assigns to a copy of \this in another place (instead of assigning in the original place).
+Leaking \this to another place before it is fully initialized
+    might also cause bugs in the custom serialization code (see \Ref{Section}{Multiple-Places}).
 
 
 

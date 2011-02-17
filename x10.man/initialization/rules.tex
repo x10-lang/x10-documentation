@@ -541,6 +541,7 @@ class A {
 
 
 \subsection{Multiple Places}
+\label{Section:Multiple-Places}
 Places require serialization and deserialization (both custom and automatic) across "at".
 
 \Ref{Figure}{Multi-place} todo ...
@@ -572,6 +573,7 @@ class A {
 \end{lstlisting}
 
 \subsection{Global references}
+\label{Section:Global-references}
 Special GlobalRef class: let \this escape and it creates a cycle.
 We allow a raw \this to escape iff
 * field is private with a field initializer.
@@ -612,6 +614,7 @@ The last subsection is dedicated to a inter-procedural data-flow analysis for gu
     that a field is read only after it was written.
 
 \subsection{Read and write of fields}
+\label{Section:Read-write-rules}
 Java performs intra-procedural data flow in constructors ...
 (also discuss locals?)
 
