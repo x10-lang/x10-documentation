@@ -183,13 +183,13 @@ relaxation.
 class C {
     val next : C{self!=null};
     var fld : C;
-    def this (c: C) {
+    def this (c : C) {
         c.m(this);
+        Console.OUT.println(this.fld.next);
         this.next = this;
     }
-    void m(n:proto C) proto {
-        this.fld = n
-        Console.OUT.println(this.next);
+    void m (n : proto C) proto {
+        this.fld = n;
     }
 }
 \end{lstlisting}
