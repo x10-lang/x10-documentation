@@ -306,44 +306,64 @@ To summarize, final fields in Java
     enable thread-safe immutable objects.
 However, there are two other features in Java that prevents you from using {final} fields:
     \emph{custom serialization} and \code{clone}.
+(These two features are connected,
+    because a clone can be made by serializing and then de-serializing.)
+
 
 \subsubsection{Custom serialization}
-talk about serialization of strings.
+\emph{Default serialization} in Java of an object \code{o}
+    will serialize the entire object graph reachable from \code{o}.
+Default serialization is not always efficient, e.g.,
+    for a \code{LinkedList}, we only need to serialize the elements in the list,
+    without serializing the nodes with their \code{next} and \code{prev} pointers.
+(It is possible to mark a field with \code{transient} to exclude it from serialization.)
 
-De-serialization in Java happens after the object was constructed,
-    therefore you cannot use \code{final} fields if you want to write custom serialization code.
-For example, consider \code{LinkedList} that uses a dummy \code{header} node
-    that could have been \code{final}.
-However, it is assigned in the de-serialization code (\code{readObject})
-    that is executed after the constructor finished
-    (and \code{final} fields can only be assigned in a constructor).
+\emph{Custom serialization} is done by defining a pair of methods called
+    \code{writeObject} and \code{readObject}
+    that handle serializing and de-serializing, respectively.
+For example, field \code{header} in \code{LinkedList} points to a dummy header node,
+    and it could be \code{final} except that it is assigned in \code{readObject}
+    (and in \code{clone}, as explained below).
+The issue here is that \code{readObject} is a method,
+    and final fields can only be assigned in
+    constructors.
+It is possible to use reflection in Java to set a final field,
+    and the new memory model (Java's spec, Section~17.5.3)
+    even considers this:
+\begin{quote}
+In some cases, such as deserialization, the system will need to change
+    the final fields of an object after construction.
+\ldots
+Freezes of a final field occur both at the end of the constructor in which the final field is set,
+    and immediately after each modification of a final field via reflection or other special mechanism.
+\end{quote}
 
-talk about the additional freeze in Java's memory model due to de-serialization.
-Java's spec, Section~17.5.3, writes:
- In some cases, such as deserialization, the system will need to change the final fields of an object after construction.
- ...
- Freezes of a final field occur both at the end of the constructor in which the final field is set,
- and immediately after each modification of a final field via reflection or other special mechanism.
-%17.5.3 Subsequent Modification of Final Fields
-%In some cases, such as deserialization, the system will need to change the final fields of an object after construction. Final fields can be changed via reflection and other implementation dependent means. The only pattern in which this has reasonable semantics is one in which an object is constructed and then the final fields of the object are updated. The object should not be made visible to other threads, nor should the final fields be read, until all updates to the final fields of the object are complete. Freezes of a final field occur both at the end of the constructor in which the final field is set, and immediately after each modification of a final field via reflection or other special mechanism.
+As another example, consider serializing the empty string \code{aVeryLongString.substring(0,0)}.
+The default serialization in Java will serialize the very long \code{char[]} with a zero \code{offset} and \code{count}.
+If one would have wanted to write a custom serializer for \code{String},
+    then she would have to remove the \code{final} keyword (making the class thread-unsafe),
+    or use reflection to set final fields.
+To summarize, custom serialization in Java is incompatible with final fields.
 
-X10 solved this problem by treating de-serialization as an additional constructor,
-    i.e., instead of doing de-serialization in a method (as in Java),
-    X10 does it in a constructor.
+X10 de-serialize an object by calling a \emph{constructor} with a \code{SerialData}
+    argument (as opposed to \code{readObject} in Java which is a \emph{method}).
+Therefore, de-serialization in X10 can assign to final fields.
 
 
 \subsubsection{clone}
-clone:
-\begin{lstlisting}[texcl]
+Cloning in Java has the same incompatibility with final fields as serialization:
+    \code{clone} is a method and therefore it cannot assign to final fields.
+X10 has no clone-magic as in Java.
+Instead, the user can clone an object using the serialization mechanism,
+    which is invoked when a final variable is copied to another place
+    (\Ref{Section}{Parallelism} explains about \code{at} and places in X10):
+\begin{lstlisting}
 def clone[T](o:T) {
   return at (here) o;
 }
 \end{lstlisting}
-
-This field is only written in a constructor, \code{clone}, and .
-
-
-
+Using serialization is less efficient than directly cloning an object,
+    and future work is planned to add cloning support to X10.
 
 
 
