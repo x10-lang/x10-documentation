@@ -362,53 +362,78 @@ class A {
 
 
 \subsection{Properties and the class invariant}
-Properties are final values that can be used in constraints,
+Properties are final fields that can be used in constraints,
     e.g., \code{Array} has a \code{size} property,
     so an array of size 2 can be expressed as: \code{Array\lb self.size==2\rb}.
+The differences between a property and a final field are both syntactically and semantically,
+    as seen in class \code{A} of \Ref{Figure}{Properties}.
+Syntactically, properties are defined after the class name,
+    they must have a type and cannot have an initializer,
+    and they must be initialized in a constructor using a property call statement written as \code{property(\ldots)}.
+Semantically, properties are initialized before all other fields,
+    and they can be used in constraints with the prefix \code{self}.
 
-Properties are final fields that are initialized before all other fields.
+When using the prefix \this, you can access both properties and other final fields.
+The difference between \this and \code{self} is
+    shown in field \code{f3} in \Ref{Figure}{Properties}:
+    \code{this.a} refers to the property \code{a} stored in \this,
+    whereas \code{self.a} refers to \code{a} stored in the object to which \code{f3} refers.
+(In the constructor, we indeed see that we assign to \code{f3} a new instance of \code{A}
+    whose \code{a} property is equal to \code{this.a}.)
+
 % Should I talk about interface and abstract property methods? Doesn't relate to initialization...
-The \emph{class invariant} may refer only to properties of the class,
-    and it must be satisfied after the property call in every constructor.
+
+Properties must be initialized before other fields because
+    field initializers and field types can refer to properties (see initializer for \code{f1} and the type of \code{f3}).
+The super's fields can be accessed after the super call,
+    and the other fields after the property call;
+    field initializers are executed after the property call.
+
+The \emph{class invariant} (\code{\lb{}b==a\rb} in \Ref{Figure}{Properties})
+    may refer only to properties,
+    and it must be satisfied after the property call.
 
 
-\Ref{Figure}{Properties} todo ...
 
 \begin{figure}
 \begin{lstlisting}
 class A(a:Int) {
-  def this() {
-    property(42);
+  def this(x:Int) {
+    property(x);
   }
 }
-class B(b:Int) {b!=0} extends A {
+class B(b:Int) {b==a} extends A {
   val f1 = a+b;
   val f2:Int;
-  def this() {
-    super();
-    f2 = f1; //err
-    property(3);
+  val f3:A{this.a==self.a};
+  def this(x:Int) {
+    super(x);
+    val i1 = a;
+    val i2 = b; //err
+    val i3 = f1; //err
+    f2 = 2; //err
+    property(x);
+    f3 = new A(this.a);
   }
 }
 \end{lstlisting}
-\definerule{Rule16}
 \definerule{Rule17}
 \definerule{Rule18}
 \definerule{Rule19}
 \caption{Properties and class invariant example:
-        properties (e.g., \code{a} and \code{b})
+        properties (\code{a} and \code{b})
         are final fields that are initialized before all other fields
         using a property call (\code{property(\ldots);} statement).
-    \myrule{\arabic{Rule16}}{If a class does not define any properties, then
+    {If a class does not define any properties, then
         an implicit \code{property()} is added
-        after (the implicit or explicit) \code{super(\ldots)}}
+        after (the implicit or explicit) \code{super(\ldots)}.}
+    {Field initializers are executed in their declaration order
+        after (the implicit or explicit) the property call}
     \myrule{\arabic{Rule17}}{If a constructor does not call \code{this(\ldots)},
         then it must have exactly one
         property call, and it must be unconditionally executed
-        (unless the constructor throws an exception);
-        the class invariant must hold after the property call}
-    \myrule{\arabic{Rule18}}{Field initializers are executed in their declaration order
-        after (the implicit or explicit) the property call}
+        (unless the constructor throws an exception).}
+    \myrule{\arabic{Rule18}}{The class invariant must hold after the property call}
     \myrule{\arabic{Rule19}}{The super fields can only be accessed after \code{super(\ldots)},
         and the fields of \this can only be accessed after \code{property(\ldots)}}
     }
@@ -419,30 +444,37 @@ class B(b:Int) {b!=0} extends A {
 
 
 \subsection{Closures}
-
-
-
-\Ref{Figure}{Closures} todo ...
+Closures are functions that can refer to final variables in the enclosing scope,
+    e.g., they can refer to final method parameters, locals, and \this.
+When a closure refer to a variable, we say that it is captured by the closure,
+    and the variable is thus stored in the closure object.
 
 \begin{figure}
+%    LeakIt.foo(closure1);
 \begin{lstlisting}
 class A {
-  val a = 3;
+  var a:Int = 3;
   def this() {
+    val closure1 = ()=>this.a; //err
+    at(here.next()) closure1();
     val local = this.a;
-    val closure1 = ()=>local;
-    val closure2 = ()=>this.a; //err
-    at (here.next())
-      closure2();
+    val closure2 = ()=>local;
   }
 }
 \end{lstlisting}
 \definerule{Rule20}
-\caption{Closure capture \this example.
+\caption{Closures example.
     \myrule{\arabic{Rule20}}{A closure cannot capture a raw \this}
     }
 \label{Figure:Closures}
 \end{figure}
+
+
+\Ref{Figure}{Closures} shows why it is prohibited to capture a raw \this in a closure:
+    that closure can later escape to another place which will serialize all captured variables
+    (including the raw \this that should not be serialized, see \Ref{Section}{Multiple-Places}).
+The work-around for using a field in a closure is to define a local that will refer only to the field (which is definitely cooked)
+    and capture the local instead of the field as done in \code{closure2}.
 
 
 
@@ -454,7 +486,7 @@ Does not contain \code{null}, so \code{haszero} ...
 Generics are not unique to X10,
     however the combination of generics and the lack of default values for all types
     lead to new pitfalls.
-In addition, generics in X10 are \emph{not} erased as in Java
+In addition, generics in X10 are \emph{not} erased as in Java (therefore we cannot assign
     in order to make instantiations over structs efficient.
 
 for example, \code{Box[Byte]} and \code{Box[Int]}
@@ -475,15 +507,18 @@ class A[T] {
 class B[T] {T haszero} {
   var a:T;
 }
+struct WithZeroValue(x:Int,y:Int) {}
+struct WithoutZeroValue(x:Int{self!=0}) {}
 class Usage {
   var b1:B[Int];
-  var b1:B[String];
-  var b1:B[Int{self!=0}]; //err
+  var b2:B[Int{self!=0}]; //err
+  var b3:B[WithZeroValue];
+  var b4:B[WithoutZeroValue]; //err
 }
 \end{lstlisting}
 \definerule{Rule21}
 \caption{\code{haszero} type condition.
-    \myrule{\arabic{Rule21}}{statically checks a type has the zero value}
+    \myrule{\arabic{Rule21}}{Type arguments must satisfy the type constraint in the class invariant}
     }
 \label{Figure:Generics}
 \end{figure}
