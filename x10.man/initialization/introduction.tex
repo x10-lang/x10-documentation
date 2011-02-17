@@ -27,8 +27,8 @@ On the other end of the spectrum,
     Java and C\# allow
     dynamic dispatching and leaking \this.
 However, they still maintain type- and runtime- safety
-    by relying on the fact that every type has a default zero value
-    (whether that zero is 0, false, or \code{null}),
+    by relying on the fact that every type has a default value
+    (also called zero value, which is either 0, \code{false}, or \code{null}),
     and all fields are zero-initialized before the constructor begins.
 As a consequence,
     a half-baked object can leak before all its fields are set. %\cite{Seo:2007:SBD:1522565.1522587} - reading uninitialized field references
@@ -38,7 +38,7 @@ Another source of subtle bugs is due to the synchronization barrier
     at the end of a constructor~\cite{JSR133}
     after which all assignments to final fields are guaranteed to be written.
 The programmer is warned (in the documentation only!)
-    that objects with final fields are thread-safe only if
+    that immutable objects (using final fields) are thread-safe only if
     \this does not escape its constructor.
 %Before JSR 133~\cite{JSR133},
 %    immutable objects could have different values in different threads
@@ -55,97 +55,387 @@ Moreover, method calls are statically bound during construction,
     if one tries to invoke a virtual method of an abstract class (see \Ref{Figure}{Dynamic-dispatch} below).
 (Determining whether this happens is an intractable problem~\cite{Gil:1998:CTA:646155.679689}.)
 
-- useful examples, and sources of bugs
-- design tradeoff: less buggy (but strict) vs. more flexible (but error-prone)
-- properties the programmer wants (cannot read uninitialized fields, final fields has a single value)
+A design for object initialization should have the following
+    desirable properties:
+\begin{description}
+%  \item[Reduce runtime errors]
+%    Common errors should be caught at compile time.
+%    \mbox{C++} pure virtual method error
+%  \item[No security errors]
+%    Java exception hole.
 
-Common
+  \item[Cannot read uninitialized fields]
+    One should not be able to read uninitialized fields.
+    In \mbox{C++} it is possible to read uninitialized fields,
+        returning an unspecified value which can lead to unpredictable behavior.
+    In Java, fields are zero initialized before the constructor begins to execute,
+        so it is possible to read the default or zero value,
+        but never an unspecified value.
+
+  \item[Single value for final fields]
+    Final fields can be assigned exactly once, and
+        should be read only after assigned.
+    In Java it is possible to read a final field before it was assigned,
+        therefore returning its default value.
+
+  \item[Immutable objects are thread-safe]
+    Immutable objects should be thread-safe without using any explicit synchronization.
+    This is not the case even in Java 5 if \this escapes from the constructor~\cite{JSR133};
+        See explanation on \Ref{Figure}{TwoPitfalls} below.
+
+%  \item[Parallel]
+%    Concurrent and distributed code is error-prone to begin with.
+%    The design should prevent initialization-related errors.
+
+  \item[Simple]
+    The order of initialization should be clear from the syntax, % intuitive,
+        and should not surprise the user.
+    Dynamic dispatching during construction disrupts the order
+        of initialization by executing a subclass's method before the superclass finished its initialization.
+    This is error-prone and often surprises the user.
+
+  \item[Flexible]
+    The user should be able to express the common idioms
+        found in other languages with minor changes.
+
+  \item[Type safe]
+    X10 has types without a default or zero value, such as \code{String\lb{}self!=null\rb}.
+    Type safety is violated if reading from a variable of such type returns \code{null}.
+    Adding non-null types to Java~\cite{Fahndrich:2003:DCN:949305.949332,Fahndrich:2007:EOI:1297027.1297052,XinQi:2009}
+        has been a challenge precisely due to
+        Java's relaxed initialization rules.
+\end{description}
+We believe the hardhat design in X10 has these desirable properties,
+    however they come at a cost of limiting flexibility:
+    it is not possible to express cyclic immutable structures in X10 2.1.
+\Ref{Section}{designs} describes alternative designs for initialization
+    such as the \code{proto} design (that was part of X10 2.0) that allows cyclic immutable structures
+    at the cost of a more complicated design.
+
+The remainder of this introduction
+    presents error-prone sequential initialization idioms in \Ref{Section}{Initialization-pitfalls},
+    thread-unsafe immutable objects and serialization in \Ref{Section}{FinalFields}, and
+    common initialization pitfalls in parallel X10 programs in \Ref{Section}{Parallelism}.
+
+\subsection{Initialization pitfalls in sequential code}
+\label{Section:Initialization-pitfalls}
+
+%class A {
+%  static val INSTANCES = new HashSet[A]();
+%  val a:Int; // final field
+%  def this() { // constructor
+%    a = initA(); // dynamic dispatch!
+%    System.OUT.println(toString()); //again!
+%    INSTANCES.add(this); // leakage!
+%  }
+%  def initA() { // instance method
+%    return 1;
+%  }
+%  def toString() {
+%    return "a="+a;
+%  }
+%}
+%class B extends A {
+%  var b:Int = 2; // non-final field
+%  def initA() { // overriding
+%    return b;
+%  }
+%  def toString() {
+%    return super.toString()+",b="+b;
+%  }
+%}
 \begin{figure}
 \begin{lstlisting}
 class A {
-  static val INSTANCES = new HashSet[A]();
-  val a:Int; // final field
-  def this() { // constructor
-    a = initA();
-    INSTANCES.add(this);
+  static HashSet INSTANCES = new HashSet();
+  final int a;
+  A() {
+    a = initA(); // dynamic dispatch!
+    System.out.println(toString()); //again!
+    INSTANCES.add(this); // leakage!
   }
-  def initA():Int { // instance method
+  int initA() {
     return 1;
+  }
+  public String toString() {
+    return "a="+a;
   }
 }
 class B extends A {
-  val b:Int;
-  def this(b:Int) {
-    this.b = b;
+  int b = 2;
+  B() { super(); }
+  int initA() {
+    return b+42;
   }
-  def initA():Int {
-    return b;
+  public String toString() {
+    return super.toString()+",b="+b;
+  }
+  public static void main(String[] args) {
+    B b = new B(); // prints: a=42,b=0
+    System.out.println(b); // prints: a=42,b=2
   }
 }
 \end{lstlisting}
-\caption{Two initialization pitfalls:
+\caption{Two initialization pitfalls in Java:
     leaking \this and dynamic dispatch during construction.}
 \label{Figure:TwoPitfalls}
 \end{figure}
 
-\subsection{Initialization and Concurrency}
-\code{final} fields in Java actually mean more than just ``the field cannot be re-assigned".
-Give String example and final offset.
-Then talk about what would happen if this is leaked.
+\Ref{Figure}{TwoPitfalls} demonstrates the two most common initialization pitfalls in Java:
+    leaking \this and dynamic dispatching.
+We will first explain the surprising output due to dynamic dispatching,
+    and then the less known possible bug due to leaking \this.
+
+Running this code first prints \code{a=42,b=0}, which is
+    surprising to most Java users.
+One would expect \code{b} to be 2, and \code{a} to be either 1 or 44.
+However, due to initialization order and dynamic dispatch,
+    the user sees the default value for \code{b} which is 0,
+    and therefore the value of \code{a} is 42.
+We will trace the initialization order for \code{new B()}:
+    we first allocate a new object with zero-initialized fields,
+    and then invoke the constructor of \code{B}.
+The constructor of \code{B} first calls \code{super()},
+    and only afterward it will run the field initializer (setting \code{b} to 2).
+This is the cause of surprise, because \emph{syntactically} the field initializer comes before
+    \code{super()},
+    however it is executed after.
+During the \code{super()} call we perform two dynamic dispatches:
+    calling \code{initA()} and \code{toString()}
+    execute the implementation in \code{B} (and recall that \code{b} is still 0).
+Therefore, \code{initA()} returns 42, and \code{toString()} returns \code{a=42,b=0}.
+
+This bug might seem pretty harmless,
+    however if we just change the type of \code{b} from \code{int} to \code{Integer},
+    then this code will now produce a \code{NullPointerException},
+    which is more severe.
+
+The second pitfall is leaking \this before the object is fully-initialized,
+    e.g., \code{INSTANCES.add(this)}.
+Note that we leak a partially-initialized object, i.e.,
+    the fields of \code{B} have not been assigned yet and they contain their default values.
+Suppose that some other thread iterates over \code{INSTANCES} and prints them.
+Then that thread might read \code{b=0}.
+In fact, it might even read \code{a=0}, even though we just assigned 42 to \code{a}!
+The reason is that this write is guaranteed to be seen by other threads only
+    after an implicit synchronization barrier that is executed after the constructor ends.
+\Ref{Section}{FinalFields} further explains about final fields in Java and this implicit synchronization barrier.
+
+
+
+The hardhat design in X10 (described in \Ref{Section}{rules})
+    prevents both pitfalls,
+    because its rules prohibit leaking \this,
+    and they only allow calling private or final methods (that cannot be overridden).
+It is possible to annotate a method with \code{@NoThisAccess},
+    which allows overriding but prohibits any access to \this.
+It is possible to fix the bugs in this example by following the hardhat initialization rules
+    in the following way:
+    (i)~Instead of leaking \this in the constructor,
+        we should add factory methods to create instances of \code{A} and \code{B},
+        and add the new fully-initialized instance to \code{INSTANCES} in the factory method.
+    (ii)~We should mark \code{initA} as \code{@NoThisAccess},
+        and therefore it can be overridden in \code{B}, but it cannot access field \code{b}.
+    (iii)~We need to define a private or final method \code{toStringOnlyA};
+        this method cannot be overridden so it can be called during construction;
+        method \code{toString} could delegate to \code{toStringOnlyA}.
+
+
+
+\subsection{Final fields, Concurrency, and Serialization}
+\label{Section:FinalFields}
+We will start with an anecdote:
+    suppose you have a friend that
+    playfully removed all the occurrences of the \code{final} keyword
+    from your legal Java program.
+Would your program still \emph{run} the same?
+On the face of it, \code{final} is used only to make the \emph{compiler} more {strict},
+    i.e., to catch more errors at compile time
+    (to make sure a method is not overridden, a class is not extended, and a field or local
+        is assigned exactly once).
+After \emph{compilation} is done, \code{final} should not change the \emph{runtime} behavior of the program.
+However, this is not the case due to interaction between initialization and concurrency:
+    a synchronization barrier is implicitly added
+    at the end of a constructor~\cite{JSR133}
+    ensuring that assignments to \emph{final} fields are visible to all other threads.
+(Assignments to non-final fields might not be visible to other threads!)
+
+This barrier was added to the memory model of Java 5
+    to ensure that the common pattern of immutable objects is thread-safe.
+Without this barrier another thread might see the default value of a field
+    instead of its final value.
+For example, it is well-known that \code{String} is immutable in Java,
+    and its implementation uses three {final} fields:
+    \code{char[] value}, and two integers fields named \code{offset} and \code{count}.
+This code \code{"AB".substring(1)} will return a new string (\code{"B"})
+    that shares
+    the same \code{value} as the previous string, %\lb'A','B'\rb
+    but with \code{offset} and \code{count} equal to 1.
+Without the barrier, %or without the use of final fields in \code{String},
+    another thread might see the default values for these three fields,
+    i.e., \code{null} for \code{value} and 0 for \code{offset} and \code{count}.
+For instance,
+    if one removes the \code{final} keyword in \code{String},
+    then
+    the following code might print \code{B} (the expected answer),
+    or it might print
+    \code{A} or an empty string,
+    or might even throw a \code{NullPointerException}:
+\begin{lstlisting}
+final String name = "AB".substring(1);
+new Thread() {
+  public void run() {
+    System.out.println(name);
+  }
+}.run();
+\end{lstlisting}
+
+The same bug might happen in \Ref{Figure}{TwoPitfalls}
+    because \this was leaked into \code{INSTANCES}.
+Consider another thread that iterates over \code{INSTANCES} and reads field \code{a}.
+It might read 0, because we leaked \this before the barrier was reached.
+
+Therefore, when creating an immutable class,
+    Java's documentation recommends using final fields
+    and avoid leaking \this in the constructor.
+However, \code{javac} does not even give a warning if that recommendation is violated.
+X10 rules prevent any leaking of \this,
+    thus making it safer to create immutable classes.
+
+To summarize, final fields in Java
+    enable thread-safe immutable objects.
+However, there are two other features in Java that prevents you from using {final} fields:
+    \emph{custom serialization} and \code{clone}.
+
+\subsubsection{Custom serialization}
+talk about serialization of strings.
+
+De-serialization in Java happens after the object was constructed,
+    therefore you cannot use \code{final} fields if you want to write custom serialization code.
+For example, consider \code{LinkedList} that uses a dummy \code{header} node
+    that could have been \code{final}.
+However, it is assigned in the de-serialization code (\code{readObject})
+    that is executed after the constructor finished
+    (and \code{final} fields can only be assigned in a constructor).
+
+talk about the additional freeze in Java's memory model due to de-serialization.
+Java's spec, Section~17.5.3, writes:
+ In some cases, such as deserialization, the system will need to change the final fields of an object after construction.
+ ...
+ Freezes of a final field occur both at the end of the constructor in which the final field is set,
+ and immediately after each modification of a final field via reflection or other special mechanism.
+%17.5.3 Subsequent Modification of Final Fields
+%In some cases, such as deserialization, the system will need to change the final fields of an object after construction. Final fields can be changed via reflection and other implementation dependent means. The only pattern in which this has reasonable semantics is one in which an object is constructed and then the final fields of the object are updated. The object should not be made visible to other threads, nor should the final fields be read, until all updates to the final fields of the object are complete. Freezes of a final field occur both at the end of the constructor in which the final field is set, and immediately after each modification of a final field via reflection or other special mechanism.
+
+X10 solved this problem by treating de-serialization as an additional constructor,
+    i.e., instead of doing de-serialization in a method (as in Java),
+    X10 does it in a constructor.
+
+
+\subsubsection{clone}
+clone:
+\begin{lstlisting}[texcl]
+def clone[T](o:T) {
+  return at (here) o;
+}
+\end{lstlisting}
+
+This field is only written in a constructor, \code{clone}, and .
+
+
+
+
+
+
+
+\subsection{Parallelism and Initialization in X10}
+\label{Section:Parallelism}
 
 Concurrency in X10 uses two constructs:
 \code{finish} and \code{async}
 
+Using local variables for \code{fib2} and \code{fib1} ...
 Explain that with locals the code would be more elegant,
     but we wanted to focus only on object initialization.
+
+%\begin{figure}
+%\begin{lstlisting}
+%class Fib {
+%  val fib2:Int; // fib(n-2)
+%  val fib1:Int; // fib(n-1)
+%  val fib:Int;  // fib(n)
+%  def this(n:Int) {
+%    finish {
+%      async {
+%        fib2 = n<=1 ? 0 : new Fib(n-2).fib;
+%      }
+%      fib1 = n<=0 ? 0 :
+%             n<=1 ? 1 : new Fib(n-1).fib;
+%    }
+%    fib = fib2+fib1;
+%  }
+%}
+%\end{lstlisting}
+%\caption{Concurrent fibonacci example.
+%    \code{async} starts an asynchronous activity,
+%    and \code{finish} waits for all spawned activities to finish.
+%    Initialization pitfall:
+%        forget to use \code{finish},
+%        and read from \code{fib2} before its write finished.}
+%\label{Figure:ConcurrentFib}
+%\end{figure}
+
+
 \begin{figure}
 \begin{lstlisting}
 class Fib {
-  val fib_2:Int; // fib(n-2)
-  val fib_1:Int; // fib(n-1)
-  val fib:Int;   // fib(n)
+  val fib2:Int; // fib(n-2)
+  val fib1:Int; // fib(n-1)
+  val fib:Int;  // fib(n)
   def this(n:Int) {
     finish {
       async {
-        fib_2 = n<=1 ? 0 : new Fib(n-2).fib;
+        val p = here.next();
+        fib2 = at(p)
+         n<=1 ? 0 : new Fib(n-2).fib;
       }
-      fib_1 = n<=0 ? 0 :
-              n<=1 ? 1 : new Fib(n-1).fib;
+      fib1 = n<=0 ? 0 :
+         n<=1 ? 1 : new Fib(n-1).fib;
     }
-    fib = fib_2+fib_1;
+    fib = fib2+fib1;
   }
 }
 \end{lstlisting}
-\caption{Concurrent fibonacci example.}
-\label{Figure:ConcurrentFib}
-\end{figure}
-
-    Initialization pitfalls: ...
-
-\begin{figure}
-\begin{lstlisting}
-class Fib {
-  val fib_2:Int; // fib(n-2)
-  val fib_1:Int; // fib(n-1)
-  val fib:Int;   // fib(n)
-  def this(n:Int) {
-    fib_2 = at (here.next())
-      n<=1 ? 0 :
-      new Fib(n-2).fib;
-    fib_1 = at (here.next())
-      n<=0 ? 0 :
-      n<=1 ? 1 :
-      new Fib(n-1).fib;
-    fib = fib_2+fib_1;
-  }
-}
-\end{lstlisting}
-\caption{Distributed fibonacci example.}
+\caption{Concurrent and distributed fibonacci example.
+    Concurrent code is expressed using \code{async} and \code{finish}:
+        \code{async} starts an asynchronous activity,
+        and \code{finish} waits for all spawned activities to finish.
+    Distributed code uses \code{at} to shift between
+        \emph{places};
+        \code{here} denotes the current place.
+    \code{at(p) E} evaluates expression \code{E}
+        in place \code{p}, and finally copies the result back;
+        any final variables captured in \code{E} from
+        the outer environment (e.g., \code{n})
+        are first copied to place \code{p}.
+    Possible initialization pitfall:
+        (i) %Concurrency bug:
+            forget to use \code{finish},
+            and read from \code{fib2} before its write finished,
+        (ii) %Distributed bug:
+            write to field \code{fib2} in another place, i.e.,
+            \code{at(p) this.fib2=\ldots},
+            which causes \this to be copied to \code{p}
+            so one writes to a copy of \this.
+    }
 \label{Figure:DistributedFib}
 \end{figure}
 
 
-    Initialization pitfalls: \code{at (here.next()) fib\_2 = \ldots}
+X10 initialization rules prohibits the pitfalls in \Ref{Figure}{DistributedFib}:
+        concurrency: must wait for concurrent field writes to finish,
+        distributed: can not write to a copy of \this.
+
 
 
 The remainder of this paper is organized as follows.

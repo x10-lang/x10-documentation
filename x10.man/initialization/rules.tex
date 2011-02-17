@@ -2,8 +2,7 @@ X10 is an advanced object-oriented language with a complex type-system
     and concurrency constructs.
 This section describes how object initialization interacts with X10 features.
 We begin with object-oriented features found in mainstream languages,
-    such as constructors, inheritance, dynamic dispatching, exceptions, inner classes,
-    and static fields.
+    such as constructors, inheritance, dynamic dispatching, exceptions, and inner classes.
 We then proceed to X10 type-system features,
     such as constraints, properties, class invariants, closures, (non-erased) generics, and structs.
 The parallel features of X10 allow writing concurrent code (using \code{finish} and \code{async}),
@@ -76,8 +75,8 @@ class B extends A {
     and explains by example why leaking \this during construction can cause bugs.
 In all the examples, errors issued by the X10 compiler are marked with \code{//err}.
 
-We say that an object is \emph{raw} before its constructor ends,
-    and afterward it is \emph{cooked}.
+We say that an object is \emph{raw} (also called partially initialized) before its constructor ends,
+    and afterward it is \emph{cooked} (also called fully initialized).
 Note that when an object is cooked, all its sub-objects must be cooked as well.
 X10 prohibits any aliasing or leaking of \this during construction,
     therefore only \this or \code{super} can be raw (any other variable is definitely cooked).
@@ -172,7 +171,7 @@ class B extends A {
 X10 prevents dynamic dispatching by requiring that non-escaping methods
     must be private or final
     (so overriding is impossible).
-For example, \code{err1} is caused by rule~\userule{Rule5}
+For example, \code{\itshape err1} is caused by rule~\userule{Rule5}
     because \code{m1} is neither private nor final nor \code{@NoThisAccess}.
 
 However, sometimes dynamic dispatching is required during construction.
@@ -180,7 +179,7 @@ For example, if a subclass needs to refine initialization
     of the superclass's fields.
 Such refinement cannot have any access to \this, and therefore
     such methods are marked with \code{@NoThisAccess}.
-For example, \code{err2} and \code{err3} are caused by rule~\userule{Rule6} that prohibits access \this or \code{super}
+For example, \code{\itshape err2} and \code{\itshape err3} are caused by rule~\userule{Rule6} that prohibits access \this or \code{super}
     when using \code{@NoThisAccess}.
 \code{@NoThisAccess} prohibits any access to \this,
     however, one could still access the method parameters.
@@ -303,35 +302,35 @@ Because X10 requires that the outer instances are cooked, then this transformati
 Same for anonymous and local classes. \todo ...
 
 
-\subsection{Static initialization}
-X10 does not support dynamic class loading as opposed to Java,
-    and all static fields in X10 are final.
-Thus, initialization of static fields is a one-time phase, denoted the static-init phase,
-    that is done before the \code{main} method is executed.
-
-During the static-init phase we must finish writing to all static fields,
-    and reading a static field \emph{waits} until the field is initialized
-    (i.e., the current activity/thread blocks if the field was not written to,
-    and it resumes after another activity writes to it).
-Obviously, this may lead to deadlock as demonstrated by \Ref{Figure}{Static-init}.
-However, in practice, deadlock is rare,
-    and usually found quickly the first time a program is executed.
-
-\begin{figure}
-\begin{lstlisting}
-class A {
-  static val a:Int = B.b;
-}
-class B {
-  static val b:Int = A.a;
-}
-\end{lstlisting}
-\caption{Static initialization example:
-    the program will deadlock at run-time
-    during the static-init phase (before the \code{main} method is executed).
-    }
-\label{Figure:Static-init}
-\end{figure}
+%\subsection{Static initialization}
+%X10 does not support dynamic class loading as opposed to Java,
+%    and all static fields in X10 are final.
+%Thus, initialization of static fields is a one-time phase, denoted the static-init phase,
+%    that is done before the \code{main} method is executed.
+%
+%During the static-init phase we must finish writing to all static fields,
+%    and reading a static field \emph{waits} until the field is initialized
+%    (i.e., the current activity/thread blocks if the field was not written to,
+%    and it resumes after another activity writes to it).
+%Obviously, this may lead to deadlock as demonstrated by \Ref{Figure}{Static-init}.
+%However, in practice, deadlock is rare,
+%    and usually found quickly the first time a program is executed.
+%
+%\begin{figure}
+%\begin{lstlisting}
+%class A {
+%  static val a:Int = B.b;
+%}
+%class B {
+%  static val b:Int = A.a;
+%}
+%\end{lstlisting}
+%\caption{Static initialization example:
+%    the program will deadlock at run-time
+%    during the static-init phase (before the \code{main} method is executed).
+%    }
+%\label{Figure:Static-init}
+%\end{figure}
 
 
 
@@ -564,6 +563,13 @@ class A {
 \label{Figure:Multi-place}
 \end{figure}
 
+
+\begin{lstlisting}
+class A {
+  var i:Int;
+  val distArray = DistArray.make( ..., (Point)=>this.i); // "this" is serialized to another place before it is cooked
+}
+\end{lstlisting}
 
 \subsection{Global references}
 Special GlobalRef class: let \this escape and it creates a cycle.
