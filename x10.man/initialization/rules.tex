@@ -3,12 +3,13 @@ X10 is an advanced object-oriented language with a complex type-system
 This section describes how object initialization interacts with X10 features.
 We begin with object-oriented features found in mainstream languages,
     such as constructors, inheritance, dynamic dispatching, exceptions, and inner classes.
-We then proceed to X10 type-system features,
+We then proceed to X10's type-system features,
     such as constraints, properties, class invariants, closures, (non-erased) generics, and structs.
 The parallel features of X10 allow writing concurrent code (using \code{finish} and \code{async}),
     and distributed code (using \code{at} and global references).
-Finally, we conclude with an inter-procedural data-flow analysis that ensures that
-    a field is read only after it was written.
+Next we describe the inter-procedural data-flow analysis that ensures that
+    a field is read only after it was assigned.
+Finally, we summarize the claims or properties of initialization in X10.
 
 
 \subsection{Constructors and inheritance}
@@ -33,6 +34,7 @@ class A {
     LeakIt.foo(me);
     this.m2(); // so m2 is implicitly non-escaping
   }
+  // permitted to escape
   final def m1() {
     LeakIt.foo(this);
   }
@@ -94,11 +96,11 @@ We begin with two definitions:
     (ii)~when a method is \emph{non-escaping}.
 (i)~Variables \this and \code{super} are raw
     during the object's construction,
-    i.e., in field initializers and in \emph{non-escaping} methods
+    i.e., in field initializers and in {non-escaping} methods
     (methods that cannot escape or leak \this).
 (ii)~Obviously constructors are non-escaping,
-    but you can also annotate methods explicitly as \code{@NonEscaping},
-    or they can be inferred to be implicitly non-escaping
+    but you can also annotate methods \emph{explicitly} as \code{@NonEscaping},
+    or they can be inferred to be \emph{implicitly} non-escaping
     if they are called on a raw \this receiver.
 
 For example, \code{m2} is \emph{implicitly} non-escaping (and therefore cannot leak \this)
@@ -147,8 +149,8 @@ class B extends A {
     super(i);
   }
   def m1() {
-    val x = super.a; // returns 0 in Java
-    val y = this.b; // returns 0 in Java
+    val x = super.a;
+    val y = this.b;
     return 1;
   }
   @NoThisAccess def m2() {
@@ -183,6 +185,8 @@ For example, \code{\itshape err2} and \code{\itshape err3} are caused by rule~\u
     when using \code{@NoThisAccess}.
 \code{@NoThisAccess} prohibits any access to \this,
     however, one could still access the method parameters.
+(If the subclass needs to read a certain field of the superclass that was previously assigned,
+    then that field can be passed as an argument.) % to the \code{@NoThisAccess} method
 
 
 In C++, the call to \code{m1} is legal,
@@ -193,7 +197,7 @@ In Java, the call to \code{m1} is also legal,
     but at runtime
     methods are dynamically bound,
     so the implementation of \code{m1} in \code{B}
-    will read the default value of \code{b}.
+    will read the default value of \code{a} and \code{b}.
 %This behavior is undesired in Java,
 %    and Java discourages it by trying to catch statically most of these cases.
 %For example, Java prohibits calls to member functions before the super object was initialized,
@@ -201,11 +205,6 @@ In Java, the call to \code{m1} is also legal,
 %\begin{lstlisting}
 %class B extends A { B() {super(f()); }}
 %\end{lstlisting}
-
-Finally, classes \code{C} and \code{D} show why it is sometimes required to mark
-    methods explicitly as \code{@NonEscaping}:
-    if a subclass (\code{D}) needs to call a method a method (\code{m3})
-    during construction, then it must be marked as non-escaping.
 
 
 
@@ -246,7 +245,8 @@ class B extends A {
 
 
 \Ref{Figure}{Exceptions} shows that it is an error to try to recover from an exception thrown
-    by a constructor call, because from rule~\userule{Rule7} the first statement must be \code{super()}.
+    by a constructor call;
+    the reason is for the error is rule~\userule{Rule7} that requires the first statement to be \code{super()}.
 
 
 \Subsection[Inner]{Inner classes}
@@ -293,44 +293,14 @@ In fact, it is possible to view this rule as a special case to the rule that
     (because when you create an inner instance on a raw \this receiver,
     you created an alias,
     and now you have two raw objects: \code{Inner.this} and \code{Outer.this}).
-We wish to keep the invariant that only \this might be raw.
+We wish to keep the invariant that only one \this can be raw.
 
+It is straightforward to convert inner classes into static nested classes
+    by passing the outer instance explicitly as an argument to the inner class constructor.
+To reduce complexity in the following subsections, we assume
+    that such a transformation was done to convert all inner, anonymous and local classes into
+    static nested classes.
 
-assume a transformation that makes them static by having additional arguments for all outer instances (and making them properties of the static nested class).
-Because X10 requires that the outer instances are cooked, then this transformation maintains the legality of the code.
-
-Same for anonymous and local classes. \todo ...
-
-
-%\subsection{Static initialization}
-%X10 does not support dynamic class loading as opposed to Java,
-%    and all static fields in X10 are final.
-%Thus, initialization of static fields is a one-time phase, denoted the static-init phase,
-%    that is done before the \code{main} method is executed.
-%
-%During the static-init phase we must finish writing to all static fields,
-%    and reading a static field \emph{waits} until the field is initialized
-%    (i.e., the current activity/thread blocks if the field was not written to,
-%    and it resumes after another activity writes to it).
-%Obviously, this may lead to deadlock as demonstrated by \Ref{Figure}{Static-init}.
-%However, in practice, deadlock is rare,
-%    and usually found quickly the first time a program is executed.
-%
-%\begin{figure}
-%\begin{lstlisting}
-%class A {
-%  static val a:Int = B.b;
-%}
-%class B {
-%  static val b:Int = A.a;
-%}
-%\end{lstlisting}
-%\caption{Static initialization example:
-%    the program will deadlock at run-time
-%    during the static-init phase (before the \code{main} method is executed).
-%    }
-%\label{Figure:Static-init}
-%\end{figure}
 
 
 
@@ -341,29 +311,51 @@ We now turn our attention to X10's sophisticated type-system
     constraints, properties, class invariants, closures, (non-erased) generics, and structs.
 
 \subsection{Constraints and default/zero values}
-Constraints and default values.
-The following types do not have a default value:
-\code{Int\lb self!=0\rb}
-\code{String\lb self!=null\rb}
+X10 supports constrained types using the syntax \code{T\lb{}c\rb},
+    where \code{c} is a boolean expression that can use final variables in scope,
+    literals, properties (described below),
+    the special keyword \code{self}
+    that denotes the type itself,
+    field access, equality (\code{==}) and disequality (\code{!=}).
+There are plans to add arithmetic inequality (\code{<}, \code{<=})
+    to X10 in the future,
+    and it is possible to plugin any constraint solver into the X10 compiler.
 
-Therefore the fields of an object cannot be zero-initialized in X10.
-
-\Ref{Figure}{Constraints} todo ...
+As a consequence of constrained types,
+    some types do not have a default value, e.g., \code{Int\lb self!=0\rb}.
+Therefore, in X10, the fields of an object cannot be zero-initialized as done in Java.
+Furthermore, in Java, a non-final field does not have to be assigned in a constructor
+    because it is assumed to have an implicit zero initializer.
+X10 follows the same line, and a non-final field is implicitly added a zero initializer
+    \emph{if its type has-zero}.
+\Ref{Figure}{Constraints} defines when a type \emph{has-zero},
+    and gives examples of types without zero.
+Note that \code{i0} has to be assigned because it is a final field (\code{val}),
+    as opposed to \code{i1} which is non-final (\code{var}).
 
 \begin{figure}
 \begin{lstlisting}
 class A {
-  var a:Int{self!=0}; //err
+  val i0:Int; //err
+  var i1:Int;
+  var i2:Int{self!=0}; //err
+  var i3:Int{self!=0} = 3;
+  var i4:Int{self==42}; //err
+  var s1:String;
+  var s2:String{self!=null}; //err
+  var b1:Boolean;
+  var b2:Boolean{self==true}; //err
 }
 \end{lstlisting}
-\definerule{Rule9}
 \definerule{Rule10}
-\caption{No default value example.
-    \myrule{\arabic{Rule9}}{A type \emph{has-zero} if a it contains the zero value
-        (which is either \code{null}, \code{false}, 0, or
-            zero in all fields for user-defined structs, see \Ref{Section}{Generics-and-Structs})}
-    \myrule{\arabic{Rule10}}{A \code{var} field whose type has-zero that lacks a field initializer,
-        is implicitly added an zero initializer}
+\caption{Default value example.
+    \textbf{Definition of \emph{has-zero}:}
+        {A type \emph{has-zero} if it contains the zero value
+            (which is either \code{null}, \code{false}, 0, or
+                zero in all fields for user-defined structs)
+            or if it is a type parameter guarded with \code{haszero} (see \Ref{Section}{Generics-and-Structs}).}
+    \myrule{\arabic{Rule10}}{A \code{var} field that lacks a field initializer and whose type has-zero,
+        is implicitly added a zero initializer}
     }
 \label{Figure:Constraints}
 \end{figure}
@@ -689,52 +681,4 @@ Therefore we have only have a single \this variable.
 * only cooked objects cross places. Reason: \this is the only non-cooked object and it cannot have any aliases and it cannot cross an \code{at}.
 * Only \code{@NoThisAccess} methods can be dynamically dispatched during construction. Reason: can only call private or final methods.
 * all field writes finish by the time the ctor ends. Reason: data flow ensures that any write within an async has an enclosing finish.
-* one cannot read an uninitialized field. Reason: reading from \this is ok by data-flow, any other read is from a cooked object.
-
-
-\subsection{Memory model and constructor barrier}
-
-todo: discuss final in Java and String class.
-(people think that removing final may only hurt performance, but it may be semantic changing.)
-
-type safety and the weak memory model:
-* in Java if you don't use final fields correctly or leak this, you will simply see default values (you don't lose type-safety)
-* in X10 it could break type safety (if we don't put a barrier at the end of a ctor).
-
-class Box[T] {T haszero} {
-  var value:T;
-}
-class A {
-  static val box = new Box[A]();
-
-  var f:Int{self!=0} = 1;
-}
-
-var a = new A();
-a.f = 2;
-A.box.value = a;
-
-Suppose another activity reads A.box.value.
-Should the writes to
-a.f
-and
-A.box.value
-be ordered? (I don't think we should order them without losing performance)
-
-Therefore, X10 needs a synchronization barrier at the end of a ctor that guarantees that all writes to the fields (both VAL and VAR) of the object has finished before the handle is returned.
-(This is different from Java that only promises this for final fields. And the barrier also happens again after deserialization - requiring this weird freeze operation and you could freeze a final field again even after the ctor ended due to deserialization.)
-
-
-Bowen proposes this transformation in order to inline ctors:
-class A {
-  static val box = new Box[A]();
-
-  var f:Int{self!=0} = 0;
-}
-
-
-var a = new A();
-a.f = 1;
-// INSERT BARRIER EXPLICITLY HERE
-a.f = 2;
-A.box.value = a;
+* one cannot read an uninitialized field. Reason: reading from \this is verified by the data-flow alg of section~..., any other read is from a cooked object.

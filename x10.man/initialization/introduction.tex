@@ -99,17 +99,18 @@ A design for object initialization should have the following
         found in other languages with minor variations.
 
   \item[Type safe]
-    X10 has types without a default or zero value, such as \code{String\lb{}self!=null\rb}.
+    The language should continue to be statically type-safe even
+        if it has rich types that do not have a default or zero value (such as \code{String\lb{}self!=null\rb} in X10's syntax).
     Type safety is violated if a read from a variable of such type returns \code{null}.
     Adding non-null types to Java~\cite{Fahndrich:2003:DCN:949305.949332,Fahndrich:2007:EOI:1297027.1297052,XinQi:2009}
         has been a challenge precisely due to
-        Java's too relaxed initialization rules.
+        Java's relaxed initialization rules.
 \end{description}
 We believe the hardhat design in X10 has these desirable properties,
     however they come at a cost of limiting flexibility:
-    it is not possible to express cyclic immutable structures in X10 2.1.
-\Ref{Section}{designs} describes alternative designs for initialization
-    such as the \code{proto} design (that was part of X10 2.0) that allows cyclic immutable structures
+    it is not possible to express cyclic immutable structures in X10 version 2.1.
+Alternative designs for initialization are described in \Ref{Section}{designs},
+    such as the \code{proto} design (that was part of X10 version 2.0) that allows cyclic immutable structures
     at the cost of a more complicated design.
 
 The remainder of this introduction
@@ -401,6 +402,7 @@ where \code{CloneSource} is a struct containing the target object we wish to clo
 \subsection{Parallelism and Initialization in X10}
 \label{Section:Parallelism}
 X10 supports parallelism in the form of both concurrent and distributed code.
+We next describe parallelism in X10 and its interaction with object initialization.
 
 \emph{Concurrent code} uses asynchronous un-named activities that are created with the \code{async} construct,
     and it is possible to wait for activities to finish with the \code{finish} construct.
@@ -497,9 +499,11 @@ class Fib {
 
 \Ref{Figure}{DistributedFib} shows how to calculate the fibonacci number \code{fib(n)}
     using concurrent and distributed code.
-Note how \code{fib(n-2)} is calculated asynchronously at the next place,
-    while simultaneously calculating \code{fib(n-1)} in the current place.
-When both calculations finish, we sum their result into the \emph{final} field \code{fib}.
+Note how \code{fib(n-2)} is calculated asynchronously at the next place (\code{next()} returns the next place in a cyclic ordering of all places),
+    while simultaneously recursively calculating \code{fib(n-1)} in the current place (that will recursively spawn a new activity, and so on).
+Therefore, the computation will recursively continue to spawn activities at the next place until \code{n} is 1.
+When both calculations globally terminate, the \code{finish} unblocks,
+    and we sum their result into the \emph{final} field \code{fib}.
 
 We note that using \emph{final local variables} for \code{fib2} and \code{fib1} instead of fields
     would have made this example
@@ -507,7 +511,7 @@ We note that using \emph{final local variables} for \code{fib2} and \code{fib1} 
 X10 has similar initialization rules for final locals and final fields,
     but it is outside the scope of this paper to present all forms of initialization in X10
     (including local variables and static fields).
-Details of those can be found in X10's language specification.
+Details of those can be found in X10's language specification in \code{x10-lang.org}.
 
 There are two possible pitfalls in this example.
 The first is a concurrency pitfall, where we forget to use finish,
@@ -518,12 +522,12 @@ Java has definite-assignment rules (using an intra-procedural data-flow analysis
         and extended them in the face of concurrency to support the pattern of
             \emph{asynchronous initialization}
             where an \code{async} must have an enclosing \code{finish}
-    (see \Ref{Section}{Read-write-rules}).
+    (using an intra-class inter-procedural analysis, see \Ref{Section}{Read-write-rules}).
 
 The second is a distributed pitfall, where
     one assigns to a copy of \this in another place (instead of assigning in the original place).
 Leaking \this to another place before it is fully initialized
-    might also cause bugs in the custom serialization code (see \Ref{Section}{Multiple-Places}).
+    might also cause bugs in custom serialization code (see \Ref{Section}{Multiple-Places}).
 
 
 
