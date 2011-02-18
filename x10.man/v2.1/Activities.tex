@@ -739,6 +739,27 @@ A programmer may use atomic blocks to guarantee that invariants of
 shared data-structures are maintained even as they are being accessed
 simultaneously by multiple activities running in the same place.  
 
+An X10 program in which all accesses (both reads and writes) of shared
+variables appear in \xcd`atomic` or \xcd`when` blocks is guaranteed to use all
+shared variables atomically.  Equivalently, 
+if two accesses to some shared variable \xcd`v` could collide at runtime, and
+one is in an atomic block, then the other must be in an atomic block as well
+to guarantee atomicity of the accesses to \xcd`v`. 
+If some accesses to shared variables are not
+protected by \xcd`atomic` or \xcd`when`, then race conditions or deadlocks may
+occur.  
+
+In particular, atomic sections are atomic with respect to each other. They may
+not be atomic with respect to non-atomic code.  
+
+X10 guarantees that atomic sections at the same place are mutually exclusive.
+That is, if one activity $A$ at a given place $p$ is executing an atomic
+section, then no other activity $B$ at $p$ will also be executing an atomic
+section. If such a $B$ attempts to execute an \xcd`atomic` or \xcd`when`
+command, it will be blocked until $A$ finishes executing its atomic section.  
+
+
+
 %##(AtomicStatement WhenStatement
 \begin{bbgrammar}
 %(FROM #(prod:AtomicStatement)#)
@@ -857,25 +878,6 @@ to certain restrictions. A violation of these restrictions causes an
 \end{itemize}
 
 
-%%OBSOLETE%% In \xcd"atomic S", \xcd"S" may include calls to \xcd`safe` methods, and use of
-%%OBSOLETE%% sequential control structures.
-%%OBSOLETE%% 
-%%OBSOLETE%% It may {\em not} include an \xcd"async" activity (such as creation
-%%OBSOLETE%% of a \Xcd{future}).
-%%OBSOLETE%% 
-%%OBSOLETE%% It may {\em not} include any statement that may potentially block at
-%%OBSOLETE%% runtime (\eg, \xcd"when", \xcd"force" operations, \xcd"next"
-%%OBSOLETE%% operations on clocks, \xcd"finish"). 
-%%OBSOLETE%% 
-%%OBSOLETE%% It may {\em not} include any \xcd`at` expressions or
-%%OBSOLETE%% statements. (Hence all locations accessed in the atomic block must
-%%OBSOLETE%% belong to the current place.)
-%%OBSOLETE%% 
-%%OBSOLETE%% 
-%%OBSOLETE%% The compiler checks for this condition by checking whether the statement
-%%OBSOLETE%% could be the body of a \xcd"void" method annotated with \xcd"safe" at
-%%OBSOLETE%% that point in the code (\Sref{SafeAnnotation}).
-%%OBSOLETE%% 
 
 \paragraph{Consequences.}
 Note an important property of an (unconditional) atomic block:
@@ -1000,20 +1002,6 @@ The body \xcd`S` of \xcd`when(b)S` is subject to the same restrictions that
 the body of \xcd`atomic S` is.  The guard is subject to the same restrictions
 as well.  Furthermore, guards should not have side effects.
 
-%%OBSOLETE%%\begin{staticrule*}
-%%OBSOLETE%%For the sake of efficient implementation certain restrictions are
-%%OBSOLETE%%placed on the guards and statements in a conditional atomic
-%%OBSOLETE%%block. 
-%%OBSOLETE%%\end{staticrule*}
-%%OBSOLETE%%
-%%OBSOLETE%%Guards are statically required not to have side-effects, not to spawn
-%%OBSOLETE%%asynchronous activities (as for the \xcd`sequential` qualifier on methods) and
-%%OBSOLETE%%to have a statically determinable upper bound on their execution (as for the
-%%OBSOLETE%%\xcd`nonblocking` qualifier on methods).
-%%OBSOLETE%%
-%%OBSOLETE%%The body of a \xcd"when" statement must satisfy the conditions
-%%OBSOLETE%%for the body of an \xcd"atomic" block.
-%%OBSOLETE%%
 
 Note that this implies that guarded statements are required to be {\em
 flat}, that is, they may not contain conditional atomic blocks. (The
