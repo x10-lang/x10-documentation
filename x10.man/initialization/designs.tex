@@ -33,12 +33,12 @@ system with default value annotations, then one solution is to allow
 \texttt{this} to escape in certain cases while still preventing reads from
 uninitialized fields.  This can be achieved by annotating reference types with
 a keyword \texttt{proto} to indicate that the referenced object is partially
-constructed.  Reads of fields where the target object has \texttt{proto} type
+constructed.  Reads of fields where the target object is \texttt{proto}
 are not allowed because a partially constructed object may not yet have
 initialized its fields.  The advantage of this approach is that it allows a set
 of partially constructed objects to establish themselves as a mutually
 referential cycle of objects in the heap, which would not otherwise be possible.
-The disadvantage is it requires an additional type annotations, although this
+The disadvantage is that it requires an additional type annotations, although this
 annotation is only required in code that creates immutable cyclic heap
 structures.  Also note that there are no additional space or runtime overheads
 since these extra type system mechanisms are for static checking only.
@@ -48,7 +48,7 @@ fig.\ref{Figure:Cyclic}.  A more practical but less concise example would be an
 immutable doubly-linked list.  Let us assume that we would like to optimize
 away any null pointer checks, so we constrain all references to exclude the
 null value.  The commented out lines indicate code that would be rejected by
-the type system.  
+the type system.
 
 \begin{figure}
 \begin{lstlisting}
@@ -121,7 +121,7 @@ class C {
         Console.OUT.println(c.next.next);
         this.next = c;
     }
-}   
+}
 \end{lstlisting}
 \caption{A problem where a field can be read before it was initialized.}
 \label{Figure:Problem1}

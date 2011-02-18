@@ -9,7 +9,7 @@ The parallel features of X10 allow writing concurrent code (using \code{finish} 
     and distributed code (using \code{at} and global references).
 Next we describe the inter-procedural data-flow analysis that ensures that
     a field is read only after it was assigned.
-Finally, we summarize the claims or properties of initialization in X10.
+Finally, we summarize the virtues and attributes of initialization in X10.
 
 
 \subsection{Constructors and inheritance}
@@ -135,26 +135,27 @@ Dynamic dispatching interacts with initialization by transferring control to the
 \begin{figure}
 \begin{lstlisting}
 abstract class A {
-  val a:Int;
+  val a1:Int;
+  val a2:Int;
   def this() {
-    this.a = m1(); //err1
-    this.a = m2();
+    this.a1 = m1(); //err1
+    this.a2 = m2();
   }
   abstract def m1():Int;
   @NoThisAccess abstract def m2():Int;
 }
 class B extends A {
-  var b:Int = 3;
-  def this(i:Int) {
-    super(i);
+  var b:Int = 3; // non-final field
+  def this() {
+    super();
   }
   def m1() {
-    val x = super.a;
+    val x = super.a1;
     val y = this.b;
     return 1;
   }
   @NoThisAccess def m2() {
-    val x = super.a; //err2
+    val x = super.a1; //err2
     val y = this.b; //err3
     return 2;
   }
@@ -226,7 +227,7 @@ This is one of the reason why a constructor call must be the first statement in 
 \begin{lstlisting}
 class B extends A {
   def this() {
-    try { super(); } catch(Throwable e){} //err
+    try { super(); } catch(e:Throwable){} //err
   }
 }
 \end{lstlisting}
@@ -373,6 +374,53 @@ Syntactically, properties are defined after the class name,
 Semantically, properties are initialized before all other fields,
     and they can be used in constraints with the prefix \code{self}.
 
+
+\begin{figure}
+\begin{lstlisting}
+class A(a:Int) {
+  def this(x:Int) {
+    property(x);
+  }
+}
+class B(b:Int) {b==a} extends A {
+  val f1 = a+b;
+  val f2:Int;
+  val f3:A{this.a==self.a};
+  def this(x:Int) {
+    super(x);
+    val i1 = super.a;
+    val i2 = this.b; //err
+    val i3 = this.f1; //err
+    f2 = 2; //err
+    property(x);
+    f3 = new A(this.a);
+  }
+}
+\end{lstlisting}
+\definerule{Rule17}
+\definerule{Rule18}
+\definerule{Rule19}
+\caption{Properties and class invariant example:
+        properties (\code{a} and \code{b})
+        are final fields that are initialized before all other fields
+        using a property call (\code{property(\ldots);} statement).
+    {If a class does not define any properties, then
+        an implicit \code{property()} is added
+        after (the implicit or explicit) \code{super(\ldots)}.}
+    {Field initializers are executed in their declaration order
+        after (the implicit or explicit) the property call.}
+    \myrule{\arabic{Rule17}}{If a constructor does not call \code{this(\ldots)},
+        then it must have exactly one
+        property call, and it must be unconditionally executed
+        (unless the constructor throws an exception)}
+    \myrule{\arabic{Rule18}}{The class invariant must be satisfied after the property call}
+    \myrule{\arabic{Rule19}}{The super fields can only be accessed after \code{super(\ldots)},
+        and the fields of \this can only be accessed after \code{property(\ldots)}}
+    }
+\label{Figure:Properties}
+\end{figure}
+
+
 When using the prefix \this, you can access both properties and other final fields.
 The difference between \this and \code{self} is
     shown in field \code{f3} in \Ref{Figure}{Properties}:
@@ -391,55 +439,9 @@ The super's fields can be accessed after the super call,
 
 The \emph{class invariant} (\code{\lb{}b==a\rb} in \Ref{Figure}{Properties})
     may refer only to properties,
-    and it must be satisfied after the property call.
-
-
-
-\begin{figure}
-\begin{lstlisting}
-class A(a:Int) {
-  def this(x:Int) {
-    property(x);
-  }
-}
-class B(b:Int) {b==a} extends A {
-  val f1 = a+b;
-  val f2:Int;
-  val f3:A{this.a==self.a};
-  def this(x:Int) {
-    super(x);
-    val i1 = a;
-    val i2 = b; //err
-    val i3 = f1; //err
-    f2 = 2; //err
-    property(x);
-    f3 = new A(this.a);
-  }
-}
-\end{lstlisting}
-\definerule{Rule17}
-\definerule{Rule18}
-\definerule{Rule19}
-\caption{Properties and class invariant example:
-        properties (\code{a} and \code{b})
-        are final fields that are initialized before all other fields
-        using a property call (\code{property(\ldots);} statement).
-    {If a class does not define any properties, then
-        an implicit \code{property()} is added
-        after (the implicit or explicit) \code{super(\ldots)}.}
-    {Field initializers are executed in their declaration order
-        after (the implicit or explicit) the property call}
-    \myrule{\arabic{Rule17}}{If a constructor does not call \code{this(\ldots)},
-        then it must have exactly one
-        property call, and it must be unconditionally executed
-        (unless the constructor throws an exception).}
-    \myrule{\arabic{Rule18}}{The class invariant must hold after the property call}
-    \myrule{\arabic{Rule19}}{The super fields can only be accessed after \code{super(\ldots)},
-        and the fields of \this can only be accessed after \code{property(\ldots)}}
-    }
-\label{Figure:Properties}
-\end{figure}
-
+    and it must be satisfied after the property call (rule~\userule{Rule18}).
+%For example, \code{new B(1,1)} is ok,
+%    but \code{new B(1,2)} is rejected.
 
 
 
@@ -505,7 +507,7 @@ class A[T] {
   var a:T; //err
 }
 class B[T] {T haszero} {
-  var a:T;
+  var b:T;
 }
 struct WithZeroValue(x:Int,y:Int) {}
 struct WithoutZeroValue(x:Int{self!=0}) {}
@@ -518,10 +520,16 @@ class Usage {
 \end{lstlisting}
 \definerule{Rule21}
 \caption{\code{haszero} type condition.
-    \myrule{\arabic{Rule21}}{Type arguments must satisfy the type constraint in the class invariant}
+ Rule10 adds the initializer to \code{b}
+    The first error
+    rule~\userule{Rule18b}
+    \myrule{\arabic{Rule21}}{Types must be consistent, i.e., the constraint cannot contradict the environment; the environment includes final variables in scope, method guards, and class invariants.}
     }
 \label{Figure:Generics}
 \end{figure}
+
+The other errors are issued due to rule~\userule{Rule21} because it is inconsistent:
+    it contradicts the class invariant.
 
 
 examples for \code{Array}
@@ -706,7 +714,7 @@ class C {
 
 
 
-\subsection{Claims about initialization in X10}
+\subsection{Virtues and attributes of initialization in X10}
 We assume we transformed all anonymous, local and inner classes into static nested classes
     as described in \Ref{Section}{Inner}.
 Therefore we have only have a single \this variable.

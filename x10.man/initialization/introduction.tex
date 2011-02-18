@@ -57,6 +57,7 @@ Moreover, method calls are statically bound during construction,
 
 A design for object initialization should have the following
     desirable properties:
+
 \begin{description}
 %  \item[Reduce runtime errors]
 %    Common errors should be caught at compile time.
@@ -106,6 +107,7 @@ A design for object initialization should have the following
         has been a challenge precisely due to
         Java's relaxed initialization rules.
 \end{description}
+
 We believe the hardhat design in X10 has these desirable properties,
     however they come at a cost of limiting flexibility:
     it is not possible to express cyclic immutable structures in X10 version 2.1.
@@ -333,17 +335,19 @@ Default serialization is not always efficient, e.g.,
 \emph{Custom serialization} is done by defining a pair of methods called
     \code{writeObject} and \code{readObject}
     that handle serializing and de-serializing, respectively.
-For example, field \code{header} in \code{LinkedList} points to a dummy header node,
-    and it could be \code{final} except that it is assigned in \code{readObject}
-    (and in \code{clone}, as explained below).
-The issue here is that \code{readObject} is a method,
+For example, \code{readObject} in \code{LinkedList}
+    de-serializes the list's elements and rebuilds a new list;
+    in that process, it assigns to field \code{header} which points to a dummy header node.
+This field could have been \code{final}, however it is re-assigned in two methods:
+    \code{readObject} and \code{clone} (see \Ref{Section}{Cloning}).
+The issue here is that \code{readObject} is a \emph{method},
     and final fields can only be assigned in
-    constructors.
+    \emph{constructors}.
 It is possible to use reflection in Java to set a final field,
     and the new memory model (Java's spec, Section~17.5.3)
     even considers this:
 \begin{quote}
-``In some cases, such as deserialization, the system will need to change
+``In some cases, such as \emph{deserialization}, the system will need to change
     the final fields of an object after construction.
 \ldots
 Freezes of a final field occur both at the end of the constructor in which the final field is set,
@@ -375,11 +379,12 @@ The X10 compiler currently auto-generates these two methods for every class (all
     unless the user implemented \code{CustomSerialization} and wrote these two methods herself.
 
 \subsubsection{Cloning and immutability}
+\label{Section:Cloning}
 Cloning in Java has the same incompatibility with final fields as serialization:
     \code{clone} is a method and therefore it cannot assign to final fields.
 However, \emph{immutable} objects (such as strings) have no use for cloning,
     because you need to clone an object if you plan to \emph{mutate} the object or the clone.
-Therefore, cloning is less problematic than serialization with respect to final fields.
+Therefore, cloning is less problematic than serialization with respect to immutability.
 
 X10 has no clone-magic as in Java.
 Instead, the user can clone an object using the serialization mechanism,
@@ -402,7 +407,7 @@ where \code{CloneSource} is a struct containing the target object we wish to clo
 \subsection{Parallelism and Initialization in X10}
 \label{Section:Parallelism}
 X10 supports parallelism in the form of both concurrent and distributed code.
-We next describe parallelism in X10 and its interaction with object initialization.
+Next we describe parallelism in X10 and its interaction with object initialization.
 
 \emph{Concurrent code} uses asynchronous un-named activities that are created with the \code{async} construct,
     and it is possible to wait for activities to finish with the \code{finish} construct.
@@ -419,7 +424,7 @@ The expression \code{at(p) E} evaluates \code{p} to a place, then copies all cap
 Note that \code{at} is a synchronous construct, meaning the current activity is blocked until the \code{at} finishes.
 This construct can also be used as a statement, in which case there is no copy back
     (but there is still a notification that is sent back when the \code{at} finishes, in order to release the blocked activity in the original place).
-\Ref{Section}{Global-references} describes how global references are used in distributed code
+\Ref{Section}{Global-references} describes how \emph{global references} are used in distributed code
     to allow objects in one place to point to objects in another place.
 
 
@@ -539,9 +544,9 @@ The remainder of this paper is organized as follows.
 \Ref{Section}{designs} describes alternative designs for object initialization
     (one was implemented in X10 version 2.0 and another was under consideration for 2.1),
     weighing the pros and cons of each.
-\Ref{Section}{implementation} outlines our implementation using the polyglot framework
-    and the compilation time overhead of checking these initialization rules.
-\Ref{Section}{case-study} investigates the consequences of having a hardhat design
-    in a case study that converted a large collection of Java classes to X10.
+\Ref{Section}{implementation} outlines our implementation within the X10 compiler using the polyglot framework.
+%    and the compilation time overhead of checking these initialization rules.
+%\Ref{Section}{case-study} investigates the consequences of having a hardhat design
+%    in a case study that converted a large collection of Java classes to X10.
 \Ref{Section}{related-work} summarizes previous work in the field of object initialization.
 Finally, \Ref{Section}{conclusion} concludes.
