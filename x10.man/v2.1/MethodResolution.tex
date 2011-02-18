@@ -153,7 +153,14 @@ the other, or either to be more specific.  \xcd`specific` is computed as:
       \item \xcd`invo1`'s parameters are those of \xcd`m1`.
       \end{itemize}
 \item If \xcd`m2` is acceptable for the invocation \xcd`invo1`,
-      \xcd`specific(m1,m2)` returns true; otherwise, it returns false.
+      \xcd`specific(m1,m2)` returns true; 
+\item Construct an invocation \xcd`invo2p`, which is \xcd`invo1` with the
+      generic parameters erased.  Let \xcd`invo2` be \xcd`invo2p` with generic
+      parameters as inferred by X10's type inference algorithm.  If type
+      inference fails, \xcd`specific(m1,m2)` returns false.
+\item If \xcd`m2` is acceptable for the invocation \xcd`invo2`,
+      \xcd`specific(m1,m2)` returns true; 
+\item Otherwise, \xcd`specific(m1,m2)` returns false.
 \end{enumerate}
 
 \subsection{Other Disambiguations}

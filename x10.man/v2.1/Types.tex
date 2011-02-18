@@ -1969,6 +1969,12 @@ explicit type arguments.  If the method has a type parameter
 to be a common ancestor of the types of any formal
 parameters of type \xcd"T".
 
+(Exception: it is an error if the method call provides no information about
+a type parameter that must be inferred.  For example, given the method
+definition \xcd`def m[T](){...}`, an invocation \xcd`m()` is considered a
+static error.  The compiler has no idea what \xcd`T` the programmer intends.)
+
+
 %TODO--check this!
 Consider the following method, which chooses one of its arguments.  (A more
 sophisticated one might sometimes choose the second argument, but that does
@@ -2067,7 +2073,7 @@ replacement constraints.  There are a number of cases; we present only the
 interesting ones. 
 
 \begin{itemize}
-\item If $F$ has the form \xcdmath"$F'${c}" 
+\item If $F$ has the form \xcdmath"$F'${c}", then  
 \xcdmath"$C(r)$" is defined to be
  \xcdmath"$F'$ == $G$" if $r$ is an equality, or 
  \xcdmath"$F'$ <: $G$" if {$r$} is a subtyping.
@@ -2095,7 +2101,7 @@ If {$r$} is a type equality {$F \typeeq G$}, then
 If {$r$} is a type comparison, and the {$l^{th}$} type parameter of \xcd`K` is
 invariant (resp. covariant or contravariant), then 
 {$C(r)$} has {$F_l \typeeq G_l$}
-(resp {$F_l \subtype G_l$} or {$G_l \subtype F_l $}. 
+(resp. {$F_l \subtype G_l$} or {$G_l \subtype F_l $}). 
 
 
 For example, the constraint \xcdmath"List[X] == List[Y]" produces the
