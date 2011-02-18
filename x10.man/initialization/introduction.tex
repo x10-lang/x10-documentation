@@ -263,14 +263,17 @@ However, this is not the case due to interaction between initialization and conc
     ensuring that assignments to \emph{final} fields are visible to all other threads.
 (Assignments to non-final fields might not be visible to other threads!)
 
-This barrier was added to the memory model of Java 5
+The synchronization barrier was added to the memory model of Java 5
     to ensure that the common pattern of immutable objects is thread-safe.
 Without this barrier another thread might see the default value of a field
     instead of its final value.
 For example, it is well-known that \code{String} is immutable in Java,
     and its implementation uses three {final} fields:
     \code{char[] value}, and two \code{int} fields named \code{offset} and \code{count}.
-This code \code{"AB".substring(1)} will return a new string \code{"B"}
+The following code
+
+~~~~~~~~~~\code{"AB".substring(1)}\\
+will return a new string \code{"B"}
     that shares
     the same \code{value} array as \code{"AB"}, %\lb'A','B'\rb
     but with \code{offset} and \code{count} equal to 1.
@@ -290,7 +293,7 @@ new Thread() {
   public void run() {
     System.out.println(name);
   }
-}.run();
+}.start();
 \end{lstlisting}
 
 A similar bug might happen in \Ref{Figure}{TwoPitfalls}

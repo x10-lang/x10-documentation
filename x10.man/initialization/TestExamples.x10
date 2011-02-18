@@ -144,3 +144,128 @@ class Properties {
 	  }
 	}
 }
+
+class Closures {
+  var a:Int = 3;
+  def this() {
+    val closure1 = ()=>this.a; //ERR
+    at(here.next()) closure1();
+    val local = this.a;
+    val closure2 = ()=>local;
+  }
+}
+class GenericAndStructs {
+	class A[T] {
+	  var a:T; //ERR
+	}
+	class B[T] {T haszero} {
+	  var b:T;
+	}
+	static struct WithZeroValue(x:Int,y:Int) {}
+	static struct WithoutZeroValue(x:Int{self!=0}) {}
+	class Usage {
+	  var b1:B[Int];
+	  var b2:B[Int{self!=0}]; //ERR
+	  var b3:B[WithZeroValue];
+	  var b4:B[WithoutZeroValue]; //ERR
+	}
+}
+
+class Concurrency {
+  val a:Int;
+  val b:Int;
+  var c:Int;
+  def this() {//ERR
+    finish {
+      async a = 1;
+    }
+    async b = 2; 
+    async c = 2; 
+  }
+}
+class Distributed {
+  val a:Int;
+  def this() {//ERR
+    // Execute at another place
+    at (here.next())
+      this.a = 1; //ERR ERR
+  }
+}
+class GlobalRefTest {
+	class A {
+	  private val root = new GlobalRef(this);
+	  def me() = root();
+	}
+	class B extends A {
+	  def this() {
+		val alias = me(); //ERR
+	  }
+	}
+
+	
+	def copyExample(o:Object, p:Place) {
+	  val box = new Box(o);
+	  at (p) { // copied box and o
+		val x = box;
+	  }
+	  val r = new GlobalRef(o);
+	  assert r()==o;
+	  at (p) { // copied r but not o
+		val x = r;
+	  }
+	}
+}
+
+class ReadWriteOrder {
+	
+	class A {
+	  val a:Int;
+	  def this() {
+		m2(); //ERR
+		a = 1;
+	  }
+	  private def m2() {
+		val x = a; 
+	  }
+	}
+	class B {
+	  var i:Int{self!=0};
+	  var j:Int{self!=0};
+	  var flag:Boolean;
+	  def this() {
+		flag = false;
+		// assigned={flag}
+		finish {
+		  asyncWriteI();
+		  // assigned={flag} asyncAssigned={i}
+		}
+		// assigned={flag,i}
+		writeJ();
+		// assigned={flag,i,j}
+		readIJ();
+	  }
+	  // asyncWrites={i}
+	  private def asyncWriteI() {
+		async i=1;
+	  }
+	  // reads={flags} writes={j}
+	  private def writeJ() {
+		if (flag)
+		  writeJ();
+		else
+		  this.j = 1;
+	  }
+	  // reads={i,j}
+	  private def readIJ() {
+		val x = this.i+this.j;
+	  }
+	}
+}
+class GlobalCounter {
+  private val root = new GlobalRef(this);
+  transient var count:Int;
+  def inc() {
+    return at(root.home)
+      root().count++;
+  }
+}

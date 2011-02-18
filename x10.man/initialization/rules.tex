@@ -450,6 +450,7 @@ Closures are functions that can refer to final variables in the enclosing scope,
     e.g., they can refer to final method parameters, locals, and \this.
 When a closure refer to a variable, we say that it is captured by the closure,
     and the variable is thus stored in the closure object.
+Closures interact with initialization when they capture \this during construction.
 
 \begin{figure}
 %    LeakIt.foo(closure1);
@@ -474,7 +475,7 @@ class A {
 
 \Ref{Figure}{Closures} shows why it is prohibited to capture a raw \this in a closure:
     that closure can later escape to another place which will serialize all captured variables
-    (including the raw \this that should not be serialized, see \Ref{Section}{Multiple-Places}).
+    (including the raw \this, that should not be serialized, see \Ref{Section}{Multiple-Places}).
 The work-around for using a field in a closure is to define a local that will refer only to the field (which is definitely cooked)
     and capture the local instead of the field as done in \code{closure2}.
 
@@ -482,32 +483,34 @@ The work-around for using a field in a closure is to define a local that will re
 
 \subsection{Generics and Structs}
 \label{Section:Generics-and-Structs}
-Structs in X10 ...
-Does not contain \code{null}, so \code{haszero} ...
+\emph{Structs} in X10 are header-less inlinable objects
+    that cannot inherit code (i.e., they can \emph{implement} interfaces, but cannot \emph{extend} anything).
+Therefore an instance of a struct type has a known size and it can be inlined in a containing object.
+Java's primitive types (\code{int}, \code{byte}, etc) are represented as structs in X10.
+Structs, as opposed to classes, do not contain the value \code{null}.
 
-Generics are not unique to X10,
-    however the combination of generics and the lack of default values for all types
-    lead to new pitfalls.
-In addition, generics in X10 are \emph{not} erased as in Java (therefore we cannot assign
-    in order to make instantiations over structs efficient.
-
-for example, \code{Box[Byte]} and \code{Box[Int]}
+\emph{Generics} in X10 are reified, i.e, not erased as in Java.
+For example, instances of \code{Box[Byte]} and \code{Box[Double]}
     would have the same size in Java but different sizes in X10.
+%an instance of type \code{Box[Byte]} would have a different size than one of type \code{Box[Byte]}
+Although generics are not a new concept,
+    the combination of generics and the lack of default values
+    leads to new pitfalls.
+For example, in Java and C\#, it is possible to define an equivalent to
 
-\Ref{Figure}{Constraints} showed that a \code{var} must be assigned if
-    it does not contain the zero value.
-For generics, we added a \code{haszero} type condition that requires a type parameter to have the zero value.
-
-
-\Ref{Figure}{Generics} todo ...
+~~~~~~~\code{class A[T] \lb{} var a:T; \rb}\\
+However, this is illegal in X10 because we cannot be sure that \code{T} has-zero (see \Ref{Figure}{Constraints}),
+    e.g., if the user instantiate \code{A[Int\lb{}self!=0\rb]} then field \code{a} cannot be assigned a zero value
+    without violating type-safety.
+Therefore X10 has a type predicate written \code{X haszero} that returns true if type \code{X} has-zero.
+Using \code{haszero} in a constraint (e.g., in a class invariant or a method guard),
+    it is possible to guarantee a type-parameter will be instantiated by a type that has-zero.
 
 \begin{figure}
 \begin{lstlisting}
-class A[T] {
-  var a:T; //err
-}
 class B[T] {T haszero} {
-  var b:T;
+  var f1:T;
+  val f2 = Zero.get[T]();
 }
 struct WithZeroValue(x:Int,y:Int) {}
 struct WithoutZeroValue(x:Int{self!=0}) {}
@@ -519,21 +522,29 @@ class Usage {
 }
 \end{lstlisting}
 \definerule{Rule21}
-\caption{\code{haszero} type condition.
- rule~\userule{Rule10} adds the initializer to \code{b}
-    The first error ...
-    \myrule{\arabic{Rule21}}{Types must be consistent, i.e., the constraint cannot contradict the environment; the environment includes final variables in scope, method guards, and class invariants.}
+    \caption{\code{haszero} type predicate example.
+    \myrule{\arabic{Rule21}}{A type must be consistent, i.e., it cannot contradict the environment; the environment includes final variables in scope, method guards, and class invariants.}
     }
 \label{Figure:Generics}
 \end{figure}
 
-The other errors are issued due to rule~\userule{Rule21} because it is inconsistent:
-    it contradicts the class invariant.
 
 
-examples for \code{Array}
-
- \code{Zero.get[T]()}
+\Ref{Figure}{Generics} shows an example of a generic class \code{B[T]}
+    that constrains the type-parameter \code{T} to always have a zero value.
+According to rule~\userule{Rule10}, field \code{f1} has an implicit zero field initializer.
+It is also possible to write the initializer explicitly (as done in field \code{f2}) by using the static method \code{Zero.get[X]()}
+    (that is guarded by \code{X haszero}).
+Next we see two struct definitions:
+    the first has two properties that has-zero,
+    and the second has a property that does not have zero.
+According to the definition of has-zero in \Ref{Figure}{Constraints},
+    a struct has-zero if all its fields has-zero,
+    therefore \code{WithZeroValue haszero} is true, but
+    \code{WithoutZeroValue haszero} is false.
+Finally, we see an example of usages of \code{B[T]},
+    where two usages are legal and two are illegal
+    (see rule~\userule{Rule21}).
 
 
 
@@ -544,103 +555,195 @@ examples for \code{Array}
 We now turn our attention to the parallel features of X10:
     concurrent programming (\code{finish} and \code{async})
     and distributed programming (\code{at} and global references).
+\Ref{Section}{Parallelism} already explained how parallel code is written in X10,
+    and what are the common pitfalls of initialization in parallel code.
+Next we present the rules that prevent these pitfalls.
 
+\subsection{Concurrent programming and Initialization}
 
-\subsection{Concurrency}
-Explain async+finish.
-If the finish was removed, then it would be an error ...
-
-
-\Ref{Figure}{Asynchronously-init} todo ...
 
 \begin{figure}
 \begin{lstlisting}
 class A {
-  val a:Int;
-  val b:Int;
-  def this() {
+  var f1:Int;
+  val f2:Int;
+  val f3:Int;
+  def this() { //err: f2 was not definitely assigned
+    async f1 = 1;
+    async f2 = 2;
     finish {
-      async a = 1;
+      async f3 = 3;
     }
-    async b = 2; //err
   }
 }
 \end{lstlisting}
 \definerule{Rule13}
-\caption{Asynchronously assigned fields example.
-    \myrule{\arabic{Rule13}}{All field assignments must finish when the constructor ends}
+\definerule{Rule13a}
+\caption{Concurrency in initialization example: asynchronously assign to a field.
+    \myrule{\arabic{Rule13}}{A constructor must finish assigning to all fields at least once}
+    \myrule{\arabic{Rule13a}}{A final field can be assigned at most once}
+    %\myrule{\arabic{Rule13}}{All field assignments must finish when the constructor ends}
     }
 \label{Figure:Asynchronously-init}
 \end{figure}
 
 
-\subsection{Multiple Places}
-\label{Section:Multiple-Places}
-Places require serialization and deserialization (both custom and automatic) across "at".
+\Ref{Figure}{Asynchronously-init} shows how to asynchronously assign to fields.
+Recall that we wish to guarantee that one can never read an uninitialized field,
+    therefore rule~\userule{Rule13} ensures that all fields are assigned at least once.
 
-\Ref{Figure}{Multi-place} todo ...
+All three fields in \code{A} are asynchronously assigned,
+    however, only \code{f2} is not definitely assigned.
+Assigning to \code{f3} has an enclosing \code{finish}, so
+    it is definitely assigned.
+Field \code{f1} is also definitely assigned, because from rule~\userule{Rule10} it has an implicit zero field initializer.
+However, field \code{f2} is only asynchronously assigned,
+    and the constructor does not wait for this assignment to finish,
+    thus violating rule~\userule{Rule13}.
+(The exact data-flow analysis to enforce rule~\userule{Rule13} is described in
+    \Ref{Section}{Read-write-rules}.)
+Rule~\userule{Rule13a} is the same as in Java: a final field is assigned \emph{at most} once
+    (and combined with rule~\userule{Rule13} we know it is assigned \emph{exactly} once).
+
+
+\subsection{Distributed programming and Initialization}
+\label{Section:Multiple-Places}
+X10 programs can be executed on a distributed system with multiple places
+    that have no shared-memory.
+Therefore, objects are copied from one place to another when captured by an \code{at}.
+Copying is done by first serializing the object into a buffer,
+    sending the buffer to the other place, and then de-serializing the buffer at the other place.
+As in Java, one can write custom serialization code in X10 by implementing \code{CustomSerialization},
+    and defining the method \code{serialize():SerialData} and the constructor \code{this(data:SerialData)}.
+
 
 \begin{figure}
 \begin{lstlisting}
 class A {
-  val a:Int;
-  def this() {
+  val f:Int;
+  def this() { //err: f was not assigned
     // Execute at another place
     at (here.next())
-      this.a = 1; //err
+      this.f = 1; //err: this escaped
   }
 }
 \end{lstlisting}
 \definerule{Rule14}
-\caption{Multi-place initialization example.
-    \myrule{\arabic{Rule14}}{a raw \this cannot cross to another place}
+\caption{Distributed initialization example. %only cooked objects can be copied.
+    \myrule{\arabic{Rule14}}{a raw \this cannot be captured by an \code{at}}
     }
 \label{Figure:Multi-place}
 \end{figure}
 
 
-\begin{lstlisting}
-class A {
-  var i:Int;
-  val distArray = DistArray.make( ..., (Point)=>this.i); // "this" is serialized to another place before it is cooked
-}
-\end{lstlisting}
+\Ref{Figure}{Multi-place} shows a common pitfall
+    where a raw \this escapes to another place,
+    and the field assignment would have been done on a copy of \this.
+We wish to de-serialize only cooked objects,
+    and therefore rule~\userule{Rule14} prohibits \this to be captured by an \code{at}.
+Consequently, we also report that field \code{f} was not definitely assigned.
+
+
+%\begin{lstlisting}
+%class A {
+%  var i:Int;
+%  val distArray = DistArray.make( ..., (Point)=>this.i); // "this" is serialized to another place before it is cooked
+%}
+%\end{lstlisting}
 
 \subsection{Global references}
 \label{Section:Global-references}
-Special GlobalRef class: let \this escape and it creates a cycle.
-We allow a raw \this to escape iff
-* field is private with a field initializer.
-* cannot be used with a raw \this receiver.
+A distributed data-structures is dispersed over multiple places,
+    and it is convenient to have pointers from one place to an object in another place.
+These cross-places pointers are called \emph{global references}.
+A global reference has two fields: \code{object} that points to some object,
+    and \code{home} which is the place where the global reference was created.
+When a global reference is serialized, we serialize its \code{home} and the value of the \emph{pointer} to the \code{object}
+    (we do not serialize the \code{object}).
+%Phrased differently, serializing an object will recursively serialize all its fields;
+%    the recursion ends when there are no fields or with global references.
+%Retrieving the object is only allowed at place \code{home}.
+%    i.e., the apply method returns the root and is guarded by \code{home==here}.
+For example, suppose that \code{o} is some object.
+Then, when a box pointing to \code{o} is serialized, then \code{o} is recursively serialized.
+However, when a global reference pointing to \code{o} is serialized, then only the pointer to \code{o} is serialized (not \code{o} itself).
+%  assert r()==o;
+%def copyExample(o:Any, p:Place) {
+\begin{lstlisting}
+  val box = new Box(o);
+  at (here.next()) { // copies box and o
+    val x = box;
+  }
+  val r = new GlobalRef(o);
+  at (here.next()) { // copies r but not o
+    val x = r;
+  }
+\end{lstlisting}
+
+% No room to talk about custom serialization:
+% Places require serialization and deserialization (both custom and automatic) across "at".
+
+A \emph{global object} has mutable state in a single place~\code{p}
+    and methods that can be called from any place that mutate state in~\code{p}.
+The common \emph{global object idiom}
+    uses a global reference
+    to point to a single mutable object.
+\Ref{Figure}{GlobalRef} shows a global counter object
+    that has mutable state (\code{count}) in a single place,
+    but any place can increment the counter by incrementing \code{count} at that single place,
+    which is \code{root.home}.
+Note how \code{root()} returns the referent of the global reference.
+(The call \code{root()} is guarded by \code{root.home==here}, which is statically verified in this code.)
 
 
-\Ref{Figure}{GlobalRef} todo ...
+%  def me() = root();
+%}
+%class B extends A {
+%  def this() {
+%    val alias = me(); //err
+%  }
+%}
+%If \code{me()} was prefixed with
+%\code{@NonEscaping public final}
+%then accessing \code{root} would be an error.
+%Cannot use 'root' because a GlobalRef[\ldots](this) cannot be used in a field initializer, constructor, or methods called from a constructor.
 
 \begin{figure}
 \begin{lstlisting}
-class A {
-  private val root =
-   new GlobalRef(this);
-  def me() = root();
-}
-class B extends A {
-  def this() {
-    val alias = me(); //err
+class GlobalCounter {
+  private val root = new GlobalRef(this);
+  transient var count:Int;
+  def inc() {
+    return at(root.home)
+      root().count++;
   }
 }
 \end{lstlisting}
-\definerule{Rule15}
-\caption{\code{GlobalRef} example.
-    \myrule{\arabic{Rule15}}{A raw \this can only escape to a global ref constructor in a field initializer,
-        provided the field is private and is not read via a raw \this receiver}
+\definerule{TransientRule}
+\caption{A global counter example.
+    \textbf{Revision of~\userule{Rule3}:}
+        A raw \this can only escape to a global ref constructor in a private field initializer;
+            that field cannot be read via a raw \this receiver.
+    \myrule{\arabic{TransientRule}}{The type of a \code{transient} field must satisfy \code{haszero}}
     }
 \label{Figure:GlobalRef}
 \end{figure}
 
-If \code{me()} was prefixed with
-\code{@NonEscaping public final}
-then accessing \code{root} would be an error.
-%Cannot use 'root' because a GlobalRef[\ldots](this) cannot be used in a field initializer, constructor, or methods called from a constructor.
+Note that a raw \this leaked into the constructor of \code{GlobalRef}
+    which is a violation of rule~\userule{Rule3}.
+Because this idiom is common in distributed programming,
+    we relaxed this rule and allow \this to escape into a global ref,
+    but only in a private field initializer that is not read during construction.
+
+As in Java, the \code{transient} keyword marks a field that should not be serialized.
+Upon de-serialization, such a field has the zero value.
+Therefore, the type of a transient field must have the zero value (rule~\userule{TransientRule}).
+
+We finally note that the global object idiom is error-prone because
+    it is easy to forget to use \code{root()} before accessing a mutable field.
+There is an RFC that suggests an annotation that will automatically convert a class to a global class
+    using this pattern.
+
 
 
 
@@ -649,19 +752,30 @@ The last subsection is dedicated to a inter-procedural data-flow analysis for gu
 
 \subsection{Read and write of fields}
 \label{Section:Read-write-rules}
-Java performs intra-procedural data flow in constructors ...
-(also discuss locals?)
+Java performs an \emph{intra}-procedural data-flow analysis in \emph{constructors} to calculate
+    when a \emph{final} field is definitely-assigned and definitely-unassigned.
+In contrast, X10 performs an \emph{inter}-procedural (fixed-point) data-flow analysis in all \emph{non-escaping methods} to calculate
+    when {a} field (\emph{both final and non-final}) is
+    definitely-assigned, \emph{definitely-asynchronously-assigned}, and definitely-unassigned.
+The details are explained in this section with examples by comparison with Java's definite-assignment rules;
+    the full analysis is described in X10's language specification.
 
+
+Java allows \emph{writing} to a final field only when it is definitely-\emph{unassigned},
+    and it allows \emph{reading} from a final field only when it is definitely-\emph{assigned}.
+X10 adds another
+
+However, Java does not check that a method that reads a final field is called only after that field was assigned.
+
+
+The inter-procedural analysis for final fields does not need a fixed-point calculation
+    because
 Inter-procedural data flow
 
 final vs.\ non-final fields:
 (fixed point)
 todo
 
-- Dataflow for definite-assignment for locals (similarity to Java, with the extension for async-initialization)
-- Dataflow for definite-assignment for fields:
-  + @NoThisAccess and @NonEscaping
-  + The fixed-point algorithm to infer the sets of fields that are written, async-written, and read, on each private method that is transitively called from a ctor or field-init. Maybe also add a nice proof :)
 
 
 In Java it is legal...
@@ -673,40 +787,56 @@ In Java it is legal...
 class A {
   val a:Int;
   def this() {
-    m2();
+    m2(); //err
     a = 1;
+    // assigned={a}
   }
-  final def m2() {
-    val x = a; //err
+  // reads={a}
+  private def m2() {
+    val x = a;
   }
 }
 class B {
-  var i:Int; // implicitly initialized to 0
+  var i:Int{self!=0};
   var j:Int{self!=0};
+  var flag:Boolean;
   def this() {
-    i++;
-    j++; //err
+    flag = false;
+    // assigned={flag}
+    finish {
+      asyncWriteI();
+      // assigned={flag} asyncAssigned={i}
+    }
+    // assigned={flag,i}
+    writeJ();
+    // assigned={flag,i,j}
+    readIJ();
   }
-}
-class C {
-  var j:Int{self!=0};
-  def this() {
-    write();
-    read();
+  // asyncWrites={i}
+  private def asyncWriteI() {
+    async i=1;
   }
-  final def write() {
-    this.j = 1;
+  // reads={flags} writes={j}
+  private def writeJ() {
+    if (flag)
+      writeJ();
+    else
+      this.j = 1;
   }
-  final def read() {
-    val x = this.j;
+  // reads={i,j}
+  private def readIJ() {
+    val x = this.i+this.j;
   }
 }
 \end{lstlisting}
 \definerule{Rule11}
-\definerule{Rule12}
 \caption{Read-Write order for fields examples.
-    \myrule{\arabic{Rule11}}{A field can be read only after it was definitely written}
-    \myrule{\arabic{Rule12}}{A constructor must write to all fields}
+    We infer for each method three sets:
+        (i)~fields it reads (i.e., these fields must be assigned before the method is called),
+        (ii)~fields it writes,
+        (iii)~fields it asynchronously writes.
+    In the example, we omitted empty sets.
+    \myrule{\arabic{Rule11}}{A field can be read only after it was definitely assigned}
     }
 \label{Figure:Read-Write-Order}
 \end{figure}
