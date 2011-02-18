@@ -216,7 +216,7 @@ This bug might seem pretty harmless,
 The second pitfall is leaking \this before the object is fully-initialized,
     e.g., \code{INSTANCES.add(this)}.
 Note that we leak a partially-initialized object, i.e.,
-    the fields of \code{B} have not been assigned yet and they contain their default values.
+    the fields of \code{B} have not yet been assigned and they contain their default values.
 Suppose that some other thread iterates over \code{INSTANCES} and prints them.
 Then that thread might read \code{b=0}.
 In fact, it might even read \code{a=0}, even though we just assigned 42 to \code{a} two statements ago!
@@ -231,7 +231,7 @@ The hardhat design in X10 (described in \Ref{Section}{rules})
     because its rules prohibit leaking \this,
     and they only allow calling private or final methods (that cannot be overridden).
 It is possible to annotate a method with \code{@NoThisAccess},
-    which allows overriding but prohibits any access to \this.
+    which allows overriding but prohibits any access to \this.  This can be useful, e.g., if you want to subclass and override a factory method to change the concrete type of the object constructed, when the original class uses the factory method in its constructor.
 It is possible to fix the bugs in this example by following the hardhat initialization rules
     in the following way:
     (i)~Instead of leaking \this in the constructor,
@@ -269,7 +269,7 @@ Without this barrier another thread might see the default value of a field
     instead of its final value.
 For example, it is well-known that \code{String} is immutable in Java,
     and its implementation uses three {final} fields:
-    \code{char[] value}, and two integers fields named \code{offset} and \code{count}.
+    \code{char[] value}, and two \code{int} fields named \code{offset} and \code{count}.
 This code \code{"AB".substring(1)} will return a new string \code{"B"}
     that shares
     the same \code{value} array as \code{"AB"}, %\lb'A','B'\rb
