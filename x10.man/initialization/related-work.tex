@@ -1,33 +1,53 @@
-Why it's buggy:
+A static analysis \cite{Seo:2007:SBD:1522565.1522587}, has been used to find
+some default value reads in Java programs, and supports our belief that default
+value reads can be found in real programs and should be considered errors.  Our
+approach is stronger (detecting all errors at the expense of some correct
+programs) and considers additional language constructs that are not present in
+Java.
 
-\cite{Seo:2007:SBD:1522565.1522587}
-a static pattern detection algorithm for identifying uninitialized field references
-uninitialized field references
-we identify 12 suspicious field references in the applications, and among those we find two suspected errors by manual inspection.
+There has been a study on a large body \cite{Gil:2009:WRS:1615184.1615216} of
+Java code, showing that initialization order issues pervade projects from the
+real world.  A bytecode verification system for Java initialization has also
+been explored \cite{Hubert:2010:ESO:1888881.1888890}.
 
+An early work to support non-null types in Java
+\cite{Fahndrich:2003:DCN:949305.949332} has the notion of a type constructor
+$raw$ that can be applied to object types and means that the fields of the
+object (in X10 terminology) may violate the constraints in their types.  This
+simply disables the type-system while an object is partially constructed while
+ensuring the rest of the program is type normally.  Our approach prevents
+errors during constructors as it does not disable the type-system, and it also
+permits optimisation of the representation of fields whose types are very
+constrained, since they will never have to hold a value other than the values
+allowed by their type constraint.
 
+A later work \cite{Fahndrich:2007:EOI:1297027.1297052,XinQi:2009} allows in the
+type the specification of a time when the object will be fully constructed.
+Field reference types of a partially constructed objects must be fully
+constructed by the same time, which allows graphs of objects to be constructed
+like our \code{proto} design.  However the system is more complicated, allowing
+the object to become fully constructed at a given future time, instead of at
+the specific time when its constructor terminates or the last object that links
+to it becomes fully constructed (whichever is later).  We did need this
+functionality.
 
-study and implementation:
-Hardhat~\cite{Gil:2009:WRS:1615184.1615216}
+Expression of object constructedness has also been explored at the level of
+individual fields \cite{XinQi:2009}.  Each type gives the fields which have not
+yet been initialised.  Our type system is simpler but less expressive, as we
+only distinguish between the empty set of fields, and some non-empty set of
+fields.
 
-enforced by~\cite{Hubert:2010:ESO:1888881.1888890} in a byte code verifier.
-%Enforcing secure object initialization in java
+There has been an another attempt to provide immutable heap cycles using
+ownership types \cite{Zibin:2010:OIG:1869459.1869509}.  This is comparable to
+our \code{proto} design because it also allows \code{this} to be linked from an
+incomplete object.  However the ownership structure is used to implement a
+broader policy, allowing code in the owner to use a reference to its partially
+constructed children, whereas we only allow code to use a reference to objects
+that are being partially constructed in some nesting stack frame.  However our
+approach does not use ownership types.
 
-
-
-
-
-Type systems to ensure safety:
-
-Concurrency and initialization~\cite{Matsakis:2010:TTS:1869459.1869511}
-%A time-aware type system for data-race protection and guaranteed initialization
-
-
-
-Cyclic immutable structures:
-Raw annotation by~\cite{Zibin:2010:OIG:1869459.1869509}
-
-
-the default value has been replaced before
-the first access to the field~\cite{Fahndrich:2007:EOI:1297027.1297052,XinQi:2009}.
-track assignments to the fields of an object.
+There is also a time-aware type system \cite{Matsakis:2010:TTS:1869459.1869511}
+that allows the detection of data-races, but understands the concept of shared
+variables that are mutable until a point of time when they become immutable
+(and can be accessed without synchronisation).  The same mechanisms can also be
+used to express when an object becomes fully constructed.
