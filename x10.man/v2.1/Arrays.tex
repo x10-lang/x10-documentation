@@ -461,13 +461,7 @@ The special case \xcd`Dist.makeConstant(R)` maps every point in \xcd`R` to
 \paragraph{Block distributions.}\index{distribution!block}
 %~~exp~~`~~`~~R:Region ~~ ^^^ Arrays320
 The distribution \xcd`Dist.makeBlock(R)` distributes the elements of \xcd`R`,
-in order, over all the places available to the program. 
-Let $p$ equal \xcd`|R| div N` and $q$ equal \xcd`|R| mod N`,
-where \xcd`N` is the size of \xcd`Q`, and 
-\xcd`|R|` is the size of \xcd`R`.  The first $q$ places get
-successive blocks of size $(p+1)$ and the remaining places get blocks of
-size $p$.
-
+in approximately-even blocks, over all the places available to the program. 
 There are other \xcd`Dist.makeBlock` methods capable of controlling the
 distribution and the set of places used; see the API documentation.
 

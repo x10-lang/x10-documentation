@@ -1134,9 +1134,12 @@ Most X10 operators can be given definitions.\footnote{Indeed, even for the
 standard types, these operators are defined in the library.  Not even as basic
 an operation as integer addition is built into the language.  Conversely, if
 you define a full-featured numeric type, it will have all the privileges that
-the standard ones enjoy, except for literals.}
+the standard ones enjoy, except for literals.}  However, \xcd`&&` and \xcd`||`
+are only short-circuiting for \xcd`Boolean` expressions; user-defined versions
+of these operators have no special execution behavior.
 These are: \\
 \begin{tabular}{l}
+implicit type coercions\\
 postfix \xcd`()`\\
 \xcd`as T`\\
 unary \xcd`-`, unary \xcd`+`, \xcd`!`, \xcd`~`\\
@@ -1149,7 +1152,10 @@ unary \xcd`-`, unary \xcd`+`, \xcd`!`, \xcd`~`\\
 \xcd`&` \\
 \xcd`^` \\
 \xcd`|` \\
+\xcd`&&` \\
+\xcd`||` \\
 \end{tabular}
+
 
 
 \subsection{Binary Operators}
