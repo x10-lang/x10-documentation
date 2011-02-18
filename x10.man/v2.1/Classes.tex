@@ -1130,6 +1130,28 @@ Writing the same code with method calls, while possible, is far less elegant:
 The operator-using code can be written in X10, though a few variations are
 necessary to handle such exotic cases as \xcd`1+X`.
 
+Most X10 operators can be given definitions.\footnote{Indeed, even for the
+standard types, these operators are defined in the library.  Not even as basic
+an operation as integer addition is built into the language.  Conversely, if
+you define a full-featured numeric type, it will have all the privileges that
+the standard ones enjoy, except for literals.}
+These are: \\
+\begin{tabular}{l}
+postfix \xcd`()`\\
+\xcd`as T`\\
+unary \xcd`-`, unary \xcd`+`, \xcd`!`, \xcd`~`\\
+\xcd`..`\\
+\xcd`*     `  \xcd`/     `  \xcd`%` \\
+\xcd`+` \xcd`     -` \\
+\xcd`<<    ` \xcd`>>    ` \xcd`>>>   ` \xcd`->` \\
+\xcd`>     ` \xcd`>=    ` \xcd`<     ` \xcd`<=     ` 
+\xcd`in     ` 
+\xcd`&` \\
+\xcd`^` \\
+\xcd`|` \\
+\end{tabular}
+
+
 \subsection{Binary Operators}
 
 Defining the sum \xcd`P+Q` of two polynomials looks much like a method
@@ -1306,9 +1328,9 @@ The main difference between expressing a binary operation as an instance
 method (with a \xcd`this` in the definition) and a static one (no \xcd`this`)
 is that instance methods don't apply any conversions, while static methods
 attempt to convert both arguments. 
-\bard{give an example}
 
-\bard{List the operators which this works for, in precedence order}
+
+
 
 \subsection{Unary Operators}
 
