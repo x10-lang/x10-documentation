@@ -30,8 +30,9 @@ class Resolve {
 
 The basic concept of method resolution is quite straightforward: 
 \begin{enumerate}
-\item List all the methods that could possibly be used;
-\item Pick the most specific one;
+\item List all the methods that could possibly be used (counting implicit
+      coercions); 
+\item Pick the most specific one; 
 \item Fail if there is not a unique most specific one.
 \end{enumerate}
 \noindent
@@ -84,7 +85,9 @@ All that matters about an invocation \xcd`I` is:
 \item The method name \xcdmath"m$'$";
 \item The generic type parameters \xcdmath"G$'_1$,$\ldots$, G$'_g$".  If there
       are no generic type parameters, {$g=0$}.  
-\item The names and types \xcdmath"x$_1$:T$'_1$,$\ldots$, x$_f$:T$'_f$" of the actual parameters.  If
+\item The names and types \xcdmath"x$_1$:T$'_1$,$\ldots$, x$_f$:T$'_f$" of the
+      actual parameters.
+      If
       there are no actual parameters, {$f=0$}. In the case of an instance
       method, the receiver is the first actual parameter.
 \end{enumerate}
@@ -107,7 +110,15 @@ The procedure for computing \xcd`resolve(invo, context)` is:
       \item The method's type parameters are bound to the invocation's for the
             remainder of the acceptability test.
       \item The actual parameter types must be subtypes of the formal
-            parameter types:  \xcdmath"T$'_i$ <: T$_i$" for each {\em i}. 
+            parameter types, or be coercible to such subtypes.  Parameter $i$
+            is a subtype if \xcdmath"T$'_i$ <: T$_i$".  It is implicitly
+            coercible to a subtype if there is an implicit coercion operator
+            defined from \xcdmath"T$'_i$" to some type \xcd`U`, and 
+            \xcdmath"U <: T$_i$". \index{method resolution!implicit coercions
+            and} \index{implicit coercion}\index{coercion}.  If coercions are
+            used to resolve the method, they will be called on the arguments
+            before the method is invoked.
+            
       \item The formal constraint \xcd`c` must be satisfied in the invoking
             context. 
       \end{itemize}

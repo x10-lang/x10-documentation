@@ -1405,8 +1405,12 @@ class Poly {
 You may also define {\em implicit} type coercions to \xcd`T{c}` as static
 operators in class \xcd`T`.  The syntax for this is
 \xcd`static operator (x:U) : T{c} = e`.
-Implicit coercions are used automatically by the compiler.  
-\bard{How does this work?  One coercion, or a chain, and how about ambiguity?}
+Implicit coercions are used automatically by the compiler on method calls 
+(\Sref{sect:MethodResolution}) and assignments (\Sref{domedomedome}).
+
+With the {\tt -STATIC\_CALLS} compiler flag disabled, additional coercions come
+into play.
+\noo{explain}
 
 For example, we can define an implicit coercion from \xcd`Int` to \xcd`Poly`,
 and avoid having to define the sum of an integer and a polynomial

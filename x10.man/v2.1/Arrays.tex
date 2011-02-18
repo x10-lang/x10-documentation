@@ -395,11 +395,15 @@ thus the rank of every point that the distribution applies to.
 \begin{xten}
 val R  <: Region = 1..100;
 val D1 <: Dist = Dist.makeBlock(R);
-val D2 <: Dist = R -> here;
+val D2 <: Dist = Dist.makeConstant(R, here);
 \end{xten}
 %~~siv
 % } } 
 %~~neg
+
+\xcd`D1` distributes the region \xcd`R` in blocks, with a set of consecutive
+points at each place, as evenly as possible.  \xcd`D2` maps all the points in
+\xcd`R` to \xcd`here`.  
 
 Let \xcd`D` be a distribution. 
 %~~exp~~`~~`~~D:Dist ~~ ^^^ Arrays270
@@ -412,12 +416,6 @@ Given a point \xcd`p`, the expression
 the place that \xcd`p` is mapped to by \xcd`D`. The evaluation of the
 expression \xcd`D(p)` throws an \xcd`ArrayIndexOutofBoundsException`
 if \xcd`p` does not lie in the underlying region.
-%%NO-R2D2-CONV%% 
-%%NO-R2D2-CONV%% When operated on as a distribution, a region \xcd`R` implicitly
-%%NO-R2D2-CONV%% behaves as the distribution mapping each item in \xcd`R` to \xcd`here`
-%%NO-R2D2-CONV%% (\ie, \xcd`R->here`, see below). Conversely, when used in a context
-%%NO-R2D2-CONV%% expecting a region, a distribution \xcd`D` should be thought of as
-%%NO-R2D2-CONV%% standing for \xcd`D.region`.
 
 
 \subsection{{\tt PlaceGroup}s}
@@ -454,9 +452,11 @@ region \xcd`1..k` to \xcd`Q` mapping each point \xcd`i` to \xcd`pi`.
 
 \paragraph{Constant distributions.} \index{distribution!constant}
 %~~exp~~`~~`~~R:Region, P:Place ~~ ^^^ Arrays300
-The distribution \xcd`R->P` maps every point in region \xcd`R` to place \xcd`P`, as does
-%~~exp~~`~~`~~R:Region, P:Place ~~ ^^^ Arrays310
-\xcd`Dist.makeConstant(R,P)`. 
+The distribution \xcd`Dist.makeConstant(R,P)` maps every point in region
+\xcd`R` to place \xcd`P`.  
+%~~exp~~`~~`~~R:Region ~~ ^^^Arrays9n5n
+The special case \xcd`Dist.makeConstant(R)` maps every point in \xcd`R` to
+\xcd`here`. 
 
 \paragraph{Block distributions.}\index{distribution!block}
 %~~exp~~`~~`~~R:Region ~~ ^^^ Arrays320
@@ -629,7 +629,7 @@ val da <: DistArray[Float] = DistArray.make[Float](D, (Point(1))=>0.0f);
 methods of the \xcd`DistArray` class.
 A \xcd`DistArray` creation 
 must take either an \xcd`Int` as an argument or a \xcd`Dist`. In the first
-case,  a distributed array is created over the distribution \xcd`[0:N-1]->here`;
+case,  a distributed array is created over the distribution \xcd`Dist.makeConstant([0:N-1],here)`;
 in the second over the given distribution. 
 
 A distributed array creation operation may also specify an initializer
@@ -648,7 +648,7 @@ For instance:
 %~~vis
 \begin{xten}
 val data : DistArray[Int]
-    = DistArray.make[Int](1..1000->here, ([i]:Point(1)) => i);
+    = DistArray.make[Int](Dist.makeConstant(1..1000), ([i]:Point(1)) => i);
 val blocked = Dist.makeBlock((1..1000)*(1..1000));
 val data2 : DistArray[Int]
     = DistArray.make[Int](blocked, ([i,j]:Point(2)) => i*j);
@@ -731,7 +731,7 @@ other than \xcd`da.dist(p)`, \viz{} at the place that the element exists.
 \index{array!constant promotion}
 
 For a region \xcd`R` and a value \xcd`v` of type \xcd`T`, the expression 
-%~~genexp~~`~~`~~T~~R:Region, v:T ~~ ^^^ Arrays420
+%~~genexp~~`~~`~~T~~R:Region{self!=null}, v:T ~~ ^^^ Arrays420
 \xcd`new Array[T](R, v)` 
 produces an array on region \xcd`R` initialized with value \xcd`v`
 Similarly, 

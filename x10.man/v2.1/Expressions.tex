@@ -466,10 +466,10 @@ incrementing or decrementing.
 \index{operation!numeric}
 
 Numeric types (\xcd`Byte`, \xcd`Short`, \xcd`Int`, \xcd`Long`, \xcd`Float`,
-\xcd`Double`, and unsigned variants of fixed-point types) are normal X10
+\xcd`Double`, \xcd`Complex`, and unsigned variants of fixed-point types) are normal X10
 structs, though most of their methods are implemented via native code. They
 obey the same general rules as other X10 structs. For example, numeric
-operations are defined by \xcd`operator` definitions, the same way you could
+operations, coercions, and conversions are defined by \xcd`operator` definitions, the same way you could
 for any struct.
 
 Promoting a numeric value to a longer numeric type preserves the sign of the
