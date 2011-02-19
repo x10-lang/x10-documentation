@@ -294,11 +294,12 @@ In fact, it is possible to view this rule as a special case to the rule that
     and now you have two raw objects: \code{Inner.this} and \code{Outer.this}).
 We wish to keep the invariant that only one \this can be raw.
 
-It is straightforward to convert inner classes into static nested classes
-    by passing the outer instance explicitly as an argument to the inner class constructor.
-To reduce complexity in the following subsections, we assume
-    that such a transformation was done to convert all inner, anonymous and local classes into
-    static nested classes.
+%To reduce complexity in the following subsections,
+In our rules, we assume that there is a single \this reference,
+    because we convert all inner, anonymous and local classes into
+    static nested classes
+    by passing the outer instance and all other captured variables
+    explicitly as arguments to the constructor.
 
 
 
@@ -744,52 +745,28 @@ There is an RFC that suggests an annotation that will automatically convert a cl
 
 
 
-The last subsection is dedicated to a inter-procedural data-flow analysis for guaranteeing
-    that a field is read only after it was written.
 
 \subsection{Read and write of fields}
 \label{Section:Read-write-rules}
-Java performs an \emph{intra}-procedural data-flow analysis in \emph{constructors} to calculate
-    when a \emph{final} field is definitely-assigned and definitely-unassigned.
-In contrast, X10 performs an \emph{inter}-procedural (fixed-point) data-flow analysis in all \emph{non-escaping methods} to calculate
-    when {a} field (\emph{both final and non-final}) is
-    definitely-assigned, \emph{definitely-asynchronously-assigned}, and definitely-unassigned.
-The details are explained in this section with examples by comparison with Java's definite-assignment rules;
-    the full analysis is described in X10's language specification.
 
-
-Java allows \emph{writing} to a final field only when it is definitely-\emph{unassigned},
-    and it allows \emph{reading} from a final field only when it is definitely-\emph{assigned}.
-X10 adds another
-
-However, Java does not check that a method that reads a final field is called only after that field was assigned.
-
-
-The inter-procedural analysis for final fields does not need a fixed-point calculation
-    because
-Inter-procedural data flow
-
-final vs.\ non-final fields:
-(fixed point)
-todo
-
-
-
-In Java it is legal...
-
-\Ref{Figure}{Read-Write-Order} todo ...
 
 \begin{figure}
 \begin{lstlisting}
 class A {
   val a:Int;
   def this() {
-    m2(); //err
-    a = 1;
-    // assigned={a}
+    readA(); //err1
+    finish {
+      async {
+        a = 1; // assigned={a}
+        readA();
+      } // asyncAssigned={a}
+      readA(); //err2
+    } // assigned={a}
+    readA();
   }
   // reads={a}
-  private def m2() {
+  private def readA() {
     val x = a;
   }
 }
@@ -802,11 +779,11 @@ class B {
     writeJ();// assigned={i,j}
     readIJ();
   }
-  // asyncWrites={i}
+  // asyncAssigned={i}
   private def asyncWriteI() {
     async i=1;
   }
-  // reads={i} writes={j}
+  // reads={i} assigned={j}
   private def writeJ() {
     if (i==1) writeJ(); else this.j = 1;
   }
@@ -817,27 +794,83 @@ class B {
 }
 \end{lstlisting}
 \definerule{Rule11}
-\caption{Read-Write order for fields examples.
+\definerule{Rule11b}
+\caption{Read-Write order for fields.
     We infer for each method three sets:
         (i)~fields it reads (i.e., these fields must be assigned before the method is called),
-        (ii)~fields it writes,
-        (iii)~fields it asynchronously writes.
+        (ii)~fields it assigned,
+        (iii)~fields it asynchronously assigned.
+    The flow maintain similar three sets before and after each statement;
+        \code{\itshape assigned} becomes \code{\itshape asyncAssigned} after an \code{async},
+        and \code{\itshape asyncAssigned} becomes \code{\itshape assigned} after a \code{finish}.
     In the example, we omitted empty sets.
-    \myrule{\arabic{Rule11}}{A field can be read only after it was definitely assigned}
+    \myrule{\arabic{Rule11}}{A field can be read only if it is definitely-assigned}
+    \myrule{\arabic{Rule11b}}{A final field can be written only it is definitely-unassigned}
     }
 \label{Figure:Read-Write-Order}
 \end{figure}
 
+We now present a data-flow analysis for guaranteeing
+    that a field is read only after it was written,
+    and that a final field is assigned exactly once.
+Java performs an \emph{intra}-procedural data-flow analysis in \emph{constructors} to calculate
+    when a \emph{final} field is definitely-assigned and definitely-unassigned.
+In contrast, X10 performs an \emph{inter}-procedural (fixed-point) data-flow analysis
+    in all \emph{non-escaping methods} to calculate
+    when {a} field (\emph{both final and non-final}) is
+    definitely-assigned, \emph{definitely-asynchronously-assigned}, and definitely-unassigned.
+The details are explained using examples (\Ref{Figure}{Read-Write-Order}) by comparison with Java;
+    the full analysis is described in X10's language specification.
+
+X10 and Java allows \emph{writing} to a final field only when it is definitely-\emph{unassigned},
+    and it allows \emph{reading} from a final field only when it is definitely-\emph{assigned}.
+X10 also has the same read restriction on non-final fields
+    (recall that rule~\userule{Rule10} adds a field initializer if the field's type has-zero).
+
+
+Consider first only \emph{final} fields.
+    They are easier to type-check because they can only be assigned in constructors.
+X10 extends Java rules,
+    by calculating for each non-escaping method \code{m} the set of final fields it reads,
+    and calling \code{m} is legal only if these fields have been definitely assigned.
+For example, in class \code{A}, method \code{readA} reads field \code{a}
+    and therefore cannot be called before \code{a} is assigned (e.g., \code{\itshape err1}).
+Note that Java does not perform this check, and it is legal to call \code{readA}
+    which will return the zero value of \code{a}.
+X10 also adds the notion of \emph{definitely-asynchronously-assigned}
+    which means a field was definitely-assigned within an \code{async}
+    (so it cannot be read, e.g., \code{\itshape err2}),
+    but after an enclosing \code{finish} it will become definitely-assigned
+    (so it can be read).
+The flow maintains three sets:
+    \code{\itshape reads}, \code{\itshape assigned}, and \code{\itshape asyncAssigned}.
+If a constructor
+    reads an uninitialized field, then it is an error;
+    however, if a method reads an uninitialized field, then we add it to its \code{\itshape reads} set.
+Phrased differently, the \code{\itshape reads} set of a constructor must be empty.
+
+Now consider non-final fields.
+    They can be assigned and read in methods,
+        thus requiring a fixed-point algorithm.
+For example, consider method \code{writeJ}.
+Initially, \code{\itshape reads} is empty,
+    while \code{\itshape assigned} and \code{\itshape asyncAssigned} are the entire set of fields.
+In the first iteration, we add \code{i} to \code{\itshape reads},
+    and when we join the two branches of the \code{if},
+    \code{\itshape assigned} is decreased to only \code{j}.
+The fixed-point calculation, in every iteration, increases \code{\itshape reads}
+    and decreases \code{\itshape assigned} and \code{\itshape asyncAssigned},
+    until a fixed-point is reached.
+
 
 
 \subsection{Virtues and attributes of initialization in X10}
-We assume we transformed all anonymous, local and inner classes into static nested classes
+We assume there is a single \this variable, because all nested classes were converted to static,
     as described in \Ref{Section}{Inner}.
-Therefore we have only have a single \this variable.
-
-
-* \this and \code{super} is the only accessible raw object (there could be several raw objects in the heap but only \this is accessible). Reason: \this cannot be aliased or leaked.
-* only cooked objects cross places. Reason: \this is the only non-cooked object and it cannot have any aliases and it cannot cross an \code{at}.
-* Only \code{@NoThisAccess} methods can be dynamically dispatched during construction. Reason: can only call private or final methods.
-* all field writes finish by the time the ctor ends. Reason: data flow ensures that any write within an async has an enclosing finish.
-* one cannot read an uninitialized field. Reason: reading from \this is verified by the data-flow alg of section~..., any other read is from a cooked object.
+Therefore, initialization in X10 has the following attributes:
+(i)~\this (and its alias \code{super}) is the only accessible raw object in scope (rule~\userule{Rule3}),
+(ii)~only cooked objects cross places (rule~\userule{Rule14}),
+(iii)~only \code{@NoThisAccess} methods can be dynamically dispatched during construction (rule~\userule{Rule5}),
+(iv)~all final field assignments finish by the time the constructor ends (rule~\userule{Rule13}),
+(v)~it is not possible to read an uninitialized field (rule~\userule{Rule11}), and
+(vi)~reading a final field always return the same value (rule~\userule{Rule11b} combined with attribute~(v)).

@@ -88,19 +88,19 @@ class C {
 \label{Figure:Cyclic}
 \end{figure}
 
-In the public constructor, \texttt{this} is a pointer to a partially
-constructed object.  If the type of \texttt{this} were to be explicit, it would
+In all constructors, \texttt{this} is a pointer to a partially
+    constructed object.
+If the type of \texttt{this} were to be explicit, it would
 be \texttt{proto C \{self!=null\}}.  The \texttt{proto} element of the type
 forbids any field reads.  It also prevents the reference being leaked (e.g.
 into \texttt{f()}), except into variables of \texttt{proto} type where it
 follows that there is protection from uninitialized field reads.
 
-The private constructor's \texttt{n} parameter takes a \texttt{proto} pointer
+The first constructor's \texttt{n} parameter takes a \texttt{proto} pointer
 to the original \texttt{C} instance.  It is limited in what it can do with
 \texttt{n}, e.g. it cannot read \texttt{n.next}, but it can initialize its own
 \texttt{next} field with the passed-in value.
-
-When the public constructor returns, both objects are fully constructed with
+When the second constructor returns, both objects are fully constructed with
 all fields initialized.  Thus, the type of the variable \texttt{c} does not
 have a proto annotation and the field read \texttt{c.next} is allowed.
 
@@ -131,7 +131,7 @@ We do not allow fields to have \texttt{proto} type.  This is because the
 referenced object will eventually be fully constructed and then there would be
 a variable of \texttt{proto} type pointing to a fully constructed instance.
 This admits the possibility of someone assigning a partially constructed object
-to a field of the fully constructed object, just as was done in the private
+to a field of the fully constructed object, just as was done in the first
 constructor in fig.~\ref{Figure:Cyclic}.  Then, one could accidentally read an
 uninitialized field from the partially constructed object by going through the
 fully constructed object.  Disallowing \texttt{proto} in fields avoids this
@@ -139,17 +139,17 @@ problem.  However local variables are safe because of lexical scoping, they
 will go out of scope before the constructor returns and the object becomes
 fully constructed.
 
-If one examines the state of the heap as these examples execute, there can be
-seen to be a subgraph of 2 partially-constructed objects, which is completely
-isolated except for references from the stack of the thread which is executing
-the constructors.  The type rules described hitherto ensure the heap has the
-property that partially constructed objects are isolated from the rest of the
-heap until their construction is completed.
-
-We are not aware of any utility in throwing or catching \texttt{proto} types so
-we avoid issues relating to partially constructed objects escaping via the
-exception mechanism, by simply forbidding the throwing and catching of
-\texttt{proto} exceptions.
+%If one examines the state of the heap as these examples execute, there can be
+%seen to be a subgraph of 2 partially-constructed objects, which is completely
+%isolated except for references from the stack of the thread which is executing
+%the constructors.  The type rules described hitherto ensure the heap has the
+%property that partially constructed objects are isolated from the rest of the
+%heap until their construction is completed.
+%
+%We are not aware of any utility in throwing or catching \texttt{proto} types so
+%we avoid issues relating to partially constructed objects escaping via the
+%exception mechanism, by simply forbidding the throwing and catching of
+%\texttt{proto} exceptions.
 
 There would be an issue calling other instance methods on \texttt{this} from a
 constructor, because the type of \texttt{this} in those methods would need to
