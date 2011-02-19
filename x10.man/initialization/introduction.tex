@@ -17,9 +17,11 @@ We discuss several language designs that restrict these interactions,
     and explain why we chose the \emph{hardhat} design for X10.
 
 {Hardhat} was termed in~\cite{Gil:2009:WRS:1615184.1615216}
-    and it describes a design that prohibits dynamic dispatching or leaking \this during construction.
+    and it describes a design that prohibits dynamic dispatching
+    or leaking \this (e.g., storing \this in the heap) during construction.
 A hardhat design limits the user
-    but also protects her from future bugs.
+    but also protects her from future bugs
+    (see \Ref{Figure}{TwoPitfalls} below for two such bugs).
 X10's hardhat design is even stricter due to additional language features
     such as concurrency, places, and closures.
 
@@ -47,7 +49,7 @@ Finally, if the type-system is augmented, for example, with non-null types, then
     a default value no longer exists,
     which leads to complicated type-systems for initialization~\cite{Fahndrich:2007:EOI:1297027.1297052,XinQi:2009}.
 
-\mbox{C++}, as usual, gives you enough rope to hang yourself, but in an amazing speed.
+\mbox{C++} is sacrifices type-safety on the alter of performance. %as usual, gives you enough rope to hang yourself, but in an amazing speed.
 Fields are not zero-initialized, and therefore if \this leaks,
     one can read an uninitialized field.
 Moreover, method calls are statically bound during construction,
@@ -80,9 +82,15 @@ A design for object initialization should have the following
         therefore returning its default value.
 
   \item[Immutable objects are thread-safe]
-    Immutable objects should be thread-safe without using any explicit synchronization.
-    This is not the case even in Java 5 if \this escapes from the constructor~\cite{JSR133};
-        See explanation on \Ref{Figure}{TwoPitfalls} below.
+    Immutable classes are a common pattern where fields are final/const
+        and instances have no mutable state, e.g., \code{String} in Java.
+    Immutable objects are often shared between threads without any explicit synchronization,
+        because programmers assume that if another thread gets a handle to an object
+        that that thread should see all assignments done during initialization.
+    However, weak memory models today do not necessarily have this guarantee
+        and immutable objects could be thread-\emph{unsafe}!
+    \Ref{Figure}{TwoPitfalls} below will show that this can happen in Java
+        if \this escapes from the constructor~\cite{JSR133}.
 
 %  \item[Parallel]
 %    Concurrent and distributed code is error-prone to begin with.
@@ -101,8 +109,9 @@ A design for object initialization should have the following
 
   \item[Type safe]
     The language should continue to be statically type-safe even
-        if it has rich types that do not have a default or zero value (such as \code{String\lb{}self!=null\rb} in X10's syntax).
-    Type safety is violated if a read from a variable of such type returns \code{null}.
+        if it has rich types that do not have a default or zero value,
+        such as non-null types (\code{T\lb{}self!=null\rb} in X10's syntax).
+    Type-safety implies that reading from a non-null type should never return \code{null}.
     Adding non-null types to Java~\cite{Fahndrich:2003:DCN:949305.949332,Fahndrich:2007:EOI:1297027.1297052,XinQi:2009}
         has been a challenge precisely due to
         Java's relaxed initialization rules.
@@ -199,10 +208,12 @@ We will trace the initialization order for \code{new B()}:
     we first allocate a new object with zero-initialized fields,
     and then invoke the constructor of \code{B}.
 The constructor of \code{B} first calls \code{super()},
-    and only afterward it will run the field initializer (setting \code{b} to 2).
+    and only afterward it will run the field initializer which sets \code{b} to 2.
 This is the cause of surprise, because \emph{syntactically} the field initializer comes before
     \code{super()},
     however it is executed after.
+(And writing \code{b=2;super();} is illegal in Java because
+    calling super must be the first statement.)
 During the \code{super()} call we perform two dynamic dispatches:
     the two calls (\code{initA()} and \code{toString()})
     execute the implementation in \code{B} (and recall that \code{b} is still 0).
@@ -281,7 +292,7 @@ Without the barrier, %or without the use of final fields in \code{String},
     another thread might see the default values for these three fields,
     i.e., \code{null} for \code{value} and 0 for \code{offset} and \code{count}.
 For instance,
-    if one removes the \code{final} keyword in \code{String},
+    if one removes the \code{final} keyword from all three fields in \code{String},
     then
     the following code might print \code{B} (the expected answer),
     or it might print
@@ -340,10 +351,11 @@ Default serialization is not always efficient, e.g.,
     that handle serializing and de-serializing, respectively.
 For example, \code{readObject} in \code{LinkedList}
     de-serializes the list's elements and rebuilds a new list;
-    in that process, it assigns to field \code{header} which points to a dummy header node.
-This field could have been \code{final}, however it is re-assigned in two methods:
-    \code{readObject} and \code{clone} (see \Ref{Section}{Cloning}).
-The issue here is that \code{readObject} is a \emph{method},
+    in that process, it assigns to field \code{header}.
+This field could have been \code{final} because it points to the same dummy header node
+    during the entire lifetime of the list.
+However, it is re-assigned in two \emph{methods}:
+    \code{readObject} and \code{clone} (see \Ref{Section}{Cloning}),
     and final fields can only be assigned in
     \emph{constructors}.
 It is possible to use reflection in Java to set a final field,
@@ -390,7 +402,7 @@ However, \emph{immutable} objects (such as strings) have no use for cloning,
 Therefore, cloning is less problematic than serialization with respect to immutability.
 
 X10 has no clone-magic as in Java.
-Instead, the user can clone an object using the serialization mechanism,
+Instead, the user can (deep) clone an object using the serialization mechanism,
     which is invoked when a final variable is copied to another place
     (\Ref{Section}{Parallelism} explains about \code{at} and places in X10):
 
@@ -519,7 +531,7 @@ We note that using \emph{final local variables} for \code{fib2} and \code{fib1} 
 X10 has similar initialization rules for final locals and final fields,
     but it is outside the scope of this paper to present all forms of initialization in X10
     (including local variables and static fields).
-Details of those can be found in X10's language specification in \code{x10-lang.org}.
+Details of those can be found in X10's language specification at \code{x10-lang.org}.
 
 There are two possible pitfalls in this example.
 The first is a concurrency pitfall, where we forget to use finish,
