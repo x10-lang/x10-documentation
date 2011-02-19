@@ -50,9 +50,7 @@ class A {
 class B extends A {
   val b:Int;
   def this() {
-    super();
-    this.b = 2;
-    super.m3();
+    super(); this.b = 2; super.m3();
   }
 }
 \end{lstlisting}
@@ -568,7 +566,7 @@ class A {
   var f1:Int;
   val f2:Int;
   val f3:Int;
-  def this() { //err: f2 was not definitely assigned
+  def this() {//err: f2 was not definitely assigned
     async f1 = 1;
     async f2 = 2;
     finish {
@@ -621,7 +619,7 @@ As in Java, one can write custom serialization code in X10 by implementing \code
 \begin{lstlisting}
 class A {
   val f:Int;
-  def this() { //err: f was not assigned
+  def this() {//err: f was not definitely assigned
     // Execute at another place
     at (here.next())
       this.f = 1; //err: this escaped
@@ -669,16 +667,16 @@ Then, when a box pointing to \code{o} is serialized, then \code{o} is recursivel
 However, when a global reference pointing to \code{o} is serialized, then only the pointer to \code{o} is serialized (not \code{o} itself).
 %  assert r()==o;
 %def copyExample(o:Any, p:Place) {
-\begin{lstlisting}
-  val box = new Box(o);
-  at (here.next()) { // copies box and o
-    val x = box;
-  }
-  val r = new GlobalRef(o);
-  at (here.next()) { // copies r but not o
-    val x = r;
-  }
-\end{lstlisting}
+%\begin{lstlisting}
+%  val box = new Box(o);
+%  at (here.next()) { // copies box and o
+%    val x = box;
+%  }
+%  val r = new GlobalRef(o);
+%  at (here.next()) { // copies r but not o
+%    val x = r;
+%  }
+%\end{lstlisting}
 
 % No room to talk about custom serialization:
 % Places require serialization and deserialization (both custom and automatic) across "at".
@@ -714,8 +712,7 @@ class GlobalCounter {
   private val root = new GlobalRef(this);
   transient var count:Int;
   def inc() {
-    return at(root.home)
-      root().count++;
+    return at(root.home) root().count++;
   }
 }
 \end{lstlisting}
@@ -797,29 +794,21 @@ class A {
   }
 }
 class B {
-  var i:Int{self!=0}, j:Int{self!=0}, flag:Boolean;
+  var i:Int{self!=0}, j:Int{self!=0};
   def this() {
-    flag = false;
-    // assigned={flag}
     finish {
-      asyncWriteI();
-      // assigned={flag} asyncAssigned={i}
-    }
-    // assigned={flag,i}
-    writeJ();
-    // assigned={flag,i,j}
+     asyncWriteI(); // asyncAssigned={i}
+    } // assigned={i}
+    writeJ();// assigned={i,j}
     readIJ();
   }
   // asyncWrites={i}
   private def asyncWriteI() {
     async i=1;
   }
-  // reads={flag} writes={j}
+  // reads={i} writes={j}
   private def writeJ() {
-    if (flag)
-      writeJ();
-    else
-      this.j = 1;
+    if (i==1) writeJ(); else this.j = 1;
   }
   // reads={i,j}
   private def readIJ() {

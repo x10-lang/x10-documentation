@@ -166,25 +166,17 @@ class A {
     System.out.println(toString()); //again!
     INSTANCES.add(this); // leakage!
   }
-  int initA() {
-    return 1;
-  }
-  public String toString() {
-    return "a="+a;
-  }
+  int initA() { return 1; }
+  public String toString() { return "a="+a; }
 }
 class B extends A {
   int b = 2;
   B() { super(); }
-  int initA() {
-    return b+42;
-  }
+  int initA() { return b+42; }
   public String toString() {
-    return super.toString()+",b="+b;
-  }
+    return super.toString()+",b="+b; }
   public static void main(String[] args) {
-    B b = new B(); // prints: a=42,b=0
-    System.out.println(b); // prints: a=42,b=2
+    new B(); // prints: a=42,b=0
   }
 }
 \end{lstlisting}
@@ -198,7 +190,7 @@ class B extends A {
 We will first explain the surprising output due to dynamic dispatching,
     and then the less known possible bug due to leaking \this.
 
-Running this code first prints \code{a=42,b=0}, which is
+Running this code prints \code{a=42,b=0}, which is
     surprising to most Java users.
 One would expect \code{b} to be 2, and \code{a} to be either 1 or 44.
 However, due to initialization order and dynamic dispatch,
@@ -482,11 +474,9 @@ class Fib {
     finish {
       async {
         val p = here.next();
-        fib2 = at(p)
-         n<=1 ? 0 : new Fib(n-2).fib;
+        fib2 = at(p) n<=1? 0 : new Fib(n-2).fib;
       }
-      fib1 = n<=0 ? 0 :
-         n<=1 ? 1 : new Fib(n-1).fib;
+      fib1 = n<=0? 0 : n<=1? 1 : new Fib(n-1).fib;
     }
     fib = fib2+fib1;
   }
@@ -559,7 +549,7 @@ The remainder of this paper is organized as follows.
 \Ref{Section}{designs} describes alternative designs for object initialization
     (one was implemented in X10 version 2.0 and another was under consideration for 2.1),
     weighing the pros and cons of each.
-\Ref{Section}{implementation} outlines our implementation within the X10 compiler using the polyglot framework.
+%\Ref{Section}{implementation} outlines our implementation within the X10 compiler using the polyglot framework.
 %    and the compilation time overhead of checking these initialization rules.
 %\Ref{Section}{case-study} investigates the consequences of having a hardhat design
 %    in a case study that converted a large collection of Java classes to X10.

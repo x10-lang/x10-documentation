@@ -53,28 +53,36 @@ the type system.
 \begin{figure}
 \begin{lstlisting}
 class C {
-    public val next : C {self!=null};
-    private def this (n:proto C{self!=null}) {
-        // Console.OUT.println(n.next);
-        // n.f();
-        // s(n);
-        this.next = n;
-    }
-    public def this () {
-        // Console.OUT.println(this.next);
-        // f();
-        // s(this);
-        this.next = new C(this);
-    }
-    public def f() {
-        Console.OUT.println(this.next);
-    }
-    public static def s(C this_) {
-        this_.f();
-    }
+  val next : C {self!=null};
+  var fld : C;
+  def this(n:proto C{self!=null}) {
+    //Console.OUT.println(n.next); //err1
+    //n.f(); //err2
+    this.next = n;
+  }
+  def this() {
+    //Console.OUT.println(this.next); //err3
+    //this.f(); //err4
+    val c = new C(this);
+    //Console.OUT.println(c.next.next); //err5
+    this.next = c;
+  }
+  def f() {
+    Console.OUT.println(this.next);
+  }
+  def this(c:C, Int) {
+    //c.m(this); //err6
+    Console.OUT.println(c.fld.next);
+    this.next = c;
+  }
+  void m (n : proto C) proto {
+    this.fld = n;
+  }
+  static def test() {
+    val c:C{self!=null} = new C();
+    assert c.next.next==c;
+  }
 }
-val c:C{self!=null} = new C();
-val c2:C{self!=null} = c.next;
 \end{lstlisting}
 \caption{An immutable cycle of heap references, using \texttt{proto}.}
 \label{Figure:Cyclic}
@@ -109,31 +117,12 @@ proto type.  The only sources of \texttt{proto} typed objects are via the
 \texttt{proto} type.  The only way a type can lose its \texttt{proto} is by
 becoming fully constructed.
 
-\begin{figure}
-\begin{lstlisting}
-class C {
-    val next : C;
-    private def this (n: proto C) {
-        this.next = n;
-    }
-    public def this () {
-        val c = new C(this);
-        Console.OUT.println(c.next.next);
-        this.next = c;
-    }
-}
-\end{lstlisting}
-\caption{A problem where a field can be read before it was initialized.}
-\label{Figure:Problem1}
-\end{figure}
-
-In fig.~\ref{Figure:Problem1} we can see a problem arising because part of the
-cycle has become fully constructed, and is therefore no-longer \texttt{proto},
-but it links to the other object which is still only partially constructed.  By
-following the links through the fully constructed object, we are able to read
-the uninitialized field despite complying with the existing type rules.  To
-solve this problem, we must ensure that the whole cycle becomes fully
-constructed together.  This can be arranged by changing the type of \texttt{new
+Consider \code{\itshape err5} in fig.~\ref{Figure:Cyclic}.
+If we had inferred the type of \code{c} to be non-proto,
+    then we could have read the uninitialized field \code{this.next}.
+To solve this problem, we must ensure that the whole cycle becomes fully
+constructed together.
+This can be arranged by changing the type of \texttt{new
 C(...)} to be \texttt{proto C} if one of its arguments is of \texttt{proto}
 type.  This does not affect the assignment \texttt{this.next = c} because
 \texttt{this} is \texttt{proto}.
@@ -174,28 +163,10 @@ same restrictions as we have already seen in constructor bodies.
 However in some cases we would like to avoid code duplication by allowing some
 methods to be callable on both \texttt{proto} and non-\texttt{proto} targets.
 This violates our principle that the two kinds of objects enjoy different
-privileges and are completely distinct.  The code in fig.~\ref{Figure:Problem2}
+privileges and are completely distinct.
+The error \code{\itshape err6} in fig.~\ref{Figure:Cyclic}
 shows how we could potentially read an uninitialized field if we allowed this
 relaxation.
-
-\begin{figure}
-\begin{lstlisting}
-class C {
-    val next : C{self!=null};
-    var fld : C;
-    def this (c : C) {
-        c.m(this);
-        Console.OUT.println(this.fld.next);
-        this.next = this;
-    }
-    void m (n : proto C) proto {
-        this.fld = n;
-    }
-}
-\end{lstlisting}
-\caption{Another problem where a field can be read before it was initialized.}
-\label{Figure:Problem2}
-\end{figure}
 
 To address this, we only allow the method to be called on non-\texttt{proto}
 targets if there are no \texttt{proto} parameters to the method.  No such
