@@ -425,7 +425,7 @@ at (here) {
 
 
 Values protected in \xcd`GlobalRef`s can be retrieved by the application
-%~~exp~~`~~`~~ g:GlobalRef[Int]~~ ^^^Activities4e7q
+%~~exp~~`~~`~~ g:GlobalRef[Object]{here == g.home}~~ ^^^Activities4e7q
 operation \xcd`g()`.  \xcd`g()` is guarded; it can 
 only be called when \xcd`g.home == here`.  If you  want to do anything other
 than pass a global reference around or compare two of them for equality, you

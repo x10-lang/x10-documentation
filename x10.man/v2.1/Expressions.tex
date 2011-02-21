@@ -1357,6 +1357,14 @@ approximation is good enough.
       the numeric value and even the sign can change: \xcd`254 as Byte` is
       the \xcd`Byte`sized \xcd`-2y`.  
 
+\item Casting an unsigned integer type to a signed integer type of the same
+      size (\eg, \xcd`UInt` to \xcd`Int`) preserves bit pattern (\eg, 
+      \xcd`UInt.MAX_VALUE as Int == -1`.   Casting an unsigned integer type to
+      a signed integer type of a different size is equivalent to first casting
+      to an unsigned integer type of the target size, and then casting to a
+      signed integer type.
+
+\item Casting a signed integer type to an unsigned one is similar.  
 
 \end{itemize}
 
@@ -1407,6 +1415,19 @@ type and a type to its right, below:
 Byte < Short < Int < Long < Float < Double
 UByte < UShort < UInt < ULong
 \end{xten}
+
+Furthermore, an unsigned integer type may be implicitly coerced a signed type
+large 
+enough to hold any value of the type: \xcd`UByte` to \xcd`Short`, \xcd`UShort`
+to \xcd`Int`, \xcd`UInt` to \xcd`Long`.  There are no implicit conversions
+from signed to unsigned numbers, since they cannot treat negatives properly.
+
+There are no implicit conversions in cases when overflow is possible.  For
+example, there is no implicit conversion between \xcd`Int` and \xcd`UInt`.  If
+it is necessary to convert between these types, use \xcd`n as Int` or 
+\xcd`n as UInt`, generally with a test to ensure that the value will fit and
+code to handle the case in which it does not.  
+
 
 \index{conversion!widening}
 \index{conversion!numeric}
