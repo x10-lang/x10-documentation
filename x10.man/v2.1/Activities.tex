@@ -144,14 +144,14 @@ is not necessarily distinct from \xcd`p` (e.g.{} \xcd`q` may be
 \xcd`here`).
 
 First, the runtime identifies the object graph at \xcd`p` reachable
-from lexically scoped initialized variables (say, \xcd`v1`,\ldots,
+from lexically scoped initialized \xcd`val` variables (say, \xcd`v1`,\ldots, 
 \xcd`vn`) referenced in \xcd`S`.  Second this graph is {\em
   serialized} into a buffer and transmitted to place \xcd`q`.  Third,
 the variables \xcd`v1`,\ldots, \xcd`vn` are re-created at \xcd`q` and
 initialized with the objects obtained by deserializing the buffer at
 \xcd`q`. Fourth, \xcd`S` is executed at \xcd`q` (in an environment in
 which the variable \xcd`vi` refers to the re-created variable at
-\xcd`q`).
+\xcd`q`).  (For the treatment of \xcd`var`s, see \Sref{sect:at-and-var}.)
 
 On normal termination of \xcd`S` control returns to \xcd`p` and
 execution is continued with the statement following \xcd`at (q) S`. If
@@ -165,6 +165,11 @@ constructs such as \xcd`break`, \xcd`continue`, \xcd`return` and
 \xcd`throw` are permitted in \xcd`S`.  All concurrency related
 constructs -- \xcd`async`, \xcd`finish`, \xcd`atomic`, \xcd`when` are
 also permitted.
+
+The \xcd`at`-expression \xcd`at(p)E` is similar, except that, in the case of
+normal termination of \xcd`E`, the value that \xcd`E` produces is serialized
+into a buffer, transported to the starting place, and deserialized, and the
+value of the \xcd`at`-expression is the result of deserialization.
 
 \limitationx{} In \xcd`at(e) S`, \xcd`S` is permitted to access only
 those immutable variables in the surrounding scope that are definitely
@@ -236,7 +241,7 @@ of \xcd`x10.lang.GlobalRef[T]` for more details.
 %%\noindent
 
 
-\subsection{Discussion}
+\subsection{{\tt at} and Activities}
 \xcd`at(p)S` does {\em not} start a new activity.  It should be thought of as
 transporting the current activity to \xcd`p`, running \xcd`S` there, and then
 transporting it back.  \xcd`async` is the only construct in the
@@ -254,7 +259,7 @@ within a single activity.
 For example, 
 \begin{xten}
     for(x in globalRefsToThings) 
-      if (at(x.home) x().nice()) 
+      if (at(x.home) x().isNice()) 
         return x();
 \end{xten}
 returns the first nice thing in a collection.   If we had used 
@@ -268,7 +273,7 @@ you can't \xcd`return` from an
 \xcd`at(p)S` copies nearly all data that \xcd`S` might reference, and sends it
 to place \xcd`p`, before executing \xcd`S` there. The only things that are not
 copied are values only reachable through \xcd`GlobalRef`s and \xcd`transient`
-fields.    If \xcd`x` is a
+fields, and data omitted by custom serialization.    If \xcd`x` is a
 variable name referring to some object \xcd`ob` outside of \xcd`S`, then the
 same variable name \xcd`x` refers to a deep copy of \xcd`ob`
 inside of \xcd`S`.  In this way the body \xcd`S` is in a separate block with
@@ -393,7 +398,7 @@ class Trans {
 A \xcd`GlobalRef[T]` (say \xcd`g`) contains a reference to
 a value of type \xcd`T`, in a form which can be transmitted, and a \xcd`Place`
 \xcd`g.home` indicating where the value lives. When a 
-\xcd`GlobalRef` is serialized an opaque, globally uniqe handle to
+\xcd`GlobalRef` is serialized an opaque, globally unique handle to
 the enclosed value \xcd`o` is passed. 
 
 The following example does not copy the value \xcd`huge`.  However, \xcd`huge`
@@ -419,8 +424,9 @@ at (here) {
 %~~neg
 
 
-Values protected in \xcd`GlobalRef`s can be retrieved by the \xcd`g.apply()`
-method, often abbreviated simply \xcd`g()`.  \xcd`g.apply()` is guarded; it can
+Values protected in \xcd`GlobalRef`s can be retrieved by the application
+%~~exp~~`~~`~~ g:GlobalRef[Int]~~ ^^^Activities4e7q
+operation \xcd`g()`.  \xcd`g()` is guarded; it can 
 only be called when \xcd`g.home == here`.  If you  want to do anything other
 than pass a global reference around or compare two of them for equality, you
 need to placeshift back to the home place of the reference, often with
@@ -467,7 +473,8 @@ that \xcd`this` refers to, which can be very large.
   reason about which copy gets modified. 
 \end{itemize}
 
-\subsubsection{{\tt at} and Variables}
+\subsubsection{{\tt at} and {\tt var} Variables}
+\label{sect:at-and-var}
 \index{at!variables and}
 
 \xcd`var` variables can be set at the place that they are declared, but not
