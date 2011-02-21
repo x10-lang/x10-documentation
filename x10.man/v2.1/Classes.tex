@@ -754,7 +754,7 @@ Methods are overriden on a signature-by-signature basis.
 \section{Constructors}
 \index{constructor}
 
-Instances of classes are created by the \xcd`new` expression: 
+Instances of classes are created by the \xcd`new` expression: \\
 %##(ClassInstCreationExp
 \begin{bbgrammar}
 %(FROM #(prod:ClassInstCreationExp)#)
@@ -778,6 +778,7 @@ The following class provides two constructors.  The unary constructor
 \xcd`def this(b : Int)` allows initialization of the \xcd`a` field to an 
 arbitrary value.  The nullary constructor \xcd`def this()` gives it a default
 value of 10.  The \xcd`example` method illustrates both of these calls.
+
 \begin{ex}
 %~~gen ^^^ ClassesCtor10
 % package ClassesCtor10;
@@ -847,7 +848,43 @@ Thus, it has an implicit constructor:
 \xcd`def this(x:Int){property(x);}`
 \end{eg}
 
+\subsection{Calling Other Constructors}
 
+The {\em first} statement of a constructor body may be a call of the form 
+\xcd`this(a,b,c)` or \xcd`super(a,b,c)`.  The former will execute the body of
+the matching constructor of the current class; the latter, of the superclass. 
+This allows a measure of abstraction in constructor definitions; one may be
+defined in terms of another.
+
+\begin{ex}
+The following class has two constructors.  \xcd`new Ctors(123)` constructs a
+new \xcd`Ctors` object with parameter 123.  \xcd`new Ctors()` constructs one
+whose parameter has a default value of 100: 
+%~~gen ^^^ Classes5q6q
+% package Classes5q6q;
+%~~vis
+\begin{xten}
+class Ctors {
+  val a : Int;
+  def this(a:Int) { this.a = a; }
+  def this() {
+    this(100);
+  }
+}
+\end{xten}
+%~~siv
+%
+%~~neg
+\end{ex}
+
+In the case of a class which implements \xcd`operator ()` 
+--- or any other constructor and application with the same signature --- 
+this can be ambiguous.  If \xcd`this()` appears as the first statement of a
+constructor body, it could, in principle, mean either a constructor call or an
+operator evaluation.   This ambiguity is resolved so that \xcd`this()` always
+means the constructor invocation.  If, for some reason, it is necessary to
+invoke an application operator early in a constructor, precede it with a dummy
+statement, such as \xcd`if(false);`  
 
 \section{Static initialization}
 \label{StaticInitialization}
@@ -1133,10 +1170,19 @@ necessary to handle such exotic cases as \xcd`1+X`.
 Most X10 operators can be given definitions.\footnote{Indeed, even for the
 standard types, these operators are defined in the library.  Not even as basic
 an operation as integer addition is built into the language.  Conversely, if
-you define a full-featured numeric type, it will have all the privileges that
-the standard ones enjoy, except for literals.}  However, \xcd`&&` and \xcd`||`
+you define a full-featured numeric type, it will have most of the privileges that
+the standard ones enjoy.  The missing priveleges are (1) literals; (2) 
+the \xcd`..` operator won't compute the \xcd`zeroBased` and \xcd`rail`
+properties as it does for \xcd`Int` ranges; (3) \xcd`*` won't track ranks, as
+it does for \xcd`Region`s; 
+(4) \xcd`&&` and \xcd`||` won't short-circuit, as they do for \xcd`Boolean`s, 
+ and (5) \xcd`a==b` will only coincide with
+\xcd`a.equals(b)` if coded that way.  For example, a \xcd`Polar` type might
+have many representations for the origin, as radius 0 and any angle; these
+will be \xcd`equals()`, but will not be \xcd`==`.}  However, \xcd`&&` and
+\xcd`||` 
 are only short-circuiting for \xcd`Boolean` expressions; user-defined versions
-of these operators have no special execution behavior.
+of these operators have no special execution behavior.  
 These are: \\
 \begin{tabular}{l}
 implicit type coercions\\

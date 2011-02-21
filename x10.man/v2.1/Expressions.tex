@@ -1463,3 +1463,46 @@ a([2,4]) = "converted!";
 
 
 \end{ex}
+
+\section{Parenthesized Expressions}
+
+If \xcd`E` is any expression, \xcd`(E)` is an expression which, when
+evaluated, produces the same result as \xcd`E`.   
+
+\begin{ex}
+The main use of parentheses is to write complex expressions for which the 
+standard precedence order of operations is not appropriate: \xcd`1+2*3` is 7,
+but \xcd`(1+2)*3` is 9.  
+
+Similarly, but perhaps less familiarly, 
+parentheses can disambiguate other expressions.  In the following code, 
+\xcd`funny.f` is a field-selection expression, and so \xcd`(funny.f)()` means
+``select the \xcd`f` field from \xcd`funny`, and evaluate it''.  However, 
+\xcd`funny.f()` means ``evaluate the \xcd`f` method on object \xcd`funny`.''  
+%~~gen ^^^ Expressions3f6f
+% package Expressions3f6f;
+%~~vis
+\begin{xten}
+class Funny {
+  def f () = 1;
+  val f = () => 2;
+  static def example() {
+    val funny = new Funny();
+    assert funny.f() == 1;
+    assert (funny.f)() == 2;
+  }
+}
+\end{xten}
+%~~siv
+% class Hook{ def run() { Funny.example(); return true; }}
+%~~neg
+
+
+\end{ex}
+
+Note that this does {\em
+not} mean that \xcd`E` and \xcd`(E)` are identical in all respects; for
+example, if \xcd`i` is an \xcd`Int` variable, \xcd`i++` increments \xcd`i`,
+but \xcd`(i)++` is not allowed.    \xcd`++` is an assignment; it operates on
+variables, not merely values, and \xcd`(i)` is simply an expression whose {\em
+value} is the same as that of \xcd`i`. 
