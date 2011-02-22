@@ -562,7 +562,8 @@ the most significant $k$ bits of the result are set to \xcd"0".
 This operation is deprecated, and may be removed in a later version of the
 language. 
 
-It is a dynamic error to shift an integer by a negative number of bits.  
+Attempting to shift an integer by a negative number of bits causes an
+\xcd`IllegalArgumentException`. 
 
 \section{Binary bitwise operations}
 

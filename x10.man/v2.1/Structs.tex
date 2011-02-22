@@ -201,21 +201,31 @@ otherwise encourage the use of unsigned arithmetic.
 
 
 
-\noo{The rest of this section is under discussion.  The example is wrong; it
-ignores the fact that values can be functions.}
 The programmer must be aware of the different interpretations of
 equality for structs and classes and ensure that the code is correctly
-written for both cases. If necessary the programmer can write code
-that distinguishes between the two cases (a type parameter \Xcd{X} is
-instantiated to a struct or not) as follows:
+written for both cases. 
+
+\index{isObject}
+\index{isStruct}
+\index{isFunction}
+It is occasionally necessary to tell what kind of value \xcd`x` is: object,
+struct, or function.  Three static methods on \xcd`x10.lang.System` provide
+this test: 
+\xcd`System.isObject(x)` returns true if \xcd`x` is a value of \xcd`Object`
+type, including \xcd`null`; \xcd`System.isStruct(x)` returns true if \xcd`x`
+is a \xcd`struct`; \xcd`System.isFunction(x)` returns true if \xcd`x` is a
+closure value.  Precisely one of these three functions returns true for any
+X10 value \xcd`x`.  
 
 \begin{xten}
 val x:X = ...;
-if (x instanceof Object) { // x is a real object
+if (System.isObject(x)) { // x is a real object
    val x2 = x as Object; // this cast will always succeed.
    ...
-} else { // x is a struct
+} else if (System.isStruct(x)) { // x is a struct
    ...
+} else {  
+  assert System.isFunction(x);
 }
 \end{xten}
  
