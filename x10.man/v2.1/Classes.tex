@@ -664,7 +664,6 @@ is equivalent to
 \label{MethodOverload}
 \index{method!overloading}
 
-\noo{Here!}
 
 
 The definitions of method overloading, overriding, hiding, shadowing
@@ -1482,9 +1481,7 @@ operators in class \xcd`T`.  The syntax for this is
 Implicit coercions are used automatically by the compiler on method calls 
 (\Sref{sect:MethodResolution}) and assignments (\Sref{domedomedome}).
 
-With the {\tt -STATIC\_CALLS} compiler flag disabled, additional coercions come
-into play.
-\noo{explain}
+
 
 For example, we can define an implicit coercion from \xcd`Int` to \xcd`Poly`,
 and avoid having to define the sum of an integer and a polynomial
@@ -1545,9 +1542,9 @@ addition to add it to \xcd`x`.
 
 \bard{Syntax}
 
-\subsection{{\tt set} and {\tt apply}}
-\index{set}
-\index{apply}
+\subsection{Assignment and Application Operators}
+\index{assignment operator}
+\index{application operator}
 \index{()}
 \index{()=}
 \label{set-and-apply}
@@ -1567,10 +1564,10 @@ with \xcd`public operator this(i:Int)`, and by string-valued keys with
 \xcd`a(i,j)=b` is an \xcd`operator` as well, with zero or more indices
 \xcd`i,j`.  It may also be overloaded. 
 
-The update operations \xcd`a(i) += b` are defined to be the 
-same as the corresponding \xcd`a(i) = a(i) + b`.  This applies for all arities
-of arguments, and all types.  Of course to use this, both the application and
-assignment \xcd`operator`s must be defined.
+The update operations \xcd`a(i) += b` are defined to be the same as the
+corresponding \xcd`a(i) = a(i) + b`. This applies for all arities of
+arguments, and all types, and all binary operations. Of course to use this,
+both the application and assignment \xcd`operator`s must be defined.
 
 
 
@@ -1621,7 +1618,7 @@ class Oddvec {
 % }
 %~~neg
 
-\noo{op=}
+
 
 \section{Class Guards and Invariants}\label{DepType:ClassGuard}
 \index{type invariants}
