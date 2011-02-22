@@ -562,6 +562,8 @@ the most significant $k$ bits of the result are set to \xcd"0".
 This operation is deprecated, and may be removed in a later version of the
 language. 
 
+It is a dynamic error to shift an integer by a negative number of bits.  
+
 \section{Binary bitwise operations}
 
 The binary bitwise operations operate on integral types, which are promoted to
@@ -1358,7 +1360,8 @@ approximation is good enough.
       the \xcd`Byte`sized \xcd`-2y`.  
 
 \item Casting an unsigned integer type to a signed integer type of the same
-      size (\eg, \xcd`UInt` to \xcd`Int`) preserves bit pattern (\eg, 
+      size (\eg, \xcd`UInt` to \xcd`Int`) preserves 2's-complement bit pattern
+      (\eg,  
       \xcd`UInt.MAX_VALUE as Int == -1`.   Casting an unsigned integer type to
       a signed integer type of a different size is equivalent to first casting
       to an unsigned integer type of the target size, and then casting to a
