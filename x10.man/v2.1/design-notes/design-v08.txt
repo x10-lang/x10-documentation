@@ -329,7 +329,7 @@ The governing activity for an acc variable is the activity that
 declares the variable. Such an activity may read and write into the
 variable with no restrictions in any synchronous state. 
 
-  A synchronous state is one in which all asyncs spawmed by the
+  A synchronous state is one in which all asyncs spawned by the
   governing activity have terminated.
 
 The initial value of an acc variable is r.zero. A write of a value v
@@ -344,18 +344,36 @@ read from the variable. An acc variable may be read/written from any
 place, not just the place it was created.
 
 Example
-  acc(Int.+) result:Int=0;
+  acc(Int.+) r:Int=0;
   r=1;
   print(r); // writes 1.
+  async { 
+    // async state
+    r=2; // ERR! writing in an async state may cause a race
+  }
+  val z = r;
+
+
+  finish {
+    async r=2; // ok
+  }
+  finish {
+    async {
+      val z = r; // ERR
+    }
+  }
+
   finish {
      for (p in 2..10) 
        async {
           // cannot read result but can write into it.
           ...
-         result=p(0); 
+         r = 1; 
        }
      // cannot read result because state is not synchronous, but can
      // write into it.  
+     r = 2;
+     val z = r; // ERR: can't read
     ...
   }
   // state is synchronous. can read and write into r.
@@ -383,11 +401,25 @@ Here is an example showing the "collecting finish" idiom:
 def fib(n:Int):Int {
   val r= Reducer[Int](0, Int.+);
   acc(r) x:Int;
-  finish fib1(n, x); // fib1 may write into x.
+  x = 1;
+  fib1(n, x); // ERR: no enclosing finish
+  async { 
+    x = 1; // ERR
+    fib1(n, x); // ERR
+  }
+  finish {
+    x = 1; //ok
+    val y = x; // ERR
+    fib1(n, x); // fib1 may write into x.
+  }
   // read the value in x and return it.
   return x;
 }
 def fib1(n, acc x:Int) {
+  fib2(n,x);
+}
+def fib2(n, acc x:Int) {
+   val y = x; // ERR: cannot read (can only write)
    if (n < 2) x=n;
    async fib1(n-1, x);
    fib1(n-2, x);
