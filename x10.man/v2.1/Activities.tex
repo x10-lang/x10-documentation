@@ -139,19 +139,18 @@ The {\it PlaceExp} must be an expression of type \xcd`Place` or some subtype.
 
 An activity executing statement \xcd"at (q) S" at a place \xcd`p`
 evaluates \xcd`q` at \xcd`p` and then moves to \xcd`q` to execute
-\xcd`S` as follows. Note that the value obtained by evaluating \xcd`q`
-is not necessarily distinct from \xcd`p` (e.g.{} \xcd`q` may be
-\xcd`here`).
+\xcd`S`.  Initialized \xcd`val` variables appearing in \xcd`S` are given {\em
+copies} of their values outside (\Sref{sect:at-init-val}).  
+Uninitialized \xcd`val` variables in \xcd`S` may be initialized at the place
+that they were declared (\Sref{sect:at-uninit-val}).  
+\xcd`var` variables may be read and set at the place that they were declared,
+but are unavailable at other places (\Sref{sect:at-and-var}).  
 
-First, the runtime identifies the object graph at \xcd`p` reachable
-from lexically scoped initialized \xcd`val` variables (say, \xcd`v1`,\ldots, 
-\xcd`vn`) referenced in \xcd`S`.  Second this graph is {\em
-  serialized} into a buffer and transmitted to place \xcd`q`.  Third,
-the variables \xcd`v1`,\ldots, \xcd`vn` are re-created at \xcd`q` and
-initialized with the objects obtained by deserializing the buffer at
-\xcd`q`. Fourth, \xcd`S` is executed at \xcd`q` (in an environment in
-which the variable \xcd`vi` refers to the re-created variable at
-\xcd`q`).  (For the treatment of \xcd`var`s, see \Sref{sect:at-and-var}.)
+Note that the value obtained by evaluating \xcd`q`
+is not necessarily distinct from \xcd`p` (\eg, \xcd`q` may be
+\xcd`here`); \xcd`at(here)S` will copy all \xcd`val` values used in \xcd`S`,
+even though there is no actual change of place.
+
 
 On normal termination of \xcd`S` control returns to \xcd`p` and
 execution is continued with the statement following \xcd`at (q) S`. If
@@ -171,9 +170,24 @@ normal termination of \xcd`E`, the value that \xcd`E` produces is serialized
 into a buffer, transported to the starting place, and deserialized, and the
 value of the \xcd`at`-expression is the result of deserialization.
 
-\limitationx{} In \xcd`at(e) S`, \xcd`S` is permitted to access only
-those immutable variables in the surrounding scope that are definitely
-initialized.
+
+\subsubsection{{\tt at} and Initialized {\tt val} Variables}
+\label{sect:at-init-val}
+
+Initialized \xcd`val` variables are copied to \xcd`S`. The initialized
+\xcd`val` variable \xcd`x` appearing in \xcd`S` will have as its value a copy
+of the value of \xcd`x` outside.  
+
+First, the runtime identifies the object graph at \xcd`p` reachable
+from lexically scoped initialized \xcd`val` variables (say, \xcd`v1`,\ldots, 
+\xcd`vn`) referenced in \xcd`S`.  Second this graph is {\em
+  serialized} into a buffer and transmitted to place \xcd`q`.  Third,
+the variables \xcd`v1`,\ldots, \xcd`vn` are re-created at \xcd`q` and
+initialized with the objects obtained by deserializing the buffer at
+\xcd`q`. Fourth, \xcd`S` is executed at \xcd`q` (in an environment in
+which the variable \xcd`vi` refers to the re-created variable at
+\xcd`q`).  (For the treatment of \xcd`var`s, see \Sref{sect:at-and-var}.)
+
 
 Note that since values accessed across an \xcd`at` boundary are
 copied, the programmer may wish to adopt the discipline that either
@@ -182,6 +196,113 @@ or stateless objects, or the methods invoked on them do not access any
 mutable state on the objects. Otherwise the programmer has to ensure
 that side effects are made to the correct copy of the object. For this
 the struct \xcd`x10.lang.GlobalRef[T]` is often useful.
+
+
+\subsubsection{{\tt at} and Uninitialized {\tt val} Variables}
+\label{sect:at-uninit-val}
+
+
+An uninitialized \xcd`val` variable may be initialized in \xcd`S`, but only at
+places that are statically determinable to be equal to the place that the
+variable was defined.  Uninitialized \xcd`val`s cannot be read, of course.
+
+\begin{ex}
+This allows a straightforward way to transmit several
+pieces of information back from an \xcd`at(somewhereElse)`, as shown by the
+following example which computes the roots of the quadratic equation 
+{$ax^2 + bx + c = 0$}.  
+For the sake of the example, we assume that 
+{\tt mathProcessor()} returns a Place suitable for calculation.  In practice
+it would rarely if ever make sense to send such a small calculation to another
+place. 
+
+The starting place has local \xcd`val`s \Xcd{r} and \Xcd{s}, which will hold
+the roots.  
+The computation at the math processor evaluates the roots of the equation.
+These roots are bound to math processor local \xcd`val` variables \xcd`rr` and
+\xcd`ss`.  An inner place-shifting \xcd`at(h)` moves the computation back to
+the initial place, stored for that purpose in \xcd`h`, at which values can be
+assigned to the variables \xcd`r` 
+and \xcd`s` at the starting place.  Note that we take care to send only the
+minimal information across \xcd`at` boundaries; in particular we do not 
+send the discriminant back to \xcd`h`.  When the intermediate results are
+large and the desired data small, the savings can be substantial.
+
+%~~gen ^^^ Activities70
+% package Activities.AtAndVariables; 
+% abstract class Example {
+% abstract def mathProcessor() : Place;
+% KNOWNFAIL
+%~~vis
+\begin{xten}
+def printRootsOfQuadratic(a:Complex, b:Complex, c:Complex) {
+  val r : Complex;
+  val s : Complex;
+  val start = here;
+  at(mathProcessor()) {
+    val disc = Math.sqrt(b*b - 4*a*c);
+    val rr = (-b + disc) / (2*a);
+    val ss = (-b - disc) / (2*a);
+    at(start) {
+      r = rr; s = ss;
+    }
+  }
+  Console.OUT.println("r = " + r + "; s = " + s);
+}
+\end{xten}
+%~~siv
+%} 
+%~~neg
+
+
+\end{ex}
+
+\subsubsection{{\tt at} and {\tt var} Variables}
+\label{sect:at-and-var}
+\index{at!variables and}
+
+\xcd`var` variables can be read and set at a place statically known to be the
+place that they are declared, but not from other places.  
+
+\xcd`var` variables
+cannot be accessed from any other place.  As always, a \xcd`var` cannot be
+read before it is definitely initialized.  
+
+\begin{ex}
+This allows a straightforward way to accumulate results from multiple places.
+In the following example, some code is run at each place to produce an integer
+\xcd`partialResult`, and the \xcd`partialResult`s are summed to give a
+\xcd`result`. 
+
+%~~gen ^^^ Activities4q6g
+% package Activities4q6g;
+% class Example {
+%~~vis
+\begin{xten}
+def example() {
+  var result : Int = 0;
+  val start = here; 
+  finish {
+    for(p in Place.places()) {
+       async at(p) {
+          val partialResult = here.id();
+          at(start) {
+            atomic { result += partialResult; }
+          }
+       }
+    }
+  }
+  return result; 
+}
+\end{xten}
+%~~siv
+% }
+%~~neg
+
+
+\end{ex}
+
+
 
 \paragraph{Serialization and deserialization.}
 \index{transient}
@@ -473,56 +594,7 @@ that \xcd`this` refers to, which can be very large.
   reason about which copy gets modified. 
 \end{itemize}
 
-\subsubsection{{\tt at} and {\tt var} Variables}
-\label{sect:at-and-var}
-\index{at!variables and}
 
-\xcd`var` variables can be set at the place that they are declared, but not
-from other places.  This allows a straightforward way to transmit several
-pieces of information back from an \xcd`at(somewhereElse)`, as shown by the
-following example which computes the roots of the quadratic equation 
-{$ax^2 + bx + c = 0$}.  
-For the sake of the example, we assume that 
-{\tt mathProcessor()} returns a Place suitable for calculation.  In practice
-it would rarely if ever make sense to send such a small calculation to another
-place. 
-
-The starting place has local \xcd`var`s \Xcd{r} and \Xcd{s}, which will hold
-the roots.  
-The computation at the math processor evaluates the roots of the equation.
-These roots are bound to math processor local \xcd`val` variables \xcd`rr` and
-\xcd`ss`.  An inner place-shifting \xcd`at(h)` moves the computation back to
-the initial place, stored for that purpose in \xcd`h`, at which values can be
-assigned to the variables \xcd`r` 
-and \xcd`s` at the starting place.  Note that we take care to send only the
-minimal information across \xcd`at` boundaries; in particular we do not 
-send the discriminant back to \xcd`h`.  When the intermediate results are
-large and the desired data small, the savings can be substantial.
-
-%~~gen ^^^ Activities70
-% package Activities.AtAndVariables; 
-% abstract class Example {
-% abstract def mathProcessor() : Place;
-%~~vis
-\begin{xten}
-def printRootsOfQuadratic(a:Complex, b:Complex, c:Complex) {
-  var r : Complex = Complex(0,0);
-  var s : Complex = Complex(0,0);
-  val h = here;
-  at(mathProcessor()) {
-    val disc = Math.sqrt(b*b - 4*a*c);
-    val rr = (-b + disc) / (2*a);
-    val ss = (-b - disc) / (2*a);
-    at(h) {
-      r = rr; s = ss;
-    }
-  }
-  Console.OUT.println("r = " + r + "; s = " + s);
-}
-\end{xten}
-%~~siv
-%} 
-%~~neg
 \section{{\tt async}: Spawning an activity}\label{AsynchronousActivity}\label{AsyncActivity}
 \index{async}
 \index{activity!creating}
