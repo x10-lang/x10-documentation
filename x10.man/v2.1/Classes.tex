@@ -589,7 +589,9 @@ in constraints.  A property method declared in a class must have
 a body and must not be \xcd"void".  The body of the method must
 consist of only a single \xcd"return" statement or a single
 expression.  It is a static error if the expression cannot be
-represented in the constraint system. 
+represented in the constraint system.   Property methods may be \xcd`abstract`
+in \xcd`abstract` classes, but are implicitly \xcd`final` in
+non-\xcd`abstract` classes. 
 
 The expression may contain invocations of other property methods. It is the
 responsibility of the programmer to ensure that the evaluation of a property

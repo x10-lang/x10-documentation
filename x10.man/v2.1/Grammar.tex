@@ -53,7 +53,7 @@ In this grammar, $X^?$ denotes an optional $X$ element.
     \| \xcd"super" TypeArguments\opt \xcd"(" ArgumentList\opt \xcd")" \xcd";"\\
     \| Primary \xcd"." \xcd"this" TypeArguments\opt \xcd"(" ArgumentList\opt \xcd")" \xcd";"\\
     \| Primary \xcd"." \xcd"super" TypeArguments\opt \xcd"(" ArgumentList\opt \xcd")" \xcd";"\\
- NormalInterfaceDecl  \refstepcounter{equation}\label{prod:NormalInterfaceDecl}  \: Mods\opt \xcd"interface" Id TypeParamsWithVariance\opt Properties\opt WhereClause\opt ExtendsInterfaces\opt InterfaceBody & (\arabic{equation})\\
+ NormalInterfaceDecl  \refstepcounter{equation}\label{prod:NormalInterfaceDecl}  \: Mods\opt \xcd"interface" Id TypeParamsWithVariance\opt WhereClause\opt ExtendsInterfaces\opt InterfaceBody & (\arabic{equation})\\
  ClassInstCreationExp  \refstepcounter{equation}\label{prod:ClassInstCreationExp}  \: \xcd"new" TypeName TypeArguments\opt \xcd"(" ArgumentList\opt \xcd")" ClassBody\opt & (\arabic{equation})\\
     \| \xcd"new" TypeName \xcd"[" Type \xcd"]" \xcd"[" ArgumentList\opt \xcd"]"\\
     \| Primary \xcd"." \xcd"new" Id TypeArguments\opt \xcd"(" ArgumentList\opt \xcd")" ClassBody\opt\\

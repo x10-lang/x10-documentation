@@ -1,7 +1,8 @@
 \chapter{Interfaces}
 \label{XtenInterfaces}\index{interface}
 
-An interface specifies signatures for zero or more public methods, properties,
+An interface specifies signatures for zero or more public methods, property
+methods,
 \xcd`static val`s, 
 classes, structs, interfaces, types
 and an invariant. 
@@ -13,38 +14,44 @@ The following puny example illustrates all these features:
 % NOTEST
 %~~vis
 \begin{xten}
-interface Pushable(text:String, prio:Int){prio != 0} {
+interface Pushable{prio != 0} {
   def push(): void;
   static val MAX_PRIO = 100;
   abstract class Pushedness{}
   struct Pushy{}
   interface Pushing{}
   static type Shove = Int;
+  property text():Int;
+  property prio():Int;
 }
 class MessageButton(text:String, prio:Int)
-  implements Pushable{self.prio==Pushable.MAX_PRIO} {
+  implements Pushable{self.prio()==Pushable.MAX_PRIO} {
   public def push() { 
     x10.io.Console.OUT.println(text + " pushed");
   }
+  public property text() = text;
+  public property prio() = prio;
 }
 \end{xten}
 %~~siv
 %
 %~~neg
 \noindent
-\xcd`Pushable` defines two properties, a method, and a static value.  It also
+\xcd`Pushable` defines two property methods, one normal method, and a static
+value.  It also 
 establishes an invariant, that \xcd`prio != 0`. 
 \xcd`MessageButton` implements a constrained version of \xcd`Pushable`,
-\viz\ one with maximum priority.  It also has \xcd`Pushable`'s properties.  It
+\viz\ one with maximum priority.  It
 defines the \xcd`push()` method given in the interface, as a \xcd`public`
 method---interface methods are implicitly \xcd`public`.
 
 A concrete type---a class or struct---can {\em implement} an interface,
-typically by having all the methods and properties that the interface
+typically by having all the methods and property methods that the interface
 requires.
 
 A variable may be declared to be of interface type.  Such a variable has all
-the properties and methods declared (directly or indirectly) by the interface;
+the property and normal methods declared (directly or indirectly) by the
+interface; 
 nothing else is statically available.  Values of any concrete type which
 implement the interface may be stored in the variable.  
 
@@ -100,17 +107,12 @@ class Lassie implements Dog, Star{}
 
 \label{DepType:Interface}
 
-%##(NormalInterfaceDecl TypeParamsWithVariance Properties PropertyList WhereClause ExtendsInterfaces InterfaceBody InterfaceMemberDecl
+%##(NormalInterfaceDecl TypeParamsWithVariance WhereClause ExtendsInterfaces InterfaceBody InterfaceMemberDecl
 \begin{bbgrammar}
 %(FROM #(prod:NormalInterfaceDecl)#)
- NormalInterfaceDecl \: Mods\opt \xcd"interface" Id TypeParamsWithVariance\opt Properties\opt WhereClause\opt ExtendsInterfaces\opt InterfaceBody & (\ref{prod:NormalInterfaceDecl}) \\
+ NormalInterfaceDecl \: Mods\opt \xcd"interface" Id TypeParamsWithVariance\opt  WhereClause\opt ExtendsInterfaces\opt InterfaceBody & (\ref{prod:NormalInterfaceDecl}) \\
 %(FROM #(prod:TypeParamsWithVariance)#)
 TypeParamsWithVariance \: \xcd"[" TypeParamWithVarianceList \xcd"]" & (\ref{prod:TypeParamsWithVariance}) \\
-%(FROM #(prod:Properties)#)
-          Properties \: \xcd"(" PropertyList \xcd")" & (\ref{prod:Properties}) \\
-%(FROM #(prod:PropertyList)#)
-        PropertyList \: Property & (\ref{prod:PropertyList}) \\
-                    \| PropertyList \xcd"," Property \\
 %(FROM #(prod:WhereClause)#)
          WhereClause \: DepParams & (\ref{prod:WhereClause}) \\
 %(FROM #(prod:ExtendsInterfaces)#)
@@ -135,24 +137,13 @@ The invariant associated with an interface is the conjunction of the
 invariants associated with its superinterfaces and the invariant
 defined at the interface. 
 
-%%WRONG%% \begin{staticrule*}
-%%WRONG%% The compiler declares an error if this constraint
-%%WRONG%% is not consistent.  
-%%WRONG%% \end{staticrule*}
-
-Each interface implicitly defines a nullary getter method
-\xcd"def p(): T" for each property \xcd"p: T". The interface may not have
-another definition of a method \xcd`p()`. 
-
 
 
 A class \xcd"C"  implements an interface \xcd"I" if
 \begin{itemize}
 \item \xcd`I`, or a subtype of \xcd`I`, appears in the \xcd`implements` list
       of \xcd`C`, 
-\item \xcd`C`'s properties include all the properties of \xcd"I",
-%%IMPLIED%% \item \xcd`C`'s class invariant $\mathit{inv}($\xcd"C"$)$ implies
-%%IMPLIED%% $\mathit{inv}($\xcd"I"$)$.
+\item \xcd`C`'s property methods include all the property methods  of \xcd"I",
 \item Each method \xcd`m` defined by \xcd`I` is also a method of \xcd`C` --
       with the {\em  \xcd`public`} modifier added.   These methods may be
       \xcd`abstract` if \xcd`C` is \xcd`abstract`.
@@ -172,11 +163,17 @@ public.  There is little purpose to non-public methods of an interface; they
 would specify that implementing classes and structs have methods that cannot
 be seen.
 
+\section{Property Methods}
+
+An interface may declare \xcd`property` methods.  All non-\xcd`abstract`
+containers implementing such an interface must provide all the \xcd`property`
+methods specified.  
+
 \section{Field Definitions}
 \index{interface!field definition in}
 
 An interface may declare a \xcd`val` field, with a value.  This field is implicitly
-\xcd`public static val`: 
+\xcd`public static val`.  In particular, it is {\em not} an instance field. 
 %~~gen ^^^ Interfaces10
 % package Interface.Field;
 %~~vis
@@ -190,7 +187,7 @@ interface KnowsPi {
 %~~neg
 
 Classes and structs implementing such an interface get the interface's fields as
-\xcd`public static` fields.  Unlike properties and methods, there is no need
+\xcd`public static` fields.  Unlike  methods, there is no need
 for the implementing class to declare them. 
 %~~gen ^^^ Interfaces20
 % package Interface.Field.Two;
@@ -210,7 +207,7 @@ class UsesPi {
 
 \subsection{Fine Points of Fields}
 
-If two parent interfaces give different fields of the same name, 
+If two parent interfaces give different static fields of the same name, 
 those fields must be referred to by qualified names.
 %~~gen ^^^ Interface_field_name_collision
 % 
