@@ -537,6 +537,10 @@ if the right operand is zero.
 
 The operands of the binary shift operations must be of integral type.
 The type of the result is the type of the left operand.
+The right operand, describing a number of bits, must be unsigned: 
+%~~exp~~`~~`~~ ~~ ^^^Expressions1l4m
+\xcd`x << 1U`.  
+
 
 If the promoted type of the left operand is \xcd"Int",
 the right operand is masked with \xcd"0x1f" using the bitwise
@@ -562,8 +566,6 @@ the most significant $k$ bits of the result are set to \xcd"0".
 This operation is deprecated, and may be removed in a later version of the
 language. 
 
-Attempting to shift an integer by a negative number of bits causes an
-\xcd`IllegalArgumentException`. 
 
 \section{Binary bitwise operations}
 
