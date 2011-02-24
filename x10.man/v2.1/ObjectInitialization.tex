@@ -6,10 +6,15 @@
 \index{struct!constructor}
 
 
-X10 does object initialization safely.  It avoids a few classes of bad things:
+X10 does object initialization safely.  It avoids certain bad things which
+trouble some other languages:
 \begin{enumerate}
 \item Use of a field before the field has been initialized.
-\item \Xcd{this} escaping from a constructor;
+\item A program reading two different values from a \xcd`val` field of a
+      container. 
+\item \Xcd{this} escaping from a constructor, which can cause problems as
+      noted below. 
+
 \end{enumerate}
 
 It should be unsurprising that fields must not be used before they are

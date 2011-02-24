@@ -434,35 +434,29 @@ The body of the method is executed in an environment in which
 each formal parameter corresponds to a local variable (\xcd`var` iff the
 formal parameter is \xcd`var`)
 and is initialized with the value of the actual parameter.
-%%REF%% Call-by-reference, \Xcd{ref} parameters, allows passing in variables for a
-%%REF%% method to update, as described in \Sref{RefParameters}. 
-%%REF%% 
-%%REF%%  \subsection{\Xcd{ref} Parameters}
-%%REF%%  \label{RefParameters}
-%%REF%%  \index{ref}
-%%REF%%  \index{parameter!ref}
-%%REF%%  
-%%REF%%  A \Xcd{ref} parameter allows a method to modify a \Xcd{var} variable that is
-%%REF%%  available to the caller.  
-%%REF%%  
-%%REF%%  %~TODO~gen
-%%REF%%  % package Classes.RefParameters.Primo.Examplo;
-%%REF%%  % class Example {
-%%REF%%  %~TODO~vis
-%%REF%%  \begin{xten}
-%%REF%%    def incr(ref n:Int):void {
-%%REF%%       n += 1;
-%%REF%%    }
-%%REF%%    def caller() {
-%%REF%%       var a : Int = 0;
-%%REF%%       incr(a);
-%%REF%%       assert(a == 1);
-%%REF%%    }
-%%REF%%  \end{xten}
-%%REF%%  %~TODO~siv
-%%REF%%  % }
-%%REF%%  %~TODO~neg
-%%REF%%  
+
+\subsection{Generic Instance Methods}
+\index{method!generic instance}
+
+\limitationx{}
+In X10, an instance method may be generic: 
+%~~gen ^^^ Classes1b7z
+% package Classes1b7z;
+% NOTEST
+%~~vis
+\begin{xten}
+class Example {
+  def example[T](t:T) = "I like " + t;
+}
+\end{xten}
+%~~siv
+%
+%~~neg
+
+However, the C++ back end does not currently support generic virtual instance
+methods like \xcd`example`.  It does allow generic instance methods which are
+\xcd`final` or \xcd`private`, and it does allow generic static methods.  
+
 
 \subsection{Method Guards}
 \label{MethodGuard}

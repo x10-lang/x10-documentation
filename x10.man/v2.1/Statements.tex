@@ -611,6 +611,10 @@ over.  For example, iterating over a \xcd`Region` iterates the \xcd`Point`s in
 the region, and iterating over an \xcd`Array` iterates over the
 \xcd`Point`s at which the  array is defined.
 
+The type of the loop variable may be supplied as \xcd`x <: T`.  In this case
+the iterable \xcd`c` must have type \xcd`Iterable[U}` for some \xcd`U <: T`,
+and \xcd`x` will be given the type \xcd`U`.
+
 \begin{ex}
 This loop adds up the elements of a \xcd`List[Int]`.
 Note that iterating over a list yields the elements of the list, as specified
