@@ -9,7 +9,7 @@ high-end, high-performance, high-productivity computing.
 \section{Object-oriented features}
 
 The sequential core of \Xten{} is a {\em container-based} object-oriented language
-similar to \java{} and C++, and more recent language such as Scala.  
+similar to \java{} and C++, and more recent languages such as Scala.  
 Programmers write \Xten{} code by defining containers for data and behavior called
 \emph{interfaces}
 (\Sref{XtenInterfaces}),
@@ -123,7 +123,7 @@ complicated way.
 
 
 
-They are used extensively in X10
+Functions are used extensively in X10
 programs.  For example, the normal way to construct an \xcd`Array[Int](1)` --
 that is, a fixed-length array of numbers, like an \xcd`int[]` in Java -- is to
 pass two arguments to a factory method: the first argument being the length of
@@ -186,7 +186,9 @@ abstract class Mat(rows:Int, cols:Int) {
 
 
 
-The following code typechecks, but an attempt to compute \xcd`axb1 + bxc` or
+The following code typechecks (assuming that \xcd`makeMat(m,n)` is a function
+which creates an \xcdmath"m$\times$n" matrix).
+However, an attempt to compute \xcd`axb1 + bxc` or
 \xcd`bxc * axb1` would result in a compile-time type error:
 %~~gen ^^^ Overview50
 %package Overview.Mat1;

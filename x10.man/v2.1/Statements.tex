@@ -311,7 +311,7 @@ multiphase: {
 
 
 An unlabeled break statement exits the currently enclosing loop or switch
-statement. An labeled break statement exits the enclosing 
+statement. A labeled break statement exits the enclosing 
 statement with the given label.
 It is illegal to break out of a statement not defined in the current
 method, constructor, initializer, or closure.  
@@ -375,7 +375,7 @@ The if-then statement evaluates a condition expression, which must be of type
 \xcd`Boolean`. If the condition is \xcd`true`, it evaluates the then-clause.
 If the condition is \xcd"false", the if-then statement completes normally.
 
-The if-then-else statement evaluates a condition expression and 
+The if-then-else statement evaluates a \xcd`Boolean` expression and 
 evaluates the then-clause if the condition is
 \xcd"true"; otherwise, the \xcd`else`-clause is evaluated.
 
@@ -423,11 +423,11 @@ SwitchBlockStatementGroup \: SwitchLabels BlockStatements & (\ref{prod:SwitchBlo
 %##)
 
 A switch statement evaluates an index expression and then branches to
-a case whose value equal to the value of the index expression.
+a case whose value is equal to the value of the index expression.
 If no such case exists, the switch branches to the 
 \xcd"default" case, if any.
 
-Statements in each case branch evaluated in sequence.  At the
+Statements in each case branch are evaluated in sequence.  At the
 end of the branch, normal control-flow falls through to the next case, if
 any.  To prevent fall-through, a case branch may be exited using
 a \xcd"break" statement.
@@ -565,7 +565,7 @@ If omitted, \xcd`init` does nothing.
 
 \xcd`test` is a Boolean-valued expression; an iteration of the loop will only
 proceed if \xcd`test` is true at the beginning of the loop, after \xcd`init`
-on the first iteration or or \xcd`step` on later ones. If omitted, \xcd`test`
+on the first iteration or after \xcd`step` on later ones. If omitted, \xcd`test`
 defaults to \xcd`true`, giving a loop that will run until stopped by some
 other means such as \xcd`break`, \xcd`return`, or \xcd`throw`.
 
