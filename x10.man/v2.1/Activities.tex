@@ -301,8 +301,10 @@ In \xcd`ateach(p in D) S`, \xcd`D` must be either of type \xcd"Dist"
 distribution.   
 
 Instead of writing \xcd`ateach (p in D) S` the programmer should write 
-\xcd`for(p in D) at(D(p)) async S` to get the same effect. 
-For each point \xcd`p` in \xcd`D`, at place \xcd`D(p)`, \xcd`S` is
+\xcd`for(p in D) at(D(p);F) async S` to get the same effect. 
+For each point \xcd`p` in \xcd`D`, at place \xcd`D(p)`, transmitting
+information as specified by \xcd`F`, 
+\xcd`S` is
 executed simultaneously.
 
 However, this often results in excessive communication and parallelism. Instead the
@@ -314,7 +316,7 @@ programmer may want to write:
 % static def example(D:Dist) {
 %~~vis
 \begin{xten}
-for (place in D.places()) async at (place) {
+for (place in D.places()) async at (place; p, D, *) {
     for (p in D|here) {
         S(p);
     }

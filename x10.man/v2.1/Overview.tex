@@ -124,8 +124,8 @@ complicated way.
 
 
 Functions are used extensively in X10
-programs.  For example, the normal way to construct an \xcd`Array[Int](1)` --
-that is, a fixed-length array of numbers, like an \xcd`int[]` in Java -- is to
+programs.  For example, a common way to construct and initialize an \xcd`Array[Int](1)` --
+that is, a fixed-length one-dimensional array of numbers, like an \xcd`int[]` in Java -- is to
 pass two arguments to a factory method: the first argument being the length of
 the array, and the second being a function which computes the initial value of
 the \xcd`i`{$^{th}$} element.  The following code constructs a 1-dimensional
@@ -339,8 +339,11 @@ an activity can reference objects at other places. However, an activity may
 synchronously access data items only in the current place, the place in which
 it is running. It may atomically update one or more data items, but only in
 the current place.   If it becomes necessary to read or modify an object at
-some other place \xcd`q`, the {\em place-shifting} operation \xcd`at(q)` can
-be used, to move part of the activity to \xcd`q`.   It is easy to compute
+some other place \xcd`q`, the {\em place-shifting} operation \xcd`at(q;F)` can
+be used, to move part of the activity to \xcd`q`.  \xcd`F` is a specification
+of what information will be sent to \xcd`q` for use by that part of the
+computation. 
+It is easy to compute
 across multiple places, but the expensive operations (\eg, those which require
 communication) are readily visible in the code. 
 

@@ -246,7 +246,7 @@ class Trans {
    val copied = "copied";
    transient var transy : String = "a very long string";
    def example() {
-      at (here) { // causes copying
+      at (here; this) { // causes copying of 'this'
          assert(this.copied.equals("copied"));
          assert(this.transy == null);
       }
