@@ -1,7 +1,16 @@
 {
+  class Rule(lhs, var rhs's) {
+     def Rule(lhs, a_rhs) { this.lhs = lhs; this.rhs's := [a_rhs]; }
+     def add(another_rhs) { this.rhs's := [this.rhs's ..., another_rhs]; }
+  }
+
+  var currentRule := null;
+
   inputFileName = "/Users/bard/x10/manual/x10-2-1-grammar-productions.txt"; 
   productionsText = inputFileName.file.contents;
   productionsLines = productionsText.split("\n");
+  
+  
 
   renamings = [
      ["Declaration", "Decl"],
