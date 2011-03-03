@@ -634,45 +634,46 @@ class NameMap[T]{T <: Named} {
 \end{ex}
 
 
-\subsection{Variance of Type Parameters}
-\index{covariant}
-\index{contravariant}
-\index{invariant}
-\index{type parameter!covariant}
-\index{type parameter!contravariant}
-\index{type parameter!invariant}
-
-% Uncomment this when the language implementation properly supports variance.
-%\input{Variance}
-
-Class, struct and interface definitions are permitted to specify a {\em
-  variance} 
-for each type parameter. 
-There are three variance specifications: 
-\xcd`+` indicates {\em co-variance},  \xcd`-` indicates {\em
-  contravariance} and the absence of  \xcd`+` and 
- \xcd`-` indicates {\em invariance}. For a class (or struct or
- interface) \xcd`S` specifying that a particular parameter position
- (say, \xcd`i`) is covariant means that 
-if \xcd`Si <: Ti` then
-\xcdmath"S[S1,$\ldots$,Sn] <: S[S1,$\ldots$, Si-1,Ti,Si+1,$\ldots$ Sn]".
-Similarly, saying that position \xcd`i` is is contravariant means
-that 
-if \xcd`Si <: Ti` then
-\xcdmath"S[S1,$\ldots$, Si-1,Ti,Si+1,$\ldots$ Sn] <: S[S1,$\ldots$,Sn]". If the
-position is invariant, then no such relationship is asserted between
-\xcd`Si <: Ti` 
-and
-\xcdmath"S[S1,$\ldots$, Si-1,Ti,Si+1,$\ldots$ Sn]". The compiler must perform
-several checks on the body of the class (or struct or interface) to
-establish that type parameters with a variance are used in a manner
-that is consistent with their semantics.
-
-\limitation{} The implementation of variance specifications  suffers from
-various limitations in \XtenCurrVer. Users are strongly encouraged not
-to use variance. (Some classes, structs, and interfaces in the standard
-libraries use variance specifications in a careful way that
-circumvents these limitations.)
+%%NO-VARIANCE%% \subsection{Variance of Type Parameters}
+%%NO-VARIANCE%% \index{covariant}
+%%NO-VARIANCE%% \index{contravariant}
+%%NO-VARIANCE%% \index{invariant}
+%%NO-VARIANCE%% \index{type parameter!covariant}
+%%NO-VARIANCE%% \index{type parameter!contravariant}
+%%NO-VARIANCE%% \index{type parameter!invariant}
+%%NO-VARIANCE%% 
+%%NO-VARIANCE%% % Uncomment this when the language implementation properly supports variance.
+%%NO-VARIANCE%% %\input{Variance}
+%%NO-VARIANCE%% 
+%%NO-VARIANCE%% Class, struct and interface definitions are permitted to specify a {\em
+%%NO-VARIANCE%%   variance} 
+%%NO-VARIANCE%% for each type parameter. 
+%%NO-VARIANCE%% There are three variance specifications: 
+%%NO-VARIANCE%% \xcd`+` indicates {\em co-variance},  \xcd`-` indicates {\em
+%%NO-VARIANCE%%   contravariance} and the absence of  \xcd`+` and 
+%%NO-VARIANCE%%  \xcd`-` indicates {\em invariance}. For a class (or struct or
+%%NO-VARIANCE%%  interface) \xcd`S` specifying that a particular parameter position
+%%NO-VARIANCE%%  (say, \xcd`i`) is covariant means that 
+%%NO-VARIANCE%% if \xcd`Si <: Ti` then
+%%NO-VARIANCE%% \xcdmath"S[S1,$\ldots$,Sn] <: S[S1,$\ldots$, Si-1,Ti,Si+1,$\ldots$ Sn]".
+%%NO-VARIANCE%% Similarly, saying that position \xcd`i` is is contravariant means
+%%NO-VARIANCE%% that 
+%%NO-VARIANCE%% if \xcd`Si <: Ti` then
+%%NO-VARIANCE%% \xcdmath"S[S1,$\ldots$, Si-1,Ti,Si+1,$\ldots$ Sn] <: S[S1,$\ldots$,Sn]". If the
+%%NO-VARIANCE%% position is invariant, then no such relationship is asserted between
+%%NO-VARIANCE%% \xcd`Si <: Ti` 
+%%NO-VARIANCE%% and
+%%NO-VARIANCE%% \xcdmath"S[S1,$\ldots$, Si-1,Ti,Si+1,$\ldots$ Sn]". The compiler must perform
+%%NO-VARIANCE%% several checks on the body of the class (or struct or interface) to
+%%NO-VARIANCE%% establish that type parameters with a variance are used in a manner
+%%NO-VARIANCE%% that is consistent with their semantics.
+%%NO-VARIANCE%% 
+%%NO-VARIANCE%% \limitation{} The implementation of variance specifications  suffers from
+%%NO-VARIANCE%% various limitations in \XtenCurrVer. Users are strongly encouraged not
+%%NO-VARIANCE%% to use variance. (Some classes, structs, and interfaces in the standard
+%%NO-VARIANCE%% libraries use variance specifications in a careful way that
+%%NO-VARIANCE%% circumvents these limitations.)
+%%NO-VARIANCE%% 
 
 \section{Type definitions}
 \label{TypeDefs}
@@ -1648,23 +1649,24 @@ Inside the scope of a constraint \xcd`c` which entails \xcd`A <: B`, we have
 \xcd`A <: B`.  \eg, \xcd`upcast` above.
 
 
-\item 
-{\bf Covariant Generic Types:} 
-If \xcd`C` is a generic type whose {$i$}th type parameter is covariant, 
-and {\xcdmath"T$'_i$ <: T$_i$"}
-and  {\xcdmath"T$'_j$ == T$_j$"} for all {$j \ne i$}, 
-then {\xcdmath"C[T$'_1$, $\ldots$, T$'_n$] <: C[T$'_1$, $\ldots$, T$'_n$]"}.
-\Eg, \xcd`class C[T1, +T2, T3]` with {$i=2$}, and \xcd"U2 <: T2", then
-\xcd`C[T1,U2,T3] <: C[T1,T2,T3]`.
-
-\item 
-{\bf Contravariant Generic Types:} 
-If \xcd`C` is a generic type whose {$i$}th type parameter is contravariant, 
-and \xcdmath"T$'_i$ <: T$_i$"
-and  \xcdmath"T$'_j$ == T$_j$" for all {$j \ne i$}, 
-then \xcdmath"C[T$'_1$, $\ldots$, T$'_n$] :> C[T$'_1$, $\ldots$, T$'_n$]".
-\Eg, \xcd`class C[T1, -T2, T3]` with {$i=2$}, and \xcdmath"U2 <: T2", then
-\xcd`C[T1,U2,T3] :> C[T1,T2,T3]`.
+%%NO-VARIANCE%% \item 
+%%NO-VARIANCE%% {\bf Covariant Generic Types:} 
+%%NO-VARIANCE%% If \xcd`C` is a generic type whose {$i$}th type parameter is covariant, 
+%%NO-VARIANCE%% and {\xcdmath"T$'_i$ <: T$_i$"}
+%%NO-VARIANCE%% and  {\xcdmath"T$'_j$ == T$_j$"} for all {$j \ne i$}, 
+%%NO-VARIANCE%% then {\xcdmath"C[T$'_1$, $\ldots$, T$'_n$] <: C[T$'_1$, $\ldots$, T$'_n$]"}.
+%%NO-VARIANCE%% \Eg, \xcd`class C[T1, +T2, T3]` with {$i=2$}, and \xcd"U2 <: T2", then
+%%NO-VARIANCE%% \xcd`C[T1,U2,T3] <: C[T1,T2,T3]`.
+%%NO-VARIANCE%% 
+%%NO-VARIANCE%% \item 
+%%NO-VARIANCE%% {\bf Contravariant Generic Types:} 
+%%NO-VARIANCE%% If \xcd`C` is a generic type whose {$i$}th type parameter is contravariant, 
+%%NO-VARIANCE%% and \xcdmath"T$'_i$ <: T$_i$"
+%%NO-VARIANCE%% and  \xcdmath"T$'_j$ == T$_j$" for all {$j \ne i$}, 
+%%NO-VARIANCE%% then \xcdmath"C[T$'_1$, $\ldots$, T$'_n$] :> C[T$'_1$, $\ldots$, T$'_n$]".
+%%NO-VARIANCE%% \Eg, \xcd`class C[T1, -T2, T3]` with {$i=2$}, and \xcdmath"U2 <: T2", then
+%%NO-VARIANCE%% \xcd`C[T1,U2,T3] :> C[T1,T2,T3]`.
+%%NO-VARIANCE%% 
 
 \end{itemize}
 
@@ -2099,7 +2101,9 @@ If {$r$} is a type equality {$F \typeeq G$}, then
 {$C(r) = \{ F_l \typeeq G_l | 1 \le l \le k$}.
 
 If {$r$} is a type comparison, and the {$l^{th}$} type parameter of \xcd`K` is
-invariant (resp. covariant or contravariant), then 
+invariant,
+%%NO-VARIANCE%%  (resp. covariant or contravariant)
+then 
 {$C(r)$} has {$F_l \typeeq G_l$}
 (resp. {$F_l \subtype G_l$} or {$G_l \subtype F_l $}). 
 
