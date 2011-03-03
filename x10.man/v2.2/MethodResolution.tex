@@ -11,39 +11,138 @@ an \Xcd{Object}, and the other a \Xcd{Resolve}.  Method resolution will figure
 out that the call \Xcd{zap(1..4)} should call \xcd`zap(Object)`, and
 \Xcd{zap(new Resolve())} should call \xcd`zap(Resolve)`.  
 
+\begin{ex}
 %~~gen ^^^ MethodResolution10
 %package MethodResolution.yousayyouwantaresolution;
 %~~vis
 \begin{xten}
-class Resolve {
-  static def zap(Object) = "Object";
-  static def zap(Resolve) = "Resolve";
-  public static def main(argv:Array[String](1)) {
-    Console.OUT.println(zap(1..4));
-    Console.OUT.println(zap(new Resolve()));
+class Res {
+  public static interface Surface {}
+  public static interface Deface {}
+
+  public static class Ace implements Surface {
+    public static operator (Boolean) : Ace = new Ace();
+    public static operator (Place) : Ace = new Ace();
   }
-}
+  public static class Face implements Surface, Deface{}
+
+  public static class A {}
+  public static class B extends A {}
+  public static class C extends B {}
+
+  def m(x:A) = 0;
+  def m(x:Int) = 1;
+  def m(x:Boolean) = 2;
+  def m(x:Surface) = 3;
+  def m(x:Deface) = 4; 
+
+
+  def example() {
+     assert m(100) == 1 : "Int"; 
+     assert m(new C()) == 0 : "C";
+     // An Ace is a Surface, unambiguous best choice
+     assert m(new Ace()) == 3 : "Ace";
+     // ERROR: m(new Face());
+
+     // Boolean could be handled directly, or by 
+     // implicit coercion Boolean -> Ace.
+     // Direct matches always win.
+     assert m(here) == 3 : "Place";
+     assert m(true) == 2 : "Boolean"; 
+
+
+  }
 \end{xten}
 %~~siv
-%
+%  public static def main(argv:Array[String](1)) {(new Res()).example(); Console.OUT.println("That's all!");}
+% }
+% class Hook{ def run(){ (new Res()).example(); return true;} }
 %~~neg
 
-The basic concept of method resolution is quite straightforward: 
+In the \xcd`"Int"` line, there is a very close match.  \xcd`100` is an
+\xcd`Int`.  In fact, \xcd`100` is an \xcd`Int{self==100}`, so even in this
+case the type of the actual parameter is not {\em precisely} equal to the type
+of the method.
+
+In the \xcd`"C"` line of the example, \xcd`new C()` is an instance of \xcd`C`,
+which is a subtype of \xcd`A`, so the \xcd`A` method applies.  No other method
+does, and so the \xcd`A` method will be invoked.
+
+Similarly, in the \xcd`"Ace"` line, the \xcd`Ace` class implements
+\xcd`Surface`, and so \xcd`new Ace()` matches the \xcd`Surface` method. 
+
+However, a \xcd`Face` is both a \xcd`Surface` and a \xcd`Deface`, so there is
+no unique best match for the invocation \xcd`m(new Face())`.  This invocation
+would be forbidden, and a compile-time error issued.
+
+None of the defined methods match \xcd`Place`. However, there is an implicit
+coercion (\Sref{sect:ImplicitCoercion}) from \xcd`Place` to \xcd`Ace`.  So, 
+the \xcd`Ace` method will be called for \xcd`m(here)` --- with the implicit
+coercion applied to \xcd`here` before the method call.
+(\limitationx: this does not currently compile in all cases.)
+
+For \xcd`m(true)`, both the \xcd`Boolean` and, with the implicit coercion,
+\xcd`Ace` methods could apply.  Since the \xcd`Boolean` method applies
+directly, and the \xcd`Ace` method requires an implicit coercion, this call
+resolves to the \xcd`Boolean` method, without an error.
+
+\end{ex}
+
+
+The basic concept of method resolution is:
 \begin{enumerate}
-\item List all the methods that could possibly be used (counting implicit
-      coercions); 
-\item Pick the most specific one; 
-\item Fail if there is not a unique most specific one.
+\item List all the methods that could possibly be used, inferring generic
+      types but not performing implicit coercions.    If the
+      \xcd`STATIC_CALLS` compiler flag is specified, the constraints must
+      match exactly at this step; if not, they do not, but run-time tests will
+      be generated if necessary.
+\item If one possible method is more specific than all the others, that one 
+      is the desired method.
+\item If there are two or more methods neither of which is more specific than
+      the others, then the method invocation is ambiguous.  Method resolution
+      fails and reports an error.
+\item Otherwise, no possible methods were found without implicit coercions.
+      Try the preceding steps again, but with coercions allowed.  If a single
+      most specific method is found with coercions, it is the desired method.
+      If there are several, the invocation is ambiguous and erronious.
+\item If no methods were found even with coercions, then the method invocation
+      is undetermined.  Method resolution fails and reports an error.
 \end{enumerate}
 \noindent
 In the presence of X10's highly-detailed type system, some subtleties arise. 
 One point, at least, is {\em not} subtle. The same procedure is used, {\em
 mutatis mutandis} for method, constructor, and operator resolution.  
 
+\subsection{Possible Methods}
+
+This section describes what it means for a method to be a {\em possible}
+resolution of a method invocation.  
+
+\begin{ex}
+
+%~~gen ^^^ MethodResolution7b5j
+% package MethodResolution7b5j;
+%~~vis
+\begin{xten}
+class Res implements Res.Surface, Res.Deface {
+  public static interface Surface {}
+  public static interface Deface {}
+  def m(Int) = 1;
+  def m(Boolean) = 2;
+  
+  def example() {
+     assert m(100) == 1; 
+     
+  }
+}
+\end{xten}
+%~~siv
+%
+%~~neg
+\end{ex}
+
 Generics introduce several subtleties, especially with the inference of
 generic types. 
-
-
 For the purposes of method resolution, all that matters about a method,
 constructor, or operator \xcd`M` --- we use the word ``method'' to include all
 three choices for this section --- is its signature, plus which method it is.
@@ -237,3 +336,13 @@ class Disambig {
 %~~neg
 
 \end{ex}
+
+Similarly, it is possible to have a method with the same name as a struct, say
+\xcd`ambig`, giving an ambiguity as to whether \xcd`ambig()` is a struct
+constructor invocation or a method invocation.  This ambiguity is resolved by
+treating it as a method invocation.  If the constructor invocation is desired,
+it can be achieved by including the optional \xcd`new`.  That is, 
+\xcd`new ambig()` is struct constructor invocation; \xcd`ambig()` is a 
+method invocation.
+
+
