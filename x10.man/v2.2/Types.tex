@@ -2109,10 +2109,7 @@ then
 
 
 For example, the constraint \xcdmath"List[X] == List[Y]" produces the
-constraint \xcd`X==Y`, because \xcd`List` is nonvariant.  
-If \xcd`Contra[X]` is contravariant, 
-the constraint \xcd`Contra[X] <: Contra[List[Y]]` 
-produces the constraint \xcd`List[Y] <: X`.  
+constraint \xcd`X==Y`.
 
 \item Other cases are fairly routine.  \Eg, if {$F$} is a \xcd`type`-defined
       abbreviation, it is expanded.
@@ -2120,13 +2117,13 @@ produces the constraint \xcd`List[Y] <: X`.
 \end{itemize}
 
 \begin{ex}
-Suppose we have: 
+
 %~~gen ^^^ Types1s4y
 % package Types1s4y;
 %~~vis
 \begin{xten}
 import x10.util.*;
-class Cl[C1, +C2, -C3]{}
+class Cl[C1, C2, C3]{}
 class Example {
   static def me[X1, X2](Cl[Int, X1, X2]) = 
      new Cl[X1, X2, Point]();

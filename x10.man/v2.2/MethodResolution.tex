@@ -14,6 +14,7 @@ out that the call \Xcd{zap(1..4)} should call \xcd`zap(Object)`, and
 \begin{ex}
 %~~gen ^^^ MethodResolution10
 %package MethodResolution.yousayyouwantaresolution;
+% KNOWNFAIL
 %~~vis
 \begin{xten}
 class Res {
@@ -118,28 +119,7 @@ mutatis mutandis} for method, constructor, and operator resolution.
 This section describes what it means for a method to be a {\em possible}
 resolution of a method invocation.  
 
-\begin{ex}
 
-%~~gen ^^^ MethodResolution7b5j
-% package MethodResolution7b5j;
-%~~vis
-\begin{xten}
-class Res implements Res.Surface, Res.Deface {
-  public static interface Surface {}
-  public static interface Deface {}
-  def m(Int) = 1;
-  def m(Boolean) = 2;
-  
-  def example() {
-     assert m(100) == 1; 
-     
-  }
-}
-\end{xten}
-%~~siv
-%
-%~~neg
-\end{ex}
 
 Generics introduce several subtleties, especially with the inference of
 generic types. 

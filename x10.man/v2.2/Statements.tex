@@ -84,7 +84,9 @@ A local variable of a given name, say \xcd`x`, cannot shadow another local
 variable or parameter named \xcd`x` unless there is an intervening method or
 closure declaration, or unless the inner \xcd`x` is declared inside an
 \xcd`async` or \xcd`at` statement and the outer variable is declared outside
-of that. 
+of that.   Strictly, \xcd`at` introduces a new scope that does not share the
+variables of the external scope, so its variables do not actually shadow those
+outside.  
 
 \begin{ex}
 The following code illustrates both legal and illegal uses of shadowing.
@@ -92,6 +94,7 @@ Note that a shadowed {\em field} name \xcd`x` can still be accessed
 as \xcd`this.x`. 
 %~~gen ^^^ Statements4h6p
 % package Statements4h6p;
+% KNOWNFAIL-at
 %~~vis
 \begin{xten}
 class Shadow{
@@ -111,7 +114,7 @@ class Shadow{
         val x = "can shadow through async";
      }        
      at (here;) {
-        val x = "can shadow through at";
+        val x = "at gives a whole new namespace";
      }        
      val f = () => { 
        val x = "can shadow through closure";

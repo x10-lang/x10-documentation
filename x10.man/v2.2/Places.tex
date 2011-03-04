@@ -42,7 +42,7 @@ program, in numeric order.
 The program starts by executing a \xcd`main` method at
 %~~exp~~`~~`~~ ~~ ^^^ Places20
 \xcd`Place.FIRST_PLACE`, which is 
-%~~exp~~`~~`~~ ~~ ^^^ Places30
+%~~exp~~`~~`~~ ~~ ^^^ Placesoik
 \xcd`Place.places()(0)`; see
 \Sref{initial-computation}. 
 
@@ -50,9 +50,9 @@ Operations on places include \xcd`pl.next()`, which gives the next entry
 (looping around) in \xcd`Place.places` and its opposite \xcd`pl.prev()`. In
 particular, \xcd`here.next()` means ``a place other than \xcd`here`'', except
 in single-place executions.
-%~~exp~~`~~`~~pl:Place~~ ^^^ Places40
+%~~exp~~`~~`~~pl:Place~~ ^^^ Placesoif
 There are also a number of tests, like \xcd`pl.isSPE()` and 
-%~~exp~~`~~`~~pl:Place ~~ ^^^ Places50
+%~~exp~~`~~`~~pl:Place ~~ ^^^ Placesoid
 \xcd`pl.isCUDA()`, which test for particular kinds of processors.
 
 
@@ -74,7 +74,7 @@ two different values (one \xcd`List`, one \xcd`Int`) in
 \xcd`List[Int{self!=0}]{self!=null}`. In the following 
 code, \xcd`here` has one value at 
 \xcd`h0`, and a different one at \xcd`h1` (unless there is only one place).
-%~~gen ^^^ Places60
+%~~gen ^^^ Placesoijo
 % package places.are.For.Graces;
 % class Example {
 % def example() {
@@ -155,6 +155,7 @@ to be unchanged.
 %~~gen ^^^ Places6e1o
 % package Places6e1o;
 % class Example { static def example() { 
+% KNOWNFAIL-at
 %~~vis
 \begin{xten}
 val a = [1,2,3];
@@ -259,6 +260,7 @@ outside of it.  The following code may end up with a large object \xcd`c` in
 memory at \xcd`p` but not at the initial place: 
 %~~gen ^^^ Places3q9u
 % package Places3q9u;
+% KNOWNFAIL-at
 % class Example { 
 % def use(Example, Example, Example) = 1;
 % def largeFun(Example) = 1;
@@ -432,10 +434,11 @@ inside of \xcd`S`.  In this way the body \xcd`S` is in a separate block with
 different variable bindings.
 
 For example, consider the following program.
-%~~gen ^^^ Activities_implicit_copy_from_at_example_1
-% package Activities.implicitcopyfromat;
+%~~gen ^^^ Places_implicit_copy_from_at_example_1
+% package Places.implicitcopyfromat;
 % class Example {
 % static def example() {
+% KNOWNFAIL-at
 %~~vis
 \begin{xten}
 val c = new Cell[Int](9); // (1)
@@ -478,10 +481,11 @@ and {$a_1(1)$} is observed to change.  In \xcd`(D)`-\xcd`(F)`, the copy
 refer to the same \xcd`Cell[Int]` {$c_2$}.  However, the test at \xcd`(G)`
 shows that {$c_2$} is a different cell from {$c_1$}, because changes to
 {$c_2$} did not propagate to {$c_1$}.  
-%~~gen ^^^ Activities30
-%package Activities.AtCopy2;
+%~~gen ^^^ PlacesAtCopy
+%package Places.AtCopy2;
 %class example {
 %static def Example() {
+%KNOWNFAIL-at
 %~~vis
 \begin{xten}
 val c = new Cell[Int](5);
@@ -519,8 +523,9 @@ when the \xcd`Trans` value \xcd`this` is copied at \xcd`at(here){...}` in
 \xcd`Int`, 0, is used instead.  
 Note that we could not make a transient field \xcd`c : Int{c != 0}`, since the
 type has no default value, and copying would in fact set it to zero.
-%~~gen ^^^ Activities40
-%package Activities_transient_a;
+%~~gen ^^^ Places40
+%package Places_transient_a;
+% KNOWNFAIL-at
 %~~vis
 \begin{xten}
 class Trans {
@@ -557,11 +562,12 @@ the enclosed value \xcd`o` is passed.
 The following example does not copy the value \xcd`huge`.  However, \xcd`huge`
 would have been copied if it had been put into a \xcd`Cell`, or simply used
 directly. 
-%~~gen ^^^ Activities50
-%package Activities.copyingblockingwithglobref;
+%~~gen ^^^ Places50
+%package Places.copyingblockingwithglobref;
 % class GR {
 %  static def use(Any){}
 %  static def example() {
+% KNOWNFAIL-at
 %~~vis
 \begin{xten}
 val huge = "A potentially big thing";
@@ -578,7 +584,7 @@ at (here;href) {
 
 
 Values protected in \xcd`GlobalRef`s can be retrieved by the application
-%~~exp~~`~~`~~ g:GlobalRef[Object]{here == g.home}~~ ^^^Activities4e7q
+%~~exp~~`~~`~~ g:GlobalRef[Object]{here == g.home}~~ ^^^Places4e7q
 operation \xcd`g()`.  \xcd`g()` is guarded; it can 
 only be called when \xcd`g.home == here`.  If you  want to do anything other
 than pass a global reference around or compare two of them for equality, you
@@ -586,9 +592,10 @@ need to placeshift back to the home place of the reference, often with
 \xcd`at(g.home)`.   For example, the following  program modifies the
 command-line argument array.
 
-%~~gen ^^^ Activities60
-% package Activities.Atsome.Globref2;
+%~~gen ^^^ Places60
+% package Places.Atsome.Globref2;
 % class GR2 {
+% KNOWNFAIL-at
 %~~vis
 \begin{xten}
   public static def main(argv: Array[String](1)) {
@@ -661,6 +668,7 @@ one as a \xcd`val` named \xcd`square`, and the other as an addition in to a
 partially-computed polynomial named \xcd`poly`.  
 %~~gen ^^^ Places5f9g
 % package Places5f9g;
+% KNOWNFAIL-at
 % class Example { 
 %~~vis
 \begin{xten}
@@ -706,6 +714,7 @@ preceding example could have been written using blanket statements.
 %~~gen ^^^ Places5f9gblanket
 % package Places5f9gblanket;
 % class Example { 
+% KNOWNFAIL-at
 %~~vis
 \begin{xten}
 static def example(a: Int, mathProc: Place) { 

@@ -314,6 +314,7 @@ programmer may want to write:
 % class EquivCode {
 % static def S(pt:Point) {}
 % static def example(D:Dist) {
+% KNOWNFAIL-at
 %~~vis
 \begin{xten}
 for (place in D.places()) async at (place; p, D, *) {

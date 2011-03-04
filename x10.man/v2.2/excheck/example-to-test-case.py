@@ -35,7 +35,7 @@ KNOWN_FAIL_pattern = "KNOWNFAIL"
 
 
 
-texsource = "/Users/bard/x10/manual/x10.man/v2.1" # os.path.abspath("..") #
+texsource = "/Users/bard/x10/manual/x10.man/v2.2" # os.path.abspath("..") #
 gennedFileDir = texsource + "/compileCheck"
 testCaseDir  = texsource + "/testcases"
 
@@ -87,7 +87,7 @@ currentLine = 0
 genTestCases = True
 
 
-texsource = "/Users/bard/x10/manual/x10.man/v2.1" # os.path.abspath("..") #
+texsource = "/Users/bard/x10/manual/x10.man/v2.2" # os.path.abspath("..") #
 gennedFileDir = texsource + "/compileCheck"
 testCaseDir  = texsource + "/testcases"
 
