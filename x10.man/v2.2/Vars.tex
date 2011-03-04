@@ -358,23 +358,24 @@ val q[l,m] = [44,55]; // coerces an array to a point.
 %~~siv
 %}}
 %~~neg
+ 
+%%A useful idiom for iterating over a range of numbers is: 
+%%%~x~gen ^^^ Vars90
+%%%package Vars.For.Swear.Bears;
+%%% class ForBear {
+%%% def forbear() {
+%%%~x~vis
+%%\begin{xten}
+%%var sum : Int = 0;
+%%for ([i] in 1..100) sum += i;
+%%\end{xten}
+%%%~x~siv
+%%% ; } } 
+%%%~x~neg
+%%\noindent
+%%The brackets in \xcd`[i]` introduce destructuring, making X10 treat \xcd`i`
+%%as an \xcd`Int`; without them, it would be a \xcd`Point`.  
 
-A useful idiom for iterating over a range of numbers is: 
-%~~gen ^^^ Vars90
-%package Vars.For.Swear.Bears;
-% class ForBear {
-% def forbear() {
-%~~vis
-\begin{xten}
-var sum : Int = 0;
-for ([i] in 1..100) sum += i;
-\end{xten}
-%~~siv
-% ; } } 
-%~~neg
-\noindent
-The brackets in \xcd`[i]` introduce destructuring, making X10 treat \xcd`i`
-as an \xcd`Int`; without them, it would be a \xcd`Point`.  
 \end{ex}
 
 

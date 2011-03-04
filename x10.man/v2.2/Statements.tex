@@ -255,8 +255,8 @@ loop.
 % def example(a:(Int,Int) => Int, do_things_to:(Int)=>Int) {
 %~~vis
 \begin{xten}
-lbl : for ([i] in 1..10) {
-   for ([j] in i..10) {  
+lbl : for (i in 1..10) {
+   for (j in i..10) {  
       if (a(i,j) == 0) break lbl;
       if (a(i,j) == 1) continue lbl;
       if (a(i,j) == a(j,i)) break lbl;
@@ -655,35 +655,27 @@ static def sum(a: Array[Int]): Int {
 %}
 %~~neg
 
+Iteration over an \xcd`IntRange` (\Sref{sect:intrange}) is quite common. This
+allows looping while varying an integer index: 
+%~~gen ^^^ Statements3o9s
+% package Statements3o9s;
+% class Example { static def example() {
+%~~vis
+\begin{xten}
+var sum : Int = 0;
+for(i in 1..10) sum += i;
+assert sum == 55;
+\end{xten}
+%~~siv
+%} } 
+% class Hook { def run() { Example.example(); return true; } }
+%~~neg
 
 
 \end{ex}
 
 Iteration variables have the \xcd`for` statement as scope.  They shadow other
 variables of the same names.
-
-\begin{ex}
-In practice, the ability to do destructuring in a \xcd`for` statement is
-mainly used for iterate over ranges of numbers.  
-\xcd`for ([i] in 1..10)` iterates over numbers from 1 to 10.
-The brackets are important. 
-\xcd`for (i in 1..10` iterates over \xcd`Point`s from 
-\xcd`[1] as Point` to \xcd`[10] as Point`.
-
-
-%~~gen ^^^ Statements90
-% package statements.for_for;
-% class Example {
-% def example(n:Int) {
-%~~vis
-\begin{xten}
-  var sum : Int = 0;
-  for ([i] in 1..n) sum += i;
-\end{xten}
-%~~siv
-% } } 
-%~~neg
-\end{ex}
 
 
 \section{Return statement}

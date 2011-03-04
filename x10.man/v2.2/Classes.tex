@@ -970,7 +970,7 @@ argument \xcd`x`.  We would like to write code thus:
 %   public operator this(x:Int) {
 %     val d = this.degree();
 %     var s : Int = this.a(d);
-%     for( [i] in 1 .. this.degree() ) {
+%     for( i in 1 .. this.degree() ) {
 %        s = x * s + a(d-i);
 %     }
 %     return s;
@@ -1004,14 +1004,14 @@ argument \xcd`x`.  We would like to write code thus:
 %      ));
 %   private static def sumDeg(k:Int, a:Poly, b:Poly) {
 %      var s : Int = 0;
-%      for( [i] in 0 .. k ) s += a.a(i) * b.a(k-i);
+%      for( i in 0 .. k ) s += a.a(i) * b.a(k-i);
 %        // x10.io.Console.OUT.println("sumdeg(" + k + "," + a + "," + b + ")=" + s);
 %      return s;
 %      };
 %   public final def toString() = {
 %      var allZeroSoFar : Boolean = true;
 %      var s : String ="";
-%      for( [i] in 0..this.degree() ) {
+%      for( i in 0..this.degree() ) {
 %        val ai = this.a(i);
 %        if (ai == 0) continue;
 %        if (allZeroSoFar) {
@@ -1042,7 +1042,7 @@ argument \xcd`x`.  We would like to write code thus:
      val t <: Poly = 7 * X + 6 * X * X * X; 
      val u <: Poly = 3 + 5*X - 7*X*X;
      val v <: Poly = t * u - 1;
-     for( [i] in -3 .. 3) {
+     for( i in -3 .. 3) {
        x10.io.Console.OUT.println(
          "" + i + "	X:" + X(i) + "	t:" + t(i) 
          + "	u:" + u(i) + "	v:" + v(i)
@@ -1071,7 +1071,7 @@ Writing the same code with method calls, while possible, is far less elegant:
 %   public def apply(x:Int) {
 %     val d = this.degree();
 %     var s : Int = this.a(d);
-%     for( [i] in 1 .. this.degree() ) {
+%     for( i in 1 .. this.degree() ) {
 %        s = x * s + a(d-i);
 %     }
 %     return s;
@@ -1105,14 +1105,14 @@ Writing the same code with method calls, while possible, is far less elegant:
 %      ));
 %   private static def sumDeg(k:Int, a:UglyPoly, b:UglyPoly) {
 %      var s : Int = 0;
-%      for( [i] in 0 .. k ) s += a.a(i) * b.a(k-i);
+%      for( i in 0 .. k ) s += a.a(i) * b.a(k-i);
 %        // x10.io.Console.OUT.println("sumdeg(" + k + "," + a + "," + b + ")=" + s);
 %      return s;
 %      };
 %   public final def toString() = {
 %      var allZeroSoFar : Boolean = true;
 %      var s : String ="";
-%      for( [i] in 0..this.degree() ) {
+%      for( i in 0..this.degree() ) {
 %        val ai = this.a(i);
 %        if (ai == 0) continue;
 %        if (allZeroSoFar) {
@@ -1148,7 +1148,7 @@ Writing the same code with method calls, while possible, is far less elegant:
      val t <: UglyPoly = X.mult(7).plus(X.mult(X).mult(X).mult(6));  
      val u <: UglyPoly = const(3).plus(X.mult(5)).minus(X.mult(X).mult(7));
      val v <: UglyPoly = t.mult(u).minus(1);
-     for( [i] in -3 .. 3) {
+     for( i in -3 .. 3) {
        x10.io.Console.OUT.println(
          "" + i + "	X:" + X.apply(i) + "	t:" + t.apply(i) 
           + "	u:" + u.apply(i) + "	v:" + v.apply(i)
@@ -1499,7 +1499,7 @@ addition to add it to \xcd`x`.
 %   public final def toString() = {
 %      var allZeroSoFar : Boolean = true;
 %      var s : String ="";
-%      for( [i] in 0..this.degree() ) {
+%      for( i in 0..this.degree() ) {
 %        val ai = this.a(i);
 %        if (ai == 0) continue;
 %        if (allZeroSoFar) {

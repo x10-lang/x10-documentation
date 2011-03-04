@@ -7,7 +7,9 @@ We refer to arrays either sort as ``general arrays''.
 
 
 This chapter provides an overview of the \Xcd{x10.array} classes \Xcd{Array}
-and \Xcd{DistArray}, and their supporting classes \Xcd{Point}, \Xcd{Region}
+and \Xcd{DistArray}, and their supporting classes \Xcd{Point}, 
+\Xcd{IntRange}, 
+\Xcd{Region}, 
 and \Xcd{Dist}.  
 
 
@@ -61,6 +63,25 @@ The coordinates of a point are available by subscripting; \xcd`p(i)` is the
 \xcdmath`Point{rank==$n$}`.
 
 
+\section{IntRange}
+\label{sect:intrange}
+\index{IntRange}
+\index{range}
+
+An \xcd`IntRange` is a representation of a set of consecutive integers: 
+\xcd`1..10` is the numbers 1 through 10.  There is nothing special about
+\xcd`x10.lang.IntRange`, beyond its package.  However, it appears frequently
+in idioms involving arrays and related constructs, especially rectangular
+arrays.
+
+One notable idiom involving \xcd`IntRange` is the integer iteration idiom.  
+%~~stmt~~`~~`~~ use:(Int)=>void ~~ ^^^ Arrays3k1n
+\xcd`for(i in 1..10)use(i);` calls 
+\xcd`use` on each number 1,2, ..., 10, in turn.
+
+If \xcd`m > n`, the \xcd`IntRange` \xcd`m..n` is empty.  It has no elements,
+and iterating over it will not execute the body of the loop.
+
 \section{Regions}\label{XtenRegions}\index{region}
 \index{region!syntax}
 
@@ -78,8 +99,8 @@ all the points in it.
 \begin{xten}
 val MAX_HEIGHT=20;
 val Null = Region.makeUnit();  // Empty 0-dimensional region
-val R1 = 1..100; // 1-dim region with extent 1..100
-val R2 = (1..100) as Region(1); // same as R1
+val R1 = 1..100; // IntRange 
+val R2 = R1 as Region(1);
 val R3 = (0..99) * (-1..MAX_HEIGHT);
 val R4 = Region.makeUpperTriangular(10);
 val R5 = R4 && R3; // intersection of two regions
@@ -88,27 +109,22 @@ val R5 = R4 && R3; // intersection of two regions
 % } } 
 %~~neg
 
-The expression \xcdmath`m..n`, for integer expressions \Xcd{m} and \Xcd{n},
-evaluates to the rectangular, rank-1 region consisting of the points
-$\{$\xcdmath`[m]`, \dots, \xcdmath`[n]`$\}$. If \xcdmath`m` is greater than
-\xcdmath`n`, the region \Xcd{m..n} is empty.
+The \xcd`IntRange` value \xcd`1..100` can be implicitly or explicitly coerced
+to a one-dimensional \xcd`Region` consisting of the points
+$\{$\xcdmath`[m]`, \dots, \xcdmath`[n]`$\}$.  \xcd`IntRange`s are useful in
+building up regions, especially rectangular regions.  
+In general, we ignore the distinction between an \xcd`IntRange` and a rank-one
+\xcd`Region`, except for those occasional situations where the compiler
+requires attending to the distinction.
 
-%%MAYBE%% A region may be constructed by converting from a rail of
-%%MAYBE%% regions (\eg, \xcd`R4` above).
-%%MAYBE%% The region constructed from a rail of regions represents the Cartesian product
-%%MAYBE%% of the arguments. \Eg, \Xcd{R8} is a region of {$100 \times 16 \times 78$}
-%%MAYBE%% points, in
-%%MAYBE%% %~s~gen
-%%MAYBE%% %package Arrays.Region.RailOfRegions;
-%%MAYBE%% %class Example{
-%%MAYBE%% %def example(){
-%%MAYBE%% %~s~vis
-%%MAYBE%% \begin{xten}
-%%MAYBE%%   val R8 = [1..100, 3..18, 1..78] as Region(3);
-%%MAYBE%% \end{xten}
-%%MAYBE%% %~s~siv
-%%MAYBE%% %}}
-%%MAYBE%% %~s~neg
+By a special dispensation, the compiler knows that, if \xcd`r : Region(m)` and
+\xcd`s : Region(n)`, then \xcd`r*s : Region(m+n)`.  (The X10 type system
+ordinarily could not specify the sum; the best it could do 
+would be \xcd`r*s : Region`, with the rank of the region unknown.)  This
+feature allows more convenient use of arrays; in particular, one does not need
+to keep track of ranks nearly so much.
+
+
 
 
 \index{region!upperTriangular}
@@ -171,7 +187,11 @@ iterate over the points in a region in the canonical order.
 
 A region is said to be {\em rectangular}\index{region!convex} if it is of
 the form \xcdmath`(T$_1$ * $\cdots$ * T$_k$)` for some set of intervals
-\xcdmath`T$_i = $ l$_i$ .. h$_i$ `. Such a
+\xcdmath`T$_i = $ l$_i$ .. h$_i$ `. 
+In particular an \xcd`IntRange` turned into a \xcd`Region` is rectangular: 
+%~~exp~~`~~`~~ ~~ ^^^Arrays3x4z
+\xcd`(1..10) as Region(1)`.
+Such a
 region satisfies the property that if two points $p_1$ and $p_3$ are
 in the region, then so is every point $p_2$ between them (that is, it is {\em convex}). 
 (Banded and triangular regions are not rectangular.)
@@ -448,7 +468,9 @@ a \xcd`PlaceGroup`, and \xcd`P` a place.
 \paragraph{Unique distribution} \index{distribution!unique}
 %~~exp~~`~~`~~Q:PlaceGroup ~~ ^^^ Arrays290
 The distribution \xcd`Dist.makeUnique(Q)` is the unique distribution from the
-region \xcd`1..k` to \xcd`Q` mapping each point \xcd`i` to \xcd`pi`.
+region \xcd`(1..k) as Region(1)` to \xcd`Q` mapping each point \xcd`i` to
+\xcd`pi`.
+
 
 \paragraph{Constant distributions.} \index{distribution!constant}
 %~~exp~~`~~`~~R:Region, P:Place ~~ ^^^ Arrays300
