@@ -766,8 +766,9 @@ that is, they must be instances of the same struct
 and all their fields or components must be \xcd"==". 
 \item The definition of equality for function types is specified in
       \Sref{FunctionEquality}.
-\item If the operands have numeric types, they are coerced into the larger of
-      the two types (see \Sref{WideningConversions}) and then compared for numeric equality.
+\item No implicit coercions are performed by \xcd`==`.  
+\item It is a static error to have an expression \xcd`a == b` if the types of
+      \xcd`a` and \xcd`b` are disjoint.  
 \end{itemize}
 
 \xcd`a != b`
@@ -802,6 +803,102 @@ assert eq1 == eq2;
 %} } 
 %~~neg
 \end{ex}
+
+\subsection{No Implicit Coercions}
+\label{sect:eqeq-no-coerce}
+
+\xcd`==` is a primitive operation in X10 -- one of very few. Most operations,
+like \xcd`+` and \xcd`<=`, are defined as \xcd`operator`s. \xcd`==` and
+\xcd`!=` are not. As non-\xcd`operator`s, they need not and do not follow the
+general method resolution procedure of \Sref{sect:MethodResolution}. In
+particular, while \xcd`operator`s perform implicit conversions on their
+arguments, \xcd`==` and \xcd`!=` do not.
+
+The advantage of this restriction is that \xcd`==`'s behavior is as simple and
+efficient as possible.  It never runs user-defined code, and the compiler can
+analyze and understand it in detail -- and guarantee that it is efficient.
+
+The disadvantage is that certain straightforward-looking idioms do not work.
+One may not, for example, write
+\begin{xten}
+// NOT ALLOWED
+for(var i : Long = 0; i != 100; i++) 
+\end{xten}
+A \xcd`Long` like \xcd`i` can never \xcd`==` an \xcd`Int` like \xcd`100`.
+
+We can write \xcd`i = i + 1;`, adding an \xcd`Int` to \xcd`i`. This works 
+because the expression uses \xcd`+`,  an ordinary \xcd`operator`.
+There is an implicit coercion from \xcd`Int` to \xcd`Long`, so the
+\xcd`1` can be converted to \xcd`1L`, which can be added to \xcd`i`.  
+
+However, \xcd`==` does not permit implicit coercions, and so the \xcd`100`
+stays an \xcd`Int`.  The loop must be written with a comparison of two
+\xcd`Long`s: 
+\begin{xten}
+for(var i : Long = 0; i != 100L; i++) 
+\end{xten}
+
+Incidentally, it could also be written 
+\begin{xten}
+for(var i : Long = 0; i <= 100; i++) 
+\end{xten}
+The operation \xcd`<=` is a regular operator, and thus uses coercions in its
+arguments, so \xcd`100` gets coerced to \xcd`100L`.  
+
+\subsection{Non-Disjointness Requirement}
+
+It is a static error to have an expression \xcd`a==b` where \xcd`a` and
+\xcd`b` could not possibly be equal, based on their types.  This is a
+practical codicil to \Sref{sect:eqeq-no-coerce}.  Consider the illegal code 
+\begin{xten}
+// NOT ALLOWED
+for(var i : Long = 0; i != 100; i++) 
+\end{xten}
+
+\xcd`100` and \xcd`100L` are different values; they are not \xcd`==`. A
+coercion could make them equal, but \xcd`==` does not allow coercions. So, if
+\xcd`100 == 100L` were going to return anything, it would have to return
+\xcd`false`. This would have the unfortunate effect of making the \xcd`for`
+loop diverge.
+
+Since this and related idioms are so common, and since so many programmers are
+used to languages which are less precise about their numeric types, X10 avoids
+the mistake by declaring it a static error in most cases.  Specifically,
+\xcd`a==b` is not allowed if, by inspection of the types, \xcd`a` and \xcd`b`
+could not possibly be equal.
+
+
+\begin{itemize}
+
+\item Numbers of different base types cannot be compared for equality.  
+\xcd`100==100L` is a static error.  To compare numbers, explicitly cast them
+%~~exp~~`~~`~~ ~~ ^^^Expressions2g6f
+to the same type: \xcd`100 as Long == 100L`.
+
+\item Indeed, structs of different types cannot be equal, and so they cannot be
+compared for equality.  
+
+\item For objects, the story is different. Unconstrained object types can
+      always be compared for equality. Given objects \xcd`a:Person` and
+      \xcd`b:Theory`, \xcd`a==b` could be true if \xcd`a==null` and
+      \xcd`b==null`. 
+
+\item Constrained object types may or may not be comparable.  For example,  
+      if \xcd`Person` and \xcd`Theory` are both direct subclasses of
+      \xcd`Object`, and \xcd`a:Person{self!=null}` and \xcd`b:Theory`, then
+      \xcd`a==b` is not allowed, since the two could not possibly be equal.
+
+\item Explicit casts erase type information.  If you wanted
+      to have a comparison \xcd`a==b` for \xcd`a:Person{self!=null}` and
+      \xcd`b:Theory`, you could write it as \xcd`a as Object == b as Object`.
+      It would, of course, return \xcd`false`, but it would not be a compiler
+      error.\footnote{Code generators often find this trick too be useful.}
+      A struct and an object may both be cast to \xcd`Any` and compared for
+      equality, though they, too, will always be different.
+
+\end{itemize}
+
+
 
 
 

@@ -15,13 +15,17 @@ from it, directly or indirectly.
 
 
 Classes are structured in a single-inheritance code
-hierarchy, may implement multiple interfaces, may have static and
-instance fields, may have static and instance methods, may have
-constructors, 
-%% vj: We dont support initializers.
-% may have static and instance initializers, 
-may have static and instance nested classes and interfaces. \Xten{} does not
-permit mutable static state.
+hierarchy.   They may have any or all of these features: 
+\begin{itemize}
+\item Implementing any number of interfaces;
+\item Static and instance \xcd`val` fields; 
+\item Instance \xcd`var` fields; 
+\item Static and instance methods;
+\item Constructors;
+\item Properties;
+\item Static and instance nested containers.
+\end{itemize}
+
 
 \Xten{} objects do not have locks associated with them.
 Programmers should use atomic blocks (\Sref{AtomicBlocks}) for mutual
@@ -29,7 +33,7 @@ exclusion and clocks (\Sref{XtenClocks}) for sequencing multiple parallel
 operations.
 
 An object exists in a single location: the place that it was created.  One
-place cannot directly refer to an object in a different place.   A
+place cannot use or even directly refer to an object in a different place.   A
 special type, \Xcd{GlobalRef[T]}, allows explicit cross-place references. 
 
 The basic operations on objects are:
@@ -38,7 +42,6 @@ The basic operations on objects are:
 {}\item Field access (\Sref{FieldAccess}). 
 The static and instance fields of an object can be retrieved; \xcd`var` fields
 can be set.  
-%%ACCUM%% Accumulator fields can be updated, but only in limited contexts. 
 
 {}\item Method invocation (\Sref{MethodInvocation}).  
 Static and instance methods of an object can be invoked.
@@ -56,11 +59,11 @@ object {\em identity}: two objects are \Xcd{==} iff they are the same object.
  
 \subsection{Class Declaration Syntax}
 
-The {\em class declaration} has a list of type \params, properties, a
-constraint (the {\em class invariant}), a single superclass, zero or more
-interfaces, and a class body containing the the definition of fields,
-properties, methods, and member types. Each such declaration introduces a
-class type (\Sref{ReferenceTypes}).
+The {\em class declaration} has a list of type parameters, a list of
+properties, a constraint (the {\em class invariant}), a single superclass,
+zero or more interfaces that it implements, and a class body containing the
+the definition of fields, properties, methods, and member types. Each such
+declaration introduces a class type (\Sref{ReferenceTypes}).
 
 %##(NormalClassDecl TypeParamsWithVariance TypeParamWithVarianceList Properties PropertyList Property WhereClause Super Interfaces InterfaceTypeList ClassBody ClassBodyDecls ClassMemberDecl
 \begin{bbgrammar}
@@ -113,29 +116,16 @@ TypeParamWithVarianceList \: TypeParamWithVariance & (\ref{prod:TypeParamWithVar
 
 Objects may have {\em instance fields}, or simply {\em fields} (called
 ``instance variables'' in C++ and Smalltalk, and ``slots'' in CLOS): places to
-store data that is pertinent to the object. Fields, like variables, may be
-mutable (\xcd`var`) or immutable (\xcd`val`) %%ACC%% , or accumulator
-(\Xcd{acc}) .
+store data that is pertinent to the object.  Fields, like variables, may be
+mutable (\xcd`var`) or immutable (\xcd`val`).  
 
 Class may have {\em static fields}, which store data pertinent to the
 entire class of objects.  
 See \Sref{StaticInitialization} for more information.
 
-No two fields of the same class may have the same name.
-
-To avoid an ambiguity, it is a static error to invoke  a field with a function
-type (\Sref{FunctionTypes}) that has 
-the same name and signature  as a method of the same class.  
-(Consider the class 
-\begin{xten}
-class Crash {
-  val f : (Int) => Boolean = (Int)=>true;
-  def f(Int) = false;
-}
-\end{xten}
-\noindent
-Then \xcd`crash.f(3)` might either mean ``call the function \xcd`crash.f` on
-argument \xcd`3`'', or ``invoke the method \xcd`f` on argument \xcd`3`''.)
+No two fields of the same class may have the same name.  A field may have the
+same name as a method, although for fields of functional type there is a
+subtlety (\Sref{sect:disambiguations}).  
 
 \subsection{Field Initialization}
 \index{field!initialization}
@@ -162,18 +152,28 @@ class Fld{
 
 
 \subsection{Field hiding}
+\index{hiding}
+\index{field|hiding}
+
 
 A subclass that defines a field \xcd"f" hides any field \xcd"f"
 declared in a superclass, regardless of their types.  The
 superclass field \xcd"f" may be accessed within the body of
 the subclass via the reference \xcd"super.f".
 
+With inner classes, it is occasionally necessary to 
+write \xcd`Cls.super.f` to get at a hidden field \xcd`f` of an outer class
+\xcd`Cls`. 
+
+\begin{ex}
+The \xcd`f` field in \xcd`Sub` hides the \xcd`f` field in \xcd`Super`
+The \xcd`superf`` method provides access to the \xcd`f` field in \xcd`Super`.
 %~~gen ^^^ Classes20
 % package classes.fields.primus;
 %~~vis
 \begin{xten}
 class Super{ 
-  val f = 1; 
+  public val f = 1; 
 }
 class Sub extends Super {
   val f = true;
@@ -181,12 +181,10 @@ class Sub extends Super {
 }
 \end{xten}
 %~~siv
-%
+% class Hook { def run() { return (new Sub()).superf() == 1; }} 
 %~~neg
+\end{ex}
 
-With inner classes, it is occasionally necessary to 
-write \xcd`Cls.super.f` to get at a hidden field \xcd`f` of an outer class
-\xcd`Cls`, as in 
 %~~gen ^^^ Classes30
 % package classes.fields.secundus; 
 % NOTEST
@@ -200,22 +198,24 @@ class B extends A {
    class C extends B {
       // C is both a subclass and inner class of B
       val f = 5;
-      def foo()
-         = f          // 5
-         + super.f    // 4
-         + B.this.f   // 4 (the "f" of the outer instance)
-         + B.super.f; // 3 (the "super.f" of the outer instance)
+       def example() {
+         assert f         == 5 : "field of C";
+         assert super.f   == 4 : "field of superclass";
+         assert B.this.f  == 4 : "field of outer instance";
+         assert B.super.f == 3 : "super.f of outer instance";
+       }
     }
 }
 \end{xten}
 %~~siv
-%
+% class Hook { def run() { ((new B()).new C()).example(); return true; } }
 %~~neg
 
 
 \subsection{Field qualifiers}
 \label{FieldQualifier}
 \index{qualifier!field}
+\index{field!qualifier}
 
 The behavior of a field may be changed by a field qualifier, such as
 \xcd`static` or \xcd`transient`.  
@@ -258,11 +258,6 @@ class Trans {
 %
 %~~neg
 
-%%CLOCKED%% \subsection{\Xcd{clocked} Qualifier}
-%%CLOCKED%% 
-%%CLOCKED%% Clocked fields are discussed in \Sref{ClockedFields}.
-%%CLOCKED%% 
-
 
 \section{Properties}
 \label{PropertiesInClasses}
@@ -279,6 +274,7 @@ properties are desired.
 
 Properties are defined in parentheses, after the name of the class.  They are
 given values by the \xcd`property` command in constructors.
+
 %~~gen ^^^ Classes50
 % package Classes.Toss.Freedom.Disk2;
 %~~vis
@@ -294,11 +290,10 @@ class Proper(t:Int) {
 
 
 
-\begin{staticrule*}
 It is a compile-time error for a class
 defining a property \xcd"x: T" to have an ancestor class that defines
 a property with the name \xcd"x".  
-\end{staticrule*}
+
 
 A property \xcd`x:T` induces a field with the same name and type, 
 as if defined with: 
@@ -332,15 +327,10 @@ properties too. They define the same nullary getter methods, though they do
 not require fields.)
 
 
-\begin{staticrule*}
-It is a compile-time error for a class or
-interface defining a property \xcd"x :T" to have an existing method with
-the signature \xcd"x(): T".
-\end{staticrule*}
 
-
+\index{property!initialization}
 Properties are initialized by the invocation of a special \Xcd{property}
-statement, which must be performed by each constructor of the class:
+statement: 
 \begin{xten}
 property(e1,..., en);
 \end{xten}
@@ -348,7 +338,6 @@ The number and types of arguments to the \Xcd{property} statement must match
 the number and types of the properties in the class declaration.  
 Every constructor of a class with properties must invoke \xcd`property(...)`
 precisely once; it is a static error if X10 cannot prove that this holds.
-
 The requirement to use the \xcd`property` statement means that all properties
 must be given values at the same time.  
 
@@ -357,9 +346,9 @@ properties is acyclic.  \Eg, there cannot be values \xcd`a` and \xcd`b` with
 properties \xcd`c` and \xcd`d` such that \xcd`a.c == b` and \xcd`b.d == a`.
 
 
-\index{property!call}
-\index{property!initialization}
-\label{PropertyCall}
+
+
+
 
 
 
@@ -371,6 +360,7 @@ properties \xcd`c` and \xcd`d` such that \xcd`a.c == b` and \xcd`b.d == a`.
 \index{method}
 \index{signature}
 \index{method!signature}
+\index{method!instance}
 \index{method!static}
 
 As is common in object-oriented languages, objects can have {\em methods}, of
@@ -380,10 +370,12 @@ code bodies associated with an instance of the class, which execute with
 convenient access to that instance's fields. 
 
 Each method has a {\em signature}, telling what arguments it accepts, what
-type it returns, what precondition it requires. Method definitions may be
+type it returns, and what precondition it requires. Method definitions may be
 overridden by subclasses; the overriding definition may have a declared return
 type that is a subtype of the return type of the definition being overridden.
 Multiple methods with the same name but different signatures may be provided
+\index{overloading}
+\index{polymorphism}
 on a class (called ``overloading'' or ``ad hoc polymorphism''). Methods may be
 declared \Xcd{public}, \Xcd{private}, \Xcd{protected}, or given default package-level access
 rights.
@@ -470,7 +462,7 @@ well-defined when \xcd`x != null`, as \xcd`null.toString()` throws a null
 pointer exception: 
 %~~gen ^^^ Classes80
 % package Classes.methodwithconstraintthingie;
-% KNOWNFAIL
+% 
 %~~vis
 \begin{xten}
 class Example {
@@ -484,7 +476,8 @@ class Example {
 %
 %~~neg
 \noindent
-(We could have used a constrained type \xcd`Object{self!=null}` instead; in
+(We could have used a constrained type \xcd`Object{self!=null}` for \xcd`x`
+instead; in
 most cases it is a matter of personal preference or convenience of expression
 which one to use.) 
 
@@ -496,7 +489,7 @@ than usual, as it is statically provable that \xcd`x != null`.)
 This may require a cast: 
 %~~gen ^^^ Classes90
 % package Classes.methodguardnadacastthingie;
-% KNOWNFAIL
+% 
 % class Example {var f : String = ""; def example(x:Object){x != null} = {this.f = x.toString();}}
 % class Eyample {
 %~~vis
@@ -511,6 +504,8 @@ This may require a cast:
 %}
 %~~neg
 
+%% HERE!!!!
+
 The guard \xcd`{c}` 
 in a guarded method 
 \xcd`def m(){c} = E;`
@@ -520,7 +515,7 @@ method exists only for those instances of \xcd"C" which satisfy \xcd"c".  It is
 illegal for code to invoke the method on objects whose static type is
 not a subtype of \xcd"C{c}".
 
-\begin{staticrule*}
+
     The compiler checks that every method invocation
     \xcdmath"o.m(e$_1$, $\dots$, e$_n$)"
     is type correct. Each argument
@@ -547,7 +542,7 @@ not a subtype of \xcd"C{c}".
     \xcdmath"d, S, S$_1$, $\dots$, S$_n$", and
     \xcdmath"x$_1$, $\dots$, x$_n$" are the formal
     parameters of the method.
-\end{staticrule*}
+
 
 \limitation{
 Using a reference to an outer class, \xcd`Outer.this`, in a constraint, is not supported.
@@ -714,7 +709,7 @@ compile-time error for there to be two methods with the same name and
 same signature in a class (either defined in that class or in a
 superclass).
 
-\begin{staticrule*}
+
   A class \xcd"C" may not have two declarations for a method named \xcd"m"---either
   defined at \xcd"C" or inherited:
 \begin{xtenmath}
@@ -726,18 +721,18 @@ if it is the case that the constraint erasures of the types \xcdmath"T$_1$",
 \dots, \xcdmath"T$_n$" are
 equivalent to the constraint erasures of the types \xcdmath"S$_1$, $\dots$, T$_n$"
 respectively.
-\end{staticrule*}
+
 
 In addition, the guard of a overriding method must be 
 no stronger than the guard of the overridden method.   This
 ensures that any virtual call to the method
 satisfies the guard of the callee.
 
-\begin{staticrule*}
+
   If a class \xcd"C" overrides a method of a class or interface
   \xcd"B", the guard of the method in \xcd"B" must entail
   the guard of the method in \xcd"C".
-\end{staticrule*}
+
 
 A class \xcd"C" inherits from its direct superclass and superinterfaces all
 their methods visible according to the access modifiers
@@ -1733,15 +1728,16 @@ $\mbox{\emph{ClassBody}}$
 
 Each of the following static semantics rules must be satisfied:
 
-\begin{staticrule}{Int-implements}
+\noo{reformat this}
+
 The type invariant \xcdmath"$\mathit{inv}$(C)" of \xcd"C" must entail
 \xcdmath"c$_i$[this/self]" for each $i$ in $\{1, \dots, k\}$
-\end{staticrule}
 
-\begin{staticrule}{Super-extends}
+
+
 The return type \xcd"c" of each constructor in a class \xcd`C`
 must entail the invariant \xcdmath"$\mathit{inv}$(C)".
-\end{staticrule}
+
 
 \subsection{Invariants and constructor definitions}
 \index{invariant!and constructor}
@@ -1810,7 +1806,6 @@ The code in \xcd`example` typechecks, and \xcd`R3`'s type is inferred as
 
 \end{example}
 
-\begin{staticrule}{Super-invoke}
    Let \xcd"C" be a class with properties
    \xcdmath"p$_1$: P$_1$, $\dots$, p$_n$: P$_n$", invariant \xcd"c"
    extending the constrained type \xcd"D{d}" (where \xcd"D" is the name of a class).
@@ -1831,9 +1826,7 @@ d$_1$[a/self], x$_1$: S$_1$, ..., x$_k$: S$_k$ $\vdash$ d[a/self]
 \end{xtenmath}
 \noindent where \xcd"a" is a constant that does not appear in 
 \xcdmath"x$_1$: S$_1$ $\wedge$ ... $\wedge$ x$_k$: S$_k$".
-\end{staticrule}
 
-\begin{staticrule}{Constructor return}
    The compiler checks that every constructor for \xcd"C" ensures that
    the properties \xcdmath"p$_1$,..., p$_n$" are initialized with values which satisfy
    \xcdmath"t(C)", and its own return type \xcd"c'" as follows.  In each constructor, the
@@ -1843,20 +1836,20 @@ d$_1$[a/self], x$_1$: S$_1$, ..., x$_k$: S$_k$ $\vdash$ d[a/self]
 \begin{xtenmath}
 p$_1$: T$_1$, $\dots$, p$_n$: T$_n$ $\vdash$ t(C) $\wedge$ c'     
 \end{xtenmath}
-\end{staticrule}
+
 (Note that for the assignment of \xcdmath"e$_i$" to \xcdmath"p$_i$"
 to be type-correct it must be the
     case that \xcdmath"p$_i$: T$_i$ $\wedge$ p$_i$: P$_i$".) 
 
 
-\begin{staticrule}{Constructor invocation}
+
 The compiler must check that every invocation \xcdmath"C(e$_1$, $\dots$, e$_n$)" to a
 constructor is type correct: each argument \xcdmath"e$_i$" must have a static type
 that is a subtype of the declared type \xcdmath"T$_i$" for the $i$th
 argument of the
 constructor, and the conjunction of static types of the argument must
 entail the constraint in the parameter list of the constructor.
-\end{staticrule}
+
 
 
 \input{ObjectInitialization.tex}

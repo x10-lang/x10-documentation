@@ -154,12 +154,14 @@ If some particular sequencing of events is needed, \xcd`when`, \xcd`atomic`,
 though every implementation should make a best faith effort to ensure
 that every activity eventually gets a chance to make forward progress.
 
-\begin{staticrule*}
+
 The statement in the body of an \xcd"async" is subject to the
 restriction that it must be acceptable as the body of a \xcd"void"
-method for an anonymous inner class declared at that point in the code. As
-such, it may reference variables in lexically enclosing scopes.
-\end{staticrule*}
+method for an anonymous inner class declared at that point in the code. For
+example, it may reference \xcd`val` variables in lexically enclosing scopes,
+but 
+not \xcd`var` variables.
+
 
 \section{Finish}\index{finish}\label{finish}
 The statement \xcd"finish S" converts global termination to local
