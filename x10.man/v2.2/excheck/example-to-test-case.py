@@ -394,10 +394,14 @@ def readLines(f, endMarker, stripLeadingPercents, stripBeginAndEnd, basename):
 def doom(msg):
     raise Exception(msg)
 
+def removeDoubleStatic(code):
+    return re.sub("static *static", "static", code)
+
 
 def cramCodeIntoFile(filename, code, forbidFlag):
     forbidFlagThere, deflaggedCode = findAndDelete(code, forbidFlag)
     knownFailFlagThere, deflaggedCode = findAndDelete(deflaggedCode, KNOWN_FAIL_pattern)
+    deflaggedCode = removeDoubleStatic(deflaggedCode)
     if not forbidFlagThere and not knownFailFlagThere: 
         f = open(filename, 'w')
         f.write(deflaggedCode)

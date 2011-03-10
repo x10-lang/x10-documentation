@@ -108,28 +108,47 @@ struct Ambig(x:Int) {
 %~~neg
 
 \end{ex}
+
 Structs support the same notions of generics, properties, and constrained
 types that classes do.  
 
-\begin{ex}The \xcd`Pair` type below provides pairs
-of values; the \xcd`diag()` method applies only when the two elements of the
-pair are equal, and returns that common value: 
-%~~gen ^^^ Structs20
-% package Structs20;
+\begin{ex}
+
+%~~gen ^^^ Structs6i5t
+% package Structs6i5t;
 %~~vis
 \begin{xten}
-struct Pair[T,U](t:T, u:U) {
-  def this(t:T, u:U) { property(t,u); }
-  def diag(){T==U && t==u} = t;
+struct Exam[T](nQuestions:Int){T <: Question} {
+  public static interface Question {}
+  // ... 
 }
 \end{xten}
 %~~siv
-% class Hook{ def run() {
-%   val p = Pair(3,3); 
-%   return p.diag() == 3;
-% }}
+%
 %~~neg
+
+
 \end{ex}
+
+%%NOW_GONE%% \begin{ex}The \xcd`Pair` type below provides pairs
+%%NOW_GONE%% of values; the \xcd`diag()` method applies only when the two elements of the
+%%NOW_GONE%% pair are equal, and returns that common value: 
+%%NOW_GONE%% %~x~gen ^^^ Structs20
+%%NOW_GONE%% % package Structs20;
+%%NOW_GONE%% %~x~vis
+%%NOW_GONE%% \begin{xten}
+%%NOW_GONE%% struct Pair[T,U](t:T, u:U) {
+%%NOW_GONE%%   def this(t:T, u:U) { property(t,u); }
+%%NOW_GONE%%   def diag(){T==U && t==u} = t;
+%%NOW_GONE%% }
+%%NOW_GONE%% \end{xten}
+%%NOW_GONE%% %~x~siv
+%%NOW_GONE%% % class Hook{ def run() {
+%%NOW_GONE%% %   val p = Pair(3,3); 
+%%NOW_GONE%% %   return p.diag() == 3;
+%%NOW_GONE%% % }}
+%%NOW_GONE%% %~x~neg
+%%NOW_GONE%% \end{ex}
 
 \section{Boxing of structs}
 \index{auto-boxing!struct to interface}

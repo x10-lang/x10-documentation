@@ -105,15 +105,27 @@ as much programming as possible without leading to potential problems.
 Ultimately, they simply are elaborations of the fundamental principles that
 uninitialized fields must never be read, and \Xcd{this} must never be leaked.
 
+\subsection{Raw and Cooked Objects}
+\index{raw}
+\index{cooked}
+
+An object is {\em raw} before its constructor ends, and {\em cooked} after its
+constructor ends. Note that, when an object is cooked, all its subobjects are
+cooked.  
+
+
+
+\index{non-escaping}
 
 \subsection{Constructors and NonEscaping Methods}
 
-In general, constructors must not be allowed to call methods with\Xcd{this} as
+In general, constructors must not be allowed to call methods with \Xcd{this} as
 an argument or receiver. Such calls could leak references to \Xcd{this},
 either directly from a call to \Xcd{cell.set(this)}, or indirectly because
 \Xcd{toString} leaks \Xcd{this}, and the concatenation
 \Xcd`"Escaper = "+this` calls \Xcd{toString}.\footnote{This is abominable behavior for
-\Xcd{toString}, but nonetheless it is allowed.}
+\Xcd{toString}, but it cannot be prevented -- save by a scheme such as we
+present in this section.}
 %~WRONG~gen
 %package ObjectInit.CtorAndNonEscaping.One;
 %~WRONG~vis

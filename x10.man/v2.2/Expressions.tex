@@ -1066,9 +1066,9 @@ to determine whether an object is an instance of the given type:
 %##)
 
 In the above expression, \grammarrule{Type} is any type. At run time, the
-result of this operator is \xcd"true" if the
-\grammarrule{RelationalExpression} can be coerced to \grammarrule{Type}
-without a \xcd"TypeCastException" being thrown or static error occurring.
+result of \xcd`e instanceof T`
+is \xcd"true" if the
+value of \xcd`e` is an instance of type \xcd`T`.
 Otherwise the result is \xcd"false". This determination may involve checking
 that the constraint, if any, associated with the type is true for the given
 expression.

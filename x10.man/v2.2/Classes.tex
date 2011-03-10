@@ -290,9 +290,9 @@ class Proper(t:Int) {
 
 
 
-It is a compile-time error for a class
-defining a property \xcd"x: T" to have an ancestor class that defines
-a property with the name \xcd"x".  
+It is a static error for a class
+defining a property \xcd"x: T" to have a subclass class that defines
+a property or a field with the name \xcd"x".
 
 
 A property \xcd`x:T` induces a field with the same name and type, 
@@ -322,9 +322,7 @@ public final def x()=x;
 %}
 %~~neg
 
-\noindent (As noted in \Sref{DepType:Interface}, interfaces can define
-properties too. They define the same nullary getter methods, though they do
-not require fields.)
+
 
 
 
@@ -346,11 +344,31 @@ properties is acyclic.  \Eg, there cannot be values \xcd`a` and \xcd`b` with
 properties \xcd`c` and \xcd`d` such that \xcd`a.c == b` and \xcd`b.d == a`.
 
 
+\subsection{Properties and Fields}
 
+A container with a property named \xcd`p`, or a nullary property method named
+\xcd`p()`, cannot have a field named \xcd`p` --- either defined in that
+container, or inherited from a superclass.
 
+\subsection{Acyclicity of Properties}
+\index{properties!acyclic}
 
+X10 has certain restrictions that, ultimately, require that properties are
+simpler than their containers.  For example, \xcd`class A(a:A){}` is not
+allowed.  
+Formally, this requirement is that there is  a total order $\preceq$ 
+on all classes and
+structs such that, if $A$ extends $B$, then $A \prec B$, and
+if $A$ has a property of type $B$, then $A \prec B$, where $A \prec B$ means
+$A \preceq B$ and $A \ne B$.   
+For example, the preceding class \xcd`A` is ruled out because we would need
+\xcd`A`$\prec$\xcd`A`, which violates the definition of $\prec$.
+The programmer need not (and cannot) specify
+$\preceq$, and rarely need worry about its existence.  
 
-
+Similarly, 
+the type of a property may not simply be a type parameter.  
+For example, \xcd`class A[X](x:X){}` is illegal.
 
 
 
@@ -504,19 +522,20 @@ This may require a cast:
 %}
 %~~neg
 
-%% HERE!!!!
+
 
 The guard \xcd`{c}` 
 in a guarded method 
 \xcd`def m(){c} = E;`
 specifies a constraint \xcd"c" on the
 properties of the class \xcd"C" on which the method is being defined. The
-method exists only for those instances of \xcd"C" which satisfy \xcd"c".  It is
+method, in effect, only exists  for those instances of \xcd"C" which satisfy
+\xcd"c".  It is 
 illegal for code to invoke the method on objects whose static type is
 not a subtype of \xcd"C{c}".
 
-
-    The compiler checks that every method invocation
+Specifically: 
+    the compiler checks that every method invocation
     \xcdmath"o.m(e$_1$, $\dots$, e$_n$)"
     is type correct. Each argument
     \xcdmath"e$_i$" must have a
@@ -589,7 +608,14 @@ terminates at compile-time, otherwise the type-checker will not terminate and
 the program will fail to compile in a potentially most unfortunate way.
 
 Property methods in classes are implicitly \xcd"final"; they cannot be
-overridden.
+overridden.  It is a static error if a superclass has a property method with a
+given signature, and a subclass has a method or property method with the same
+signature.   It is a static error if a superclass has a property with some
+name \xcd`p`, and a subclass has a nullary method of any kind (instance,
+static, or property) also named \xcd`p`. 
+
+% We should fix it so that a property p (or a property method p())  in the super class  cannot be shadowed by a field p in a subclass, or overridden by a method p() in the subclass.
+
 
 A nullary property method definition may omit the formal parameters and
 the \xcd"def" keyword.  That is, the following are equivalent:
@@ -619,14 +645,29 @@ property rail: Boolean = rect && onePlace == here && zeroBased;
 %~~neg
 
 Similarly, nullary property methods can be inspected in constraints without
-\xcd`()`.  
+\xcd`()`. If \xcd`ob`'s type has a property \xcd`p`, then \xcd`ob.p` is that
+property. Otherwise, if it has a nullary property method \xcd`p()`, \xcd`ob.p`
+is equivalent to \xcd`ob.p()`. As a consequence, if the type provides both a
+property \xcd`p` and a nullary method \xcd`p()`, then the property can be
+accessed as \xcd`ob.p` and the method as \xcd`ob.p()`.\footnote{This only
+applies to nullary property methods, not nullary instance methods.  Nullary
+property methods perform limited computations, have no side effects, and
+always return the same value, since
+they have to be expressed in the constraint sublanguage.  In this sense, a
+nullary property method does not behave hugely different from a property.
+indeed, a compilation scheme which cached the value of the property method
+would all but erase the distinction.  Other methods may
+have more behavior, \eg, side effects, so we keep the \xcd`()` to make it
+clear that a method call is potentially large.
+}
+
 %~~longexp~~`~~` ^^^ Classes130
 % package classes.not.weasels;
 % class Waif(rect:Boolean, onePlace:Place, zeroBased:Boolean) {
 %   def this(rect:Boolean, onePlace:Place, zeroBased:Boolean) 
 %          :Waif{self.rect==rect, self.onePlace==onePlace, self.zeroBased==zeroBased}
 %          = {property(rect, onePlace, zeroBased);}
-%   property rail: Boolean = rect && onePlace == here && zeroBased;
+%   property rail(): Boolean = rect && onePlace == here && zeroBased;
 %   static def zoink() {
 %      val w : Waif{
 %~~vis
@@ -641,7 +682,7 @@ is equivalent to
 %   def this(rect:Boolean, onePlace:Place, zeroBased:Boolean) 
 %          :Waif{self.rect==rect, self.onePlace==onePlace, self.zeroBased==zeroBased}
 %          = {property(rect, onePlace, zeroBased);}
-%   property rail: Boolean = rect && onePlace == here && zeroBased;
+%   property rail(): Boolean = rect && onePlace == here && zeroBased;
 %   static def zoink() {
 %      val w : Waif{
 %~~vis
@@ -652,15 +693,16 @@ is equivalent to
 
 
 
+
 \subsection{Method overloading, overriding, hiding, shadowing and obscuring}
 \label{MethodOverload}
 \index{method!overloading}
 
 
 
-The definitions of method overloading, overriding, hiding, shadowing
-and obscuring in \Xten{} are the same as in \Java, modulo the following
-considerations motivated by type parameters and dependent types.
+The definitions of method overloading, overriding, hiding, shadowing and
+obscuring in \Xten{} are familiar from languages such as Java, modulo the
+following considerations motivated by type parameters and dependent types.
 
 
 
@@ -695,23 +737,32 @@ is legal:
 The definition of a method declaration \xcdmath"m$_1$" ``having the same signature
 as'' a method declaration \xcdmath"m$_2$" involves identity of types. 
 
+\noo{The following few paragraphs need to be stared at carefully.  I think
+they are contradictory and/or wrong.}
+
 The {\em constraint erasure} of a type \xcdmath"T" is defined as follows.
 The constraint erasure of  (a)~a class, interface or struct type \xcdmath"T" is 
 \xcdmath"T"; (b)~a type \xcdmath"T{c}" is the constraint erasure of 
 \xcdmath"T"; (b)~a type \xcdmath"T[S$_1$,$\ldots$,S$_n$]" 
 is \xcdmath"T'[S$_1$',$\ldots$,S$_n$']" where each primed type is the erasure of 
 the corresponding unprimed type.
- Two methods are said to have {\em the
-  same signature} if (a) they have the same number of type parameters,
+ Two methods are said to have {\em equivalent signatures} if (a) they have the
+ same number of type parameters, 
 (b) they have the same number of formal (value) parameters, and (c)
 for each formal parameter the constraint erasure of its types are equivalent. It is a
 compile-time error for there to be two methods with the same name and
-same signature in a class (either defined in that class or in a
-superclass).
+equivalent signatures in a class (either defined in that class or in a
+superclass), unless the signatures are identical and one of the methods is
+defined in a superclass (in which case the superclass's method is overridden
+by the subclass's).
 
+ 
 
-  A class \xcd"C" may not have two declarations for a method named \xcd"m"---either
-  defined at \xcd"C" or inherited:
+A class \xcd"C" may not have two non-identical but equivalent 
+declarations for
+a method named 
+\xcd"m"---either 
+defined at \xcd"C" or inherited:
 \begin{xtenmath}
 def m[X$_1$, $\dots$, X$_m$](v$_1$: T$_1$, $\dots$, v$_n$: T$_n$){tc}: T {...}
 def m[X$_1$, $\dots$, X$_m$](v$_1$: S$_1$, $\dots$, v$_n$: S$_n$){sc}: S {...}
@@ -721,6 +772,7 @@ if it is the case that the constraint erasures of the types \xcdmath"T$_1$",
 \dots, \xcdmath"T$_n$" are
 equivalent to the constraint erasures of the types \xcdmath"S$_1$, $\dots$, T$_n$"
 respectively.
+
 
 
 In addition, the guard of a overriding method must be 
@@ -765,12 +817,14 @@ certain capabilities (\eg, \xcd`val` fields of the object may be initialized)
 and certain restrictions (\eg, most methods cannot be called); see
 \Sref{ObjectInitialization} for the details.
 
+\begin{ex}
+
 The following class provides two constructors.  The unary constructor 
 \xcd`def this(b : Int)` allows initialization of the \xcd`a` field to an 
 arbitrary value.  The nullary constructor \xcd`def this()` gives it a default
 value of 10.  The \xcd`example` method illustrates both of these calls.
 
-\begin{ex}
+
 %~~gen ^^^ ClassesCtor10
 % package ClassesCtor10;
 %~~vis
@@ -778,7 +832,7 @@ value of 10.  The \xcd`example` method illustrates both of these calls.
 class C {
   public val a : Int;
   def this(b : Int) { a = b; } 
-  def this() { a = 10; }
+  def this()        { a = 10; }
   static def example() {
      val two = new C(2);
      assert two.a == 2;
@@ -801,9 +855,11 @@ nothing else. If this automatically-generated constructor is not valid (\eg,
 if the class has \xcd`val` fields that need to be initialized in a
 constructor), the class has no constructor, which is a static error.
 
-\begin{eg}
-The following class has no explicit constructor.   
-
+\begin{ex}
+The following class has no explicit constructor.
+Its implicit constructor is 
+\xcd`def this(x:Int){property(x);}`
+This implicit constructor is valid, and so is the class. 
 %~~gen ^^^ ClassesCtor20
 % package ClassesCtor20;
 %~~vis
@@ -818,15 +874,21 @@ class C(x:Int) {
 %~~siv
 %
 %~~neg
+\noindent 
 
+
+The following class has the same default constructor.  However, that
+constructor does not initialize \xcd`d`, and thus is invalid.  This 
+class does not compile; it needs an explicit constructor.
 %~~gen ^^^ ClassCtor30_MustFailCompile
 % NOCOMPILE
 %~~vis
 \begin{xten}
-class C(x:Int) {
+// THIS CODE DOES NOT COMPILE
+class Cfail(x:Int) {
   val d: Int;
   static def example() {
-    val thisShouldBeWrong = new C(40);
+    val wrong = new Cfail(40);
   }
 }
 \end{xten}
@@ -835,9 +897,7 @@ class C(x:Int) {
 %~~neg
 
 
-Thus, it has an implicit constructor: 
-\xcd`def this(x:Int){property(x);}`
-\end{eg}
+\end{ex}
 
 \subsection{Calling Other Constructors}
 
@@ -1140,8 +1200,10 @@ Writing the same code with method calls, while possible, is far less elegant:
 \begin{xten}
   public static def uglymain() {
      val X = new UglyPoly([0,1]);
-     val t <: UglyPoly = X.mult(7).plus(X.mult(X).mult(X).mult(6));  
-     val u <: UglyPoly = const(3).plus(X.mult(5)).minus(X.mult(X).mult(7));
+     val t <: UglyPoly = X.mult(7).plus(
+                          X.mult(X).mult(X).mult(6));  
+     val u <: UglyPoly = const(3).plus(
+                           X.mult(5)).minus(X.mult(X).mult(7));
      val v <: UglyPoly = t.mult(u).minus(1);
      for( i in -3 .. 3) {
        x10.io.Console.OUT.println(
@@ -1170,11 +1232,12 @@ it does for \xcd`Region`s;
  and (5) \xcd`a==b` will only coincide with
 \xcd`a.equals(b)` if coded that way.  For example, a \xcd`Polar` type might
 have many representations for the origin, as radius 0 and any angle; these
-will be \xcd`equals()`, but will not be \xcd`==`.}  However, \xcd`&&` and
+will be \xcd`equals()`, but will not be \xcd`==`.}  (However, \xcd`&&` and
 \xcd`||` 
 are only short-circuiting for \xcd`Boolean` expressions; user-defined versions
-of these operators have no special execution behavior.  
-These are: \\
+of these operators have no special execution behavior.)
+
+The user-definable operations are (in order of precedence): \\
 \begin{tabular}{l}
 implicit type coercions\\
 postfix \xcd`()`\\
@@ -1563,13 +1626,13 @@ arguments, and all types, and all binary operations. Of course to use this,
 both the application and assignment \xcd`operator`s must be defined.
 
 
-
+\begin{ex}
 
 The \xcd`Oddvec` class of somewhat peculiar vectors illustrates this.
 \xcd`a()` returns a string representation of the oddvec, which probably should
 be done by \xcd`toString()` instead.  
-\xcd`a(i)` picks out one of the three
-coordinates of \xcd`a`, which is sensible.  
+\xcd`a(i)` sensibly picks out one of the three
+coordinates of \xcd`a`.
 \xcd`a()=b` sets all the coordinates of \xcd`a` to \xcd`b`.
 \xcd`a(i)=b` assigns to one of the
 coordinates.  \xcd`a(i,j)=b` assigns different values to \xcd`a(i)` and
@@ -1581,7 +1644,8 @@ coordinates.  \xcd`a(i,j)=b` assigns different values to \xcd`a(i)` and
 \begin{xten}
 class Oddvec {
   var v : Array[Int](1) = new Array[Int](3, (Int)=>0);
-  public operator this () = "(" + v(0) + "," + v(1) + "," + v(2) + ")";
+  public operator this () = 
+      "(" + v(0) + "," + v(1) + "," + v(2) + ")";
   public operator this () = (newval: Int) { 
     for(p in v) v(p) = newval;
   }
@@ -1611,7 +1675,7 @@ class Oddvec {
 % }
 %~~neg
 
-
+\end{ex}
 
 \section{Class Guards and Invariants}\label{DepType:ClassGuard}
 \index{type invariants}
@@ -1755,7 +1819,7 @@ the form of a constrained type (the ``return type'' of the constructor):
 %##(CtorDecl
 \begin{bbgrammar}
 %(FROM #(prod:CtorDecl)#)
-            CtorDecl \: Mods\opt \xcd"def" \xcd"this" TypeParams\opt FormalParams WhereClause\opt HasResultType\opt Offers\opt CtorBody & (\ref{prod:CtorDecl}) \\
+            CtorDecl \: Mods\opt \xcd"def" \xcd"this" TypeParams\opt FormalParams WhereClause\opt HasResultType\opt  CtorBody & (\ref{prod:CtorDecl}) \\
 \end{bbgrammar}
 %##)
 
@@ -1765,11 +1829,11 @@ The parameter list for the constructor
 may specify a \emph{guard} that is to be satisfied by the parameters
 to the list.
 
-\begin{example}
+\begin{ex}
 %%TODO--rewrite this
 Here is another example, constructed as a simplified 
 version of \Xcd{x10.array.Region}.  The \xcd`mockUnion` method 
-has the type that a true \xcd`union` method would have.
+has the type, though not the value, that a true \xcd`union` method would have.
 
 %~~gen ^^^ Classes280
 %package Classes.SimplifiedRegion;
@@ -1804,11 +1868,14 @@ The code in \xcd`example` typechecks, and \xcd`R3`'s type is inferred as
 \xcd`MyRegion(3)`.  
 
 
-\end{example}
+\end{ex}
 
    Let \xcd"C" be a class with properties
-   \xcdmath"p$_1$: P$_1$, $\dots$, p$_n$: P$_n$", invariant \xcd"c"
-   extending the constrained type \xcd"D{d}" (where \xcd"D" is the name of a class).
+   \xcdmath"p$_1$: P$_1$, $\dots$, p$_n$: P$_n$", and invariant \xcd"c"
+   extending the constrained type \xcd"D{d}" (where \xcd"D" is the name of a
+   class).
+
+
 
    For every constructor in \xcd"C" the compiler checks that the call to
    super invokes a constructor for \xcd"D" whose return type is strong enough
@@ -1820,21 +1887,21 @@ The code in \xcd`example` typechecks, and \xcd`R3`'s type is inferred as
 \xcdmath"def this(x$_1$: T$_1$, $\dots$, x$_k$: T$_k$){c}: D{d$_1$}"
    then it must be the case that 
 \begin{xtenmath}
-x$_1$: S$_1$, $\dots$, x$_i$: S$_i$ $\vdash$ x$_i$: T$_i$  (for $i \in \{1, \dots, k\}$)
-x$_1$: S$_1$, $\dots$, x$_k$: S$_k$ $\vdash$ c  
-d$_1$[a/self], x$_1$: S$_1$, ..., x$_k$: S$_k$ $\vdash$ d[a/self]      
+x$_1$: S$_1$, $\dots$, x$_i$: S$_i$ entails x$_i$: T$_i$  (for $i \in \{1, \dots, k\}$)
+x$_1$: S$_1$, $\dots$, x$_k$: S$_k$ entails c  
+d$_1$[a/self], x$_1$: S$_1$, ..., x$_k$: S$_k$ entails d[a/self]      
 \end{xtenmath}
 \noindent where \xcd"a" is a constant that does not appear in 
 \xcdmath"x$_1$: S$_1$ $\wedge$ ... $\wedge$ x$_k$: S$_k$".
 
    The compiler checks that every constructor for \xcd"C" ensures that
    the properties \xcdmath"p$_1$,..., p$_n$" are initialized with values which satisfy
-   \xcdmath"t(C)", and its own return type \xcd"c'" as follows.  In each constructor, the
+   $\mathit{inv}($\xcd"T"$)$, and its own return type \xcd"c'" as follows.  In each constructor, the
    compiler checks that the static types \xcdmath"T$_i$" of the expressions \xcdmath"e$_i$"
    assigned to \xcdmath"p$_i$" are such that the following is
    true:
 \begin{xtenmath}
-p$_1$: T$_1$, $\dots$, p$_n$: T$_n$ $\vdash$ t(C) $\wedge$ c'     
+p$_1$: T$_1$, $\dots$, p$_n$: T$_n$ entails $\mathit{inv}($T$)$ $\wedge$ c'     
 \end{xtenmath}
 
 (Note that for the assignment of \xcdmath"e$_i$" to \xcdmath"p$_i$"
