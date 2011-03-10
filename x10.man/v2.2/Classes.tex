@@ -1495,6 +1495,27 @@ class Poly {
 %~~neg
 
 
+Furthermore, \xcd`T` may be written as \xcd`?` in the definition of a type
+conversion operator (and only there) to have it inferred from context: 
+
+%~~gen ^^^ Classes9x1k
+% package Classes9x1k;
+%~~vis
+\begin{xten}
+class Caster(n:Int) {
+  public static operator (a:Int) as ? = new Caster(a); 
+  public static def example() {
+    val c : Caster{n==3} = 3 as Caster{n==3};
+  }
+}
+\end{xten}
+%~~siv
+%
+%~~neg
+
+
+The \xcd`?` may be given a bound, such as \xcd`as ? <: Caster`, if desired.
+
 % TODO
 
 %%TODO%%  You may define a type conversion to a constrained type, like \xcd`Poly` in
