@@ -33,6 +33,25 @@ identifiers, \xcd`as` is a keyword, but \xcd`As` and \xcd`AS` are identifiers.
 (However, case is insignificant in the hexadecimal numbers, exponent markers,
 and type-tags of numeric literals -- 0xbabe = 0XBABE.)
 
+In addition, any string of printing ASCII characters except for backquote
+(\xcd"`"), enclosed in a pair of backquotes, is an identifier.  This allows,
+for example, keywords to be used as identifiers.  The following are
+backquoted identifiers: 
+%~~gen ^^^ Lex1p9o
+% package Lex1p9o;
+% class Backyquotey {
+% def hokey(a:Int, b:Int, c:Int, d:Int) = 0;
+% def example() { val `while`=0, `!`=0, `(unbalanced(`=0, `0xbabe`=0; 
+% hokey(
+%~~vis
+\begin{xten}
+`while`, `!`, `(unbalanced(`, `0xbabe` 
+\end{xten}
+%~~siv
+% ); } } 
+%~~neg
+
+
 \paragraph{Keywords}
 \index{keywords}
 \Xten{} uses the following keywords:\\
