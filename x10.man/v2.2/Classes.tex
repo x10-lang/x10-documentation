@@ -944,13 +944,14 @@ The \Xten{} runtime implements the following procedure to ensure
 reliable initialization of the static state of classes.
 
 
-Execution commences with a single thread executing the
+Execution (of an entire X10 program) commences with a single thread executing
+the 
 \emph{initialization} phase of an \Xten{} computation at place \Xcd{0}. This
 phase must complete successfully before the body of the \Xcd{main} method is
 executed.
 
-The initialization phase must be thought of as if it is implemented in
-the following fashion: (The implementation may do something more
+The initialization phase should be thought of as if it is implemented in
+the following fashion. (The implementation may do something more
 efficient as long as it is faithful to this semantics.)
 
 \begin{xten}
@@ -1219,6 +1220,8 @@ Writing the same code with method calls, while possible, is far less elegant:
 
 The operator-using code can be written in X10, though a few variations are
 necessary to handle such exotic cases as \xcd`1+X`.
+
+%% HERE!!
 
 Most X10 operators can be given definitions.\footnote{Indeed, even for the
 standard types, these operators are defined in the library.  Not even as basic
