@@ -1433,11 +1433,6 @@ However, the \xcd`Int` version will be chosen because it does not require a
 conversion. If even the best-matching operation is not uniquely determined,
 the compiler will report a static error.
 
-The main difference between expressing a binary operation as an instance
-method (with a \xcd`this` in the definition) and a static one (no \xcd`this`)
-is that instance methods don't apply any conversions, while static methods
-attempt to convert both arguments. 
-
 
 
 
