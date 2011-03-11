@@ -1017,7 +1017,7 @@ argument \xcd`x`.  We would like to write code thus:
 % class Poly {
 %   public val coeff : Array[Int](1);
 %   public def this(coeff: Array[Int](1)) { this.coeff = coeff;}
-%   public def degree() = coeff.size()-1;
+%   public def degree() = coeff.size-1;
 %   public def a(i:Int) = (i<0 || i>this.degree()) ? 0 : coeff(i);
 %
 %   public static operator (c : Int) as Poly = new Poly([c]);
@@ -1033,7 +1033,7 @@ argument \xcd`x`.  We would like to write code thus:
 %
 %   public operator this + (p:Poly) =  new Poly(
 %      new Array[Int](
-%         Math.max(this.coeff.size(), p.coeff.size()),
+%         Math.max(this.coeff.size, p.coeff.size),
 %         (i:Int) => this.a(i) + p.a(i)
 %      ));
 %   public operator this - (p:Poly) = this + (-1)*p;
@@ -1118,7 +1118,7 @@ Writing the same code with method calls, while possible, is far less elegant:
 % class UglyPoly {
 %   public val coeff : Array[Int](1);
 %   public def this(coeff: Array[Int](1)) { this.coeff = coeff;}
-%   public def degree() = coeff.size()-1;
+%   public def degree() = coeff.size-1;
 %   public  def  a(i:Int) = (i<0 || i>this.degree()) ? 0 : coeff(i);
 %
 %   public static operator (c : Int) as UglyPoly = new UglyPoly([c]);
@@ -1134,7 +1134,7 @@ Writing the same code with method calls, while possible, is far less elegant:
 %
 %   public operator this + (p:UglyPoly) =  new UglyPoly(
 %      new Array[Int](
-%         Math.max(this.coeff.size(), p.coeff.size()),
+%         Math.max(this.coeff.size, p.coeff.size),
 %         (i:Int) => this.a(i) + p.a(i)
 %      ));
 %   public operator this - (p:UglyPoly) = this + (-1)*p;
@@ -1273,12 +1273,12 @@ appear in a use of the operator.  So,
 class Poly {
   public val coeff : Array[Int](1);
   public def this(coeff: Array[Int](1)) { this.coeff = coeff;}
-  public def degree() = coeff.size()-1;
+  public def degree() = coeff.size-1;
   public def  a(i:Int) = (i<0 || i>this.degree()) ? 0 : coeff(i);
 
   public operator this + (p:Poly) =  new Poly(
      new Array[Int](
-        Math.max(this.coeff.size(), p.coeff.size()),
+        Math.max(this.coeff.size, p.coeff.size),
         (i:Int) => this.a(i) + p.a(i)
      )); 
   // ... 
@@ -1305,12 +1305,12 @@ an overloaded method definition.
 % class Poly {
 %   public val coeff : Array[Int](1);
 %   public def this(coeff: Array[Int](1)) { this.coeff = coeff;}
-%   public def degree() = coeff.size()-1;
+%   public def degree() = coeff.size-1;
 %   public def  a(i:Int) = (i<0 || i>this.degree()) ? 0 : coeff(i);
 % 
 %   public operator this + (p:Poly) =  new Poly(
 %      new Array[Int](
-%         Math.max(this.coeff.size(), p.coeff.size()),
+%         Math.max(this.coeff.size, p.coeff.size),
 %         (i:Int) => this.a(i) + p.a(i)
 %      ));
 %    public operator (n : Int) + this = new Poly([n]) + this;
@@ -1342,12 +1342,12 @@ allow it as a method on \xcd`Poly` as well.
 % class Poly {
 %   public val coeff : Array[Int](1);
 %   public def this(coeff: Array[Int](1)) { this.coeff = coeff;}
-%   public def degree() = coeff.size()-1;
+%   public def degree() = coeff.size-1;
 %   public def  a(i:Int) = (i<0 || i>this.degree()) ? 0 : coeff(i);
 % 
 %   public operator this + (p:Poly) =  new Poly(
 %      new Array[Int](
-%         Math.max(this.coeff.size(), p.coeff.size()),
+%         Math.max(this.coeff.size, p.coeff.size),
 %         (i:Int) => this.a(i) + p.a(i)
 %      ));
 %~~vis
@@ -1376,13 +1376,13 @@ The definition for the sum of two
 % class Poly {
 %   public val coeff : Array[Int](1);
 %   public def this(coeff: Array[Int](1)) { this.coeff = coeff;}
-%   public def degree() = coeff.size()-1;
+%   public def degree() = coeff.size-1;
 %   public def  a(i:Int) = (i<0 || i>this.degree()) ? 0 : coeff(i);
 %~~vis
 \begin{xten}
   public static operator (p:Poly) + (q:Poly) =  new Poly(
      new Array[Int](
-        Math.max(q.coeff.size(), p.coeff.size()),
+        Math.max(q.coeff.size, p.coeff.size),
         (i:Int) => q.a(i) + p.a(i)
      ));
 \end{xten}
@@ -1449,12 +1449,12 @@ expression.  The operator to negate a polynomial is:
 % class Poly {
 %   public val coeff : Array[Int](1);
 %   public def this(coeff: Array[Int](1)) { this.coeff = coeff;}
-%   public def degree() = coeff.size()-1;
+%   public def degree() = coeff.size-1;
 %   public def  a(i:Int) = (i<0 || i>this.degree()) ? 0 : coeff(i);
 %~~vis
 \begin{xten}
   public operator - this = new Poly(
-    new Array[Int](coeff.size(), (i:Int) => -coeff(i))
+    new Array[Int](coeff.size, (i:Int) => -coeff(i))
     );
 \end{xten}
 %~~siv
@@ -1573,7 +1573,7 @@ addition to add it to \xcd`x`.
 % class Poly {
 %   public val coeff : Array[Int](1);
 %   public def this(coeff: Array[Int](1)) { this.coeff = coeff;}
-%   public def degree() = coeff.size()-1;
+%   public def degree() = coeff.size-1;
 %   public def  a(i:Int) = (i<0 || i>this.degree()) ? 0 : coeff(i);
 %   public final def toString() = {
 %      var allZeroSoFar : Boolean = true;
@@ -1604,7 +1604,7 @@ addition to add it to \xcd`x`.
 
   public static operator (p:Poly) + (q:Poly) = new Poly(
       new Array[Int](
-        Math.max(p.coeff.size(), q.coeff.size()),
+        Math.max(p.coeff.size, q.coeff.size),
         (i:Int) => p.a(i) + q.a(i)
      ));
 
