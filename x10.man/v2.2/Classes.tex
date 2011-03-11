@@ -1005,6 +1005,24 @@ any place.
 \index{operator}
 \index{operator!user-defined}
 
+%##(MethodDecl
+\begin{bbgrammar}
+%(FROM #(prod:MethodDecl)#)
+          MethodDecl \: MethMods \xcd"def" Id TypeParams\opt FormalParams WhereClause\opt HasResultType\opt Offers\opt MethodBody & (\ref{prod:MethodDecl}) \\
+                    \| MethMods \xcd"operator" TypeParams\opt \xcd"(" FormalParam  \xcd")" BinOp \xcd"(" FormalParam  \xcd")" WhereClause\opt HasResultType\opt Offers\opt MethodBody \\
+                    \| MethMods \xcd"operator" TypeParams\opt PrefixOp \xcd"(" FormalParam  \xcd")" WhereClause\opt HasResultType\opt Offers\opt MethodBody \\
+                    \| MethMods \xcd"operator" TypeParams\opt \xcd"this" BinOp \xcd"(" FormalParam  \xcd")" WhereClause\opt HasResultType\opt Offers\opt MethodBody \\
+                    \| MethMods \xcd"operator" TypeParams\opt \xcd"(" FormalParam  \xcd")" BinOp \xcd"this" WhereClause\opt HasResultType\opt Offers\opt MethodBody \\
+                    \| MethMods \xcd"operator" TypeParams\opt PrefixOp \xcd"this" WhereClause\opt HasResultType\opt Offers\opt MethodBody \\
+                    \| MethMods \xcd"operator" \xcd"this" TypeParams\opt FormalParams WhereClause\opt HasResultType\opt Offers\opt MethodBody \\
+                    \| MethMods \xcd"operator" \xcd"this" TypeParams\opt FormalParams \xcd"=" \xcd"(" FormalParam  \xcd")" WhereClause\opt HasResultType\opt Offers\opt MethodBody \\
+                    \| MethMods \xcd"operator" TypeParams\opt \xcd"(" FormalParam  \xcd")" \xcd"as" Type WhereClause\opt Offers\opt MethodBody \\
+                    \| MethMods \xcd"operator" TypeParams\opt \xcd"(" FormalParam  \xcd")" \xcd"as" \xcd"?" WhereClause\opt HasResultType\opt Offers\opt MethodBody \\
+                    \| MethMods \xcd"operator" TypeParams\opt \xcd"(" FormalParam  \xcd")" WhereClause\opt HasResultType\opt Offers\opt MethodBody \\
+\end{bbgrammar}
+%##)
+
+
 It is often convenient to have methods named by symbols rather than words.
 For example, suppose that we wish to define a \xcd`Poly` class of
 polynomials -- for the sake of illustration, single-variable polynomials with
@@ -1260,8 +1278,73 @@ unary \xcd`-`, unary \xcd`+`, \xcd`!`, \xcd`~`\\
 \end{tabular}
 
 
+Many operators may be defined either in \xcd`static` or instance forms.  Those
+defined in instance form are dynamically dispatched, just like an instance
+method.  Those defined in static form are statically dispatched, just like a
+static method.  
+
+\begin{ex}
+%~~gen ^^^ Classes6a1j
+% package oifClasses6a1j;
+% class Classes6a1j {
+%~~vis
+\begin{xten}
+static class Trace(n:Int){
+  public static operator !(f:Trace) = new Trace(10 * f.n + 1);
+  public operator -this = new Trace (10 * this.n + 2);
+}
+static class Brace extends Trace{
+  def this(n:Int) { super(n); }
+  public operator -this = new Brace (10 * this.n + 3);
+  static def example() {
+     val t = new Trace(1);
+     assert (!t).n == 11;
+     assert (-t).n == 12 && (-t instanceof Trace);
+     val b = new Brace(1);
+     assert (!b).n == 11;
+     assert (-b).n == 13 && (-b instanceof Brace);
+  }
+}
+
+\end{xten}
+%~~siv
+% // And checking the unambiguous syntax while I'm here...
+% static class Glook { def checky(t:Trace) { 
+%    Trace.operator !(t);
+%    t.operator -();
+% } } }
+%~~neg
+\end{ex}
+
+Operators may be invoked by unambiguous syntax, loosely akin to a
+fully-qualified name. For example, \xcd`!t` above may be invoked as
+\xcd`Trace.operator !(t)`. This unambiguous syntax may be used even if there
+are several \xcd`!` operators that could apply to \xcd`t`, rendering the
+convenient short form \xcd`!t` unavailable in some context.
+
+
+
 
 \subsection{Binary Operators}
+
+Binary operators, illustrated by \xcd`+`, may be defined statically in a
+container \xcd`A` as:
+\begin{xten}
+static operator (b:B) + (c:C) = ...;
+\end{xten}
+In this case it may be invoked as \xcd`A.operator +(b,c)`.
+Or, it may be defined as  as an instance operator by one of the forms:
+\begin{xten}
+operator this + (b:B) = ...;
+operator (b:B) + this = ...;
+\end{xten}
+and be invoked as 
+\xcd`a.operator +(b)`
+and as 
+\xcd`a.operator ()+(b)` 
+respectively.
+
+\begin{ex}
 
 Defining the sum \xcd`P+Q` of two polynomials looks much like a method
 definition.  It uses the \xcd`operator` keyword instead of \xcd`def`, and
@@ -1404,23 +1487,8 @@ The definition for the sum of two
 % }
 %~~neg
 
-This requires the following grammar: \\
-%##(MethodDecl
-\begin{bbgrammar}
-%(FROM #(prod:MethodDecl)#)
-          MethodDecl \: MethMods \xcd"def" Id TypeParams\opt FormalParams WhereClause\opt HasResultType\opt Offers\opt MethodBody & (\ref{prod:MethodDecl}) \\
-                    \| MethMods \xcd"operator" TypeParams\opt \xcd"(" FormalParam  \xcd")" BinOp \xcd"(" FormalParam  \xcd")" WhereClause\opt HasResultType\opt Offers\opt MethodBody \\
-                    \| MethMods \xcd"operator" TypeParams\opt PrefixOp \xcd"(" FormalParam  \xcd")" WhereClause\opt HasResultType\opt Offers\opt MethodBody \\
-                    \| MethMods \xcd"operator" TypeParams\opt \xcd"this" BinOp \xcd"(" FormalParam  \xcd")" WhereClause\opt HasResultType\opt Offers\opt MethodBody \\
-                    \| MethMods \xcd"operator" TypeParams\opt \xcd"(" FormalParam  \xcd")" BinOp \xcd"this" WhereClause\opt HasResultType\opt Offers\opt MethodBody \\
-                    \| MethMods \xcd"operator" TypeParams\opt PrefixOp \xcd"this" WhereClause\opt HasResultType\opt Offers\opt MethodBody \\
-                    \| MethMods \xcd"operator" \xcd"this" TypeParams\opt FormalParams WhereClause\opt HasResultType\opt Offers\opt MethodBody \\
-                    \| MethMods \xcd"operator" \xcd"this" TypeParams\opt FormalParams \xcd"=" \xcd"(" FormalParam  \xcd")" WhereClause\opt HasResultType\opt Offers\opt MethodBody \\
-                    \| MethMods \xcd"operator" TypeParams\opt \xcd"(" FormalParam  \xcd")" \xcd"as" Type WhereClause\opt Offers\opt MethodBody \\
-                    \| MethMods \xcd"operator" TypeParams\opt \xcd"(" FormalParam  \xcd")" \xcd"as" \xcd"?" WhereClause\opt HasResultType\opt Offers\opt MethodBody \\
-                    \| MethMods \xcd"operator" TypeParams\opt \xcd"(" FormalParam  \xcd")" WhereClause\opt HasResultType\opt Offers\opt MethodBody \\
-\end{bbgrammar}
-%##)
+\end{ex}
+
 When X10 attempts to typecheck a binary operator expression like \xcd`P+Q`, it
 first typechecks \xcd`P` and \xcd`Q`. Then, it looks for operator declarations
 for \xcd`+` in the types of \xcd`P` and \xcd`Q`. If there are none, it is a
@@ -1434,13 +1502,28 @@ conversion. If even the best-matching operation is not uniquely determined,
 the compiler will report a static error.
 
 
-
-
 \subsection{Unary Operators}
 
-Unary operators are defined in a similar way, with \xcd`this` appearing in the
-\xcd`operator` definition where an actual value would occur in a unary
-expression.  The operator to negate a polynomial is: 
+Unary operators,  illustrated by \xcd`!`, may be defined statically in
+container 
+\xcd`A` as 
+\begin{xten}
+static operator !(x:A) = ...;
+\end{xten}
+or as instance operators by: 
+\begin{xten}
+operator !this = ...;
+\end{xten}
+
+A statically-defined unary operator \xcd`!` may be invoked on \xcd`a:A` as 
+\xcd`A.operator !(a)`.  An instance operator may be invoked as
+\xcd`a.operator !()`.  
+
+The rules for typechecking a unary operation are the same as for methods; the
+complexities of binary operations are not needed.
+
+\begin{ex}
+The operator to negate a polynomial is: 
 
 %~~gen ^^^ Classes220
 % package Classes.In.Poly106;
@@ -1463,18 +1546,40 @@ expression.  The operator to negate a polynomial is:
 % }
 %~~neg
 
-The rules for typechecking a unary operation are the same as for methods; the
-complexities of binary operations are not needed.
 
-\bard{List the operators which this works for, in precedence order}
+
+\end{ex}
 
 
 \subsection{Type Conversions}
 \index{type conversion!user-defined}
 
-Explicit type conversions, \xcd`e as T{c}`, can be defined as operators on
-class \xcd`T`.
+Explicit type conversions, \xcd`e as A`, can be defined as operators on
+class \xcd`A`.  These must be static operators, and are defined in the 
+the form: 
+\begin{xten}
+static operator (x:B) as A{c} = ... 
+\end{xten}
+They may be invoked by the unambiguous syntax: 
+%~~gen ^^^ Classes5l5v
+% package ookClasses5l5v;
+% class Classes5l5v {
+% static class B {}
+% static class A {
+%    static operator (x:B) as A = new A(); 
+% }
+% static class Example { def example(b:B) {
+%~~vis
+\begin{xten}
+A.operator as[A](b)
+\end{xten}
+%~~siv
+% } } }
+%~~neg
 
+
+
+\begin{ex}
 %~~gen ^^^ Classes230
 % package Classes_explicit_type_conversions_a;
 %~~vis
@@ -1491,7 +1596,7 @@ class Poly {
 %~~siv
 %
 %~~neg
-
+\end{ex}
 
 Furthermore, \xcd`T` may be written as \xcd`?` in the definition of a type
 conversion operator (and only there) to have it inferred from context: 
@@ -1550,9 +1655,19 @@ The \xcd`?` may be given a bound, such as \xcd`as ? <: Caster`, if desired.
 \label{sect:ImplicitCoercion}
 \index{type conversion!implicit}
 
-You may also define {\em implicit} type coercions to \xcd`T{c}` as static
-operators in class \xcd`T`.  The syntax for this is
-\xcd`static operator (x:U) : T{c} = e`.
+An implicit type conversion from \xcd`U`  to \xcd`T` may be specified in
+either \xcd`U` or \xcd`T`.  
+The syntax for it, in either case, is: 
+\begin{xten}
+static operator (u:U) : T = e;
+\end{xten}
+which may be invoked by the unambiguous syntax 
+\xcd`T.operator[T](u)` or \xcd`U.operator[T](u)`.
+\noo{I don't know what to do about constraints on T or U.}
+
+\noo{We need spec checks on this}
+
+
 Implicit coercions are used automatically by the compiler on method calls 
 (\Sref{sect:MethodResolution}) and assignments (\Sref{domedomedome}).
 
