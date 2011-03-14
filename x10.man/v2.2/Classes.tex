@@ -1039,7 +1039,7 @@ argument \xcd`x`.  We would like to write code thus:
 %   public def degree() = coeff.size-1;
 %   public def a(i:Int) = (i<0 || i>this.degree()) ? 0 : coeff(i);
 %
-%   public static operator (c : Int) as Poly = new Poly([c]);
+%   public static operator (c : Int) as Poly = new Poly([c as Int]);
 %
 %   public operator this(x:Int) {
 %     val d = this.degree();
@@ -1140,7 +1140,7 @@ Writing the same code with method calls, while possible, is far less elegant:
 %   public def degree() = coeff.size-1;
 %   public  def  a(i:Int) = (i<0 || i>this.degree()) ? 0 : coeff(i);
 %
-%   public static operator (c : Int) as UglyPoly = new UglyPoly([c]);
+%   public static operator (c : Int) as UglyPoly = new UglyPoly([c as Int]);
 %
 %   public def apply(x:Int) {
 %     val d = this.degree();
@@ -1239,7 +1239,7 @@ Writing the same code with method calls, while possible, is far less elegant:
 The operator-using code can be written in X10, though a few variations are
 necessary to handle such exotic cases as \xcd`1+X`.
 
-%% HERE!!
+
 
 Most X10 operators can be given definitions.\footnote{Indeed, even for the
 standard types, these operators are defined in the library.  Not even as basic
@@ -1250,8 +1250,10 @@ the \xcd`..` operator won't compute the \xcd`zeroBased` and \xcd`rail`
 properties as it does for \xcd`Int` ranges; (3) \xcd`*` won't track ranks, as
 it does for \xcd`Region`s; 
 (4) \xcd`&&` and \xcd`||` won't short-circuit, as they do for \xcd`Boolean`s, 
- and (5) \xcd`a==b` will only coincide with
-\xcd`a.equals(b)` if coded that way.  For example, a \xcd`Polar` type might
+(5) \xcd`a==b` will only coincide with
+\xcd`a.equals(b)` if coded that way; and (6) it is impossible to define an
+operation like \xcd`String.+` which converts both its left and right arguments
+from any type.  For example, a \xcd`Polar` type might
 have many representations for the origin, as radius 0 and any angle; these
 will be \xcd`equals()`, but will not be \xcd`==`.}  (However, \xcd`&&` and
 \xcd`||` 
@@ -1287,6 +1289,7 @@ static method.
 %~~gen ^^^ Classes6a1j
 % package oifClasses6a1j;
 % class Classes6a1j {
+% KNOWNFAIL-operator
 %~~vis
 \begin{xten}
 static class Trace(n:Int){
@@ -1370,8 +1373,8 @@ class Poly {
   // ... 
 \end{xten}
 %~~siv
-%   public operator (n : Int) + this = new Poly([n]) + this;
-%   public operator this + (n : Int) = new Poly([n]) + this;
+%   public operator (n : Int) + this = new Poly([n as Int]) + this;
+%   public operator this + (n : Int) = new Poly([n as Int]) + this;
 % 
 %   def makeSureItWorks() {
 %      val x = new Poly([0,1]);
@@ -1399,10 +1402,10 @@ an overloaded method definition.
 %         Math.max(this.coeff.size, p.coeff.size),
 %         (i:Int) => this.a(i) + p.a(i)
 %      ));
-%    public operator (n : Int) + this = new Poly([n]) + this;
+%    public operator (n : Int) + this = new Poly([n as Int]) + this;
 %~~vis
 \begin{xten}
-   public operator this + (n : Int) = new Poly([n]) + this;
+   public operator this + (n : Int) = new Poly([n as Int]) + this;
 \end{xten}
 %~~siv
 % 
@@ -1438,11 +1441,11 @@ allow it as a method on \xcd`Poly` as well.
 %      ));
 %~~vis
 \begin{xten}
-   public operator (n : Int) + this = new Poly([n]) + this;
+   public operator (n : Int) + this = new Poly([n as Int]) + this;
 \end{xten}
 %~~siv
 % 
-%   public operator this + (n : Int) = new Poly([n]) + this;
+%   public operator this + (n : Int) = new Poly([n as Int]) + this;
 %   def makeSureItWorks() {
 %      val x = new Poly([0,1]);
 %      val p <: Poly = x+x+x;
@@ -1474,8 +1477,8 @@ The definition for the sum of two
 \end{xten}
 %~~siv
 %
-%   public operator (n : Int) + this = new Poly([n]) + this;
-%   public operator this + (n : Int) = new Poly([n]) + this;
+%   public operator (n : Int) + this = new Poly([n as Int]) + this;
+%   public operator this + (n : Int) = new Poly([n as Int]) + this;
 % 
 %   def makeSureItWorks() {
 %      val x = new Poly([0,1]);
@@ -1563,6 +1566,7 @@ static operator (x:B) as A{c} = ...
 They may be invoked by the unambiguous syntax: 
 %~~gen ^^^ Classes5l5v
 % package ookClasses5l5v;
+% KNOWNFAIL-operator
 % class Classes5l5v {
 % static class B {}
 % static class A {
@@ -1587,7 +1591,7 @@ A.operator as[A](b)
 class Poly {
   public val coeff : Array[Int](1);
   public def this(coeff: Array[Int](1)) { this.coeff = coeff;}
-  public static operator (a:Int) as Poly = new Poly([a]);
+  public static operator (a:Int) as Poly = new Poly([a as Int]);
   public static def main(Array[String](1)):void {
      val three : Poly = 3 as Poly;
   }
@@ -1713,7 +1717,7 @@ addition to add it to \xcd`x`.
 
 %~~vis
 \begin{xten}
-  public static operator (c : Int) : Poly = new Poly([c]);
+  public static operator (c : Int) : Poly = new Poly([c as Int]);
 
   public static operator (p:Poly) + (q:Poly) = new Poly(
       new Array[Int](
@@ -1983,7 +1987,7 @@ class MyRegion(rank:Int) {
   }
   def mockUnion(r:MyRegion(rank)):MyRegion(rank) = this;
   def example() {
-    val R1 : MyRegion(3) = new MyRegion([4,4,4]); 
+    val R1 : MyRegion(3) = new MyRegion([4,4,4 as Int]); 
     val R2 : MyRegion(3) = new MyRegion([5,4,1]); 
     val R3 = R1.mockUnion(R2); // inferred type MyRegion(3)
   }
