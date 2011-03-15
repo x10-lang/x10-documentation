@@ -223,7 +223,7 @@ operator, or an implicit coercion operator.  X10 tries three things, in order,
 only checking 2 if 1 fails, and 3 if 2 fails: 
 \begin{enumerate}
 \item An \xcd`as` operator in \xcd`B`: 
-      \xcdmath"static operator (a:A) as B", 
+      \xcdmath"static operator (a:A) as ?", 
       so that the conversion is \xcd`B.operator as[B](a)`
 ;
 \item or, failing that, an implicit coercion in \xcd`B`:

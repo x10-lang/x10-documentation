@@ -19,11 +19,12 @@ would be a legitimate run of the program, but
 
 The program creates a clock \xcd`cl` to manage the phases.  Each participating
 activity does
-the work of its first phase, and then executes \xcd`next;` to signal that it
-is finished with that work. \xcd`next;` is blocking, and causes the participant to
+the work of its first phase, and then executes \xcd`Clock.advanceAll();` to
+signal that it 
+is finished with that work. \xcd`Clock.advanceAll();` is blocking, and causes the participant to
 wait until all participant have finished with the phase -- as measured by the
 clock \xcd`cl` to which they are both registered.  
-Then they do the second phase, and another \xcd`next;` to make sure that
+Then they do the second phase, and another \xcd`Clock.advanceAll();` to make sure that
 neither proceeds to the third phase until both are ready.  This example uses
 \xcd`finish` to wait for both particiants to finish.  
 
@@ -42,17 +43,17 @@ class ClockEx {
       val cl = Clock.make();
       async clocked(cl) {// Activity A
         say("A-1");
-        next;
+        Clock.advanceAll();
         say("A-2");
-        next;
+        Clock.advanceAll();
         say("A-3"); 
       }// Activity A
 
       async clocked(cl) {// Activity B
         say("B-1");
-        next;
+        Clock.advanceAll();
         say("B-2");
-        next;
+        Clock.advanceAll();
         say("B-3"); 
       }// Activity B
     }
@@ -89,58 +90,24 @@ that it is registered upon are:
 \item It may {\em resume} the clock, with \xcd`c.resume()`, indicating that it
       has finished with the current phase associated with \xcd`c` and is ready
       to move on to the next one.
-\item It may {\em wait} on the clock, with \xcd`c.next()`.  This first does
+\item It may {\em wait} on the clock, with \xcd`c.advance()`.  This first does
       \xcd`c.resume()`, and then blocks the current activity until the start
       of the next phase, \viz, until all other activities registered on that
       clock have called \xcd`c.resume()`.
 \item It may {\em block} on all the clocks it is registered with
-      simultaneously, by the command \xcd`next;`.  This, in effect, calls
-      \xcd`c.next()` simultaneously 
+      simultaneously, by the command \xcd`Clock.advanceAll();`.  This, in effect, calls
+      \xcd`c.advance()` simultaneously 
       on all clocks \xcd`c` that the current activity is registered with.
 \item Other miscellaneous operations are available as well; see the
       \xcd`Clock` API.
 \end{itemize}
 
-%%CLOCK%% An activity may perform the following operations on a clock \xcd"c".
-%%CLOCK%% It may {\em unregister} with \xcd"c" by executing \xcd"c.drop();".
-%%CLOCK%% After this, it may perform no further actions on \xcd"c"
-%%CLOCK%% for its lifetime. It may {\em check} to see if it is unregistered on a
-%%CLOCK%% clock. It may {\em register} a newly forked activity with \xcd"c".
-%%CLOCK%% %% It may {\em post} a statement \xcd"S" for completion in the current phase
-%%CLOCK%% %% of \xcd"c" by executing the statement \xcd"now(c) S". 
-%%CLOCK%% Once registered and "active" (see below), it may also perform the following operations.
-%%CLOCK%% It may {\em resume} the clock by executing \xcd"c.resume();". This
-%%CLOCK%% indicates to \xcd"c" that it has finished posting all statements it
-%%CLOCK%% wishes to perform in the current phase. Finally, it may {\em block}
-%%CLOCK%% (by executing \xcd"next;") on all the clocks that it is registered
-%%CLOCK%% with. (This operation implicitly \xcd"resume"'s all clocks for the
-%%CLOCK%% activity.) It will resume from this statement only when all these
-%%CLOCK%% clocks are ready to advance to the next phase.
-
-%%CLOCK%% A clock becomes ready to advance to the next phase when every activity
-%%CLOCK%% registered with the clock has executed at least one \xcd"resume"
-%%CLOCK%% operation on that clock and all statements posted for completion in
-%%CLOCK%% the current phase have been completed.
-
-%%OLIVIER-DENIES%% Though clocks introduce a blocking statement (\xcd"next") an important
-%%OLIVIER-DENIES%% property of \Xten{} is that clocks -- when used with the \xcd`next;` {\em
-%%OLIVIER-DENIES%%   statement} only, without the \xcd`c.next()` method call -- cannot introduce
-%%OLIVIER-DENIES%% deadlocks. That is, the system cannot reach a quiescent state (in which no
-%%OLIVIER-DENIES%% activity is progressing) from which it is unable to progress. For, before
-%%OLIVIER-DENIES%% blocking each activity resumes all clocks it is registered with. Thus if a
-%%OLIVIER-DENIES%% configuration were to be stuck (that is, no activity can progress) all clocks
-%%OLIVIER-DENIES%% will have been resumed. But this implies that all activities blocked on
-%%OLIVIER-DENIES%% \xcd"next" may continue and the configuration is not stuck. The only other
-%%OLIVIER-DENIES%% possibility is that an activity may be stuck on \xcd"finish". But the
-%%OLIVIER-DENIES%% interaction rule between \xcd"finish" and clocks
-%%OLIVIER-DENIES%% (\Sref{sec:finish:clock-rule}) guarantees that this cannot cause a cycle in
-%%OLIVIER-DENIES%% the wait-for graph. A more rigorous proof may be found in \cite{X10-concur05}.
 
 \section{Clock operations}\label{sec:clock}
 \index{clock!operations on}
 There are two language constructs for working with clocks. 
 \xcd`async clocked(cl) S` starts a new activity registered on one or more
-clocks.  \xcd`next;` blocks the current activity until all the activities
+clocks.  \xcd`Clock.advanceAll();` blocks the current activity until all the activities
 sharing clocks with it are ready to proceed to the next clock phase. 
 Clocks are objects, and have a number of useful methods on them as well.
 
@@ -161,15 +128,6 @@ val c: Clock = Clock.make();
 %}}
 %~~neg
 
-%%CLOCKVAR%% \eat{All clocked variables are implicitly \xcd`val`. The initializer for a
-%%CLOCKVAR%% local variable declaration of type \xcd"Clock" must be a new clock
-%%CLOCKVAR%% expression. Thus \Xten{} does not permit aliasing of clocks.
-%%CLOCKVAR%% Clocks are created in the place global heap and hence outlive the
-%%CLOCKVAR%% lifetime of the creating activity.  Clocks are structs, hence may be freely
-%%CLOCKVAR%% copied from place to 
-%%CLOCKVAR%% place. (Clock instances typically contain references to mutable state
-%%CLOCKVAR%% that maintains the current state of the clock.)
-%%CLOCKVAR%% }
 
 The current activity is automatically registered with the newly
 created clock.  It may deregister using the \xcd"drop" method on
@@ -235,11 +193,11 @@ a_phase_two();
 %} }
 %~~neg
 In the proper execution, {$a$} and {$b$} both perform
-\xcd`c.next()` and then their phase-2 actions.  
+\xcd`c.advance()` and then their phase-2 actions.  
 However, if {$b$} were not
 initially in the resume state for \xcd`c`, there would be a race condition;
-{$b$} could perform \xcd`c.next()` and proceed to \xcd`b_phase_two`
-before {$a$} performed \xcd`c.next()`.
+{$b$} could perform \xcd`c.advance()` and proceed to \xcd`b_phase_two`
+before {$a$} performed \xcd`c.advance()`.
 
 
 An activity may check that it is registered on a clock \xcd"c" by
@@ -273,60 +231,35 @@ and has not yet dropped (\Sref{sec:clock:drop}). A
 \xcd"ClockUseException"\index{clock!ClockUseException} is thrown if this
 condition is violated. Nothing happens if the activity has already invoked a
 \xcd"resume" on this clock in the current phase.
-%%OLIVIER-DENIES%%  Otherwise, \xcd`c.resume()`
-%%OLIVIER-DENIES%% indicates that the activity will not transmit \xcd"c" to an 
-%%OLIVIER-DENIES%% \xcd"async" (through a \xcd"clocked" clause), 
-%%OLIVIER-DENIES%% until it terminates, drops \xcd"c" or executes a \xcd"next".
 
-%%OLIVIER-DENIES%% \bard{The following is under investigation}
-%%OLIVIER-DENIES%% \begin{staticrule*}
-%%OLIVIER-DENIES%% It is a static error if any activity has a potentially
-%%OLIVIER-DENIES%% live execution path from a \xcd"resume" statement on a clock \xcd"c"
-%%OLIVIER-DENIES%% to a
-%%OLIVIER-DENIES%% %\xcd"now" or
-%%OLIVIER-DENIES%% async spawn statement (which registers the new
-%%OLIVIER-DENIES%% activity on \xcd"c") unless the path goes through a \xcd"next"
-%%OLIVIER-DENIES%% statement. (A \xcd"c.drop()" following a \xcd"c.resume()" is legal,
-%%OLIVIER-DENIES%% as is \xcd"c.resume()" following a \xcd"c.resume()".)
-%%OLIVIER-DENIES%% \end{staticrule*}
-
-\subsection{Advancing clocks}\index{clock!next}\label{sec:clock:next}
-An activity may execute the statement
+\subsection{Advancing clocks}\index{clock!advanceAll}\label{sec:clock:next}
+An activity may execute the following method call to signal that it is done
+with the current phase.
 \begin{xten}
-next;
+Clock.advanceAll();
 \end{xten}
 
 \noindent 
-Execution of this statement blocks until all the clocks that the
+Execution of this call blocks until all the clocks that the
 activity is registered with (if any) have advanced. (The activity
 implicitly issues a \xcd"resume" on all clocks it is registered
 with before suspending.)
 
-\xcd`next;` may be thought of as calling \xcd`c.next()` in parallel for all
+\xcd`Clock.advanceAll();` may be thought of as calling \xcd`c.advance()` in parallel for all
 clocks that the current activity is registered with.  (The parallelism is
 conceptually important: if activities {$a$} and {$b$} are both
 registered on clocks \xcd`c` and \xcd`d`, and {$a$} executes
-\xcd`c.next(); d.next()` while {$b$} executes \xcd`d.next(); c.next()`,
+\xcd`c.advance(); d.advance()` while {$b$} executes \xcd`d.advance(); c.advance()`,
 then the two will deadlock.  However, if the two clocks are waited on in
-parallel, as \xcd`next;` does, {$a$} and {$b$} will not deadlock.)
+parallel, as \xcd`Clock.advanceAll();` does, {$a$} and {$b$} will not deadlock.)
 
-Equivalently, \xcd`next;` sequentially calls \xcd`c.resume()` for each
+Equivalently, \xcd`Clock.advanceAll();` sequentially calls \xcd`c.resume()` for each
 registered clock \xcd`c`, in arbitrary order, and then \xcd`c.wait()` for each
 clock, again in arbitrary order.  
 
 
-%%OLIVIER-DENIES%% An \Xten{} computation is said to be {\em quiescent} on a clock
-%%OLIVIER-DENIES%% \xcd"c" if each activity registered with \xcd"c" has resumed \xcd"c".
-%%OLIVIER-DENIES%% Note that once a computation is quiescent on \xcd"c", it will remain
-%%OLIVIER-DENIES%% quiescent on \xcd"c" forever (unless the system takes some action),
-%%OLIVIER-DENIES%% since no other activity can become registered with \xcd"c".  That is,
-%%OLIVIER-DENIES%% quiescence on a clock is a {\em stable property}.
 
-%%OLIVIER-DENIES%% Once the implementation has detected quiescence on \xcd"c", the system
-%%OLIVIER-DENIES%% marks all activities registered with \xcd"c" as being able to progress
-%%OLIVIER-DENIES%% on \xcd"c". 
-%%OLIVIER-DENIES%% 
-An activity blocked on \xcd"next" resumes execution once
+An activity blocked on \xcd"advance()" resumes execution once
 it is marked for progress by all the clocks it is registered with.
 
 \subsection{Dropping clocks}\index{clock!drop}\label{sec:clock:drop}
@@ -347,8 +280,8 @@ discipline {\em are} guaranteed to be deadlock-free, just as programs which
 use only bounded loops are guaranteed to terminate.  The syntactic discipline
 is: 
 \begin{itemize}
-\item The \xcd`next()` {\bf method} may not be called on any clock. (The
-      \xcd`next;` statement is allowed.)
+\item The \xcd`advance()` {method} may not be called on any clock. (The
+      \xcd`Clock.advanceAll();` method is allowed.)
 \item Inside of \xcd`finish{S}`, all clocked \xcd`async`s must be in the scope
       an unclocked \xcd`async`.  
 \end{itemize}
@@ -364,9 +297,9 @@ The second clause prevents the following deadlock.
 val c:Clock = Clock.make();
 async clocked(c) {                // (A) 
       finish async clocked(c) {   // (B) Violates clause 2
-            next;                 // (Bnext)
+            Clock.advanceAll();                 // (Bnext)
       }
-      next;                       // (Anext)
+      Clock.advanceAll();                       // (Anext)
 }
 \end{xten}
 %~~siv
@@ -374,8 +307,8 @@ async clocked(c) {                // (A)
 %~~neg
 \xcd`(A)`, first of all, waits for the \xcd`finish` containing \xcd`(B)` to
 finish.  
-\xcd`(B)` will execute its \xcd`next` at \xcd`(Bnext)`, and then wait for all
-other activities registered on \xcd`c` to execute their \xcd`next`s.
+\xcd`(B)` will execute its \xcd`advance` at \xcd`(Bnext)`, and then wait for all
+other activities registered on \xcd`c` to execute their \xcd`advance()`s.
 However, \xcd`(A)` is registered on \xcd`c`.  So, \xcd`(B)` cannot finish
 until \xcd`(A)` has proceeded to \xcd`(Anext)`, and \xcd`(A)` cannot proceed
 until \xcd`(B)` finishes. Thus, this causes deadlock.
@@ -386,12 +319,12 @@ From the discussion above it should be clear that the following
 equivalences hold:
 
 \begin{eqnarray}
- \mbox{\xcd"c.resume(); next;"}       &=& \mbox{\xcd"next;"}\\
+ \mbox{\xcd"c.resume(); Clock.advanceAll();"}       &=& \mbox{\xcd"Clock.advanceAll();"}\\
  \mbox{\xcd"c.resume(); d.resume();"} &=& \mbox{\xcd"d.resume(); c.resume();"}\\
  \mbox{\xcd"c.resume(); c.resume();"} &=& \mbox{\xcd"c.resume();"}
 \end{eqnarray}
 
-Note that \xcd"next; next;" is not the same as \xcd"next;". The
+Note that \xcd"Clock.advanceAll(); Clock.advanceAll();" is not the same as \xcd"Clock.advanceAll();". The
 first will wait for clocks to advance twice, and the second
 once.  
 
@@ -418,8 +351,9 @@ waits for asynchronous spawned \xcd`async`s to terminate.
 A \xcd`clocked async` registers its async with the implicit clock of
 the surrounding \xcd`clocked finish`.   
 
-Both the \xcd`clocked finish` and \xcd`clocked async` may use the \xcd`next`
-statement to advance implicit clock.  Since the implicit clock is not
+Both the \xcd`clocked finish` and \xcd`clocked async` may use the
+\xcd`Clock.advanceAll()` 
+method call to advance the implicit clock.  Since the implicit clock is not
 available in a variable, it cannot be manipulated directly. (If you want to
 manipulate the clock directly, use an explicit clock.)
 
@@ -436,12 +370,12 @@ phase.
 clocked finish {
   clocked async {
      phase("A", 1);
-     next;
+     Clock.advanceAll();
      phase("A", 2);
   }
   clocked async {
      phase("B", 1);
-     next;
+     Clock.advanceAll();
      phase("B", 2);
   }
 }

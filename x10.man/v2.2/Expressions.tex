@@ -745,7 +745,8 @@ is quite common when working with possibly-null objects.
 \index{equality}
 
 \begin{bbgrammar}
- EqualityExp    \: RelationalExp & (\ref{prod:EqualityExp})\\%<FROM #(prod:EqualityExp)#
+ EqualityExp    \: RelationalExp & (\ref{prod:EqualityExp})\\
+%<FROM #(prod:EqualityExp)#
     \| EqualityExp \xcd"==" RelationalExp\\
     \| EqualityExp \xcd"!=" RelationalExp\\
     \| Type  \xcd"==" Type \\
