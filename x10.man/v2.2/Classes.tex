@@ -749,7 +749,8 @@ the corresponding unprimed type.
  Two methods are said to have {\em equivalent signatures} if (a) they have the
  same number of type parameters, 
 (b) they have the same number of formal (value) parameters, and (c)
-for each formal parameter the constraint erasure of its types are equivalent. It is a
+for each formal parameter the constraint erasure of its types are equivalent.
+It is a 
 compile-time error for there to be two methods with the same name and
 equivalent signatures in a class (either defined in that class or in a
 superclass), unless the signatures are identical and one of the methods is
@@ -757,21 +758,6 @@ defined in a superclass (in which case the superclass's method is overridden
 by the subclass's).
 
  
-
-A class \xcd"C" may not have two non-identical but equivalent 
-declarations for
-a method named 
-\xcd"m"---either 
-defined at \xcd"C" or inherited:
-\begin{xtenmath}
-def m[X$_1$, $\dots$, X$_m$](v$_1$: T$_1$, $\dots$, v$_n$: T$_n$){tc}: T {...}
-def m[X$_1$, $\dots$, X$_m$](v$_1$: S$_1$, $\dots$, v$_n$: S$_n$){sc}: S {...}
-\end{xtenmath}
-\noindent
-if it is the case that the constraint erasures of the types \xcdmath"T$_1$",
-\dots, \xcdmath"T$_n$" are
-equivalent to the constraint erasures of the types \xcdmath"S$_1$, $\dots$, T$_n$"
-respectively.
 
 
 
