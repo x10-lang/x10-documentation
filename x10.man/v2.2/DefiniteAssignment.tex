@@ -54,7 +54,15 @@ variables must be definitely assigned before they can be read.
 As X10 requires that \xcd`val` variables {\em not} be initialized
 twice,  we need the dual concept as well.  A variable is {\em definitely
 unassigned} at a point in code if it cannot have been assigned there.  For
-example, immediately after \xcd`val x:Int`, \xcd`x` is definitely unassigned.  
+example, immediately after \xcd`val x:Int`, \xcd`x` is definitely unassigned. 
+
+Finally, we need the concept of {\em singly} and {\em multiply assigned}.
+A variable is singly assigned in a block if it is assigned precisely
+once; it is multiply assigned if it could possibly be assigned more than once.  
+\xcd`var`s can  multiply assigned as desired. \xcd`val`s must be singly
+assigned.  For example, the code \xcd`x = 1; x = 2;` is perfectly fine if
+\xcd`x` is a \xcd`var`, but incorrect (even in a constructor) if \xcd`x` is a
+\xcd`val`.  
 
 At some points in code, a variable might be neither definitely assigned nor
 definitely unassigned.    Such states are not always useful.  
@@ -76,7 +84,7 @@ def example(flag : Boolean) {
 %~~neg
 This shows that we cannot simply define ``definitely unassigned'' as ``not
 definitely assigned''.   If \xcd`x` had been a \xcd`val` rather than a
-\xcd`var`, the previous example would not be allowed.  
+\xcd`var`, the previous example would not be allowed.    
 
 Unfortunately, a completely accurate definition of ``definitely assigned''
 or ``definitely unassigned'' is undecidable -- impossible for the compiler to
@@ -109,14 +117,13 @@ def example(flag:Boolean) {
 %}
 %~~neg
 
-\section{Technical Details of Definite Assignment}
+\section{Asynchronous Definite Assignment}
 
-Definite assignedness for local variables is determined by one algorithm;
-definited assignedness for fields by a different one.  
 
 Local variables (but not fields) allow {\em asynchronous assignment}. A local
 variable can be assigned in an \xcd`async` statement, and, when the
 \xcd`async` is \xcd`finish`ed, the variable is definitely assigned.  
+
 \begin{ex}
 %~~gen ^^^ DefiniteAssignment4a6n
 % package DefiniteAssignment4a6n;
@@ -131,10 +138,241 @@ finish {
   } 
   // a is not definitely assigned here
 }
-assert a==1;
+// a is definitely assigned after 'finish'
+assert a==1; 
 \end{xten}
 %~~siv
 %} } 
 %~~neg
+\end{ex}
+
+This concept supports a core X10 programming idiom.  A \xcd`val` variable may
+be initialized asynchronously, thereby providing a means for returning a value
+from an \xcd`async` to be used after the enclosing \xcd`finish`.  
+
+\section{Characteristics of Definite Assignment}
+
+The properties ``definitely assigned'', ``singly assigned'', and
+``definitely unassigned'' are computed by a conservative approximation of
+X10's evaluation rules.
+
+The precise details are up to the implementation. 
+Many basic cases must be handled accurately; \eg, \xcd`x=1;` definitely and
+singly assigns \xcd`x`.  
+
+However, in more complicated cases, a conforming X10 may mark as invalid 
+some code which, when executed, would actually be correct.  
+For example, the following
+program fragment will always result in \xcd`x` being definitely and singly
+assigned:  
+\begin{xten}
+val x : Int;
+var b : Boolean = mysterious();
+if (b) {
+   x = cryptic();
+}
+if (!b) { 
+   x = unknown();
+}
+\end{xten}
+However, most conservative approximations of program execution won't mark
+\xcd`x` as properly initialized. For this to be correct, precisely one of the
+two assignments to \xcd`x` must be executed. If \xcd`b` were true initially,
+it would still be true after the call to \xcd`cryptic()` --- since methods
+cannot modify their caller's local variables -- and so the first but not the
+second assignment would happen. If \xcd`b` were false initially, it would
+still be false when \xcd`!b` is tested, and so the second but not the first
+assignment would happen.  Either way, \xcd`x` is definitely and singly assigned.
+
+However, for a slightly different program, this analysis would be wrong. \Eg,
+if  \xcd`b` were a field of \xcd`this` rather than a local variable,
+\xcd`cryptic()` could change \xcd`b`; if \xcd`b` were true initially, both
+assignments might happen, which is incorrect for a \xcd`val`.  
+
+This sort of reasoning is beyond  most conservative approximation algorithms.
+(Indeed, many do not bother checking that \xcd`!b` late in the program is the
+opposite of \xcd`b` earlier.)
+Algorithms that pay attention to such details and subtleties tend to be
+fairly expensive, which would lead to very slow compilation for X10 -- for the
+sake of obscure cases.
+
+X10's analysis provides at least the following guarantees. We describe them in
+terms of a statement \xcd`S` performing some collection of possible numbers of
+assignments to variables --- on a scale of ``0'', ``1'', and ``many''. For
+example, \xcd`if(b) x=1; else {x=1;x=2;y=2;}` might assign to \xcd`x` one or
+many times, and might assign to \xcd`y` zero or one time. Hence, after it,
+\xcd`x` is definitely assigned and may be multiply assigned, and \xcd`y` is
+neither definitely assigned nor definitely unassigned.  
+
+These descriptions are combined in natural ways.  For example, if \xcd`R` says
+that \xcd`x` will be assigned 0 or 1 times, and \xcd`S` says it will be
+assigned precisely once, then \xcd`R;S` will assign it one or many times.  If
+only one or \xcd`R` or \xcd`S` will occur, as from \xcd`if(b)R; else S;`, 
+then \xcd`x` may be assigned 0 or 1 times. 
+
+This information is sufficient for the tests X10 makes.  If \xcd`x` can only
+be assigned to once in \xcd`S`, it is definitely assigned.  It is an error if
+\xcd`x` is ever read at a point where it have been assigned zero times.  It is
+an error if a \xcd`val` may be assigned many times.
+
+
+We do not guarantee that any particular X10 compiler uses this algorithm;
+indeed, as of the time of writing, the X10 compiler uses a somewhat more
+precise one.  However, any conformant X10 compiler must provide results which
+are at least as accurate as this analysis.
+
+
+\subsubsection{Assignment: {\tt x = e}}   
+
+\xcd`x = e` assigns to \xcd`x`, in addition to whatever assignments
+\xcd`e` makes.   For example, if \xcd`this.setX(y)` sets a field \xcd`x` to
+\xcd`y` and returns \xcd`y`, then \xcd`x = this.setX(y)` definitely and
+multiply assigns \xcd`x`.  
+
+\subsubsection{{\tt async} and {\tt finish}}
+
+By itself, \xcd`async S` provides few guarantees.  After \xcd`async{x=1;}`
+finishes, we know that there is a separate activity which will, when the
+scheduler lets it, set \xcd`x` to \xcd`1`.  We do not know that anything has
+happened yet.
+
+However, if there is a \xcd`finish` around the \xcd`async`, the situation is
+clearer.  After \xcd`finish{ async{ x=1; }}`, \xcd`x` has definitely been
+assigned.  
+
+In general, if an \xcd`async S` appears in the body of a \xcd`finish` in a way
+that guarantees that it will be executed, then, after the \xcd`finish`, the
+assignments made by \xcd`S` will have occurred.  For example, if \xcd`S`
+definitely assigns to \xcd`x`, and the body of the \xcd`finish` guarantees
+that \xcd`async S` will be executed, then \xcd`finish{...async S...}`
+definitely assigns \xcd`x`.
+
+
+
+\subsubsection{{\tt if} and {\tt switch}}
+
+When \xcd`if(E) S else T` finishes, it will have performed the assignments of
+\xcd`E`, together with those of either \xcd`S` or \xcd`T` but not both.  For
+example, \xcd`if(b) x=1; else x=2;` definitely assigns \xcd`x`,
+but \xcd`if(b) x=1;` does not.
+
+{\tt switch} is more complex, but follows the same principles as \xcd`if`.
+For example, \xcd`switch(E){case 1: A; break; case 2: B; default: C;}`  
+performs the assignments of \xcd`E`, and those of precisely one of \xcd`A`, or
+\xcd`B;C`, or \xcd`C`.  Note that case \xcd`2` falls through to the default
+case, so it performs the same assignments as \xcd`B;C`.
+
+\subsubsection{Sequencing}
+
+When \xcd`R;S` finishes, it will have performed the assignments of \xcd`R` and
+those of \xcd`S`.  For example, \xcd`x=1;y=2;` definitely assigns \xcd`x` and
+\xcd`y`, and \xcd`x=1;x=2;` multiply assigns \xcd`x`. 
+
+
+\subsubsection{Loops}
+
+\xcd`while(E)S` performs the assignments of \xcd`E` one or more times, and
+those of \xcd`S` zero or more times.  For example, if \xcd`while(b()){x=1;}`
+might assign to \xcd`x` zero, one, or many times.  
+\xcd`do S while(E)` performs the assignments of \xcd`E` one or more times, and
+those of \xcd`S` one or more times. 
+
+\xcd`for(A;B;C)D` performs the assignments of \xcd`A` once, those of \xcd`B`
+one or more times, and those of \xcd`C` and \xcd`D` one or more times.
+\xcd`for(x in E)S` performs the assignments of \xcd`E` once and those of
+\xcd`S` zero or more times.  
+
+\xcd`continue` and \xcd`break` inside of a loop may be ignored conservatively.  
+
+Loops are of very little value for providing definite assignments, since X10
+does not in general know how many times they will be executed. 
+
+\subsubsection{Method Calls}
+
+A method call \xcd`E.m(A,B)` performs the assignments of \xcd`E`, \xcd`A`, and
+\xcd`B` once each, and also those of \xcd`m`.  This implies that X10 must be
+aware of the possible assignments performed by each method.
+
+
+If X10 has complete information about \xcd`m` (as when \xcd`m` is a
+\xcd`private` or \xcd`final` method), this is straightforward.  When such
+information is fundamentally impossible to acquire, as when \xcd`m` is a
+non-final method invocation, X10 has no choice but to assume that \xcd`m`
+might do anything that a method can do.  
+\begin{itemize}
+\item \xcd`m` cannot assign to local fields of the caller; methods have no
+      such power.
+\item \xcd`m` can assign to \xcd`var` fields of \xcd`this` freely, unless this
+      is prohibited by an annotation; see \Sref{somewhere}
+\item \xcd`m` cannot initialize \xcd`val` fields of \xcd`this`, unless
+      permitted to do so by an annotation; see \Sref{somewhere}.
+\end{itemize}
+
+
+\subsubsection{{\tt at} and \xcd`athome`}
+
+\xcd`at(E)S` performs the assignments of \xcd`E`. Within \xcd`S`, only those
+assignments to variables \xcd`x` from the surrounding environment which take
+place within a suitable \xcd`athome(x)R` are counted. 
+
+\begin{ex}
+In the following code, the outer variable named \xcd`a` is definitely assigned
+once, by the assignment \xcd`a = 3;`.  The inner variable (also named \xcd`a`)
+is definitely multiply assigned 
+by the two assignments \xcd`a = 1;` and \xcd`a = 2;` 
+between the \xcd`at` and the \xcd`athome`.  
+%~~gen ^^^ DefiniteAssignment3n5q
+% package DefiniteAssignment3n5q;
+% KNOWNFAIL-at
+% class DefAss { def defass() { 
+%~~vis
+\begin{xten}
+var a : Int;
+at(here.next(); var a : Int = a;) {
+  a = 1;
+  a = 2; 
+  athome(a) a = 3;
+}
+\end{xten}
+%~~siv
+% } } 
+%~~neg
 
 \end{ex}
+
+\subsubsection{{\tt atomic}}
+
+\xcd`atomic S` performs the assignments of \xcd`S`, 
+and \xcd`when(E)S` performs those of \xcd`E` and \xcd`S`.  
+
+\subsubsection{{\tt try}}
+
+\xcd`try S catch(x:T1) E1 ... catch(x:Tn) En  finally F` 
+performs some or all of the assignments of \xcd`S`, plus all the assignments
+of zero or one of the \xcd`E`'s, plus those of \xcd`F`.  
+For example,
+\begin{xten}
+try {
+  x = boomy();
+  x = 0;
+}
+catch(e:Boom) { y = 1; }
+finally { z = 1; }
+\end{xten}
+\noindent 
+assigns \xcd`x` zero, one, or many times\footnote{A more precise
+analysis could discover that \xcd`x` cannot be initialized only once.}, 
+assigns \xcd`y` zero or one time, and assigns \xcd`z` exactly once.
+
+\subsubsection{Expression Statements}
+
+Expression statements \xcd`E;`, and other statements that execute an
+expression and do something innocuous with it (local variable declaration and
+\xcd`assert`) have the same effects as \xcd`E`. 
+
+\subsubsection{{\tt return}, {\tt throw}}
+
+Statements that do not finish normally, such as \xcd`return` and \xcd`throw`,
+don't initialize anything (though the computation of the return or thrown
+value may).    They also terminate a line of computation.  For example, 
+\xcd`if(b) {x=1; return;}  x=2;` definitely and singly assigns \xcd`x`.  
