@@ -210,8 +210,9 @@ assigned precisely once, then \xcd`R;S` will assign it one or many times.  If
 only one or \xcd`R` or \xcd`S` will occur, as from \xcd`if(b)R; else S;`, 
 then \xcd`x` may be assigned 0 or 1 times. 
 
-This information is sufficient for the tests X10 makes.  If \xcd`x` can only
-be assigned to once in \xcd`S`, it is definitely assigned.  It is an error if
+This information is sufficient for the tests X10 makes.  If \xcd`x` can is
+assigned one or many times in \xcd`S`, it is definitely assigned.  It is an
+error if 
 \xcd`x` is ever read at a point where it have been assigned zero times.  It is
 an error if a \xcd`val` may be assigned many times.
 
@@ -220,6 +221,8 @@ We do not guarantee that any particular X10 compiler uses this algorithm;
 indeed, as of the time of writing, the X10 compiler uses a somewhat more
 precise one.  However, any conformant X10 compiler must provide results which
 are at least as accurate as this analysis.
+
+
 
 
 \subsubsection{Assignment: {\tt x = e}}   
@@ -282,10 +285,19 @@ one or more times, and those of \xcd`C` and \xcd`D` one or more times.
 \xcd`for(x in E)S` performs the assignments of \xcd`E` once and those of
 \xcd`S` zero or more times.  
 
-\xcd`continue` and \xcd`break` inside of a loop may be ignored conservatively.  
-
 Loops are of very little value for providing definite assignments, since X10
 does not in general know how many times they will be executed. 
+
+\xcd`continue` and \xcd`break` inside of a loop are hard to describe in simple
+terms.  They may be conservatively assumed to cause the loop give no
+information about the variables assigned inside of it.
+For example, the analysis may conservatively conclude that 
+\xcd`do{ x = 1; if (true) break; } while(true)` may 
+assign to \xcd`x` zero, one, or many times, overlooking the more precise fact
+that it is assigned once.  
+
+
+
 
 \subsubsection{Method Calls}
 
@@ -298,15 +310,70 @@ If X10 has complete information about \xcd`m` (as when \xcd`m` is a
 \xcd`private` or \xcd`final` method), this is straightforward.  When such
 information is fundamentally impossible to acquire, as when \xcd`m` is a
 non-final method invocation, X10 has no choice but to assume that \xcd`m`
-might do anything that a method can do.  
+might do anything that a method can do.    (For this reason, the only methods
+that can be called from within a constructor on a raw --
+incompletely-constructed -- object) are the \xcd`private` and
+\xcd`final` ones.)  
 \begin{itemize}
 \item \xcd`m` cannot assign to local fields of the caller; methods have no
       such power.
 \item \xcd`m` can assign to \xcd`var` fields of \xcd`this` freely, unless this
       is prohibited by an annotation; see \Sref{somewhere}
-\item \xcd`m` cannot initialize \xcd`val` fields of \xcd`this`, unless
-      permitted to do so by an annotation; see \Sref{somewhere}.
+\item \xcd`m` cannot initialize \xcd`val` fields of \xcd`this`.  (With one
+      exception; see \Sref{sect:call-another-constructor}.) 
 \end{itemize}
+
+Recall that every container must be fully initialized (``cooked'') upon exit
+from its constructor.  
+X10 places certain restrictions on which methods can be called from a
+constructor; see \Sref{sect:nonescaping}.  One of these restrictions is that
+methods called before object initialization is complete must be \xcd`final` or
+\xcd`private` --- and hence, available for static analysis.  So, when checking
+field initialization, X10 will ensure: 
+\begin{enumerate}
+\item Each \xcd`val` field is initialized before it is read.   
+      A method that does not read a \xcd`val` field \xcd`f` {\em may} be
+      called before \xcd`f` is initialized; a method that reads \xcd`f` must
+      not be called until \xcd`f` is initialized.        
+      For example, 
+      a constructor may have the form:
+%~~gen ^^^ DefiniteAssignment4x6k
+% package DefiniteAssignment4x6k;
+%~~vis
+\begin{xten}
+class C {
+  val f : Int;
+  val g : String;
+  def this() {
+     f = fless();
+     g = useF();
+  }
+  private def fless() = "f not used here".length();
+  private def useF() = "f=" + this.f;
+}
+\end{xten}
+%~~siv
+%
+%~~neg
+
+\item \xcd`var` fields require a deeper analysis.  Consider a \xcd`var`
+      field \xcd`var x:T`  without initializer.  If \xcd`T` has a default
+      value, \xcd`x` may be read inside of a constructor before it is
+      otherwise written, and it will 
+      have its default value.   
+
+      If \xcd`T` has no default value, an analysis
+      like that used for \xcd`val`s must be performed to determine that
+      \xcd`x` is initialized before it is used.  The situation is 
+      more complex than for \xcd`val`s, however, because a method can assign to
+      \xcd`x` as well read from it.  The X10 compiler computes a conservative
+      approximation of which methods
+      read and write which \xcd`var` fields. (Doing this carefully 
+      requires finding a solution of a set of equations over sets of
+      variables, with each callable method having equations describing what it
+      reads and writes.)    
+
+\end{enumerate}
 
 
 \subsubsection{{\tt at} and \xcd`athome`}
@@ -376,3 +443,4 @@ Statements that do not finish normally, such as \xcd`return` and \xcd`throw`,
 don't initialize anything (though the computation of the return or thrown
 value may).    They also terminate a line of computation.  For example, 
 \xcd`if(b) {x=1; return;}  x=2;` definitely and singly assigns \xcd`x`.  
+

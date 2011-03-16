@@ -115,9 +115,10 @@ cooked.
 
 
 
-\index{non-escaping}
 
 \subsection{Constructors and NonEscaping Methods}
+\index{non-escaping}
+\label{sect:nonescaping}
 
 In general, constructors must not be allowed to call methods with \Xcd{this} as
 an argument or receiver. Such calls could leak references to \Xcd{this},
