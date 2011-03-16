@@ -489,7 +489,7 @@ shows that {$c_2$} is a different cell from {$c_1$}, because changes to
 %~~vis
 \begin{xten}
 val c = new Cell[Int](5);
-val a = new Array[Cell[Int]][c,c];
+val a = new Array[c,c];
 assert(a(0)() == 5 && a(1)() == 5);     // (A)
 c.set(6);                               // (B)
 assert(a(0)() == 6 && a(1)() == 6);     // (C)

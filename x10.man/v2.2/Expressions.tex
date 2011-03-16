@@ -1196,13 +1196,7 @@ class Cont {
 
 \begin{bbgrammar}
              Primary \: 
-                    \xcd"[" ArgumentList\opt \xcd"]" \\
-                    \| ClassInstCreationExp \\
-
-ClassInstCreationExp \: \xcd"new" TypeName TypeArguments\opt \xcd"(" ArgumentList\opt \xcd")" ClassBody\opt & (\ref{prod:ClassInstCreationExp}) \\
-                    \| \xcd"new" TypeName \xcd"[" Type \xcd"]" \xcd"[" ArgumentList\opt \xcd"]" \\
-                    \| Primary \xcd"." \xcd"new" Id TypeArguments\opt \xcd"(" ArgumentList\opt \xcd")" ClassBody\opt \\
-                    \| AmbiguousName \xcd"." \xcd"new" Id TypeArguments\opt \xcd"(" ArgumentList\opt \xcd")" ClassBody\opt \\
+                    \xcd"[" ArgumentList\opt \xcd"]" 
 \end{bbgrammar}
 %##)
 
@@ -1248,20 +1242,13 @@ Since there are far more uses for \xcd`Array[Int](1)` than
 \xcd`Array[Int{self==0}](1)`, the compiler produces the former.)
 \end{ex}
 
-The expression \xcdmath"new Array[T][e$_1$, $\ldots$, e$_n$]"
-produces 
-an \xcd`n`-element \xcd`Array[T](1)`, whose elements are the values
-\xcdmath"e$_i$".  It is a static error if any \xcdmath"e$_i$" cannot be
-coerced to \xcd`T`.
 
 
 \begin{ex}
 Occasionally one does actually need \xcd`Array[Int{self==0}](1)`, 
 or, say, \xcd`Array[Eel{self != null}](1)`, an array of non-null \xcd`Eel`s.  
-For these cases, X10 provides an array constructor which does allow
-specification of the element type: \xcd`new Array[T][e1...en]`.  Each
-element \xcd`ei` must be of type \xcd`T`.  The resulting array is of type
-\xcd`Array[T](1)`.  
+For these cases, cast one of the elements of the array to the desired type,
+and the array constructor will do the right thing.  
 %~~gen ^^^ Expressions170
 %package Expressions.ArrayCtor.Details;
 %class Eel{}
@@ -1270,11 +1257,11 @@ element \xcd`ei` must be of type \xcd`T`.  The resulting array is of type
 %~~vis
 \begin{xten}
 val zero <: Array[Int{self == 0}](1) 
-          = new Array[Int{self == 0}][0];
+          = [0];
 val non1 <: Array[Int{self != 1}](1) 
-          = new Array[Int{self != 1}][0];
+          = [0 as Int{self != 1}];
 val eels <: Array[Eel{self != null}](1) 
-          = new Array[Eel{self != null}][ new Eel() ];
+          = [ new Eel() as Eel{self != null}, new Eel(), new Eel()];
 \end{xten}
 %~~siv
 %}}
