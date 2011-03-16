@@ -348,100 +348,100 @@ class Lambda {
 %~~neg
 \end{eg}
 
-\section{Method selectors}
-\label{MethodSelectors}
-\index{function!method selector}
-\index{method!underlying function}
-
-A method selector expression allows a method to be used as a
-first-class function, without writing a function expression for it.
-
-\begin{ex}
-Consider a class \xcd`Span` defining ranges of integers.  
-
-%~~gen ^^^ Functions80
-% package Functions2.Span;
-%~~vis
-\begin{xten}
-class Span(low:Int, high:Int) {
-  def this(low:Int, high:Int) {property(low,high);}
-  def between(n:Int) = low <= n && n <= high;
-  static def example() {
-    val digit = new Span(0,9);
-    val isDigit : (Int) => Boolean = digit.between.(Int);
-    assert isDigit(8);
-  }
-}
-\end{xten}
-%~~siv
-% class Hook{ def run() {Span.example(); return true;}}
-%~~neg
-\noindent
-
-
-In \xcd`example()`, 
-%~~exp~~`~~`~~ digit:Span~~class Span(low:Int, high:Int) {def this(low:Int, high:Int) {property(low,high);} def between(n:Int) = low <= n && n <= high;} ^^^ Functions90
-\xcd`digit.between.(Int)` 
-is a unary function testing whether its argument is between zero
-and nine.  It could also be written 
-%~~exp~~`~~`~~ digit:Span~~class Span(low:Int, high:Int) {def this(low:Int, high:Int) {property(low,high);} def between(n:Int) = low <= n && n <= high;} ^^^ Functions100
-\xcd`(n:Int) => digit.between(n)`.
-\end{ex}
-
-
-%##(MethodSelection
-\begin{bbgrammar}
-%(FROM #(prod:MethodSelection)#)
-     MethodSelection \: MethodName \xcd"." \xcd"(" FormalParamList\opt \xcd")" & (\ref{prod:MethodSelection}) \\
-                    \| Primary \xcd"." Id \xcd"." \xcd"(" FormalParamList\opt \xcd")" \\
-                    \| \xcd"super" \xcd"." Id \xcd"." \xcd"(" FormalParamList\opt \xcd")" \\
-                    \| ClassName \xcd"." \xcd"super"  \xcd"." Id \xcd"." \xcd"(" FormalParamList\opt \xcd")" \\
-\end{bbgrammar}
-%##)
-
-The \emph{method selector expression} \Xcd{e.m.(T1,...,Tn)} is type
-correct only if  the static type of \Xcd{e} is a
-class or struct or interface \xcd`V` with a method
-\Xcd{m(x1:T1,...xn:Tn)\{c\}:T} defined on it (for some
-\Xcd{x1,...,xn,c,T)}. At runtime the evaluation of this expression
-evaluates \Xcd{e} to a value \Xcd{v} and creates a function \Xcd{f}
-which, when applied to an argument list \Xcd{(a1,...,an)} (of the right
-type) yields the value obtained by evaluating \Xcd{v.m(a1,...,an)}.
-
-Thus, the method selector
-\begin{xtenmath}
-e.m.(T$_1$, $\dots$, T$_n$)
-\end{xtenmath}
-\noindent behaves as if it were the function
-\begin{xtenmath}
-((v:V)=>
-  (x$_1$: T$_1$, $\dots$, x$_n$: T$_n$){c} 
-  => v.m(x$_1$, $\dots$, x$_n$))
-(e)
-\end{xtenmath}
-
-
-
-Because of overloading, a method name is not sufficient to
-uniquely identify a function for a given class.
-One needs the argument type information as well.
-The selector syntax (dot) is used to distinguish \xcd"e.m()" (a
-method invocation on \xcd"e" of method named \xcd"m" with no arguments)
-from \xcd"e.m.()"
-(the function bound to the method). 
-
-A static method provides a binding from a name to a function that is
-independent of any instance of a class; rather it is associated with the
-class itself. The static function selector
-\xcdmath"T.m.(T$_1$, $\dots$, T$_n$)" denotes the
-function bound to the static method named \xcd"m", with argument types
-\xcdmath"(T$_1$, $\dots$, T$_n$)" for the type \xcd"T". The return type
-of the function is specified by the declaration of \xcd"T.m".
-
-There is no difference between using a function defined directly 
-directly using the function syntax, or obtained via static or
-instance function selectors.
-
+%%METHOD-SELECTION%% \section{Method selectors}
+%%METHOD-SELECTION%% \label{MethodSelectors}
+%%METHOD-SELECTION%% \index{function!method selector}
+%%METHOD-SELECTION%% \index{method!underlying function}
+%%METHOD-SELECTION%% 
+%%METHOD-SELECTION%% A method selector expression allows a method to be used as a
+%%METHOD-SELECTION%% first-class function, without writing a function expression for it.
+%%METHOD-SELECTION%% 
+%%METHOD-SELECTION%% \begin{ex}
+%%METHOD-SELECTION%% Consider a class \xcd`Span` defining ranges of integers.  
+%%METHOD-SELECTION%% 
+%%METHOD-SELECTION%% %~~gen ^^^ Functions80
+%%METHOD-SELECTION%% % package Functions2.Span;
+%%METHOD-SELECTION%% %~~vis
+%%METHOD-SELECTION%% \begin{xten}
+%%METHOD-SELECTION%% class Span(low:Int, high:Int) {
+%%METHOD-SELECTION%%   def this(low:Int, high:Int) {property(low,high);}
+%%METHOD-SELECTION%%   def between(n:Int) = low <= n && n <= high;
+%%METHOD-SELECTION%%   static def example() {
+%%METHOD-SELECTION%%     val digit = new Span(0,9);
+%%METHOD-SELECTION%%     val isDigit : (Int) => Boolean = digit.between.(Int);
+%%METHOD-SELECTION%%     assert isDigit(8);
+%%METHOD-SELECTION%%   }
+%%METHOD-SELECTION%% }
+%%METHOD-SELECTION%% \end{xten}
+%%METHOD-SELECTION%% %~~siv
+%%METHOD-SELECTION%% % class Hook{ def run() {Span.example(); return true;}}
+%%METHOD-SELECTION%% %~~neg
+%%METHOD-SELECTION%% \noindent
+%%METHOD-SELECTION%% 
+%%METHOD-SELECTION%% 
+%%METHOD-SELECTION%% In \xcd`example()`, 
+%%METHOD-SELECTION%% %~~exp~~`~~`~~ digit:Span~~class Span(low:Int, high:Int) {def this(low:Int, high:Int) {property(low,high);} def between(n:Int) = low <= n && n <= high;} ^^^ Functions90
+%%METHOD-SELECTION%% \xcd`digit.between.(Int)` 
+%%METHOD-SELECTION%% is a unary function testing whether its argument is between zero
+%%METHOD-SELECTION%% and nine.  It could also be written 
+%%METHOD-SELECTION%% %~~exp~~`~~`~~ digit:Span~~class Span(low:Int, high:Int) {def this(low:Int, high:Int) {property(low,high);} def between(n:Int) = low <= n && n <= high;} ^^^ Functions100
+%%METHOD-SELECTION%% \xcd`(n:Int) => digit.between(n)`.
+%%METHOD-SELECTION%% \end{ex}
+%%METHOD-SELECTION%% 
+%%METHOD-SELECTION%% 
+%%METHOD-SELECTION%% %##(MethodSelection
+%%METHOD-SELECTION%% \begin{bbgrammar}
+%%METHOD-SELECTION%% %(FROM #(prod:MethodSelection)#)
+%%METHOD-SELECTION%%      MethodSelection \: MethodName \xcd"." \xcd"(" FormalParamList\opt \xcd")" & (\ref{prod:MethodSelection}) \\
+%%METHOD-SELECTION%%                     \| Primary \xcd"." Id \xcd"." \xcd"(" FormalParamList\opt \xcd")" \\
+%%METHOD-SELECTION%%                     \| \xcd"super" \xcd"." Id \xcd"." \xcd"(" FormalParamList\opt \xcd")" \\
+%%METHOD-SELECTION%%                     \| ClassName \xcd"." \xcd"super"  \xcd"." Id \xcd"." \xcd"(" FormalParamList\opt \xcd")" \\
+%%METHOD-SELECTION%% \end{bbgrammar}
+%%METHOD-SELECTION%% %##)
+%%METHOD-SELECTION%% 
+%%METHOD-SELECTION%% The \emph{method selector expression} \Xcd{e.m.(T1,...,Tn)} is type
+%%METHOD-SELECTION%% correct only if  the static type of \Xcd{e} is a
+%%METHOD-SELECTION%% class or struct or interface \xcd`V` with a method
+%%METHOD-SELECTION%% \Xcd{m(x1:T1,...xn:Tn)\{c\}:T} defined on it (for some
+%%METHOD-SELECTION%% \Xcd{x1,...,xn,c,T)}. At runtime the evaluation of this expression
+%%METHOD-SELECTION%% evaluates \Xcd{e} to a value \Xcd{v} and creates a function \Xcd{f}
+%%METHOD-SELECTION%% which, when applied to an argument list \Xcd{(a1,...,an)} (of the right
+%%METHOD-SELECTION%% type) yields the value obtained by evaluating \Xcd{v.m(a1,...,an)}.
+%%METHOD-SELECTION%% 
+%%METHOD-SELECTION%% Thus, the method selector
+%%METHOD-SELECTION%% \begin{xtenmath}
+%%METHOD-SELECTION%% e.m.(T$_1$, $\dots$, T$_n$)
+%%METHOD-SELECTION%% \end{xtenmath}
+%%METHOD-SELECTION%% \noindent behaves as if it were the function
+%%METHOD-SELECTION%% \begin{xtenmath}
+%%METHOD-SELECTION%% ((v:V)=>
+%%METHOD-SELECTION%%   (x$_1$: T$_1$, $\dots$, x$_n$: T$_n$){c} 
+%%METHOD-SELECTION%%   => v.m(x$_1$, $\dots$, x$_n$))
+%%METHOD-SELECTION%% (e)
+%%METHOD-SELECTION%% \end{xtenmath}
+%%METHOD-SELECTION%% 
+%%METHOD-SELECTION%% 
+%%METHOD-SELECTION%% 
+%%METHOD-SELECTION%% Because of overloading, a method name is not sufficient to
+%%METHOD-SELECTION%% uniquely identify a function for a given class.
+%%METHOD-SELECTION%% One needs the argument type information as well.
+%%METHOD-SELECTION%% The selector syntax (dot) is used to distinguish \xcd"e.m()" (a
+%%METHOD-SELECTION%% method invocation on \xcd"e" of method named \xcd"m" with no arguments)
+%%METHOD-SELECTION%% from \xcd"e.m.()"
+%%METHOD-SELECTION%% (the function bound to the method). 
+%%METHOD-SELECTION%% 
+%%METHOD-SELECTION%% A static method provides a binding from a name to a function that is
+%%METHOD-SELECTION%% independent of any instance of a class; rather it is associated with the
+%%METHOD-SELECTION%% class itself. The static function selector
+%%METHOD-SELECTION%% \xcdmath"T.m.(T$_1$, $\dots$, T$_n$)" denotes the
+%%METHOD-SELECTION%% function bound to the static method named \xcd"m", with argument types
+%%METHOD-SELECTION%% \xcdmath"(T$_1$, $\dots$, T$_n$)" for the type \xcd"T". The return type
+%%METHOD-SELECTION%% of the function is specified by the declaration of \xcd"T.m".
+%%METHOD-SELECTION%% 
+%%METHOD-SELECTION%% There is no difference between using a function defined directly 
+%%METHOD-SELECTION%% directly using the function syntax, or obtained via static or
+%%METHOD-SELECTION%% instance function selectors.
+%%METHOD-SELECTION%% 
 
 \section{Operator functions}
 \label{OperatorFunction}
