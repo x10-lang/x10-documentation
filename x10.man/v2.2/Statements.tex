@@ -59,8 +59,8 @@ VariableDeclaratorsWithType \: VariableDeclaratorWithType & (\ref{prod:VariableD
 Short-lived variables are introduced by local variables declarations, as
 described in \Sref{VariableDeclarations}. Local variables may be declared only
 within a block statement (\Sref{Blocks}). The scope of a local variable
-declaration is the statement itself and the subsequent statements in the
-block. 
+declaration is the subsequent statements in the
+block.   
 %~~gen ^^^ Statements20
 % package statements.should.have.locals;
 % class LocalExample {
@@ -126,9 +126,24 @@ class Shadow{
 %~~siv
 %
 %~~neg
+\end{ex}
 
+\begin{ex}
+Note that recursive definitions of local variables is not allowed.  There are
+few useful recursive declarations of objects and structs; \xcd`x`, in the
+following example, has no meaningful definition.  Recursive declarations of
+local functions is forbidden, even though (like \xcd`f` below) there are
+meaningful uses of it.  
+\begin{xten}
+val x : Int = x + 1; // ERROR: recursive local declaration
+val f : (Int)=>Int 
+      = (n:Int) => (n <= 2) ? 1 : f(n-1) + f(n-2);
+      // ERROR: recursive local declaration
+\end{xten}
 
 \end{ex}
+
+
 
 \section{Block statement}
 \index{block}
