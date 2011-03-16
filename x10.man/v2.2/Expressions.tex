@@ -226,7 +226,6 @@ Function literals are described in \Sref{Functions}.
 \index{method!calling}
 \index{method!invoking}
 
-
 %##(MethodInvocation ArgumentList
 \begin{bbgrammar}
 %(FROM #(prod:MethodInvocation)#)
@@ -332,6 +331,24 @@ class DivideBy(denom:Int) {
 % class Hook{ def run() { (new DivideBy(1)).example(); return true; } }
 %~~neg
 \end{ex}
+
+
+\subsection{{\tt super} calls}
+\index{supercall}
+\index{call!super}
+
+The expression \xcd`super.f(e1...en)` may appear in an instance method
+definition.   This causes the method invocation to be a \xcd`super`
+invocation, as described in \Sref{sect:MethodResolution}.  
+
+Informally, suppose the invocation appears in class \xcd`Cl`, which extends
+class \xcd`Sup`. An invocation \xcd`this.f()` will call a nullary method named
+\xcd`f` that appears in class \xcd`Cl` itself, if there is one.  An invocation
+\xcd`super.f()` will call the nullary  \xcd`f` method in \xcd`Sup` or an
+ancestor thereof, but not one in \xcd`Cl`.  Note that \xcd`super.f()` may be
+used to invoke an \xcd`f` method in \xcd`Sup` which has been shadowed by one
+appearing in \xcd`Cl`.  
+
 
 \section{Assignment}\index{assignment}\label{AssignmentStatement}
 

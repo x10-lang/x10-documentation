@@ -328,6 +328,10 @@ The procedure for computing \xcd`resolve(invo, context)` is:
       constraints, such as methods from other classes marked \xcd`private`.
       The remaining methods are both acceptable and available; they might be
       the one that is intended.
+\item If the method invocation is a \xcd`super` invocation appearing in class
+      \xcd`Cl`, methods of \xcd`Cl` and its subclasses are considered
+      unavailable as well.
+      
 \item From the remaining methods, find the unique \xcd`ms` which is more specific than all the
       others, \viz, for which \xcd`specific(ms,mo) = true` for all other
       methods \xcd`mo`.
