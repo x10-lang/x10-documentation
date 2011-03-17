@@ -1543,7 +1543,10 @@ The operator to negate a polynomial is:
 
 
 \subsection{Type Conversions}
+\label{sect:type-conv}
 \index{type conversion!user-defined}
+
+\noo{How about the conversions out of the class?}
 
 Explicit type conversions, \xcd`e as A`, can be defined as operators on
 class \xcd`A`.  These must be static operators, and are defined in the 
@@ -1595,7 +1598,21 @@ class Poly {
 
 The \xcd`?` may be given a bound, such as \xcd`as ? <: Caster`, if desired.
   
-\bard{Syntax}
+
+There is little difference between an explicit conversion \xcd`e as T` and a
+method call \xcd`e.asT()`.  The explicit conversion does say undeniably what
+the result type will be.  However, as described in \Sref{sect:ambig-cast},
+sometimes the built-in meaning of \xcd`as` as a cast overrides the
+user-defined explicit conversion.  
+
+Explicit casts are most suitable for cases
+which resemble the use of explicit casts among the arithmetic types, where, 
+for example, \xcd`1 as Float` is a way to turn an integer into the
+corresponding floating-point number.  
+While there is nothing in X10 which
+requires it, \xcd`e as T` has the connotation that it gives a good
+approximation of \xcd`e` in type \xcd`T`, just as \xcd`1.0f` is a good
+(indeed, perfect) approximation of \xcd`1` in type \xcd`Float`.  
 
 \subsection{Implicit Type Coercions}
 \label{sect:ImplicitCoercion}

@@ -972,10 +972,9 @@ Note that instantiating a struct type can use function application syntax;
 possibility of a {\em ClassBody}.
 
 
-\section{Casts}\label{ClassCast}\index{cast}
+\section{Casts and Conversions}\label{ClassCast}\index{cast}
 \index{type conversion}
 
-The cast operation may be used to cast an expression to a given type:
 
 %##(CastExp
 \begin{bbgrammar}
@@ -986,35 +985,119 @@ The cast operation may be used to cast an expression to a given type:
 \end{bbgrammar}
 %##)
 
-The result of this operation is a value of the given type if the cast
-is permissible at run time, and either a compile-time error or a runtime
+
+The cast and conversion  operation \xcd`e as T` may be used to force an
+expression into a given type \xcd`T`, 
+if is permissible at run time, and either a compile-time error or a runtime
 exception 
 (\xcd`x10.lang.TypeCastException`) if it is not.  
 
+
+The \xcd`e as T` operation comes in two forms.  Which form applies depends on
+both the source type (the type of \xcd`e`) and the target type \xcd`T`.
+\begin{itemize}
+\item {\bf Cast:} A cast makes a value have a different type, without changing
+      the value's identity.  For example, \xcd`"a String" as Object` simply
+      reconsiders the \xcd`String` object as an \xcd`Object`.  
+      This cast does not need to do any 
+      run-time computation, since every \xcd`String` is an \xcd`Object`; a
+      cast in the reverse direction, from \xcd`Object` to \xcd`String`, would
+      need a run-time check that the \xcd`Object`
+      was in fact a \xcd`String`.
+      Casts are all system-defined, following from the
+      X10 type system.
+\item {\bf Conversions:} A conversion takes a value of one type and produces
+      one of a different type which, conceptually, means the same thing.  
+      For example, \xcd`1 as Float` is a conversion.  It performs some
+      computation on \xcd`1`  to come up with a \xcd`Float` value.
+      Conversions are all library- or user-defined.  
+\end{itemize}
+
+\subsection{Casts}
+
+A cast \xcd`v as T2` re-imagines a value \xcd`v` of one type \xcd`T1` as being
+a value of another 
+type \xcd`T2`.  The
+value itself does not change, nor is a new value computed.  The only
+run-time computation that happens is to check that \xcd`v` is indeed a value
+of type \xcd`T2` --- and in many cases even that is unnecessary.
+
+There are two forms of casts.  {\em Upcasts} happen when \xcd`T1 <: T2`, that
+is, when a value is being cast to a more general type.  Upcasts don't require
+any runtime computation at all, since, if \xcd`T1 <: T2`, every value of type
+\xcd`T1` is automatically one of type \xcd`T2`.   For example, 
+\xcd`"A String" as Object` is an upcast: every \xcd`String` is already an
+\xcd`Object`, and no work need be done to make it one.
+
+{\em Downcasts} are casts which are not upcasts.  Often they are recasting
+something from a more general to a more specific type: 
+%~~gen ^^^ Expressions3e9h
+% package Expressions3e9h;
+% class Example { def example() { 
+%~~vis
+\begin{xten}
+   val ob : Object = "a String" as Object; // upcast
+   val st : String = ob as String;         // downcast
+   assert st == ob;
+\end{xten}
+%~~siv
+% } } 
+% class Hook{ def run() { Example.example(); return true;} } 
+%~~neg
+ 
+Casts that cross the type hierarchy laterally are also called downcasts.  In
+the following example, \xcd`Snack` and \xcd`Crunchy` are unrelated interfaces:
+neither inherits from the other.  Some objects are both; some are one but not
+the other.  Casting from a \xcd`Crunchy` to a \xcd`Snack` requires confirming
+that the value being cast is indeed a \xcd`Snack`.  
+%~~gen ^^^ Expressions3g5x
+% package Expressions3g5x;
+%~~vis
+\begin{xten}
+interface Snack {}
+interface Crunchy {} 
+class Pretzel implements Snack, Crunchy{}
+class Apricot implements Snack{}
+class Gravel  implements Crunchy{}
+class Example{
+  def example(crunchy : Crunchy) { 
+    if (crunchy instanceof Snack) { 
+       val snack = crunchy as Snack; 
+    } } } 
+\end{xten}
+%~~siv
+%
+%~~neg
+
+An upcast \xcd`v as T2` requires no computation.  
+A downcast \xcd`v as T2` requires testing that \xcd`v` really is a value of
+type \xcd`T2`.  In either case, the cast returns the value \xcd`v`; casts do
+not change value identity.
+
+
 When evaluating \xcd`E as T{c}`, first the value of \xcd`E` is converted to
-type \xcd`T` (which may fail), and then the constraint \xcd`{c}` is checked. 
+type \xcd`T` (which may fail), and then the constraint \xcd`{c}` is checked
+(which may also fail). 
 
 
 
 \begin{itemize}
-\item If \xcd`T` is a primitive type, then \xcd`E`'s value is converted to type
-      \xcd`T` according to the rules of
-      \Sref{sec:effects-of-explicit-numeric-coercions}. 
       
 \item If \xcd`T` is a class, then the first half of the cast succeeds if the
       run-time value of \xcd`E` is an instance of class \xcd`T`, or of a
       subclass. 
 
 \item If \xcd`T` is an interface, then the first half of the cast succeeds if
-      the run-time value of \xcd`E` is an instance of a class implementing
+      the run-time value of \xcd`E` is an instance of a class or struct
+      implementing 
       \xcd`T`. 
 
 \item If \xcd`T` is a struct type, then the first half of the cast succeeds if
       the run-time value of \xcd`E` is an instance of \xcd`T`.  
 
 \item If \xcd`T` is a function type, then the first half of the cast succeeds
-      if the run-time value of \xcd`X` is a function of that type, or a
-      subtype of it.
+      if the run-time value of \xcd`X` is a function of that type, or an
+      object or struct which implements it.
 \end{itemize}
 
 If the first half of the cast succeeds, the second half -- the constraint
@@ -1029,6 +1112,51 @@ no way for the value of \xcd`E` to be of type \xcd`T{c}`, then
 For example, \xcd`1 as Int{self==2}` may fail to compile, because the compiler
 knows that \xcd`1`, which has type \xcd`Int{self==1}`, cannot possibly be of
 type \xcd`Int{self==2}`. 
+
+\subsection{Explicit Conversions}
+
+Explicit conversions are written with the same syntax as casts: \xcd`v as T2`.  
+Explicit conversions transform a value of one type \xcd`T1` to an unrelated
+type \xcd`T2`.  Unlike casts, conversions {\em do} execute code, and {\em may}
+(and generally do) return new values.  
+
+Explicit conversions do not arise spontaneously, as casts do. They may be
+programmed directly, using the \xcd`operator` syntax of \Sref{sect:type-conv}.  
+Implicit coercions can also be called explicitly as conversions.  (The reverse
+is not true -- explicit conversions cannot be used as implicit conversions.) 
+
+The numeric types in \xcd`x10.lang` have explicit conversions, as described in
+\Sref{sec:effects-of-explicit-numeric-coercions}.  These conversions enable 
+\xcd`1 as Float` and the like.  
+
+\begin{ex}
+\xcd`Knot`s have an explicit conversion operator to \xcd`String`, and an
+implicit coercion to \xcd`Int`.  Note that the implicit coercion can be used
+explicitly, with \xcd`k as Int`, as well as implicitly in \xcd`Math.abs(k)`. 
+%~~gen ^^^ Expressions7e1e
+% package Expressions7e1e;
+%~~vis
+\begin{xten}
+class Knot(s:String) { 
+  // explicit conversion
+  public static operator (x:Knot) as String = x.s + "!";
+  // implicit coercion
+  public static operator (x:Knot) : Int = x.s.length();
+  public static def example() {
+     val k = new Knot("frayed");
+     assert "frayed!".equals(k as String);
+     assert (k as Int) == 6;
+     assert Math.abs(k) == 6; 
+  }
+}
+\end{xten}
+%~~siv
+% class Hook{ def run() { Knot.example(); return true; } } 
+%~~neg
+
+\end{ex}
+
+
 
 
 %BB% \bard{This section need serious whomping.  The Java mention needs to go.  The
@@ -1060,6 +1188,43 @@ type \xcd`Int{self==2}`.
 % those that seek to cast a value of a subtype to a supertype---are
 % known to succeed at compile-time. Such casts should not cause extra
 % computational overhead at run time.
+
+\subsection{Resolving Ambiguity}
+\label{sect:ambig-cast}
+
+If \xcd`v as T` could either be a cast or an explicit coercion, X10 treats its
+as a cast.  If the explicit conversion is desired, use the unambiguous syntax
+for the explicit conversion (\Sref{sect:type-conv}).
+
+\begin{ex}
+The \xcd`Thing` class provides an explicit conversion to \xcd`Object`.
+However, since \xcd`Thing` is a subclass of \xcd`Object`, 
+using the \xcd`as` operator invokes the upcast, rather than the explicit
+conversion.  
+%~~gen ^^^ Expressions7s3n
+% package Expressions7s3n;
+%~~vis
+\begin{xten}
+public class Thing {
+  public static operator (x:Thing) as Object = "very different";
+  public static def example() {
+    val t = new Thing();
+    val o = t as Object;
+    assert o instanceof Thing;
+    val p = Thing.operator as[Object](t);
+    assert p.equals("very different");
+  }
+}
+\end{xten}
+%~~siv
+% class Hook{ def run() { Thing.example(); return true; } }
+%~~neg
+The definition of an explicit conversion in this case is of little value,
+since any use of it in the \xcd`t as Object` syntax will invoke the upcast.  
+It can be called directly with the unambiguous syntax, as in the 
+definition of \xcd`p`.   However, one will generally be better off with a
+method in this case. 
+\end{ex}
 
 \section{\Xcd{instanceof}}
 \label{instanceOf}
