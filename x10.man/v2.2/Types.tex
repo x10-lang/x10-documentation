@@ -714,9 +714,20 @@ are replaced by the actual parameters.
 
 Type definitions may be overloaded: two type definitions with
 the same name are permitted provided that they have a different number
-of type parameters or different number or type of value parameters.
+of type parameters or different number or type of value parameters.  The rules
+for type definition resolution are identical to those for method resolution.
 
-Type definitions must appear as static members or in a block statement.
+However, \xcd`T()` is not allowed. If there is an argument list, it must be
+nonempty.  This avoids a possible confusion between 
+\xcd`type T = ...` and \xcd`type T() = ...`.  
+
+A type definition for a type \xcd`T` must appear: 
+\begin{itemize}
+\item As a top-level definition in a file named \xcd`T.x10`; or
+\item As a static member in a container definition; or
+\item In a block statment.
+\end{itemize}
+
 
 \paragraph{Use of type definitions in constructor invocations}
 If a type definition has no type parameters and no value
