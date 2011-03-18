@@ -781,7 +781,8 @@ and \xcd`b` are extremely identical.
       also \xcd`null`.
 \item If the operands both have struct type, then they must be structurally equal;
 that is, they must be instances of the same struct
-and all their fields or components must be \xcd"==". 
+and all their fields or components must be \xcd"==".   
+
 \item The definition of equality for function types is specified in
       \Sref{FunctionEquality}.
 \item No implicit coercions are performed by \xcd`==`.  
@@ -1020,14 +1021,15 @@ a value of another
 type \xcd`T2`.  The
 value itself does not change, nor is a new value computed.  The only
 run-time computation that happens is to check that \xcd`v` is indeed a value
-of type \xcd`T2` --- and in many cases even that is unnecessary.
+of type \xcd`T2` (which, in many cases, is unnecessary), and auto-boxing (\Sref{auto-boxing}).
 
 There are two forms of casts.  {\em Upcasts} happen when \xcd`T1 <: T2`, that
-is, when a value is being cast to a more general type.  Upcasts don't require
-any runtime computation at all, since, if \xcd`T1 <: T2`, every value of type
+is, when a value is being cast to a more general type.  Upcasts often don't require
+any runtime computation at all, since, if \xcd`T1 <: T2 <: Object`, every value of type
 \xcd`T1` is automatically one of type \xcd`T2`.   For example, 
 \xcd`"A String" as Object` is an upcast: every \xcd`String` is already an
-\xcd`Object`, and no work need be done to make it one.
+\xcd`Object`, and no work need be done to make it one.  Other upcasts may
+require auto-boxing, such as \xcd`1 as Any`.  
 
 {\em Downcasts} are casts which are not upcasts.  Often they are recasting
 something from a more general to a more specific type: 
@@ -1158,36 +1160,6 @@ class Knot(s:String) {
 
 
 
-
-%BB% \bard{This section need serious whomping.  The Java mention needs to go.  The
-%BB% rules for coercions are given in \Sref{sec:effects-of-explicit-numeric-coercions}.
-%BB% If the \xcd`Type` has a constraint, the constraint will be checked at runtime. 
-%BB% We need to give examples. 
-%BB% }
-%BB% 
-%BB% Type conversion is checked according to the
-%BB% rules of the \java{} language (e.g., \cite[\S 5.5]{jls2}).
-%BB% For constrained types, both the base
-%BB% type and the constraint are checked.
-%BB% If the
-%BB% value cannot be cast to the appropriate type, a
-%BB% \xcd"ClassCastException"
-%BB% is thrown. 
-
-
-
-% {\bf Conversions of numeric values}
-% {\bf Can't do (a as T) if a can't be a T.}
-
-
-%If the value cannot be cast to the
-%appropriate place type a \xcd"BadPlaceException" is thrown. 
-
-% Any attempt to cast an expression of a reference type to a value type
-% (or vice versa) results in a compile-time error. Some casts---such as
-% those that seek to cast a value of a subtype to a supertype---are
-% known to succeed at compile-time. Such casts should not cause extra
-% computational overhead at run time.
 
 \subsection{Resolving Ambiguity}
 \label{sect:ambig-cast}
