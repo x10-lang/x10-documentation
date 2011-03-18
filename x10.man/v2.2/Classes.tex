@@ -778,7 +778,10 @@ of the superclass/superinterfaces that are not hidden or overridden. A method \x
 \xcd"C" overrides
 a method \xcdmath"M$_2$" in a superclass \xcd"D" if
 \xcdmath"M$_1$" and \xcdmath"M$_2$" have the same signature with constraints erased.
-Methods are overriden on a signature-by-signature basis.
+Methods are overriden on a signature-by-signature basis.  It is a compile-time
+error if an instance method overrides a static method.  (But is it permitted
+for an instance {\em field} to hide a static {\em field}; that's hiding, not
+overriding, and hence totally different.)
 
 \section{Constructors}
 \label{sect:constructors}

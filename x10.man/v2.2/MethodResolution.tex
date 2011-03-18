@@ -185,19 +185,23 @@ or
 \noindent
 If none of those resolve to a method, then either operand may be cast to the
 other. 
-\noo{Is this right?}
 The following alternate calls are attempted: 
 \begin{itemize}
 \item \xcdmath"(a as B)$\star$(b)"
 \item \xcdmath"a $\star$ (b as A)"
 \end{itemize}
 
-An application \xcd`a(b)`, for any number of arguments, can only come from an
-application definition: 
+An application \xcd`a(b)`, for any number of arguments, can come from a number
+of things. 
 \begin{itemize}
-\item \xcd`operator this(b:B)`.
+\item an application operator on \xcd`a`, defined as \xcd`operator this(b:B)`;
 %%OP%% , so that the 
 %%OP%% invocation is \xcd`a.operator()(b)`
+\item If \xcd`a` is an identifier, \xcd`a(b)` can also be a method invocation
+      equivalent to \xcd`this.a(b)`, which  invokes \xcd`a` as
+      either an instance or static method on \xcd`this`
+\item If \xcd`a` is a qualified identifier, \xcd`a(b)` can also be an
+      invocation of a struct constructor.
 \end{itemize}
 
 
