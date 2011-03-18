@@ -1271,7 +1271,8 @@ unary \xcd`-`, unary \xcd`+`, \xcd`!`, \xcd`~`\\
 Many operators may be defined either in \xcd`static` or instance forms.  Those
 defined in instance form are dynamically dispatched, just like an instance
 method.  Those defined in static form are statically dispatched, just like a
-static method.  
+static method.  Operators are scoped like methods; static operators are scoped
+like static methods.
 
 \begin{ex}
 %~~gen ^^^ Classes6a1j
@@ -1300,18 +1301,19 @@ static class Brace extends Trace{
 \end{xten}
 %~~siv
 % // And checking the unambiguous syntax while I'm here...
-% static class Glook { def checky(t:Trace) { 
-%    Trace.operator !(t);
-%    t.operator -();
-% } } }
+% //static class Glook { def checky(t:Trace) { 
+% //   Trace.operator !(t);
+% //   t.operator -();
+% //} }
+% }
 %~~neg
 \end{ex}
 
-Operators may be invoked by unambiguous syntax, loosely akin to a
-fully-qualified name. For example, \xcd`!t` above may be invoked as
-\xcd`Trace.operator !(t)`. This unambiguous syntax may be used even if there
-are several \xcd`!` operators that could apply to \xcd`t`, rendering the
-convenient short form \xcd`!t` unavailable in some context.
+%%OP%% Operators may be invoked by unambiguous syntax, loosely akin to a
+%%OP%% fully-qualified name. For example, \xcd`!t` above may be invoked as
+%%OP%% \xcd`Trace.operator !(t)`. This unambiguous syntax may be used even if there
+%%OP%% are several \xcd`!` operators that could apply to \xcd`t`, rendering the
+%%OP%% convenient short form \xcd`!t` unavailable in some context.
 
 
 
@@ -1323,17 +1325,17 @@ container \xcd`A` as:
 \begin{xten}
 static operator (b:B) + (c:C) = ...;
 \end{xten}
-In this case it may be invoked as \xcd`A.operator +(b,c)`.
+%%OP%% In this case it may be invoked as \xcd`A.operator +(b,c)`.
 Or, it may be defined as  as an instance operator by one of the forms:
 \begin{xten}
 operator this + (b:B) = ...;
 operator (b:B) + this = ...;
 \end{xten}
-and be invoked as 
-\xcd`a.operator +(b)`
-and as 
-\xcd`a.operator ()+(b)` 
-respectively.
+%%OP%% and be invoked as 
+%%OP%% \xcd`a.operator +(b)`
+%%OP%% and as 
+%%OP%% \xcd`a.operator ()+(b)` 
+%%OP%% respectively.
 
 \begin{ex}
 
@@ -1506,9 +1508,9 @@ or as instance operators by:
 operator !this = ...;
 \end{xten}
 
-A statically-defined unary operator \xcd`!` may be invoked on \xcd`a:A` as 
-\xcd`A.operator !(a)`.  An instance operator may be invoked as
-\xcd`a.operator !()`.  
+%%OP%% A statically-defined unary operator \xcd`!` may be invoked on \xcd`a:A` as 
+%%OP%% \xcd`A.operator !(a)`.  An instance operator may be invoked as
+%%OP%% \xcd`a.operator !()`.  
 
 The rules for typechecking a unary operation are the same as for methods; the
 complexities of binary operations are not needed.
@@ -1556,23 +1558,7 @@ static operator (x:B) as ? {c} = ...
 \end{xten}
 The \xcd`?` indicates the containing type \xcd`A`.  
 The guard clause \xcd`{c}` may be omitted.
-They may be invoked by the unambiguous syntax: 
-%~~gen ^^^ Classes5l5v
-% package ookClasses5l5v;
-% KNOWNFAIL-operator
-% class Classes5l5v {
-% static class B {}
-% static class A {
-%    static operator (x:B) as A = new A(); 
-% }
-% static class Example { def example(b:B) {
-%~~vis
-\begin{xten}
-A.operator as[A](b)
-\end{xten}
-%~~siv
-% } } }
-%~~neg
+%%OP%% They may be invoked by the unambiguous syntax: 
 
 
 
@@ -1624,11 +1610,11 @@ The syntax for it, in either case, is:
 \begin{xten}
 static operator (u:U) : T = e;
 \end{xten}
-which may be invoked by the unambiguous syntax 
-\xcd`T.operator[T](u)` or \xcd`U.operator[T](u)`.
-\noo{I don't know what to do about constraints on T or U.}
+%%OP%% which may be invoked by the unambiguous syntax 
+%%OP%% \xcd`T.operator[T](u)` or \xcd`U.operator[T](u)`.
+%%OP%% 
 
-\noo{We need spec checks on this}
+
 
 
 Implicit coercions are used automatically by the compiler on method calls 
