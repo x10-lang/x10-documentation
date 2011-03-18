@@ -16,9 +16,9 @@ This flag causes the compiler to generate optimized code.
 This flag, if true, causes the compiler to generate debugging information.  It
 is false by default.
 
-\subsection{Call Style: {\tt -STATIC\_CALLS=boolean, -VERBOSE\_CALLS=boolean}}
-\index{STATIC\_CALLS}
-\index{VERBOSE\_CALLS}
+\subsection{Call Style: {\tt -STATIC\_CHECKS, -VERBOSE\_CHECKS}}
+\index{STATIC\_CHECKS}
+\index{VERBOSE\_CHECKS}
 \index{dynamic checks}
 
 By default, if a method call {\em could} be correct but is not {\em
@@ -30,7 +30,7 @@ def test(x:Int) {
    use(x); // creates a dynamic cast
 }
 \end{xten}
-compiles with \xcd`-STATIC_CALLS=false`, even though it is possible that 
+compiles with \xcd`-STATIC_CHECKS`, even though it is possible that 
 \xcd`x!=0` when \xcd`use(x)` is called.  In this case, the compiler inserts a
 cast, which has the effect of checking that the call is correct before it
 happens: 
@@ -41,12 +41,12 @@ def test(x:Int) {
 }
 \end{xten}
 The compiler produces a warning that it inserted some dynamic casts.
-If you then want to see what it did, use \xcd`-VERBOSE_CALLS`.
+If you then want to see what it did, use \xcd`-VERBOSE_CHECKS`.
 
-You may also turn on static checking, with the \xcd`-STATIC_CALLS` flag.  With
+You may also turn on static checking, with the \xcd`-STATIC_CHECKS` flag.  With
 static checking, calls that cannot be proved correct statically will be
 marked as errors.  The program without the dynamic cast fails to compile with
-\xcd`-STATIC_CALLS`.  
+\xcd`-STATIC_CHECKS`.  
 
 
 

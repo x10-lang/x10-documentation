@@ -94,7 +94,7 @@ The basic concept of method resolution is:
 \begin{enumerate}
 \item List all the methods that could possibly be used, inferring generic
       types but not performing implicit coercions.    If the
-      \xcd`STATIC_CALLS` compiler flag is specified, the constraints must
+      \xcd`STATIC_CHECKS` compiler flag is specified, the constraints must
       match exactly at this step; if not, they do not, but run-time tests will
       be generated if necessary.
 \item If one possible method is more specific than all the others, that one 
