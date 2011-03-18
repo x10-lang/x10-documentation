@@ -240,6 +240,10 @@ class D extends C {
 %
 %~~neg
 
+\limitation{Some X10 compilers improperly allow access to {\tt xhax} -- as,
+indeed, some Java compilers do, despite Java having the analogous rule.
+However, X10 allows all permitted accesses, so the workaround is trivial.}
+
 \item An access through a qualified name \xcd`Q.N` is permitted precisely when
       the type of \xcd`Q` is \xcd`D` or a subtype of \xcd`D`. 
 
