@@ -779,15 +779,29 @@ and \xcd`b` are extremely identical.
       if \xcd`a` and \xcd`b` are the same object.
 \item If one operand is \xcd`null`, then \xcd`a==b` holds iff the other is
       also \xcd`null`.
-\item If the operands both have struct type, then they must be structurally equal;
+\item If the operands both have struct type and are not in \xcd`x10.lang`, then they must be structurally equal;
 that is, they must be instances of the same struct
 and all their fields or components must be \xcd"==".   
+
+
 
 \item The definition of equality for function types is specified in
       \Sref{FunctionEquality}.
 \item No implicit coercions are performed by \xcd`==`.  
 \item It is a static error to have an expression \xcd`a == b` if the types of
       \xcd`a` and \xcd`b` are disjoint.  
+
+\item The structs in \xcd`x10.lang` have unsurprising concepts of \xcd`==`: 
+     \begin{itemize}
+     \item In \xcd`Boolean`, \xcd`true == true` and \xcd`false == false`. 
+     \item In \xcd`Char`, \xcd`c == d` iff \xcd`c.ord() == d.ord()`.
+     \item Equality in \xcd`Double` and \xcd`Float` is IEEE floating-point
+           equality. 
+     \item Two \xcd`GlobalRef`s are \xcd`==` if they refer to the same object.
+     \item The integral types, \xcd`Byte`, \xcd`Short`, \xcd`Int`, \xcd`Long`,
+           and their unsigned versions, use binary equality.
+     \end{itemize}
+
 \end{itemize}
 
 \xcd`a != b`
