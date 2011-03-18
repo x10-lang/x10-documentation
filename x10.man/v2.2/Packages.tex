@@ -1,5 +1,5 @@
 \chapter{Names and packages}
-\label{packages} \index{name}\index{package}\index{public}\index{protected}\index{private}
+\label{packages} \index{name}\index{package}
 
 \section{Names}
 
@@ -165,10 +165,98 @@ class Example {
 \end{ex}
 
 
-X10 allows certain modifiers to limit the use of named entities outside of the
-body that they were defined in: the  \xcd"public", \xcd"protected", \xcd"private"
-and uninflected package-specific scopes, as used in Java
-\cite[\S 6,\S 7]{jls2} and various other languages.
+
+\section{Access Control}
+\index{public}\index{protected}\index{private}
+
+X10 allows programmers {\em access control}, that is, the ability to determine
+statically where identifiers of most sorts are visible.  In particular, X10
+allows {\em information hiding}, wherein certain data can be accessed from
+only limited parts of the program. 
+
+There are four access control modes: 
+\xcd"public" , \xcd"protected", \xcd"private"
+and uninflected package-specific scopes, much like those of Java. 
+Most things can be public or private; a few things (\eg, class members) can
+also be protected or package-scoped.  
+
+Accessibility of one X10 entity (package, container, member, etc.) from within
+a package or container is defined as follows: 
+\begin{itemize}
+\item Packages are always accessible.
+\item If a container \xcd`C` is public, and, if it is inside of another
+      container \xcd`D`,
+      container \xcd`D` is accessible, then \xcd`C` is accessible.  
+\item A member \xcd`m` of a container \xcd`C` is accessible from within
+      another  \xcd`E`
+      if \xcd`C` is
+      accessible, and: 
+      \begin{itemize}
+      \item \xcd`m` is declared \xcd`public`; or
+      \item \xcd`C` is an interface; or
+      \item \xcd`m` is declared \xcd`protected`, and either the access is from
+            within the same package that \xcd`C` is defined in, or from within
+            the body of a subclass of \xcd`C` (but see
+            \Sref{sect:protected-details} for some fine points); or
+      \item \xcd`m` is declared \xcd`private`, and the access is from within
+            the top-level class which contains the definition of \xcd`C` ---
+            which may be \xcd`C` itself, or, if \xcd`C` is a nested container, an
+            outer class around \xcd`C`; or
+      \item \xcd`m` has no explicit class declaration (hence using the
+            implicit ``package''-level access control), and the access occurs
+            from the same package that \xcd`C` is declared in.
+      \end{itemize}
+\end{itemize}
+
+\subsection{Details of \xcd`protected`}
+\label{sect:protected-details}
+
+\xcd`protected` access has a few fine points. 
+Within the body of a subclass \xcd`D` of the class \xcd`C` containing
+the definition of a protected member \xcd`m`, 
+
+\begin{itemize}
+
+\item An access \xcd`e.fld` to a field, or \xcd`e.m(...)` to a method, is
+      permitted precisely when the type of \xcd`e` is either \xcd`D` or a
+      subtype of \xcd`D`.  
+For example, the access to \xcd`that.f` in the following code is acceptable, but
+the access to \xcd`xhax.f` is not.  
+%~~gen ^^^ Packages9q4y
+% package Packages9q4y;
+%~~vis
+\begin{xten}
+class C {
+  protected var f : Int = 0;
+}
+class X extends C {}
+class D extends C {
+  def usef(that:D, xhax:X) {
+     this.f += that.f; 
+     // ERROR: this.f += xhax.f;
+}
+\end{xten}
+%~~siv
+%
+%~~neg
+
+\item An access through a qualified name \xcd`Q.N` is permitted precisely when
+      the type of \xcd`Q` is \xcd`D` or a subtype of \xcd`D`. 
+
+\end{itemize}
+
+Qualified access to a protected constructor is subtle.  Let \xcd`C` be a class
+with a \xcd`protected` constructor $c$, and let \xcd`S` be the innermost
+class containing a use $u$ of $c$.  There are three cases: 
+
+\begin{itemize}
+\item Super superclass construction invocations, \xcd`super(...)` or
+      \xcd`E.super(...)`, are permitted.
+\item Anonymous class instance creations, \xcd`new C(...){...}`
+      and \xcd`E.new C(...){...}`, are
+      permitted.
+\item No other accesses are permitted. 
+\end{itemize}
 
 \section{Packages}
 
@@ -176,7 +264,9 @@ A package is a named collection of top-level type declarations, \viz, class,
 interface, and struct declarations. Package names are sequences of
 identifiers, like \xcd`x10.lang` and \xcd`com.ibm.museum`. The multiple names
 are simply a convenience, though there is a tenuous relationship between
-packages \xcd`a`, \xcd`a.b`, and \xcd`a.c`. 
+packages \xcd`a`, \xcd`a.b`, and \xcd`a.c`.   Packages can be accessed by
+name from anywhere: a package may contain private elements, but may not itself
+be private. 
 
 Packages and protection modifiers determine which top-level names can be used
 where. Only the \xcd`public` members of package \xcd`pack.age` can be accessed
