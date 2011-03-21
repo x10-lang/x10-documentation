@@ -191,6 +191,8 @@ if (b) {
 
 \section{Expression statement}
 
+Any expression may be used as a statement.
+
 %##(ExpStatement StatementExp
 \begin{bbgrammar}
 %(FROM #(prod:ExpStatement)#)
@@ -235,13 +237,6 @@ class StmtEx {
 %~~neg
 \end{ex}
 
-
-Only selected forms of expression can appear in expression statements:
-assignments, increments, decrements, method invocations, operator expressions,
-and constructor 
-invocations. Most other forms of expression, such as literals and variable and
-field references, cannot have side effects and are thus pointless as
-expression statements.
 
 
 \section{Labeled statement}
