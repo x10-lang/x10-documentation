@@ -40,11 +40,11 @@ The basic operations on objects are:
 \begin{itemize}
 
 {}\item Field access (\Sref{FieldAccess}). 
-The static and instance fields of an object can be retrieved; \xcd`var` fields
+The static, instance, and property fields of an object can be retrieved; \xcd`var` fields
 can be set.  
 
 {}\item Method invocation (\Sref{MethodInvocation}).  
-Static and instance methods of an object can be invoked.
+Static, instance, and property methods of an object can be invoked.
 
 {}\item Casting (\Sref{ClassCast}) and instance testing with \xcd`instanceof`
 (\Sref{instanceOf}) Objects can be cast or type-tested.  
@@ -134,7 +134,9 @@ subtlety (\Sref{sect:disambiguations}).
 Fields may be given values via {\em field initialization expressions}:
 \xcd`val f1 = E;` and \xcd`var f2 : Int = F;`. Other fields of \xcd`this` may
 be referenced, but only those that {\em precede} the field being initialized.
-For example, the following is correct, but would not be if the fields were
+
+
+\begin{ex}The following is correct, but would not be if the fields were
 reversed:
 
 %~~gen ^^^ Classes10
@@ -149,7 +151,7 @@ class Fld{
 %~~siv
 %
 %~~neg
-
+\end{ex}
 
 \subsection{Field hiding}
 \index{hiding}
