@@ -4,12 +4,17 @@
 
 At times it becomes necessary to call non-X10 code from X10, perhaps to make
 use of specialized libraries in other languages or to write more precisely
-controlled code than X10 generally makes available. The
+controlled code than X10 generally makes available. 
+
+The
 \xcd`@Native(lang,code) Phrase` annotation from \xcd`x10.compiler.Native` in
 X10 can be used to tell the X10 compiler to generate \xcd`code` for certain
 kinds of \xcd`Phrase`, instead of what it would normally compile to, when
 compiling to the \xcd`lang` back end.
 
+The compiler cannot analyze native code the same way it analyzes X10 code.  In
+particular, \xcd`@Native` fields and methods must be explicitly typed; the
+compiler will not infer types.
 
 \section{Native {\tt static} Methods}
 
@@ -85,7 +90,7 @@ class Return {
 %~~siv
 %
 %~~neg
-
+Types are {\em not} inferred for methods marked as \xcd`@Native`.
 
 Parameters may be passed to external code.  \xcd`(#1)`  is the first parameter,
 \xcd`(#2)` the second, and so forth.  (\xcd`(#0)` is the name of the enclosing
