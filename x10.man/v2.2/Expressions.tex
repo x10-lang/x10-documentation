@@ -837,6 +837,8 @@ assert eq1 == eq2;
 %~~neg
 \end{ex}
 
+
+
 \subsection{No Implicit Coercions}
 \label{sect:eqeq-no-coerce}
 
@@ -892,13 +894,37 @@ for(var i : Long = 0; i != 100; i++)
 coercion could make them equal, but \xcd`==` does not allow coercions. So, if
 \xcd`100 == 100L` were going to return anything, it would have to return
 \xcd`false`. This would have the unfortunate effect of making the \xcd`for`
-loop diverge.
+loop run forever.
 
 Since this and related idioms are so common, and since so many programmers are
 used to languages which are less precise about their numeric types, X10 avoids
 the mistake by declaring it a static error in most cases.  Specifically,
 \xcd`a==b` is not allowed if, by inspection of the types, \xcd`a` and \xcd`b`
 could not possibly be equal.
+
+\begin{ex}
+Nonetheless, it is possible to wind up comparing values of different numeric
+types.   Even though, say, \xcd`0` and \xcd`0L` represent the same number,
+they are different values and of different types, and hence, \xcd`0 != 0L`.  
+The expression \xcd`0 == 0L` does not compile.  However, if you hide type
+information from X10, you can get a similar expression to compile: 
+
+%~~gen ^^^ Expressions1x7i
+% package Expressions1x7i;
+% class Example { static def example() { 
+%~~vis
+\begin{xten}
+   val a : Any = 0;
+   val b : Any = 0L;
+   assert a != b;
+\end{xten}
+%~~siv
+% } } 
+% class Hook{ def run() { Example.example(); return true; } } 
+%~~neg
+
+
+\end{ex}
 
 
 \begin{itemize}
@@ -1197,19 +1223,16 @@ public class Thing {
     val t = new Thing();
     val o = t as Object;
     assert o instanceof Thing;
-    val p = Thing.operator as[Object](t);
-    assert p.equals("very different");
   }
 }
 \end{xten}
 %~~siv
+% //    val p = Thing.operator as[Object](t);
+% //    assert p.equals("very different");
 % class Hook{ def run() { Thing.example(); return true; } }
 %~~neg
 The definition of an explicit conversion in this case is of little value,
 since any use of it in the \xcd`t as Object` syntax will invoke the upcast.  
-It can be called directly with the unambiguous syntax, as in the 
-definition of \xcd`p`.   However, one will generally be better off with a
-method in this case. 
 \end{ex}
 
 \section{\Xcd{instanceof}}

@@ -888,7 +888,7 @@ The following code adds two distributed arrays:
 %~~vis
 \begin{xten}
 static def add(da:DistArray[Int], db: DistArray[Int]{da.dist==db.dist})
-    = da.map(db, Int.+);
+    = da.map(db, (a:Int,b:Int)=>a+b);
 \end{xten}
 %~~siv
 %}
@@ -936,7 +936,7 @@ and \Xcd{unit} is zero.
 %~~vis
 \begin{xten}
 val a = [1,2,3,4];
-val sum = a.reduce(Int.+, 0); 
+val sum = a.reduce((a:Int,b:Int)=>a+b, 0); 
 assert(sum == 10); // 10 == 1+2+3+4
 \end{xten}
 %~~siv

@@ -359,9 +359,9 @@ class Lambda {
 %%METHOD-SELECTION%% \begin{ex}
 %%METHOD-SELECTION%% Consider a class \xcd`Span` defining ranges of integers.  
 %%METHOD-SELECTION%% 
-%%METHOD-SELECTION%% %~~gen ^^^ Functions80
+%%METHOD-SELECTION%% %~todo~gen ^^^ Functions80
 %%METHOD-SELECTION%% % package Functions2.Span;
-%%METHOD-SELECTION%% %~~vis
+%%METHOD-SELECTION%% %~todo~vis
 %%METHOD-SELECTION%% \begin{xten}
 %%METHOD-SELECTION%% class Span(low:Int, high:Int) {
 %%METHOD-SELECTION%%   def this(low:Int, high:Int) {property(low,high);}
@@ -373,18 +373,18 @@ class Lambda {
 %%METHOD-SELECTION%%   }
 %%METHOD-SELECTION%% }
 %%METHOD-SELECTION%% \end{xten}
-%%METHOD-SELECTION%% %~~siv
+%%METHOD-SELECTION%% %~todo~siv
 %%METHOD-SELECTION%% % class Hook{ def run() {Span.example(); return true;}}
-%%METHOD-SELECTION%% %~~neg
+%%METHOD-SELECTION%% %~todo~neg
 %%METHOD-SELECTION%% \noindent
 %%METHOD-SELECTION%% 
 %%METHOD-SELECTION%% 
 %%METHOD-SELECTION%% In \xcd`example()`, 
-%%METHOD-SELECTION%% %~~exp~~`~~`~~ digit:Span~~class Span(low:Int, high:Int) {def this(low:Int, high:Int) {property(low,high);} def between(n:Int) = low <= n && n <= high;} ^^^ Functions90
+%%METHOD-SELECTION%% %~todo~exp~~`~~`~~ digit:Span~~class Span(low:Int, high:Int) {def this(low:Int, high:Int) {property(low,high);} def between(n:Int) = low <= n && n <= high;} ^^^ Functions90
 %%METHOD-SELECTION%% \xcd`digit.between.(Int)` 
 %%METHOD-SELECTION%% is a unary function testing whether its argument is between zero
 %%METHOD-SELECTION%% and nine.  It could also be written 
-%%METHOD-SELECTION%% %~~exp~~`~~`~~ digit:Span~~class Span(low:Int, high:Int) {def this(low:Int, high:Int) {property(low,high);} def between(n:Int) = low <= n && n <= high;} ^^^ Functions100
+%%METHOD-SELECTION%% %~todo~exp~~`~~`~~ digit:Span~~class Span(low:Int, high:Int) {def this(low:Int, high:Int) {property(low,high);} def between(n:Int) = low <= n && n <= high;} ^^^ Functions100
 %%METHOD-SELECTION%% \xcd`(n:Int) => digit.between(n)`.
 %%METHOD-SELECTION%% \end{ex}
 %%METHOD-SELECTION%% 
@@ -442,51 +442,52 @@ class Lambda {
 %%METHOD-SELECTION%% directly using the function syntax, or obtained via static or
 %%METHOD-SELECTION%% instance function selectors.
 %%METHOD-SELECTION%% 
-
-\section{Operator functions}
-\label{OperatorFunction}
-\index{function!operator}
-Every binary operator (e.g.,
-\xcd"+",
-\xcd"-",
-\xcd"*",
-\xcd"/",
-\dots) has a family of functions, one for
-each type on which the operator is defined. The function can be
-selected using the ``\xcd`.`'' syntax:
-
-
-\begin{xtenmath}
-String.+    $\equiv$ (x: String, y: String): String => x + y
-Long.-      $\equiv$ (x: Long, y: Long): Long => x - y
-Float.-     $\equiv$ (x: Float, y: Float): Float => x - y
-Boolean.&   $\equiv$ (x: Boolean, y: Boolean): Boolean => x & y
-Int.<       $\equiv$ (x: Int, y: Int): Boolean => x < y
-\end{xtenmath}
-
-%~~gen ^^^ Functions110
-% package Functions.Operatorfunctionsgracklegrackle;
-% class JustATest {
-% val dummy = [String.+,
-%  Long.-,
-%  Float.-,
-%  Boolean.&,
-%  Int.<
-%  ];
-% }
-%~~vis
-\begin{xten}
-\end{xten}
-%~~siv
-%
-%~~neg
-
-
-Unary and binary promotion (\Sref{XtenPromotions}) is not performed
-when invoking these
-operations; instead, the operands are coerced individually via implicit
-coercions (\Sref{XtenConversions}), as appropriate.
-
+%%OP-FUN%% 
+%%OP-FUN%% \section{Operator functions}
+%%OP-FUN%% \label{OperatorFunction}
+%%OP-FUN%% \index{function!operator}
+%%OP-FUN%% Every binary operator (e.g.,
+%%OP-FUN%% \xcd"+",
+%%OP-FUN%% \xcd"-",
+%%OP-FUN%% \xcd"*",
+%%OP-FUN%% \xcd"/",
+%%OP-FUN%% \dots) has a family of functions, one for
+%%OP-FUN%% each type on which the operator is defined. The function can be
+%%OP-FUN%% selected using the ``\xcd`.`'' syntax:
+%%OP-FUN%% 
+%%OP-FUN%% 
+%%OP-FUN%% \begin{xtenmath}
+%%OP-FUN%% String.+    $\equiv$ (x: String, y: String): String => x + y
+%%OP-FUN%% Long.-      $\equiv$ (x: Long, y: Long): Long => x - y
+%%OP-FUN%% Float.-     $\equiv$ (x: Float, y: Float): Float => x - y
+%%OP-FUN%% Boolean.&   $\equiv$ (x: Boolean, y: Boolean): Boolean => x & y
+%%OP-FUN%% Int.<       $\equiv$ (x: Int, y: Int): Boolean => x < y
+%%OP-FUN%% \end{xtenmath}
+%%OP-FUN%% 
+%%OP-FUN%% %~x~gen ^^^ Functions110
+%%OP-FUN%% % package Functions.Operatorfunctionsgracklegrackle;
+%%OP-FUN%% % class JustATest {
+%%OP-FUN%% % val dummy = [String.+,
+%%OP-FUN%% %  Long.-,
+%%OP-FUN%% %  Float.-,
+%%OP-FUN%% %  Boolean.&,
+%%OP-FUN%% %  Int.<
+%%OP-FUN%% %  ];
+%%OP-FUN%% % }
+%%OP-FUN%% %~x~vis
+%%OP-FUN%% \begin{xten}
+%%OP-FUN%% \end{xten}
+%%OP-FUN%% %~x~siv
+%%OP-FUN%% %
+%%OP-FUN%% %~x~neg
+%%OP-FUN%% 
+%%OP-FUN%% 
+%%OP-FUN%% Unary and binary promotion (\Sref{XtenPromotions}) is not performed
+%%OP-FUN%% when invoking these
+%%OP-FUN%% operations; instead, the operands are coerced individually via implicit
+%%OP-FUN%% coercions (\Sref{XtenConversions}), as appropriate.
+%%OP-FUN%% 
+%%OP-FUN%% 
 
 \section{Functions as objects of type {\tt Any}}
 \label{FunctionAnyMethods}
