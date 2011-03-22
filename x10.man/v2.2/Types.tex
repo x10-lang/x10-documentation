@@ -992,7 +992,8 @@ Only a few kinds of expressions can appear in constraints.  For fundamental
 reasons of mathematical logic, the more kinds of expressions that can appear
 in constraints, the harder it is to compute the essential properties of
 constrained type -- in particular, the harder it is to compute 
-\xcd`A{c} <: B{d}`.  It doesn't take much to make this basic fact undecidable.
+\xcd`A{c} <: B{d}` or even \xcd`E : T{c}`.  It doesn't take much to make this
+basic fact undecidable. 
 In order to make sure that it stays decidable, X10 places stringent restrictions on
 constraints.  
 
@@ -1001,24 +1002,27 @@ Only the following forms of expression are allowed in constraints.
 {\bf Value expressions in constraints} may be: 
 \begin{enumerate}
 \item Literal constants, like \xcd`3` and \xcd`true`;
-\item Expressions computable at compile time, like \Xcd{3*4+5};
-\item Accessible and immutable variables and parameters;
-\item Accessible and immutable fields of objects;
-\item Properties of the type being constrained;
+% \item Expressions computable at compile time, like \Xcd{3*4+5};
+\item Accessible, immutable (\xcd`val`) variables and parameters;
+% \item Accessible and immutable fields of objects;
+% \item Properties of the type being constrained;
 \item \xcd`this`, if the constraint is in a place where \xcd`this` is defined;
 \item \xcd`here`, if the constraint is in a place where \xcd`here` is defined;
 \item \xcd`self`;
-\item Calls to property methods, where the receiver and arguments must be
-      value expressions acceptable in constraints;
-\item \xcd`T haszero`, if \xcd`T` is any type expression.
+\item A field selection expression \xcd`t.f`, where \xcd`t` is a value
+      expression allowed in constraints, and \xcd`f` is a field of \xcd`t`'s
+      type.    
+% \item Calls to property methods, where the receiver and arguments must be
+%       value expressions acceptable in constraints;
+% \item \xcd`T haszero`, if \xcd`T` is any type expression.
 \end{enumerate}
 For an expression \xcd`self.p` to be legal in a constraint, 
 \xcd`p` must be 
 a property. However terms \xcd`t.f` may be
 used in constraints (where \xcd`t` is a term other than \xcd`self` and
-\xcd`f` is an immutable field.
+\xcd`f` is an immutable field.)
 
-{\bf Constraints}, and {\bf Boolean expressions in constraints}  may be any of
+{\bf Constraints}  may be any of
 the following, where 
 all value expressions are of the forms which may appear in constraints: 
 \begin{enumerate}
@@ -1029,7 +1033,9 @@ all value expressions are of the forms which may appear in constraints:
       only in top-level constraints, not in Boolean expressions in constraints);
 \item Subtyping and supertyping expressions: \xcd`T <: U` and \xcd`T :> U`; 
 \item Type equalities and inequalities: \xcd`T == U` and \xcd`T != U`; 
-% \item Testing a type for a default: \Xcd{hasZero T}.
+\item Invocations of a property method, \xcd`p(a,b,...,c)` or
+      \xcd`a.p(b,c,...d)`.  
+\item Testing a type for a default: \Xcd{T haszero}.
 \end{enumerate}
 
 All variables appearing in a constraint expression must be visible wherever
@@ -1040,11 +1046,6 @@ public method \xcd`m(x: Int{self != p})`, and a call \xcd`ob.m(10)` made
 outside of the class. Since \xcd`p` is only visible inside the class, there is
 no way to tell if \xcd`10` is of type \xcd`Int{self != p}` at the call site.)
 
-\limitation{
-% Currently \Xcd{hasZero T} is not supported.  
-Certain spurious syntactic forms -- such as \xcd`a+b,a*b,(c==a&&b),a <b` --
-are accepted by the compiler but treated incorrectly.  
-}
 
 
 

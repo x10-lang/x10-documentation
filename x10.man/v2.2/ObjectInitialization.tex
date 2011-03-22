@@ -304,7 +304,8 @@ class Overdone(y:Int) extends Overlord  {
   def this(r:Int) {
     super(r);                      // (1)
     x10.io.Console.OUT.println(r); // (2)
-    property(r+1);                 // (2)
+    val rp1 = r+1;
+    property(rp1);                 // (2)
     // field initializations here  // (3)
     a = r + 2;                     // (4)
   }

@@ -154,8 +154,7 @@ class Fld{
 \end{ex}
 
 \subsection{Field hiding}
-\index{hiding}
-\index{field|hiding}
+\index{field!hiding}
 
 
 A subclass that defines a field \xcd"f" hides any field \xcd"f"
@@ -169,7 +168,7 @@ write \xcd`Cls.super.f` to get at a hidden field \xcd`f` of an outer class
 
 \begin{ex}
 The \xcd`f` field in \xcd`Sub` hides the \xcd`f` field in \xcd`Super`
-The \xcd`superf`` method provides access to the \xcd`f` field in \xcd`Super`.
+The \xcd`superf` method provides access to the \xcd`f` field in \xcd`Super`.
 %~~gen ^^^ Classes20
 % package classes.fields.primus;
 %~~vis
@@ -277,6 +276,9 @@ properties are desired.
 Properties are defined in parentheses, after the name of the class.  They are
 given values by the \xcd`property` command in constructors.
 
+\begin{ex}
+\xcd`Proper` has a single property, \xcd`t`.  \xcd`new Proper(4)` creates a
+\xcd`Proper` object with \xcd`t==4`. 
 %~~gen ^^^ Classes50
 % package Classes.Toss.Freedom.Disk2;
 %~~vis
@@ -289,7 +291,7 @@ class Proper(t:Int) {
 %
 %~~neg
 
-
+\end{ex}
 
 
 It is a static error for a class
@@ -335,7 +337,7 @@ statement:
 property(e1,..., en);
 \end{xten}
 The number and types of arguments to the \Xcd{property} statement must match
-the number and types of the properties in the class declaration.  
+the number and types of the properties in the class declaration, in order.  
 Every constructor of a class with properties must invoke \xcd`property(...)`
 precisely once; it is a static error if X10 cannot prove that this holds.
 The requirement to use the \xcd`property` statement means that all properties
@@ -477,7 +479,11 @@ methods like \xcd`example`.  It does allow generic instance methods which are
 \index{guard!on method}
 
 Often, a method will only make sense to invoke under certain
-statically-determinable conditions.  For example, \xcd`example(x)` is only
+statically-determinable conditions.  These conditions may be expressed as a
+guard on the method.
+
+\begin{ex}
+For example, \xcd`example(x)` is only
 well-defined when \xcd`x != null`, as \xcd`null.toString()` throws a null
 pointer exception: 
 %~~gen ^^^ Classes80
@@ -500,6 +506,8 @@ class Example {
 instead; in
 most cases it is a matter of personal preference or convenience of expression
 which one to use.) 
+\end{ex}
+
 
 The requirement of having a method guard is that callers must demonstrate to
 the X10
@@ -574,11 +582,23 @@ Using a reference to an outer class, \xcd`Outer.this`, in a constraint, is not s
 \index{method!property}
 \index{property method}
 
-Property methods are methods that can be evaluated in constraints.  
-For example, the \xcd`eq()` method below tells if the \xcd`x` and \xcd`y`
+%##(PropertyMethodDecl
+%##)
+
+Property methods are methods that can be evaluated in constraints, as
+properties can.   They provide a means of abstraction over properties; \eg,
+interfaces can specify property methods that implementing containers must
+provide, but, just as they cannot specify ordinary fields, they cannot specify
+property fields.   Property methods are very limited in computing power: they
+must obey the same restrictions as constraint expressions.  In particular,
+they cannot have side effects, or even much code in their bodies.
+
+
+\begin{ex}
+The \xcd`eq()` method below tells if the \xcd`x` and \xcd`y`
 properties are equal; the \xcd`is(z)` method tells if they are both equal to
-\xcd`z`.  These can be used in constraints, as illustrated in the
-\xcd`example()` method.
+\xcd`z`.  
+The \xcd`eq` and \xcd`is` property methods 
 %~~gen ^^^ Classes100
 %package Classes.PropertyMethods;
 %~~vis
@@ -593,15 +613,15 @@ class Example(x:Int, y:Int) {
 %~~siv
 %
 %~~neg
+\end{ex}
 
-
-A method declared with the modifier \xcd"property" may be used
-in constraints.  A property method declared in a class must have
+A property method declared in a class must have
 a body and must not be \xcd"void".  The body of the method must
-consist of only a single \xcd"return" statement or a single
+consist of only a single \xcd"return" statement with an expression,  or a single
 expression.  It is a static error if the expression cannot be
 represented in the constraint system.   Property methods may be \xcd`abstract`
-in \xcd`abstract` classes, but are implicitly \xcd`final` in
+in \xcd`abstract` classes, and may be specified in interfaces, but are
+implicitly \xcd`final` in 
 non-\xcd`abstract` classes. 
 
 The expression may contain invocations of other property methods. It is the
@@ -616,10 +636,9 @@ signature.   It is a static error if a superclass has a property with some
 name \xcd`p`, and a subclass has a nullary method of any kind (instance,
 static, or property) also named \xcd`p`. 
 
-% We should fix it so that a property p (or a property method p())  in the super class  cannot be shadowed by a field p in a subclass, or overridden by a method p() in the subclass.
 
 
-A nullary property method definition may omit the formal parameters and
+A nullary property method definition may omit 
 the \xcd"def" keyword.  That is, the following are equivalent:
 
 
@@ -803,7 +822,7 @@ ClassInstCreationExp \: \xcd"new" TypeName TypeArguments\opt \xcd"(" ArgumentLis
 This constructs a new object, and calls some code, called a {\em constructor},
 to initialize the newly-created object properly.
 
-Constructors are defined like methods, except that they are named \xcd`this`
+Constructors are defined like methods, except that they must be named \xcd`this`
 and ordinary methods may not be.    The content of a constructor body has
 certain capabilities (\eg, \xcd`val` fields of the object may be initialized)
 and certain restrictions (\eg, most methods cannot be called); see
@@ -911,9 +930,7 @@ whose parameter has a default value of 100:
 class Ctors {
   val a : Int;
   def this(a:Int) { this.a = a; }
-  def this() {
-    this(100);
-  }
+  def this()      { this(100);  }
 }
 \end{xten}
 %~~siv
@@ -927,8 +944,8 @@ this can be ambiguous.  If \xcd`this()` appears as the first statement of a
 constructor body, it could, in principle, mean either a constructor call or an
 operator evaluation.   This ambiguity is resolved so that \xcd`this()` always
 means the constructor invocation.  If, for some reason, it is necessary to
-invoke an application operator early in a constructor, precede it with a dummy
-statement, such as \xcd`if(false);`  
+invoke an application operator as the first meaningful statement of a
+constructor, precede it with a dummy statement, such as \xcd`if(false);`  
 
 \section{Static initialization}
 \label{StaticInitialization}
@@ -1626,12 +1643,11 @@ Implicit coercions are used automatically by the compiler on method calls
 (\Sref{sect:MethodResolution}) and assignments (\Sref{domedomedome}).
 
 
-
-For example, we can define an implicit coercion from \xcd`Int` to \xcd`Poly`,
+\begin{ex}
+We can define an implicit coercion from \xcd`Int` to \xcd`Poly`,
 and avoid having to define the sum of an integer and a polynomial
 as many special cases.  In the following example, we only define \xcd`+` on
-two polynomials (using a \xcd`static` operator, so that implicit coercions
-will be used -- they would not be for an instance method operator).  The
+two polynomials.  The
 calculation \xcd`1+x` coerces \xcd`1` to a polynomial and uses polynomial
 addition to add it to \xcd`x`.
 
@@ -1683,8 +1699,9 @@ addition to add it to \xcd`x`.
 %~~siv
 %}
 %~~neg
+\end{ex}
 
-\bard{Syntax}
+
 
 \subsection{Assignment and Application Operators}
 \index{assignment operator}
@@ -1708,23 +1725,27 @@ with \xcd`public operator this(i:Int)`, and by string-valued keys with
 \xcd`a(i,j)=b` is an \xcd`operator` as well, with zero or more indices
 \xcd`i,j`.  It may also be overloaded. 
 
-The update operations \xcd`a(i) += b` are defined to be the same as the
+The update operations \xcd`a(i) += b` 
+(for all binary operators in place of \xcd`+`)
+are defined to be the same as the
 corresponding \xcd`a(i) = a(i) + b`. This applies for all arities of
 arguments, and all types, and all binary operations. Of course to use this,
-both the application and assignment \xcd`operator`s must be defined.
+the \xcd`+`, application and assignment \xcd`operator`s must be defined.
 
 
 \begin{ex}
 
 The \xcd`Oddvec` class of somewhat peculiar vectors illustrates this.
-\xcd`a()` returns a string representation of the oddvec, which probably should
+
+\xcd`a()` returns a string representation of the oddvec, which ordinarily
+would 
 be done by \xcd`toString()` instead.  
 \xcd`a(i)` sensibly picks out one of the three
 coordinates of \xcd`a`.
 \xcd`a()=b` sets all the coordinates of \xcd`a` to \xcd`b`.
 \xcd`a(i)=b` assigns to one of the
 coordinates.  \xcd`a(i,j)=b` assigns different values to \xcd`a(i)` and
-\xcd`a(j)`, purely for the sake of the example.
+\xcd`a(j)`.  
 
 %~~gen ^^^ Classes250
 % package Classes.Assignments1_oddvec;
@@ -1813,7 +1834,7 @@ class Line(a:Pt, b:Pt{a != b}) {}
 
 
 
-With every defined class, struct,  or interface \xcd"T" we associate a {\em type
+With every container  or interface \xcd"T" we associate a {\em type
 invariant} $\mathit{inv}($\xcd"T"$)$, which describes the guarantees on the
 properties of values of type \xcd`T`.  
 
@@ -1878,18 +1899,19 @@ class C(x$_1$: P$_1$, $\dots$, x$_n$: P$_n$) extends D{d}
 $\mbox{\emph{ClassBody}}$
 \end{xtenmath}
 
-Each of the following static semantics rules must be satisfied:
+These two rules must be satisfied:
 
-\noo{reformat this}
 
+\begin{itemize}
+
+\item 
 The type invariant \xcdmath"$\mathit{inv}$(C)" of \xcd"C" must entail
 \xcdmath"c$_i$[this/self]" for each $i$ in $\{1, \dots, k\}$
 
 
-
-The return type \xcd"c" of each constructor in a class \xcd`C`
+\item The return type \xcd"c" of each constructor in a class \xcd`C`
 must entail the invariant \xcdmath"$\mathit{inv}$(C)".
-
+\end{itemize}
 
 \subsection{Invariants and constructor definitions}
 \index{invariant!and constructor}
@@ -2006,7 +2028,7 @@ constructor, and the conjunction of static types of the argument must
 entail the constraint in the parameter list of the constructor.
 
 
-
+\noo{Bard - revise Object Initialization to make sure it conforms to the paper}
 \input{ObjectInitialization.tex}
 
 \input{MethodResolution.tex}

@@ -20,8 +20,8 @@ cheaply than objects, potentially avoiding the space and time overhead.
 (Currently, the C++ back end avoids the overhead, but the Java back end
 implements structs as Java objects and does not avoid it.)
 
-Structs and classes are interoperable. Both can implement interfaces (in
-particular, like all X10 values they implement \xcd`Any`), and subprocedures
+Structs and classes are interoperable. Both can implement interfaces; in
+particular, like all X10 values they implement \xcd`Any`.  Subroutines 
 whose arguments are defined by interfaces can take both structs and classes.
 (Some caution is necessary here: referring to a struct through an interface
 requires overhead similar to that required for an object.)
@@ -33,7 +33,7 @@ the keyword \xcd`struct` to \xcd`class`. If you have a class that does not use
 inheritance or mutable fields, it can be converted to a struct by changing its
 keyword. Client code using the struct that was a class will need certain
 changes: \eg, the \xcd`new` keyword must be added in constructor calls, and
-structs (unlike classes) do not have default values.
+structs (unlike classes) cannot be \xcd`null`.  
 
 
 
@@ -89,14 +89,15 @@ struct Polar(r:Double, theta:Double){
 %~~neg
 
 
-When a struct and a method have the same name, 
+When a struct and a method have the same name (often in violation of the X10
+capitalization convention), 
 \xcd`new` may be used to resolve to the struct's constructor.  
 %~~gen ^^^ Structs2w3o
 % package Structs2w3o;
 %~~vis
 \begin{xten}
 struct Ambig(x:Int) {
-  static def Ambig(x:Int) = "Breaks capitalization conventions!";
+  static def Ambig(x:Int) = "ambiguity please";
   static def example() { 
     val useMethod      = Ambig(1);
     val useConstructor = new Ambig(2);
@@ -242,8 +243,8 @@ otherwise encourage the use of unsigned arithmetic.
 
 
 The programmer must be aware of the different interpretations of
-equality for structs and classes and ensure that the code is correctly
-written for both cases. 
+equality (\Sref{StableEquality}) for structs and classes and ensure that the
+code is correctly written for both cases. 
 
 \index{isObject}
 \index{isStruct}
@@ -278,7 +279,7 @@ suitable for use in a library.  For a shorter example, we define the
 two values of possibly unrelated type together in a single value, \eg, to
 return two values from a function.  
 
-\xcd`divmod` computes the quotient and remainder of \xcd`a \div b` (naively).
+\xcd`divmod` computes the quotient and remainder of \xcdmath"a $\div$ b" (naively).
 It returns both, packaged as a \xcd`Pair[UInt, UInt]`.  Note that the
 constructor uses type inference, and that the quotient and remainder are
 accessed through the \xcd`first` and \xcd`second` fields.
@@ -320,6 +321,45 @@ Static nested structs may be defined, essentially as static nested classes
 except for making them structs
 (\Sref{StaticNestedClasses}).  Inner structs may be defined, essentially as
 inner classes except making them structs (\Sref{InnerClasses}).
+
+\section{Default Values}
+
+If all fields of a struct have default values, then the struct has a
+      default value, \viz, the struct whose fields are all set to their
+      default values.  If some field does not have a default value, neither
+      does the struct.
+
+\begin{ex}
+
+\noo{This is not right!}
+
+%~~gen ^^^ Structs6r3w
+% package Structs6r3w;
+%~~vis
+\begin{xten}
+struct Fault {
+  static struct Dee {
+    val a : Int;
+    val b : Boolean;
+  }
+  val c : Float; 
+  val d : Dee;
+  static val f : Fault; 
+  static def example() {
+    assert f.d.a == 0 && f.d.b == true && f.c == 0.0f; 
+  }
+  static struct NoDefault {  
+    val no : 
+  }
+}
+\end{xten}
+%~~siv
+% class Hook { def run() { Fault.example(); return true; } }
+%~~neg
+
+
+\end{ex}
+
 
 \section{Converting Between Classes And Structs}
 
@@ -393,8 +433,14 @@ assert c==d;
 %}}
 %~~neg
 
-\item Objects can be set to \xcd`null`.  Structs cannot.  There is no
-      default value like \xcd`null` available for structs.  
+\item Objects can be set to \xcd`null`.  Structs cannot.  
+
+\item The rules for default values are quite different.  
+The default value of an object type (if it exists) is \xcd`null`, which behaves quite
+differently from an ordinary object of that type; \eg, you cannot call methods
+on \xcd`null`, whereas you can on an ordinary object. The default value for
+a struct type (if it exists) is a struct like any other of its type, and you
+can call methods on it as for any other.
 
 
 \end{enumerate}
