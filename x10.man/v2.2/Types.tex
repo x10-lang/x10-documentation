@@ -1012,9 +1012,12 @@ Only the following forms of expression are allowed in constraints.
 \item A field selection expression \xcd`t.f`, where \xcd`t` is a value
       expression allowed in constraints, and \xcd`f` is a field of \xcd`t`'s
       type.    
-% \item Calls to property methods, where the receiver and arguments must be
-%       value expressions acceptable in constraints;
-% \item \xcd`T haszero`, if \xcd`T` is any type expression.
+ \item Invocations of property methods,  \xcd`p(a,b,...,c)` or
+      \xcd`a.p(b,c,...d)`, where the receiver and arguments must be
+       value expressions acceptable in constraints, as long as the expansion
+       (\viz, the expression obtained by taking the body of the definition of
+       \xcd`p`, and replacing the formal parameters by the actual parameters)
+       of the invocation is allowed as a value expression in constraints.  
 \end{enumerate}
 For an expression \xcd`self.p` to be legal in a constraint, 
 \xcd`p` must be 
@@ -1034,7 +1037,9 @@ all value expressions are of the forms which may appear in constraints:
 \item Subtyping and supertyping expressions: \xcd`T <: U` and \xcd`T :> U`; 
 \item Type equalities and inequalities: \xcd`T == U` and \xcd`T != U`; 
 \item Invocations of a property method, \xcd`p(a,b,...,c)` or
-      \xcd`a.p(b,c,...d)`.  
+      \xcd`a.p(b,c,...d)`, where the receiver and arguments must be value
+      expressions acceptable in constraints, as long as the expansion of the
+      invocation is allowed as a constraint.
 \item Testing a type for a default: \Xcd{T haszero}.
 \end{enumerate}
 
