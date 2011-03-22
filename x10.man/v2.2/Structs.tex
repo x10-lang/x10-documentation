@@ -331,30 +331,33 @@ If all fields of a struct have default values, then the struct has a
 
 \begin{ex}
 
-\noo{This is not right!}
+In the following code, the \xcd`Example` struct has a default value whose
+\xcd`i` field is \xcd`0`.  If an \xcd`Example` is ever constructed by the
+constructor, its \xcd`i` field will be \xcd`1`.  This program does a slightly
+subtle dance to get ahold of a default \xcd`Example`, by having an instance
+\xcd`var` (which, unlike most kinds of variables, does not need to get
+initialized before use (though that exemption only applies if its type has a
+default value)).   As the \xcd`assert` confirms, the default \xcd`Example`
+does indeed have an \xcd`i` field of \xcd`0`.
 
 %~~gen ^^^ Structs6r3w
 % package Structs6r3w;
+% 
 %~~vis
 \begin{xten}
-struct Fault {
-  static struct Dee {
-    val a : Int;
-    val b : Boolean;
+class StructDefault {
+  static struct Example {
+    val i : Int;
+    def this() { i = 1; }
   }
-  val c : Float; 
-  val d : Dee;
-  static val f : Fault; 
+  var ex : Example; 
   static def example() {
-    assert f.d.a == 0 && f.d.b == true && f.c == 0.0f; 
+     val ex = (new StructDefault()).ex;
+     assert ex.i == 0;
   }
-  static struct NoDefault {  
-    val no : 
-  }
-}
 \end{xten}
 %~~siv
-% class Hook { def run() { Fault.example(); return true; } }
+% static class Hook { def run() { StructDefault.example(); return true; } } }
 %~~neg
 
 
