@@ -137,7 +137,7 @@ class Ability {
 \section{Native Blocks}
 
 Any block may be annotated with \xcd`@Native(lang,stmt)`, indicating that, in
-the given back end, it should be implemented as \xcd`stmt`. All value
+the given back end, it should be implemented as \xcd`stmt`. All \xcd`val`
 variables from the surrounding context are available inside \xcd`stmt`. For
 example, the method call \xcd`born.example(10)`, if compiled to Java, changes
 the field \xcd`y` of a \xcd`Born` object to 10. If compiled to C++ (for which

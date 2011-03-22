@@ -62,17 +62,18 @@ The rules for shadowing of imported names are given in \Sref{sect:ImportDecl}.
 \label{sect:Hiding}
 
 Shadowing is ubiquituous in X10. Another, and considerably rarer, way that one
-definition of a given simpl ename can render another definition of the same
+definition of a given simple name can render another definition of the same
 name unavailable is {\em hiding}. If a class \xcd`Super` defines a field named
 \xcd`x`, and a subclass \xcd`Sub` of \xcd`Super` also defines a field named
-\xcd`x`, then, for \xcd`Sub`s, references to the \xcd`x` field get \xcd`Sub`'s
-\xcd`x` rather than \xcd`Super`'s. In this case, \xcd`Super`'s \xcd`x` is said
+\xcd`x`, and \xcd`b:Sub`, then \xcd`b.x` is \xcd`Sub`'s \xcd`x` field, not
+\xcd`Super`'s.  
+In this case, \xcd`Super`'s \xcd`x` is said
 to be {\em hidden}.
 
 Hiding is technically different from shadowing, because hiding applies in more
 circumstances: a use of class \xcd`Sub`, such as \xcd`sub.x`, may involve
 hiding of name \xcd`x`, though it could not involve shadowing of \xcd`x`
-because \xcd`x` is need not be declared as a name at that point.
+because \xcd`x` need not be declared as a name at that point.
 
 \subsection{Obscuring}
 \index{obscuring}
