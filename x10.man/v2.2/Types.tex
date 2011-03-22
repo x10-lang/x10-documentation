@@ -1051,7 +1051,10 @@ public method \xcd`m(x: Int{self != p})`, and a call \xcd`ob.m(10)` made
 outside of the class. Since \xcd`p` is only visible inside the class, there is
 no way to tell if \xcd`10` is of type \xcd`Int{self != p}` at the call site.)
 
-
+{\bf Note:} Constraints may not contain casts.   In particular, comparisons of
+values of incompatible types are not allowed.  If \xcd`i:Int`, then \xcd`i==0`
+is allowed as a constraint, but \xcd`i==0L` is an error, and 
+\xcd`i as Long==0L` is outside of the constraint language.
 
 
 \subsubsection{Semantics of constraints}
