@@ -124,7 +124,7 @@ exceptions thrown by an asynchronous activity.
 
 Asynchronous activities serve as a single abstraction for supporting a
 wide range of concurrency constructs such as message passing, threads,
-DMA, streaming, data prefetching. (In general, asynchronous operations
+DMA, streaming, and data prefetching. (In general, asynchronous operations
 are better suited for supporting scalability than synchronous
 operations.)
 
@@ -376,7 +376,8 @@ command, it will be blocked until $A$ finishes executing its atomic section.
 \end{bbgrammar}
 %##)
 
-For example, consider a class \xcd`Redund[T]`, which encapsulates a list
+\begin{ex}
+Consider a class \xcd`Redund[T]`, which encapsulates a list
 \xcd`list` and, (redundantly) keeps the size of the list in a second field
 \xcd`size`.  Then \xcd`r:Redund[T]` has the invariant 
 \xcd`r.list.size() == r.size`, which must be true at any point at which
@@ -416,7 +417,7 @@ Finally, let
 the first activity finish, which assigns the \xcd`1` computed before back into
 \xcd`this.size`.  At the end, there are two elements in \xcd`r.list`, but
 \xcd`r.size==1`. Since there are no calls to \xcd`r.add()` active, the
-invariant must be true, but it is not.
+invariant is required to be true, but it is not.
 
 In this case, the invariant can be maintained by making the increment atomic.
 Doing so forbids that sequence of events; the \xcd`atomic` block cannot be
@@ -439,6 +440,7 @@ def add(x:T) {
 %~~siv
 %}
 %~~neg
+\end{ex}
 
 \subsection{Unconditional atomic blocks}
 The simplest form of an atomic block is the {\em unconditional
@@ -472,7 +474,7 @@ Atomic blocks are closely related to non-blocking synchronization
 constructs \cite{herlihy91waitfree}, and can be used to implement 
 non-blocking concurrent algorithms.
 
-Code executed inside of \xcd`atomic S` and \xcd`when S` is subject
+Code executed inside of \xcd`atomic S` and \xcd`when(E)S` is subject
 to certain restrictions. A violation of these restrictions causes an 
 \xcd`IllegalOperationException` to be thrown at the point of the violation.
 
@@ -486,11 +488,10 @@ to certain restrictions. A violation of these restrictions causes an
 
 
 
-\paragraph{Consequences.}
-Note an important property of an (unconditional) atomic block:
 
+Note an important property of an (unconditional) atomic block:
 \begin{eqnarray}
- \mbox{\xcd"atomic \{s1; atomic s2\}"} &=& \mbox{\xcd"atomic \{s1; s2\}"}
+\mbox{\xcd"atomic \{s1; atomic s2\}"} &=& \mbox{\xcd"atomic \{s1; s2\}"}
 \end{eqnarray}
 
 Atomic blocks do not introduce deadlocks.    They may exhibit all the bad
@@ -498,8 +499,8 @@ behavior of sequential programs, including throwing exceptions and running
 forever, but they are guaranteed not to deadlock.
 
 
-\subsubsection{Example}
 
+\begin{ex}
 The following class method implements a (generic) compare and swap (CAS) operation:
 
 
@@ -520,6 +521,8 @@ public atomic def CAS(old1: Object, new1: Object): Boolean {
 %~~siv
 %}
 %~~neg
+\end{ex}
+
 
 \subsection{Conditional atomic blocks}
 \index{atomic!conditional}
@@ -556,7 +559,8 @@ def pop():T {
 
 The execution of the test is atomic with the execution of the block.  This is
 important; it means that no other activity can sneak in and make the condition
-be false before the block is executed.  In this example, two \xcd`pop`s
+be false after the test was seen to be true, but 
+before the block is executed.  In this example, two \xcd`pop`s
 executing on a list with one element would work properly. Without the
 conditional atomic block -- even doing the decrement atomically -- one call to
 \xcd`pop` could pass the \xcd`size>0` guard; then the other call could run to
@@ -616,7 +620,7 @@ implementation of nested conditional atomic blocks may require
 sophisticated operational techniques such as rollbacks.)
 
 
-\begin{example}
+\begin{ex}
 The following class shows how to implement a bounded buffer of size
 $1$ in \Xten{} for repeated communication between a sender and a
 receiver.  The call \xcd`buf.send(ob)` waits until the buffer has space, and
@@ -650,7 +654,7 @@ class OneBuffer[T] {
 %~~siv
 %
 %~~neg
-\end{example}
+\end{ex}
 
 \section{Use of Atomic Blocks}
 
@@ -708,7 +712,9 @@ interleaving results in \xcd`n==1`. So, with absolute atomic semantics,
 
 However, X10's semantics are weaker than that.  Atomic statements are atomic
 with respect to each other --- but there is no guarantee about how they
-interact with non-atomic statements at all.  In particular, the following
+interact with non-atomic statements at all.  They might even break up the
+atomicity of an \xcd`atomic` block.
+In particular, the following
 fourth interleaving is possible: \xcd`(a)`'s read of \xcd`0` from \xcd`n`, 
 \xcd`(b)`'s read of \xcd`0` from \xcd`n`, \xcd`(a)`'s write of \xcd`1` to
 \xcd`n`, and \xcd`(b)`'s write of \xcd`2` to \xcd`n`.   Thus, \xcd`n==2` is
