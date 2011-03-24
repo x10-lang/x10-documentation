@@ -168,7 +168,8 @@ Violations of these conditions are punished by the throwing of a
 If an activity {$a$} that has executed \xcd`c.resume()` then starts a
 new activity {$b$} also registered on \xcd`c` (\eg, via \Xcd{async
 clocked(c) S}), the new activity {$b$} starts out having also resumed
-\xcd`c`, as if it too had executed \xcd`c.resume()`.  
+\xcd`c`, as if it too had executed \xcd`c.resume()`. That is, $a$ and {$b$}
+are in the same phase of the clock. 
 %~~gen ^^^ Clocks40
 % package Clocks.For.Jocks.In.Clicky.Smocks;
 %class Example{
@@ -220,7 +221,7 @@ register a sub-activity on it with \xcd`async clocked(c) S`.
 \Xten{} permits {\em split phase} clocks. An activity may wish
 to indicate that it has completed whatever work it wishes to perform
 in the current phase of a  clock \xcd"c" it is registered with, without
-suspending altogether. It may do so  by executing 
+suspending itself altogether. It may do so  by executing 
 %~~exp~~`~~`~~c:Clock ~~ ^^^ Clocks60
 \xcd`c.resume()`.
 
@@ -355,8 +356,9 @@ Both the \xcd`clocked finish` and \xcd`clocked async` may use the
 \xcd`Clock.advanceAll()` 
 method call to advance the implicit clock.  Since the implicit clock is not
 available in a variable, it cannot be manipulated directly. (If you want to
-manipulate the clock directly, use an explicit clock.)
+manipulate the clock directly, use an explicit clock, not a \xcd`clocked finish`.)
 
+\begin{ex}
 The following code starts two activities, each of which perform their first
 phase, wait for the other to finish phase 1, and then perform their second
 phase.  
@@ -383,7 +385,7 @@ clocked finish {
 %~~siv
 %}}
 %~~neg
-
+\end{ex}
 
 \index{finish!nested clocked}
 \index{clocked finish!nested}
