@@ -70,7 +70,8 @@ place-shifting operations.
 
 
 This is not unusual for automatic variables:  \Xcd{self} denotes 
-two different values (one \xcd`List`, one \xcd`Int`) in
+two different values (one \xcd`List`, one \xcd`Int`) 
+when one describes a non-null list of non-zero numbers as
 \xcd`List[Int{self!=0}]{self!=null}`. In the following 
 code, \xcd`here` has one value at 
 \xcd`h0`, and a different one at \xcd`h1` (unless there is only one place).
@@ -91,7 +92,7 @@ at (here.next()) {
 %~~neg
 \noindent
 (Similar examples show that \xcd`self` and \xcd`this` have the same behavior:
-\xcd`self` can be modified by constrained types appearing inside of type
+\xcd`self` can be shadowed by constrained types appearing inside of type
 constraints, and \xcd`this` by inner classes.)
 
 
@@ -126,8 +127,10 @@ It finds those references to things that are \Xcd{here}, and deals with them.
 \index{place!changing}
 
 An activity may change place synchronously using the \xcd"at" statement or
-\xcd"at" expression. This is an expensive operation and must be used
-with care -- but it provides the basis for multicore programming in X10.
+\xcd"at" expression. Like any parallel operation, it is 
+potentially expensive, as it requires, at a minimum, two messages
+and the copying of all data used in the operation, and must be used with care
+-- but it provides the basis for multicore programming in X10.
 
 %##(AtStatement AtExp
 \begin{bbgrammar}
@@ -315,13 +318,13 @@ serialized into a buffer, the buffer is communicated to \xcd`p` where
 it is deserialized into an exception \xcd`E1` and \xcd`at (p) S`
 throws \xcd`E1`.
 
-Since \xcd`at(p) S` is a synchronous construct, usual control-flow
+Since \xcd`at(p;F) S` is a synchronous construct, usual control-flow
 constructs such as \xcd`break`, \xcd`continue`, \xcd`return` and 
 \xcd`throw` are permitted in \xcd`S`.  All concurrency related
 constructs -- \xcd`async`, \xcd`finish`, \xcd`atomic`, \xcd`when` are
 also permitted.
 
-The \xcd`at`-expression \xcd`at(p)E` is similar, except that, in the case of
+The \xcd`at`-expression \xcd`at(p;F)E` is similar, except that, in the case of
 normal termination of \xcd`E`, the value that \xcd`E` produces is serialized
 into a buffer, transported to the starting place, and deserialized, and the
 value of the \xcd`at`-expression is the result of deserialization.
@@ -421,19 +424,19 @@ to exit from an {\tt at}.
 
 
 
-\subsection{Implicit copying from {\tt at} }
+\subsection{Copying from {\tt at} }
 \index{at!copying}
 
 \xcd`at(p;F)S` copies data as specified by \xcd`F`, and sends it
 to place \xcd`p`, before executing \xcd`S` there. The only things that are not
 copied are values only reachable through \xcd`GlobalRef`s and \xcd`transient`
-fields, and data omitted by custom serialization.    If \xcd`x` is a
-variable name referring to some object \xcd`ob` outside of \xcd`S`, then the
-same variable name \xcd`x` refers to a deep copy of \xcd`ob`
-inside of \xcd`S`.  In this way the body \xcd`S` is in a separate block with
-different variable bindings.
+fields, and data omitted by custom serialization.    
+Several choices of copy specifier use the same identifier for the original
+variable outside of \xcd`at(p;F)S` and its copy inside of \xcd`S`.  
 
-For example, consider the following program.
+
+\begin{ex}
+
 %~~gen ^^^ Places_implicit_copy_from_at_example_1
 % package Places.implicitcopyfromat;
 % class Example {
@@ -464,6 +467,7 @@ At \xcd`(4)`, the contents of {$c_2$} are changed to 8, as confirmed at \xcd`(5)
 {$c_1$} are of course untouched.    Finally, at \xcd`(c)`, outside the scope
 of the \xcd`at` started at line \xcd`(2)`, \xcd`c` refers to its original
 value {$c_1$} rather than the copy {$c_2$}.  
+\end{ex}
 
 The \xcd`at` statement induces a {\em deep copy}.  Not only does it copy the
 values of variables, it copies values that they refer to through zero or more
@@ -472,7 +476,8 @@ levels of reference.  Structures are preserved as well: if two fields
 \xcd`x.f` and \xcd`x.g` will both refer to the same object {$o_2$} in the
 copy.  
 
-For example, in the following variation of the preceding example,
+\begin{ex}
+In the following variation of the preceding example,
 \xcd`a`'s original value {$a_1$} is an array with two references to the same
 \xcd`Cell[Int]` {$c_1$}.  The fact that {$a_1(0)$} and {$a_1(1)$} are both
 identical to {$c_1$} is demonstrated in \xcd`(A)`-\xcd`(C)`, as {$a_1(0)$} is modified
@@ -504,6 +509,7 @@ assert(a(0)() == 6 && a(1)() == 6);     // (G)
 %}}
 %class Hook{ def run() { example.Example(); return true; } }
 %~~neg
+\end{ex}
 
 \subsection{Copying and Transient Fields}
 \label{sect:transient}
@@ -515,7 +521,8 @@ Recall that fields of classes and structs marked \xcd`transient` are not copied 
 \xcd`at`.  Instead, they are set to the default values for their types. Types
 that do not have default values cannot be used in \xcd`transient` fields.
 
-In the following example, every \xcd`Trans` object has an \xcd`a`-field equal
+\begin{ex}
+Every \xcd`Trans` object has an \xcd`a`-field equal
 to 1.  However, despite the initializer on the \xcd`b` field, it is not the
 case that every \xcd`Trans` has \xcd`b==2`.  Since \xcd`b` is \xcd`transient`,
 when the \xcd`Trans` value \xcd`this` is copied at \xcd`at(here){...}` in
@@ -544,7 +551,7 @@ class Trans {
 %class Hook{ def run() { (new Trans()).example(); return true; } }
 %~~neg
 
-
+\end{ex}
 
 \subsection{Copying and GlobalRef}
 \label{GlobalRef}
@@ -554,12 +561,12 @@ class Trans {
 %%The other barrier to the potentially copious copying behavior of \xcd`at`
 %%is the \xcd`GlobalRef` struct.  
 A \xcd`GlobalRef[T]` (say \xcd`g`) contains a reference to
-a value of type \xcd`T`, in a form which can be transmitted, and a \xcd`Place`
+a value \xcd`v` of type \xcd`T`, in a form which can be transmitted, and a \xcd`Place`
 \xcd`g.home` indicating where the value lives. When a 
 \xcd`GlobalRef` is serialized an opaque, globally unique handle to
-the enclosed value \xcd`o` is passed. 
+\xcd`v` is created.  
 
-The following example does not copy the value \xcd`huge`.  However, \xcd`huge`
+\begin{ex}The following example does not copy the value \xcd`huge`.  However, \xcd`huge`
 would have been copied if it had been put into a \xcd`Cell`, or simply used
 directly. 
 %~~gen ^^^ Places50
@@ -581,7 +588,7 @@ at (here;href) {
 %}
 % class Hook{ def run() { GR.example(); return true; } }
 %~~neg
-
+\end{ex}
 
 Values protected in \xcd`GlobalRef`s can be retrieved by the application
 %~~exp~~`~~`~~ g:GlobalRef[Object]{here == g.home}~~ ^^^Places4e7q
@@ -589,7 +596,10 @@ operation \xcd`g()`.  \xcd`g()` is guarded; it can
 only be called when \xcd`g.home == here`.  If you  want to do anything other
 than pass a global reference around or compare two of them for equality, you
 need to placeshift back to the home place of the reference, often with
-\xcd`at(g.home)`.   For example, the following  program modifies the
+\xcd`at(g.home)`.   
+
+\begin{ex}The following program, for reasons best known to the programmer,
+modifies the 
 command-line argument array.
 
 %~~gen ^^^ Places60
@@ -615,7 +625,7 @@ command-line argument array.
 % class Hook{ def run() { GR2.main(["what, me weasel?"]); return true; }}
 %~~neg
 
-
+\end{ex}
 
 
 

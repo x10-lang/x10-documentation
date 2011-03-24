@@ -112,10 +112,6 @@ that surrounds the function literal) or mean something different (\xcd`return`
 inside a function returns from the function, not the surrounding block). 
 
 
-The \emph{method selector expression} \Xcd{e.m.(x1:T1,...,xn:Tn)} (\Sref{MethodSelectors})
-permits the specification of the function underlying
-the method \Xcd{m}, which takes arguments of type \Xcd{(x1:T1,..., xn:Tn)}.
-Within this function, \Xcd{this} is bound to the result of evaluating \Xcd{e}.
 
 Function types may be used in \Xcd{implements} clauses of class
 definitions. Suitable operator definitions must be supplied, with 
@@ -150,6 +146,65 @@ class Funny implements (Boolean) => Int,
 
 \end{eg}
 
+
+\section{Function Application}
+\index{function!application}
+
+The basic operation on functions is function application.  
+(Since, \eg, array lookup has the same type as function application, these
+rules are used for array lookup as well, and so on.) 
+
+A function with type 
+\xcdmath"(x$_1$:T$_1$, $\ldots$, x$_n$:T$_n$){c} => T"
+can be applied to a sequence of expressions 
+\xcdmath"e$_1$, $\ldots$, e$_n$"
+if: 
+\begin{itemize}
+\item \xcdmath"e$_1$" is of type \xcdmath"T$_1$[e$_1$/x$_1$]",
+\item $\ldots$,
+\item \xcdmath"e$_n$" is of type 
+      \xcdmath"T$_n$[e$_1$/x$_1$, $\ldots$, e$_n$/x$_n$]",
+\item X10 can prove that \xcdmath"c[e$_1$/x$_1$, $\ldots$, e$_n$/x$_n$]" holds.
+\end{itemize}
+\noindent
+In this case, if the application terminates normally, it returns a
+value of type 
+\xcdmath"T[e$_1$/x$_1$, $\ldots$, e$_n$/x$_n$]".
+
+\begin{ex}
+Consider
+%~~gen ^^^ Functions6p3q
+% package Functions6p3q;
+% class Whatever {
+% var 
+%~~vis
+\begin{xten}
+ f : (a:Int{a!=0}, b:Int{b!=a}){b!=0} => Int{self != a}
+\end{xten}
+%~~siv
+% = null;
+%}
+%~~neg
+
+Then the call \xcd`f(3,4)` is allowed, because: 
+\begin{itemize}
+\item \xcd`3` is of type \xcd`Int{a!=0}` with \xcd`a` replaced by \xcd`3`, 
+\viz{}  \xcd`Int{3 != 0}`; 
+\item \xcd`4` is of type \xcd`Int{b!=a}` 
+with \xcd`a` replaced by \xcd`3` and 
+\xcd`b` replaced by \xcd`4`, 
+\viz{} \xcd`Int{3 != 4}`. 
+\item The guard \xcd`b!=0`, 
+with \xcd`a` replaced by \xcd`3` and 
+\xcd`b` replaced by \xcd`4`, 
+is \xcd`4!=0`, which is true.  
+\end{itemize}
+So, \xcd`f(3,4)` will return a value of type 
+\xcd`Int{self != a}` with 
+ \xcd`a` replaced by \xcd`3` and 
+\xcd`b` replaced by \xcd`4`, 
+which is to say, \xcd`Int{self!=3}`.
+\end{ex}
 
 %\section{Implementation Notes}
 %\begin{itemize}

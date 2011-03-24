@@ -213,7 +213,13 @@ For example,
 is the type of integer-valued functions which have no fixed points.  
 An example of such a function is \xcd`(x:Int) => x+1`.
 
-
+The names of the formal parameters are bound in the type, and may be changed
+consistently in the usual way without modifying the type.  
+For example, 
+\xcd`(a:Int, b:Int{self!=a})=>Int{self!=a, self!=b}` 
+and 
+\xcd`(c:Int, d:Int{self!=c})=>Int{self!=c, self!=d}` 
+are equivalent types.  
 
 
 
@@ -1799,6 +1805,18 @@ X10 provides certain guarantees about the common type \xcd`V{v}` computed for
 \item X10 similarly preserves nullity information.  If \xcd`t` and \xcd`u`
       both entail \xcd`x == null` or \xcd`x != null` for some variable
       \xcd`x`, then \xcd`v` will also entail it as well.
+
+\item The computed upper bound of function types with the {\em same} argument
+      types is found by computing the upper bound of the result types.  
+      If 
+      \xcdmath"T = (T$_1$, $\ldots$, T$_n$) => T'"
+      and 
+      \xcdmath"U = (T$_1$, $\ldots$, T$_n$) => U'", 
+      and \xcd`V'` is the computed upper bound of \xcd`T'` and \xcd`U'`, 
+      then the computed upper bound of \xcd`T` and \xcd`U` is 
+      \xcdmath"U = (T$_1$, $\ldots$, T$_n$) => V'".
+      (But, if the argument types are different, the computed upper bound may
+      be \xcd`Any`.)
 
 \end{itemize}
 
