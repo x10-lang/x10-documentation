@@ -1075,7 +1075,7 @@ require auto-boxing, such as \xcd`1 as Any`.
 something from a more general to a more specific type: 
 %~~gen ^^^ Expressions3e9h
 % package Expressions3e9h;
-% class Example { def example() { 
+% class Example { static def example() { 
 %~~vis
 \begin{xten}
    val ob : Object = "a String" as Object; // upcast
@@ -1217,7 +1217,7 @@ conversion.
 % package Expressions7s3n;
 %~~vis
 \begin{xten}
-public class Thing {
+class Thing {
   public static operator (x:Thing) as Object = "very different";
   public static def example() {
     val t = new Thing();

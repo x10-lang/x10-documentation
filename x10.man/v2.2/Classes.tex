@@ -1216,14 +1216,13 @@ Writing the same code with method calls, while possible, is far less elegant:
 %      return (ai == 1) ? xpow : "" + Math.abs(ai) + xpow;
 %   }
 %
-%   def mult(p:UglyPoly) = this * p;
-%   def mult(n:Int) = n * this;
-%   def plus(p:UglyPoly) = this + p;
-%   def plus(n:Int) = n + this;
-%   def minus(p:UglyPoly) = this - p;
-%   def minus(n:Int) = this - n;
-%   static def const(n:Int) = n as UglyPoly;
-%
+%   def mult(p:UglyPoly) : UglyPoly = this * p;
+%   def mult(n:Int)      : UglyPoly = n * this;
+%   def plus(p:UglyPoly) : UglyPoly = this + p;
+%   def plus(n:Int)      : UglyPoly = n + this;
+%   def minus(p:UglyPoly): UglyPoly = this - p;
+%   def minus(n:Int)     : UglyPoly = this - n;
+%   static def const(n:Int): UglyPoly = n as UglyPoly;
 %
 %~~vis
 \begin{xten}
