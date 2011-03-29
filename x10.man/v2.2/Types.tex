@@ -1237,6 +1237,86 @@ type-checking failed.
 %%PLACE%%
 %%PLACE%%
 
+\subsection{Limitation: Runtime Constraint Erasure}
+\index{cast!to generic type}
+
+The X10 runtime does not maintain a representation of constraints.
+In many cases, it does not need to.
+If X10 has an object \xcd`x` of some type \xcd`T` around, it can check at
+runtime whether or not \xcd`x` satisfies some constraint \xcd`c`, and hence
+tell if \xcd`x` is a member of \xcd`T{c}`. 
+
+\begin{ex}
+Although there is no runtime representation of the constrained type 
+\xcd`Int{self==1}`, X10 can generate a (correct) test for membership in it,
+anyhow: 
+%~~gen ^^^ Types3u5w
+% package Types3u5w;
+% class Example {
+%~~vis
+\begin{xten}
+static def example(n:Int) {
+  val b = (n instanceof Int{self == 1});
+  assert b == (n == 1); 
+}
+\end{xten}
+%~~siv
+% class Hook{ def run() {Example.example(0); Example.example(1);
+% Example.example(2); return true; } }
+%~~neg
+\end{ex}
+
+However, in cases where there is no object of type \xcd`T` around, there's
+nothing that can be checked. For example, X10 cannot tell -- and in fact no
+computer program can tell --  whether an
+instance of a function type \xcd`(Int)=>Int` (unary functions returning
+integers) is actually an instance of a more specific type
+\xcd`(Int)=>Int{self!=0}` (unary functions returning non-zero integers).
+
+In other cases, there might or might not be an object of type \xcd`T`, and X10
+cannot tell until runtime.  Consider an array \xcd`a:Array[T]`.  If \xcd`a` is
+nonempty, there is an instance of \xcd`T` at hand, and testing it for
+constraints would be possible though potentially quite expensive. 
+But \xcd`a` might be an
+empty array, and testing its element type would be impossible. 
+
+Rather than pay the runtime costs for keeping and manipulating constraints
+(which can be considerable), X10 omits them.
+However, this renders certain type checks uncertain: X10 needs some
+information at runtime, but does not have it.  
+Specifically, all casts to instances of generic types are forbidden.  
+
+\begin{ex}
+The following code  needs to be, and is, statically
+rejected.  It constructs an array \xcd`a` of \xcd`Int{self==3}`'s -- integers
+which 
+are statically known to be 3. 
+The only number that can be stored into \xcd`a` is \xcd`3`.  
+Then (in the line that is rejected) it attempts to trick the compiler into
+thinking that it is an array of \xcd`Int`, without restriction on the
+elements, giving it the name \xcd`b` at that type.  
+The cast \xcd`aa as Array[Int]` is a cast to an instance of a generic type,
+and hence is forbidden. 
+
+But, if that cast were allowed to work, it could store \xcd`1` into the array
+under the alias 
+\xcd`b`, thereby violating 
+the invariant that all the elements of the array are 3.  
+This could lead to program failures, as illustrated by the failing assertion.  
+\begin{xten}
+  val a = new Array[Int{self==3}](0..10, 3);
+  // a(0) = 1; would be illegal
+  a(0) = 3; // LEGAL
+  val aa = a as Any;
+  /* THE FOLLOWING IS A STATIC ERROR:
+  val b = aa as Array[Int];
+  b(0) = 1;
+  val x : Int{self==3} = a(0);
+  assert x == 3 : "This would fail at runtime.";
+  */
+\end{xten}
+\end{ex}
+
 
 
 \subsection{Example of Constraints}
@@ -2236,3 +2316,26 @@ that depends on $F$.   That is, the relation ``depends on'' is the transitive
 closure of the relation ``directly depends on''.  
 
 It is a static error if any entity type $E$ depends on itself.
+
+\section{Limitations of Strict Typing}
+
+X10's type checking provides substantial guarantees.  In most cases, a program
+that passes the X10 type checker will not have any runtime type errors.
+However, there are a modest number of compromises with practicality in the
+type system: places where a program can pass the typechecker and still have a
+type error.
+
+\begin{enumerate}
+
+
+\item The library type \xcd`IndexedMemoryChuck` provides a low-level interface
+      to blocks of memory.  A few methods on that class are not type-safe. See
+      the API if you must.
+
+\item Custom serialization (\Sref{sect:ser+deser}) allows user code to
+      construct new objects in ways that can subvert the type system.
+
+\item Code written to use the underlying Java or C++ (\Sref{NativeCode}) can
+      break X10's guarantees.
+
+\end{enumerate}
