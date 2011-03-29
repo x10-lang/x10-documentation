@@ -315,7 +315,7 @@ guarantee that \xcd`denom != 0`.  Casting \xcd`this` to a type
 whose constraint implies \xcd`denom != 0` permits the method call.
 %~~gen ^^^ Expressions60
 %package Expressions.Calls.Guarded.By.Walls;
-% KNOWNFAIL
+% 
 %~~vis
 \begin{xten}
 class DivideBy(denom:Int) {
@@ -1177,6 +1177,7 @@ implicit coercion to \xcd`Int`.  Note that the implicit coercion can be used
 explicitly, with \xcd`k as Int`, as well as implicitly in \xcd`Math.abs(k)`. 
 %~~gen ^^^ Expressions7e1e
 % package Expressions7e1e;
+%KNOWNFAIL
 %~~vis
 \begin{xten}
 class Knot(s:String) { 

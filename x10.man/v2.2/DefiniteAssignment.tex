@@ -38,8 +38,9 @@ def example(a:Int, b:Int) {
 %}
 %~~neg
 This is particularly useful for \xcd`val` variables.  \xcd`var`s could be
-initialized to a default value and then reassigned with the right value, but
-\xcd`val`s must be initialized once correctly and cannot be changed. 
+initialized to a default value and then reassigned with the right value.
+\xcd`val`s must be initialized once and cannot be changed, so they must be
+initialized with the correct value. 
 
 However, one must be careful -- and the X10 compiler enforces this care.
 Without the \xcd`else` clause, the preceding code might not give \xcd`max` a

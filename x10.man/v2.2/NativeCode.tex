@@ -242,10 +242,11 @@ post-compilation is the compilation of the C++ which the X10-to-C++ compiler
 
 The mechanism used for this is the \xcd`-post` command line parameter to
 \xcd`x10c++`. The following example shows how to compile \xcd`blas` into the
-executable via post compiler parameters.
+executable via post compiler parameters. The command must be issued on one line.
 
 \begin{xten}
-x10c++ Test.x10 -post '# # -I /usr/local/blas # -L /usr/local/blas -lblas'
+x10c++ Test.x10 -post '# # -I /usr/local/blas # 
+  -L /usr/local/blas -lblas'
 \end{xten}
 
 \begin{itemize}

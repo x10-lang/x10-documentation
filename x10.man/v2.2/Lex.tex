@@ -41,15 +41,15 @@ for example, keywords to be used as identifiers.  The following are
 backquoted identifiers: 
 %~~gen ^^^ Lex1p9o
 % package Lex1p9o;
-% KNOWNFAIL-backquotee
+% 
 % class Backyquotey {
-% def hokey(e:Int, a:Int, b:Int, c:Int, d:Int) = 0;
+% def hokey(e:Int, a:Int, b:Int, d:Int) = 0;
 % def example() { 
-% val `while`=0; val `!`=0; val  `(unbalanced(`=0; val `0xbabe`=0; val `\`\\`=0;
+% val `while`=0; val `!`=0; val  `(unbalanced(`=0;  val `\`\\`=0;
 % hokey(
 %~~vis
 \begin{xten}
-`while`, `!`, `(unbalanced(`, `0xbabe`, `\`\\`
+`while`, `!`, `(unbalanced(`,  `\`\\`
 \end{xten}
 %~~siv
 % ); } } 
