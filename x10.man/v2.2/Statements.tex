@@ -557,7 +557,7 @@ C, and an enhanced form designed to iterate over a collection.
 A basic \xcd`for` statement provides for arbitrary iteration in a somewhat
 more organized fashion than a \xcd`while`.  The loop 
 \xcd`for(init; test; step)body` is
-equivalent to: 
+similar to: 
 \begin{xten}
 {
    init;
@@ -567,6 +567,9 @@ equivalent to:
    }
 }
 \end{xten}
+\noindent
+except that \xcd`continue` statements which continue the \xcd`for` loop will
+perform the \xcd`step`, which, in the \xcd`while` loop, they will not do. 
 
 \xcd`init` is performed before the loop, and is traditionally used to declare
 and/or initialize the loop variables. It may be a single variable binding
