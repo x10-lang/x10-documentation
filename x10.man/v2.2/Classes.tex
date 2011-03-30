@@ -793,12 +793,22 @@ as'' a method declaration \xcdmath"m$_2$" involves identity of types.
 \noo{The following few paragraphs need to be stared at carefully.  I think
 they are contradictory and/or wrong.}
 
-The {\em constraint erasure} of a type \xcdmath"T" is defined as follows.
-The constraint erasure of  (a)~a class, interface or struct type \xcdmath"T" is 
-\xcdmath"T"; (b)~a type \xcdmath"T{c}" is the constraint erasure of 
-\xcdmath"T"; (b)~a type \xcdmath"T[S$_1$,$\ldots$,S$_n$]" 
-is \xcdmath"T'[S$_1$',$\ldots$,S$_n$']" where each primed type is the erasure of 
-the corresponding unprimed type.
+\noo{Is this def of 'constraint erasure' right?  It doesn't cover function
+types.} 
+The {\em constraint erasure} of a type \xcdmath"T", 
+\xcdmath"$ce$(T)"
+is obtained by removing all the constraints outside of functions in \xcd`T`,
+specificially: 
+\begin{eqnarray}
+ce({\tt T}) &=& {\tt T} \mbox{ if \xcd`T` is a container or interface}\\
+ce({\tt T\{c\}}) &=& ce({\tt T})\\
+ce({\tt T[S}_1{\tt,}\ldots{\tt,S}_n{\tt ]})
+  &=&
+ce({\tt T}){\tt [} ce({\tt S}_1){\tt,}\ldots{\tt,} ce({\tt S}_n){\tt ]}
+\end{eqnarray}
+
+
+
  Two methods are said to have {\em equivalent signatures} if (a) they have the
  same number of type parameters, 
 (b) they have the same number of formal (value) parameters, and (c)
