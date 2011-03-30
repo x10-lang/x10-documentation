@@ -114,23 +114,26 @@ class Species {
 %~~neg
 
 
-Static variables in the class are available in the external code. 
-\iffalse
+Static variables in the class are available in the external code.  For Java,
+the static variables are used with their X10 names.  For C++, the names
+must be mangled, by use of the \xcd`FMGL` macro.  
+
 %~~gen ^^^ extern60
 %package Extern.or.Die;
 %~~vis
 \begin{xten}
 import x10.compiler.Native;
 class Ability {
-  static val a : Int = 1;
-  @Native("java", "a")
+  static val A : Int = 1;
+  @Native("java", "A+2")
+  @Native("c++", "Ability::FMGL(A)+2")
   static native def fromStatic():Int;
 }
 \end{xten}
 %~~siv
 %
 %~~neg
-\fi
+
 
 
 
