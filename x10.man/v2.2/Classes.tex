@@ -729,8 +729,11 @@ following considerations motivated by type parameters and dependent types.
 
 Two or more methods of a class or interface may have the same
 name if they have a different number of type parameters, or
-they have formal parameters of different types.  \Eg, the following is legal: 
+they have formal parameters of different types (in every instantiation of the
+type parameters). 
 
+\begin{ex}
+The following overloading of \xcd`m` 
 %~~gen ^^^ Classes150
 % package Classes.Mful;
 %~~vis
@@ -745,6 +748,35 @@ class Mful{
 %~~siv
 %
 %~~neg
+
+But, given the following start of a class definition: 
+%~~gen ^^^ Classes4d5e
+% package Classes4d5e;
+%~~vis
+\begin{xten}
+Class Two[T,U]{
+  def m(x:T)=1;
+\end{xten}
+%~~siv
+% }
+%~~neg
+it would be illegal to add any of the following: 
+\begin{itemize}
+\item 
+\xcd`def m(x:Int)=2`
+because the generic instantiation \xcd`Two[Int,Any]` would have two 
+\xcd`m(Int)` methods, the \xcd`1`; and \xcd`2` definitions.
+\item \xcd`def m[X](x:X)=3`, because
+then \xcd`Two[Int,Any]` would allow \xcd`m(1)` to mean one of things: either
+the \xcd`1` definition above, or the \xcd`3` definition via generic type
+parameter inference (\Sref{TypeParamInfer}).  
+\item \xcd`def m(x:U)=4`, because the instantiation \xcd`Two[String,String]`
+      (or indeed any one in which \xcd`T` and \xcd`U` were the same) would be
+      ambiguous, as the \xcd`1` and \xcd`4` definitions would be identical.
+\end{itemize}
+
+\end{ex}
+
 
 \XtenCurrVer{} does not permit overloading based on constraints. That is, the
 following is {\em not} legal, although either method definition individually
