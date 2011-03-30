@@ -793,8 +793,7 @@ as'' a method declaration \xcdmath"m$_2$" involves identity of types.
 \noo{The following few paragraphs need to be stared at carefully.  I think
 they are contradictory and/or wrong.}
 
-\noo{Is this def of 'constraint erasure' right?  It doesn't cover function
-types.} 
+
 The {\em constraint erasure} of a type \xcdmath"T", 
 \xcdmath"$ce$(T)"
 is obtained by removing all the constraints outside of functions in \xcd`T`,
@@ -804,7 +803,11 @@ ce({\tt T}) &=& {\tt T} \mbox{ if \xcd`T` is a container or interface}\\
 ce({\tt T\{c\}}) &=& ce({\tt T})\\
 ce({\tt T[S}_1{\tt,}\ldots{\tt,S}_n{\tt ]})
   &=&
-ce({\tt T}){\tt [} ce({\tt S}_1){\tt,}\ldots{\tt,} ce({\tt S}_n){\tt ]}
+ce({\tt T}){\tt [} ce({\tt S}_1){\tt,}\ldots{\tt,} ce({\tt S}_n){\tt ]}\\
+ce({\tt (S}_1{\tt,}\ldots{\tt,S}_n{\tt ) => T})
+  &=&
+{\tt }{\tt (} ce({\tt S}_1){\tt,}\ldots{\tt,} ce({\tt S}_n){\tt ) => } 
+ce({\tt T})
 \end{eqnarray}
 
 

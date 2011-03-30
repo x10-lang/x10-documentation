@@ -1332,53 +1332,54 @@ class OrderedList[T]{T <: x10.util.Ordered[T]} {
 \end{ex}
 
 
-\section{Contains expressions}
-\index{in}
-
-\begin{bbgrammar}
-       RelationalExp \:RelationalExp \xcd"in" ShiftExp & (\ref{prod:RelationalExp}) \\
-\end{bbgrammar}
-
-\xcd`in` is a binary operator, definable in \Sref{sect:operators}.  It is
-conventionally used for checking containment.
-
-\begin{ex}
-The built-in type \xcd`Region` provides \xcd`in`, testing whether a
-\xcd`Point` is in the region: 
-%~~gen ^^^ Expressions6d2z
-% package Expressions6d2z;
-% class Hook { def run() {
-%~~vis
-\begin{xten}
-assert 3 in 1..10;
-assert !(10 in 1..3);
-\end{xten}
-%~~siv
-% return true;
-%}}
-%~~neg
-
-Other types can provide them as well:
-%~~gen ^^^ Expressions3c4m
-% package Expressions3c4m;
-%~~vis
-\begin{xten}
-class Cont {
-   operator this in (Int) = true;
-   operator (String) in this = false;
-   static operator (Cont) in (b:Boolean) = b;
-   static def example() {
-      val c:Cont = new Cont();
-      assert c in 4 && !("odd" in c) && (c in true);
-   }
-}
-\end{xten}
-%~~siv
-%class Hook{ def run() { Cont.example(); return true; } }
-%~~neg
-
-
-\end{ex}
+%%NOIN%% \section{Contains expressions}
+%%NOIN%% \index{in}
+%%NOIN%% 
+%%NOIN%% \begin{bbgrammar}
+%%NOIN%%        RelationalExp \:RelationalExp \xcd"in" ShiftExp & (\ref{prod:RelationalExp}) \\
+%%NOIN%% \end{bbgrammar}
+%%NOIN%% 
+%%NOIN%% \xcd`in` is a binary operator, definable in \Sref{sect:operators}.  It is
+%%NOIN%% conventionally used for checking containment.
+%%NOIN%% 
+%%NOIN%% \begin{ex}
+%%NOIN%% The built-in type \xcd`Region` provides \xcd`in`, testing whether a
+%%NOIN%% \xcd`Point` is in the region: 
+%%NOIN%% %~x~gen ^^^ Expressions6d2z
+%%NOIN%% % package Expressions6d2z;
+%%NOIN%% % class Hook { def run() {
+%%NOIN%% %~x~vis
+%%NOIN%% \begin{xten}
+%%NOIN%% assert 3 in 1..10;
+%%NOIN%% assert !(10 in 1..3);
+%%NOIN%% \end{xten}
+%%NOIN%% %~x~siv
+%%NOIN%% % return true;
+%%NOIN%% %}}
+%%NOIN%% %~x~neg
+%%NOIN%% 
+%%NOIN%% Other types can provide them as well:
+%%NOIN%% %~x~gen ^^^ Expressions3c4m
+%%NOIN%% % package Expressions3c4m;
+%%NOIN%% %~x~vis
+%%NOIN%% \begin{xten}
+%%NOIN%% class Cont {
+%%NOIN%%    operator this in (Int) = true;
+%%NOIN%%    operator (String) in this = false;
+%%NOIN%%    static operator (Cont) in (b:Boolean) = b;
+%%NOIN%%    static def example() {
+%%NOIN%%       val c:Cont = new Cont();
+%%NOIN%%       assert c in 4 && !("odd" in c) && (c in true);
+%%NOIN%%    }
+%%NOIN%% }
+%%NOIN%% \end{xten}
+%%NOIN%% %~x~siv
+%%NOIN%% %class Hook{ def run() { Cont.example(); return true; } }
+%%NOIN%% %~x~neg
+%%NOIN%% 
+%%NOIN%% 
+%%NOIN%% \end{ex}
+%%NOIN%% 
 
 \section{Array Constructors}
 \label{sect:ArrayCtors}
@@ -1756,6 +1757,7 @@ a two-element \xcd`Array` (like \xcd`[2,4]`) is converted to a
 %~~gen ^^^ Expressions4f4y
 % package Expressions4f4y;
 % class Example { def example() {
+% 
 %~~vis
 \begin{xten}
 val a = new Array[String]((2..3) * (4..5), "hi!");
