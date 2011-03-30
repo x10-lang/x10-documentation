@@ -331,10 +331,42 @@ for (place in D.places()) async at (place; p, D, *) {
 
 If the programmer wishes to execute \xcd`S` in parallel at each place,
 \xcd`S(p)` may be replaced by 
-\xcd`async S(p)`
-.
+\xcd`async S(p)`.
 
+\section{\xcd`var`s and Activities}
 
+X10 restricts the use of local \xcd`var` variables in activities, to make
+programs more deterministic. Specifically, a local \xcd`var` variable \xcd`x`
+defined outside of \xcd`async S` cannot appear inside \xcd`async S` unless
+there is a \xcd`finish` surrounding \xcd`async S` with the definition of
+\xcd`x` outside of it.
+
+\begin{ex}
+The following code is fine; the definition of \xcd`result` appears outside of
+the \xcd`finish` block: 
+%~~gen ^^^ Activities6f6s
+% class Example { static def example() { 
+% package Activities6f6s;
+%~~vis
+\begin{xten}
+var result : Int = 0;
+finish { 
+  async result = 1;
+}
+Console.OUT.println("result=" + result);
+\end{xten}
+%~~siv
+%} } 
+%~~neg
+
+This code is deterministic: the \xcd`async` will finish before the
+\xcd`println` starts, and it will print \xcd`result=1`.  
+
+However, without the
+\xcd`finish`, it would be wrong, and would not compile in X10.  If it were
+allowed to compile, the activity might finish or might not finish before the
+\xcd`println`, and the program would not be deterministic.
+\end{ex}
 
 
 \section{Atomic blocks}\label{AtomicBlocks}
