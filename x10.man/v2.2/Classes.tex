@@ -525,7 +525,7 @@ This may require a cast:
   def exam(e:Example, x:Object) {
     if (x != null) 
        e.example(x as Object{x != null});
-    // WRONG: if (x != null) e.example(x);
+    // ERROR: if (x != null) e.example(x);
   }
 \end{xten}
 %~~siv
@@ -1342,7 +1342,7 @@ like static methods.
 \begin{ex}
 %~~gen ^^^ Classes6a1j
 % package oifClasses6a1j;
-% class Classes6a1j {
+% class Whatever {
 % 
 %~~vis
 \begin{xten}

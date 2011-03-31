@@ -393,7 +393,9 @@ class Lambda {
       val f : Int = 0;
       val closure = (var i: Int, val j: Int) => {
     	  return a + b + d + f + j + this.a + Lambda.this.a;
-          // ILLEGAL: return c + e + i;
+          // ERROR: return c;
+          // ERROR: return e;
+          // ERROR: return i;
       };
       return closure;
    }

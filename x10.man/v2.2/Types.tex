@@ -595,8 +595,8 @@ following code, because they both shadow the type variable \xcd`B`.
 %~~vis
 \begin{xten}
 class A[B] {
-  // ILLEGAL: class B{} 
-  // ILLEGAL: class C[B]{} 
+  //ERROR: class B{} 
+  //ERROR: class C[B]{} 
 }
 \end{xten}
 %~~siv

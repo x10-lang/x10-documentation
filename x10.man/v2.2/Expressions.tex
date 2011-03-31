@@ -247,11 +247,14 @@ Function literals are described in \Sref{Functions}.
 A \grammarrule{MethodInvocation} may be to either a \xcd"static" method, an
 instance method, or a closure.
 
+
 The syntax for method invocations is ambiguous. \xcd`ob.m()` could either be
 the invocation of a method named \xcd`m` on object \xcd`ob`, or the
-application of a function held in a field \xcd`ob.m`. The target \xcd`ob` must
-be type-checked to determine which of these it is.  It is a static error if
-both cases are possible after type checking.
+application of a function held in a field \xcd`ob.m`.   If both are defined on
+the same class, X10 resolves \xcd`ob.m()` to the invocation of the 
+method.  If the application of a function in a field is desired, use
+an alternate syntax which makes the intent clear to X10, such as
+\xcd`(ob.m)()`. 
 
 \begin{ex}
 %~~gen ^^^ Expressions40
@@ -272,17 +275,21 @@ class Callsome {
 %~~neg
 However, adding a static method [mis]named \xcd`closure` makes
 \xcd`Callsome.closure()` 
-ambiguous: it could be a call to the closure, or to the static method: 
+refer to the method, rather than the closure
 %~~gen ^^^ Expressions50
 % package expres.sio.nsca.lls.twoooo;
 % class Callsome {static val closure = () => 1; static def method () = 2; static val methodEvaluated = Callsome.method();
 %~~vis
 \begin{xten}
   static def closure () = 3;
-  // ERROR: static errory = Callsome.closure();
+  static def example() {
+     assert Callsome.closure() == 3;
+     assert (Callsome.closure)() == 1;
+  }
 \end{xten}
 %~~siv
 % }
+% class Hook{ def run() { Callsome.example(); return true; }} 
 %~~neg
 \end{ex}
 
@@ -854,11 +861,23 @@ efficient as possible.  It never runs user-defined code, and the compiler can
 analyze and understand it in detail -- and guarantee that it is efficient.
 
 The disadvantage is that certain straightforward-looking idioms do not work.
-One may not, for example, write
+One may not test that a \xcd`Long` variable is \xcd`==` to an integer like
+\xcd`0`: 
+%~~gen ^^^ Expressions6q7k
+% package Expressions6q7k;
+% class Example{ static def example() { 
+%~~vis
 \begin{xten}
-// NOT ALLOWED
-for(var i : Long = 0; i != 100; i++) 
+//ERROR: for(var i : Long = 0; i != 100; i++)  {}
 \end{xten}
+%~~siv
+%} } 
+%~~neg
+
+
+
+
+
 A \xcd`Long` like \xcd`i` can never \xcd`==` an \xcd`Int` like \xcd`100`.
 
 We can write \xcd`i = i + 1;`, adding an \xcd`Int` to \xcd`i`. This works 
@@ -869,13 +888,34 @@ There is an implicit coercion from \xcd`Int` to \xcd`Long`, so the
 However, \xcd`==` does not permit implicit coercions, and so the \xcd`100`
 stays an \xcd`Int`.  The loop must be written with a comparison of two
 \xcd`Long`s: 
+%~~gen ^^^ Expressions4u6l
+% package Expressions4u6l;
+% class Example{ def example() { 
+%~~vis
 \begin{xten}
-for(var i : Long = 0; i != 100L; i++) 
+for(var i : Long = 0; i != 100L; i++) {}
 \end{xten}
+%~~siv
+%} }
+%~~neg
+
+
+
 
 Incidentally, it could also be written 
+%~~gen ^^^ Expressions5l5l5
+% package Expressions5l5l5;
+% class Example{ def example() { 
+%~~vis
 \begin{xten}
-for(var i : Long = 0; i <= 100; i++) 
+for(var i : Long = 0; i <= 100; i++) {}
+\end{xten}
+%~~siv
+%} }
+%~~neg
+
+\begin{xten}
+
 \end{xten}
 The operation \xcd`<=` is a regular operator, and thus uses coercions in its
 arguments, so \xcd`100` gets coerced to \xcd`100L`.  
@@ -1563,7 +1603,7 @@ class Example {
     val ch : Child = hc as Child; //        interface -> class
     var r : Cyborg = Cyborg();
     val rl : Personable = r as Personable; 
-    // ERROR: r as Childlike
+    // ERROR: val no = r as Childlike;
   }
 }
 \end{xten}

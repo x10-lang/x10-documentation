@@ -27,6 +27,8 @@ genTestCases = True
 NOTEST_pattern = "NOTEST"
 NOCOMPILE_pattern = "NOCOMPILE"
 KNOWN_FAIL_pattern = "KNOWNFAIL"
+ERROR = "ERROR"
+ERROR_END_PAT = ":"
 
 # Clue indicating that a class should *not* be made a static inner class
 # in a testcase
@@ -511,8 +513,40 @@ def writeX10File(packagename, classname, code, fileroot):
         os.makedirs(subdir)
     wholeFileName =  subdir + "/" + fileroot + ".x10"
     cramCodeIntoFile(wholeFileName, testcasecode, NOTEST_pattern)
+    produceErrorFiles(subdir, fileroot, testcasecode)
     files.append(fn)
-    
+
+
+def produceErrorFiles(subdir, fileroot, testcasecode):
+    if testcasecode.find(ERROR) == -1:
+        #print "%s has no ERROR!" % (fileroot)
+        return
+    #print "%s has an ERROR!"  % (fileroot)
+    lines = testcasecode.split("\n")
+    for i in range(len(lines)):     
+        L = lines[i]
+        if L.find(ERROR) != -1:
+            #print "ERROR line is '%s'!" % L
+            produceTheErrorFile(subdir, fileroot, lines, i)
+
+def produceTheErrorFile(subdir, fileroot, lines, i):
+    before = "\n".join(lines[0:i])
+    errorline = lines[i]
+    after = "\n".join(lines[(i+1):])
+    # print "(.... BEFORE ....)\n%s\n(....ERRORLINE....)\n%s\n(....AFTER....)\n%s" % (before, errorline, after)
+    endOfErrorPos = errorline.find(ERROR_END_PAT)
+    if endOfErrorPos == -1:
+        print "Oh dear.  %s has an %s but no '%s'.  Fixie the line '%s'" % (fileroot, ERROR, ERROR_END_PAT, errorline)
+        raise "Doom"
+    badness = errorline[endOfErrorPos+1 :]
+    badline = badness + " // ERR"
+    badcode = before + "\n" + badline + "\n" + after
+    badfileroot = fileroot + "_Bad" + str(i) + "_MustFailCompile"
+    renamed_badcode = badcode.replace(fileroot, badfileroot)
+    # print "(...BAD file '%s'...)\n%s" % (badfileroot, renamed_badcode)
+    wholeBadFileName = subdir + "/" + badfileroot + ".x10"
+    cramCodeIntoFile(wholeBadFileName, renamed_badcode, NOTEST_pattern)
+
     
 
 # Return Foo1, Foo2, etc -- distinct class names for files from chapter Foo.

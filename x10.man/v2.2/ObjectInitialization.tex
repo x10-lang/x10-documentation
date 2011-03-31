@@ -340,7 +340,7 @@ class Outer {
      def this() {Outer.leak.set(Outer.this);}
   }
   def /*Outer*/this() {
-     //ILLEGAL: val inner = this.new Inner();
+     //ERROR: val inner = this.new Inner();
   }
 }
 \end{xten}
@@ -372,8 +372,8 @@ class C {
   val a:Int;
   def this() {
     this.a = 1;
-    // val bad1 = () => this; 
-    // val bad2 = () => a*10;
+    //ERROR: val bad1 = () => this; 
+    //ERROR: val bad2 = () => a*10;
   }
 }
 \end{xten}

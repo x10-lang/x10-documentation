@@ -205,6 +205,8 @@ However, an attempt to compute \xcd`axb1 + bxc` or
     val axb2 : Mat(a,b) = makeMat(a,b);
     val bxc  : Mat(b,c) = makeMat(b,c);
     val axc  : Mat(a,c) = (axb1 +axb2) * bxc;
+    //ERROR: val wrong1 = axb1 + bxc;
+    //ERROR: val wrong2 = bxc * axb1;
   }
 
 \end{xten}
