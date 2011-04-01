@@ -166,10 +166,10 @@ to be unchanged.
 val a = [1,2,3];
 at(here.next(); a2 = a) {
   a2(1) = 4;
-  assert a2.equals([1,4,3]);
+  assert a2(0)==1 && a2(1)==4 && a2(2)==3; 
   // 'a' is not accessible here
 }
-assert a.equals([1,2,3]);
+assert  a(0)==1 && a(1)==2 && a(2)==3; 
 \end{xten}
 %~~siv
 %} } 
