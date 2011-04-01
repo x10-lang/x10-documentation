@@ -392,10 +392,8 @@ class Lambda {
       var e : Int = 0;
       val f : Int = 0;
       val closure = (var i: Int, val j: Int) => {
-    	  return a + b + d + f + j + this.a + Lambda.this.a;
-          // ERROR: return c;
-          // ERROR: return e;
-          // ERROR: return i;
+    	  return a + b + d + f + i + j + this.a + Lambda.this.a;
+          // c and e are not usable here
       };
       return closure;
    }
@@ -404,6 +402,35 @@ class Lambda {
 %~~siv
 %
 %~~neg
+
+
+%~~gen ^^^ Functions9u3u
+% // OK, we want to do the negative tests, but they don't work properly.
+% class Lambda {
+%    var a : Int = 0;
+%    val b = 0;
+%    def m(var c : Int, val d : Int) {
+%       var e : Int = 0;
+%       val f : Int = 0;
+%       val closure = (var i: Int, val j: Int) => {
+%     	  // return a + b + d + f + j + this.a + Lambda.this.a;
+%           // ERROR: return c;
+%           // ERROR: return e;
+%       };
+%       return closure;
+%    }
+% }
+% 
+% package Functions9u3u;
+%~~vis
+\begin{xten}
+\end{xten}
+%~~siv
+%
+%~~neg
+
+
+
 \end{eg}
 
 %%METHOD-SELECTION%% \section{Method selectors}

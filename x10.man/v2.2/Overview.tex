@@ -192,6 +192,7 @@ However, an attempt to compute \xcd`axb1 + bxc` or
 \xcd`bxc * axb1` would result in a compile-time type error:
 %~~gen ^^^ Overview50
 %package Overview.Mat1;
+% // OPTIONS: -STATIC_CALLS 
 %abstract class Mat(rows:Int, cols:Int) {
 %  static type Mat(r:Int, c:Int) = Mat{rows==r&&cols==c};
 %  public def this(r:Int, c:Int) : Mat(r,c) = {property(r,c);}

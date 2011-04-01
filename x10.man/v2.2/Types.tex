@@ -592,6 +592,7 @@ For example, neither \xcd`class B` nor \xcd`class C[B]` are allowed in the
 following code, because they both shadow the type variable \xcd`B`.
 %~~gen ^^^ TypesNoShadow
 % package TypesNoShadow;
+% KNOWNFAIL-https://jira.codehaus.org/browse/XTENLANG-2621
 %~~vis
 \begin{xten}
 class A[B] {

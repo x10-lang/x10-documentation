@@ -310,19 +310,32 @@ public operator this(f:F, g:G) = "value";
 
 Method selection rules are given in \Sref{sect:MethodResolution}.
 
-It is a static error if a method's \grammarrule{Guard} is not statically
+Guard satisfaction depends on the \xcd`STATIC_CHECKS` compiler flag. 
+With \xcd`STATIC_CHECKS` on, 
+it is a static error if a method's \grammarrule{Guard} is not statically
 satisfied by the 
 caller.  
+With \xcd`STATIC_CHECKS` off, the guard will be checked at runtime if
+necessary. 
 
 \begin{ex}
 In this example, a \xcd`DivideBy` object provides the service of dividing
 numbers by \xcd`denom` --- so long as \xcd`denom` is not zero. 
-In the \xcd`example` method, \xcd`this.div(100)`  is not allowed; there is no
+X10's strictness of checking this is under control of the \xcd`STATIC_CHECKS`
+compiler option (\Sref{sect:Callstyle}).  
+
+With \xcd`STATIC_CHECKS` turned on,  the \xcd`example` method will not
+compile.  \xcd`this.div(100)`  is not allowed; there is no
 guarantee that \xcd`denom != 0`.  Casting \xcd`this` to a type 
 whose constraint implies \xcd`denom != 0` permits the method call.
+
+With \xcd`STATIC_CHECKS` turned off, the call will compile.
+X10 will insert a dynamic check that the denominator is non-zero, and will
+fail at runtime if it is zero.
+
 %~~gen ^^^ Expressions60
 %package Expressions.Calls.Guarded.By.Walls;
-% 
+% // OPTIONS: -STATIC_CALLS
 %~~vis
 \begin{xten}
 class DivideBy(denom:Int) {
@@ -330,13 +343,16 @@ class DivideBy(denom:Int) {
   def example() {
      val thisCast = (this as DivideBy{self.denom != 0});
      thisCast.div(100);
-     //ERROR: this.div(100); 
+     //ERROR (with STATIC_CALLS): this.div(100);  
   }
 }
 \end{xten}
 %~~siv
 % class Hook{ def run() { (new DivideBy(1)).example(); return true; } }
 %~~neg
+
+
+
 \end{ex}
 
 
@@ -865,6 +881,7 @@ One may not test that a \xcd`Long` variable is \xcd`==` to an integer like
 \xcd`0`: 
 %~~gen ^^^ Expressions6q7k
 % package Expressions6q7k;
+% // NOTEST-https://jira.codehaus.org/browse/XTENLANG-2624
 % class Example{ static def example() { 
 %~~vis
 \begin{xten}
@@ -1586,6 +1603,7 @@ cast to \xcd`Childlike` could succeed, so \xcd`r as Childlike` is a static error
 
 %~~gen ^^^ Expressions180
 % package Types.Coercions;
+% // NOTEST https://jira.codehaus.org/browse/XTENLANG-2623;
 %~~vis
 \begin{xten}
 interface Personable {}

@@ -509,15 +509,28 @@ which one to use.)
 \end{ex}
 
 
-The requirement of having a method guard is that callers must demonstrate to
+The requirement of having a method guard 
+is that callers must demonstrate to
 the X10
-compiler that the guard is satisfied.  (As usual with static constraint
+compiler that the guard is satisfied.  
+With the \xcd`STATIC_CHECKS` compiler option in force (\Sref{sect:Callstyle}), this is
+checked at compile time. 
+As usual with static constraint
 checking, there is no runtime cost.  Indeed, this code can be more efficient
 than usual, as it is statically provable that \xcd`x != null`.)
-This may require a cast: 
+
+When \xcd`STATIC_CHECKS` is not in force, dynamic checks are generated as
+needed; method guards are checked at runtime. This is potentially more
+expensive, but may be more convenient. 
+
+\begin{ex}
+The following code fragment contains a line which will not compile 
+with \xcd`STATIC_CHECKS` on.  (X10's type system does not attempt to propagate 
+information from \xcd`if`s.)  It will compile with \xcd`STATIC_CHECKS` off,
+but it may insert an extra \xcd`null`-test for \xcd`x`.  
 %~~gen ^^^ Classes90
 % package Classes.methodguardnadacastthingie;
-% 
+% // OPTIONS: -STATIC_CALLS
 % class Example {var f : String = ""; def example(x:Object){x != null} = {this.f = x.toString();}}
 % class Eyample {
 %~~vis
@@ -525,13 +538,13 @@ This may require a cast:
   def exam(e:Example, x:Object) {
     if (x != null) 
        e.example(x as Object{x != null});
-    // ERROR: if (x != null) e.example(x);
+       // ERROR with STATIC_CALLS: if (x != null) e.example(x); 
   }
 \end{xten}
 %~~siv
 %}
 %~~neg
-
+\end{ex}
 
 
 The guard \xcd`{c}` 
