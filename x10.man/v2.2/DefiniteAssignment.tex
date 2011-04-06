@@ -28,7 +28,7 @@ initializing variables.
 \begin{xten}
 def example(a:Int, b:Int) {
   val max:Int;
-  // max cannot be read here.
+  //ERROR: assert max==max; // or anything else reading max
   if (a > b) max = a;
   else max = b;
   assert max >= a && max >= b;

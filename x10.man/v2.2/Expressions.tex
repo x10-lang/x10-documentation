@@ -147,12 +147,14 @@ class Fielded {
   public val b : Int{this.a == b} = this.a;
   static def example() {
     val f : Fielded = new Fielded();
+    assert f.a == 1 && f.b == 1;
     val fb : Int{fb == f.a} = f.b;
+    assert fb == 1;
   }
 }
 \end{xten}
 %~~siv
-%
+%class Hook{ def run() {Fielded.example(); return true;}}
 %~~neg
 
 \end{ex}
@@ -189,15 +191,23 @@ class Ego extends Parent {
   public val f = 3;
   class Child extends Ego {
      public val f = 4;
-     def classNameDotId() =  Uncle.f;     // 1
-     def cnDotSuperDotId() = Ego.super.f; // 2
-     def superDotId() =      super.f;     // 3
-     def expDotId() =        this.f;      // 4
+     def example() { 
+        assert Uncle.f == 1; 
+        assert Ego.super.f == 2;
+        assert super.f == 3;
+        assert this.f == 4;
+        assert f == 4;
+     }
   }
 }
 \end{xten}
 %~~siv
-%
+%class Hook{ def run() {
+%  val ego = new Ego();
+%  val child = ego.new Child();
+%  child.example();
+%  return true;
+% } }
 %~~neg
 \end{ex}
 
@@ -472,11 +482,6 @@ storage location. Specifically, \xcd`A()(I()) += B()` is tantamount to:
 %}}
 %~~neg
 
-\limitation{+= does not currently meet this specification.}
-
-
-
-
 \section{Increment and decrement}
 \index{increment}
 \index{decrement}
@@ -487,7 +492,7 @@ storage location. Specifically, \xcd`A()(I()) += B()` is tantamount to:
 The operators \xcd"++" and \xcd"--" increment and decrement
 a variable, respectively.  
 \xcd`x++` and \xcd`++x` both increment \xcd`x`, just as the statement 
-\xcd`x += 1` would, and similarly for \xcd`--`.  
+\xcd`x += (1 as T)` would (where \xcd`x:T`), and similarly for \xcd`--`.  
 
 The difference between the two is the return value.  
 \xcd`++x` and \xcd`--x` return the {\em new} value of \xcd`x`, after
@@ -495,8 +500,9 @@ incrementing or decrementing.
 \xcd`x++` and \xcd`x--` return the {\em old} value of \xcd`x`, before
 incrementing or decrementing.
 
+These operators work for any \xcd`x` for which \xcd`1 as T` is defined, where
+\xcd`T` is the type of \xcd`x`.  
 
-\limitation{This currently only works for numeric types.}
 
 \section{Numeric Operations}
 \label{XtenPromotions}

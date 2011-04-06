@@ -200,58 +200,6 @@ from \xcd"finish S" if \xcd`S` throws no exceptions.  (If \xcd`S` throws
 exceptions, \xcd`finish S` wraps them in one layer of 
 \xcd`MultipleExceptions` and \xcd`finish finish S` in two layers.)
 
-%%OLIVIER-DENIES%% \paragraph{Interaction with clocks.}\label{sec:finish:clock-rule}
-%%OLIVIER-DENIES%% 
-%%OLIVIER-DENIES%% \xcd"finish S" interacts with clocks (\Sref{XtenClocks}). 
-%%OLIVIER-DENIES%% While executing \xcd"S", an activity must not spawn any \xcd"clocked"
-%%OLIVIER-DENIES%% asyncs. (Asyncs spawned during the execution of \xcd"S" may spawn
-%%OLIVIER-DENIES%% clocked asyncs.) A
-%%OLIVIER-DENIES%% \xcd"ClockUseException"\index{clock!ClockUseException} is thrown
-%%OLIVIER-DENIES%% if (and when) this condition is violated.
-%%OLIVIER-DENIES%% 
-%%OLIVIER-DENIES%% This is necessary to prevent deadlocks.  In the following invalid code 
-%%OLIVIER-DENIES%% %~s~gen
-%%OLIVIER-DENIES%% % package Activities.Finish.Hates.Clocks;
-%%OLIVIER-DENIES%% % class Example{
-%%OLIVIER-DENIES%% % def example() {
-%%OLIVIER-DENIES%% %~s~vis
-%%OLIVIER-DENIES%% \begin{xten}
-%%OLIVIER-DENIES%% val c:Clock = Clock.make();
-%%OLIVIER-DENIES%% async clocked(c) {                // (A) 
-%%OLIVIER-DENIES%%       finish async clocked(c) {   // (B) INVALID
-%%OLIVIER-DENIES%%             next;                 // (Bnext)
-%%OLIVIER-DENIES%%       }
-%%OLIVIER-DENIES%%       next;                       // (Anext)
-%%OLIVIER-DENIES%% }
-%%OLIVIER-DENIES%% \end{xten}
-%%OLIVIER-DENIES%% %~s~siv
-%%OLIVIER-DENIES%% % } } 
-%%OLIVIER-DENIES%% %~s~neg
-%%OLIVIER-DENIES%% \xcd`(A)`, first of all, waits for the \xcd`finish` containing \xcd`(B)` to
-%%OLIVIER-DENIES%% finish.  
-%%OLIVIER-DENIES%% \xcd`(B)` will execute its \xcd`next` at \xcd`(Bnext)`, and then wait for all
-%%OLIVIER-DENIES%% other activities registered on \xcd`c` to execute their \xcd`next`s.
-%%OLIVIER-DENIES%% However, \xcd`(A)` is registered on \xcd`c`.  So, \xcd`(B)` cannot finish
-%%OLIVIER-DENIES%% until \xcd`(A)` has proceeded to \xcd`(Anext)`, and \xcd`(A)` cannot proceed
-%%OLIVIER-DENIES%% until \xcd`(B)` finishes. Thus, this causes deadlock.
-%%OLIVIER-DENIES%% 
-%%OLIVIER-DENIES%% 
-%%OLIVIER-DENIES%% 
-%%OLIVIER-DENIES%% In \XtenCurrVer{} this condition is checked dynamically; future
-%%OLIVIER-DENIES%% versions of the language will introduce type qualifiers which permit
-%%OLIVIER-DENIES%% this condition to be checked statically.
-%%OLIVIER-DENIES%% 
-%%OLIVIER-DENIES%% \futureext{
-%%OLIVIER-DENIES%% The semantics of \xcd"finish S" is conjunctive; it terminates when all
-%%OLIVIER-DENIES%% the activities created during the execution of \xcd"S" (recursively)
-%%OLIVIER-DENIES%% terminate. In many situations (e.g., nondeterministic search) it is
-%%OLIVIER-DENIES%% natural to require a statement to terminate when any {\em one} of the
-%%OLIVIER-DENIES%% activities it has spawned succeeds. The other activities may then be
-%%OLIVIER-DENIES%% safely aborted. Future versions of the language may introduce a
-%%OLIVIER-DENIES%% \xcd"finishone S" construct to support such speculative or nondeterministic
-%%OLIVIER-DENIES%% computation.
-%%OLIVIER-DENIES%% }
-%%OLIVIER-DENIES%% 
 
 \section{Initial activity}\label{initial-computation}
 \index{initial activity}
@@ -274,7 +222,6 @@ from the command line arguments. This single activity is the root activity
 for the entire computation. (See \Sref{XtenPlaces} for a discussion of
 places.)
 
-%% Say something about configuration information? 
 
 \section{Ateach statements}\index{\Xcd{ateach}}\label{ateach-section}
 \index{ateach}
@@ -353,10 +300,11 @@ var result : Int = 0;
 finish { 
   async result = 1;
 }
-Console.OUT.println("result=" + result);
+assert result == 1;
 \end{xten}
 %~~siv
 %} } 
+% class Hook{ def run() {Example.example(); return true;}}
 %~~neg
 
 This code is deterministic: the \xcd`async` will finish before the
@@ -491,16 +439,6 @@ successful execution, not on a faulty execution.
 
 
 
-%%NOW-DYN%% For the sake of efficient implementation \XtenCurrVer{} requires
-%%NOW-DYN%% that the atomic block be {\em analyzable}, that is, the set of
-%%NOW-DYN%% locations that are read and written by the \grammarrule{BlockStatement} are
-%%NOW-DYN%% bounded and determined statically.\footnote{A static bound is a constant
-%%NOW-DYN%% that depends only on the program text, and is independent 
-%%NOW-DYN%% of any runtime parameters. }
-%%NOW-DYN%% The exact algorithm to be used by
-%%NOW-DYN%% the compiler to perform this analysis will be specified in future
-%%NOW-DYN%% versions of the language.
-%%NOW-DYN%% \tbd{}
 
 Atomic blocks are closely related to non-blocking synchronization
 constructs \cite{herlihy91waitfree}, and can be used to implement 
@@ -625,16 +563,7 @@ eventually stable, \ie, they will continue to hold until the block
 executes (the action in the body of the block may cause the condition
 to not hold any more).
 
-%%Fourth, \Xten{} does not guarantees only {\em weak fairness} when executing
-%%conditional atomic blocks. Let $c$ be the guard of some conditional
-%%atomic block $A$. $A$ is required to make forward progress only if
-%%$c$ is {\em eventually stable}. That is, any execution $s_1, s_2,
-%%\ldots$ of the program is considered illegal only if there is a $j$
-%%such that $c$ holds in all states $s_k$ for $k > j$ and in which $A$
-%%does not execute. Specifically, if the system executes in such a way
-%%that $c$ holds only intermmitently (that is, for some state in which
-%%$c$ holds there is always a later state in which $c$ does not hold),
-%%$A$ is not required to be executed (though it may be executed).
+
 
 
 

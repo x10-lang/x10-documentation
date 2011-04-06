@@ -57,7 +57,8 @@ val r : Point(3) = [11,22,33];
 % } } 
 %~~neg
 
-The coordinates of a point are available by subscripting; \xcd`p(i)` is the
+The coordinates of a point are available by function application, or, if you
+prefer, by subscripting; \xcd`p(i)` is the
 \xcd`i`th coordinate of the point \xcd`p`. 
 \xcdmath`Point($n$)` is a \Xcd{type}-defined shorthand  for 
 \xcdmath`Point{rank==$n$}`.
@@ -381,7 +382,7 @@ can, in fact, be accessed by integers:
 %~~gen ^^^ Arrays240
 %package Arrays240;
 %class Example{
-%def example(){
+%static def example(){
 %~~vis
 \begin{xten}
 val A1 = new Array[Int](1..10, 0);
@@ -390,7 +391,9 @@ val A4 = new Array[Int]((1..2)*(1..3)*(1..4)*(1..5), 0);
 A4(2,3,4,5) = A4(1,1,1,1)+1;
 \end{xten}
 %~~siv
+% assert A1(4) == 1 && A4(2,3,4,5) == 1;
 %}}
+% class Hook{ def run() {Example.example(); return true;}}
 %~~neg
 
 
@@ -510,29 +513,6 @@ There are other \xcd`Dist.makeBlock` methods capable of controlling the
 distribution and the set of places used; see the API documentation.
 
 
-%%NO-CYCLIC-DIST%%  \paragraph{Cyclic distributions.} \index{distribution!cyclic}
-%%NO-CYCLIC-DIST%%  The distribution \xcd`Dist.makeCyclic(R, Q)` distributes the points in \xcd`R`
-%%NO-CYCLIC-DIST%%  cyclically across places in \xcd`Q` in order.
-%%NO-CYCLIC-DIST%%  
-%%NO-CYCLIC-DIST%%  The distribution \xcd`Dist.makeCyclic(R)` is the same distribution as
-%%NO-CYCLIC-DIST%%  \xcd`Dist.makeCyclic(R, Place.places)`. 
-%%NO-CYCLIC-DIST%%  
-%%NO-CYCLIC-DIST%%  Thus the distribution \xcd`Dist.makeCyclic(Place.MAX_PLACES)` provides a 1--1
-%%NO-CYCLIC-DIST%%  mapping from the region \xcd`Place.MAX_PLACES` to the set of all
-%%NO-CYCLIC-DIST%%  places and is the same as the distribution \xcd`Dist.makeCyclic(Place.places)`.
-%%NO-CYCLIC-DIST%%  
-%%NO-CYCLIC-DIST%%  \paragraph{Block cyclic distributions.}\index{distribution!block cyclic}
-%%NO-CYCLIC-DIST%%  The distribution \xcd`Dist.makeBlockCyclic(R, N, Q)` distributes the elements
-%%NO-CYCLIC-DIST%%  of \xcd`R` cyclically over the set of places \xcd`Q` in blocks of size
-%%NO-CYCLIC-DIST%%  \xcd`N`.
-%%NO-ARB-DIST%%  
-%%NO-ARB-DIST%%  \paragraph{Arbitrary distributions.} \index{distribution!arbitrary}
-%%NO-ARB-DIST%%  The distribution \xcd`Dist.makeArbitrary(R,Q)` arbitrarily allocates points in {\cf
-%%NO-ARB-DIST%%  R} to \xcd`Q`. As above, \xcd`Dist.makeArbitrary(R)` is the same distribution as
-%%NO-ARB-DIST%%  \xcd`Dist.makeArbitrary(R, Place.places)`.
-%%NO-ARB-DIST%%  
-%%NO-ARB-DIST%%  \oldtodo{Determine which other built-in distributions to provide.}
-%%NO-ARB-DIST%%  
 \paragraph{Domain Restriction.} \index{distribution!restriction!region}
 
 If \xcd`D` is a distribution and \xcd`R` is a sub-region of {\cf
@@ -561,73 +541,6 @@ way to still represent them in contiguous memory, \eg, using an arithmetic
 function to map from the region index to an index 
 into the array.
 
-%%NO-USER-DIST%%  \subsection{User-defined distributions}\index{distribution!user-defined}
-%%NO-USER-DIST%%  
-%%NO-USER-DIST%%  Future versions of \Xten{} may provide user-defined distributions, in
-%%NO-USER-DIST%%  a way that supports static reasoning.
-
-%%NO-flinking-operations-on-DIST%%  \subsection{Operations on distributions}
-%%NO-flinking-operations-on-DIST%%  
-%%NO-flinking-operations-on-DIST%%  A {\em sub-distribution}\index{sub-distribution} of \xcd`D` is
-%%NO-flinking-operations-on-DIST%%  any distribution \xcd`E` defined on some subset of the region of
-%%NO-flinking-operations-on-DIST%%  \xcd`D`, which agrees with \xcd`D` on all points in its region.
-%%NO-flinking-operations-on-DIST%%  We also say that \xcd`D` is a {\em super-distribution} of
-%%NO-flinking-operations-on-DIST%%  \xcd`E`. A distribution \xcdmath`D1` {\em is larger than}
-%%NO-flinking-operations-on-DIST%%  \xcdmath`D2` if \xcdmath`D1` is a super-distribution of
-%%NO-flinking-operations-on-DIST%%  \xcdmath`D2`.
-%%NO-flinking-operations-on-DIST%%  
-%%NO-flinking-operations-on-DIST%%  Let \xcdmath`D1` and \xcdmath`D2` be two distributions with the same rank.  
-%%NO-flinking-operations-on-DIST%%  
-
-%%NO-&&-DIST%%  \paragraph{Intersection of distributions.}\index{distribution!intersection}
-%%NO-&&-DIST%%  ~~exp~~`~~`~~D1:Dist, D2:Dist{D1.rank==D2.rank} ~~
-%%NO-&&-DIST%%  \xcdmath`D1 && D2`, the intersection 
-%%NO-&&-DIST%%  of \xcdmath`D1`
-%%NO-&&-DIST%%  and \xcdmath`D2`, is the largest common sub-distribution of
-%%NO-&&-DIST%%  \xcdmath`D1` and \xcdmath`D2`.
-
-%%NO-overlay-DIST%%  \paragraph{Asymmetric union of distributions.}\index{distribution!union!asymmetric}
-%%NO-overlay-DIST%%  ~~exp~~`~~`~~D1:Dist, D2:Dist{D1.rank==D2.rank} ~~
-%%NO-overlay-DIST%%  \xcdmath`D1.overlay(D2)`, the asymmetric union of
-%%NO-overlay-DIST%%  \xcdmath`D1` and \xcdmath`D2`, is the distribution whose
-%%NO-overlay-DIST%%  region is the union of the regions of \xcdmath`D1` and
-%%NO-overlay-DIST%%  \xcdmath`D2`, and whose value at each point \xcd`p` in its
-%%NO-overlay-DIST%%  region is \xcdmath`D2(p)` if \xcdmath`p` lies in
-%%NO-overlay-DIST%%  \xcdmath`D2.region` otherwise it is \xcdmath`D1(p)`.
-%%NO-overlay-DIST%%  (\xcdmath`D1` provides the defaults.)
-
-%%NO-flinking-operations-on-DIST%%  \paragraph{Disjoint union of distributions.}\index{distribution!union!disjoint}
-%%NO-flinking-operations-on-DIST%%  ~~exp~~`~~`~~D1:Dist, D2:Dist{D1.rank==D2.rank} ~~
-%%NO-flinking-operations-on-DIST%%  \xcdmath`D1 || D2`, the disjoint union of
-%%NO-flinking-operations-on-DIST%%  \xcdmath`D1`
-%%NO-flinking-operations-on-DIST%%  and \xcdmath`D2`, is defined only if the regions of
-%%NO-flinking-operations-on-DIST%%  \xcdmath`D1` and \xcdmath`D2` are disjoint. Its value is
-%%NO-flinking-operations-on-DIST%%  \xcdmath`D1.overlay(D2)` (or equivalently
-%%NO-flinking-operations-on-DIST%%  \xcdmath`D2.overlay(D1)`.  (It is the least
-%%NO-flinking-operations-on-DIST%%  super-distribution of \xcdmath`D1` and \xcdmath`D2`.)
-%%NO-flinking-operations-on-DIST%%  
-%%NO-flinking-operations-on-DIST%%  \paragraph{Difference of distributions.}\index{distribution!difference}
-%%NO-flinking-operations-on-DIST%%  \xcdmath`D1 - D2` is the largest sub-distribution of
-%%NO-flinking-operations-on-DIST%%  \xcdmath`D1` whose region is disjoint from that of
-%%NO-flinking-operations-on-DIST%%  \xcdmath`D2`.
-%%NO-flinking-operations-on-DIST%%  
-%%NO-flinking-operations-on-DIST%%  
-%%What-Is-This-Example%% \subsection{Example}
-%%What-Is-This-Example%% \begin{xten}
-%%What-Is-This-Example%% def dotProduct(a: Array[T](D), b: Array[T](D)): Array[Double](D) =
-%%What-Is-This-Example%%   (new Array[T]([1:D.places],
-%%What-Is-This-Example%%       (Point) => (new Array[T](D | here,
-%%What-Is-This-Example%%                     (i): Point) => a(i)*b(i)).sum())).sum();
-%%What-Is-This-Example%% \end{xten}
-%%What-Is-This-Example%% 
-%%What-Is-This-Example%% This code returns the inner product of two \xcd`T` vectors defined
-%%What-Is-This-Example%% over the same (otherwise unknown) distribution. The result is the sum
-%%What-Is-This-Example%% reduction of an array of \xcd`T` with one element at each place in the
-%%What-Is-This-Example%% range of \xcd`D`. The value of this array at each point is the sum
-%%What-Is-This-Example%% reduction of the array formed by multiplying the corresponding
-%%What-Is-This-Example%% elements of \xcd`a` and \xcd`b` in the local sub-array at the current
-%%What-Is-This-Example%% place.
-%%What-Is-This-Example%% 
 
 \section{Distributed Arrays}
 \index{array!distributed}
@@ -716,23 +629,6 @@ two-dimensional distributed array, whose coordinates both range from 1 to
 initialized with \xcd`i*j`
 at point \xcd`[i,j]`.
 \end{ex}
-%%WHY-THIS-EXAMPLE%% In the following 
-%%WHY-THIS-EXAMPLE%% %~x~gen
-%%WHY-THIS-EXAMPLE%% % package Arrays.DistArrays.FlistArrays.GlistArrays;
-%%WHY-THIS-EXAMPLE%% %~x~vis
-%%WHY-THIS-EXAMPLE%% \begin{xten}
-%%WHY-THIS-EXAMPLE%% val D1:Dist(1) = Dist.makeBlock(1..100);
-%%WHY-THIS-EXAMPLE%% val D2:Dist(2) = Dist.makeBlock((1..100)*(-1..1));
-%%WHY-THIS-EXAMPLE%% val ints : Array[Int]
-%%WHY-THIS-EXAMPLE%%     = Array.make[Int](1000, ((i):Point) => i*i);
-%%WHY-THIS-EXAMPLE%% val floats1 : Array[Float]
-%%WHY-THIS-EXAMPLE%%     = Array.make[Float](D1, ((i):Point) => i*i as Float);
-%%WHY-THIS-EXAMPLE%% val floats2 : Array[Float]
-%%WHY-THIS-EXAMPLE%%    = Array.make[Float](D2, ((i,j):Point) => i+j as Float);;
-%%WHY-THIS-EXAMPLE%% \end{xten}
-%%WHY-THIS-EXAMPLE%% %~x~siv
-%%WHY-THIS-EXAMPLE%% %
-%%WHY-THIS-EXAMPLE%% %~x~neg
 
 
 \section{Operations on Arrays and Distributed Arrays}
@@ -765,13 +661,6 @@ available.
 It is a runtime error to use either \xcd`da(p)` or \xcd`da(p)=v` at a place
 other than \xcd`da.dist(p)`, \viz{} at the place that the element exists. 
 
-%%HUH%%  For distributed array variables, the right-hand-side of an assignment must
-%%HUH%%  have the same distribution \xcd`D` as an array being assigned. This
-%%HUH%%  assignment involves
-%%HUH%%  control communication between the sites hosting \xcd`D`. Each
-%%HUH%%  site performs the assignment(s) of array components locally. The
-%%HUH%%  assignment terminates when assignment has terminated at all
-%%HUH%%  sites hosting \xcd`D`.
 
 \subsection{Constant promotion}\label{ConstantArray}
 \index{array!constant promotion}
@@ -811,38 +700,7 @@ Recall that a rich set of operators are available on distributions
 (\Sref{XtenDistributions}) to obtain sub-distributions
 (e.g. restricting to a sub-region, to a specific place etc).
 
-%%GONE-AWAY%%  \subsection{Assembling an array}
-%%GONE-AWAY%%  Let \xcd`da1,da2` be distributed arrays of the same base type \xcd`T` defined over
-%%GONE-AWAY%%  distributions \xcd`D1` and \xcd`D2` respectively. 
-%%GONE-AWAY%%  \paragraph{Assembling arrays over disjoint regions}\index{array!union!disjoint}
-%%GONE-AWAY%%  
-%%GONE-AWAY%%  
-%%GONE-AWAY%%  If \xcd`D1` and \xcd`D2` are disjoint then the expression 
-%%GONE-AWAY%%  %~x~genexp~~`~~`~~T ~~ da1: Array[T], da2: Array[T](da1.rank)~~
-%%GONE-AWAY%%  \xcd`da1 || da2` denotes the unique array of base type \xcd`T` defined over the
-%%GONE-AWAY%%  distribution \xcd`D1 || D2` such that its value at point \xcd`p` is
-%%GONE-AWAY%%  \xcd`a1(p)` if \xcd`p` lies in \xcd`D1` and \xcd`a2(p)`
-%%GONE-AWAY%%  otherwise. This array is a reference (value) array if \xcd`a1` is.
-%%GONE-AWAY%%  
-%%GONE-AWAY%%  \paragraph{Overlaying an array on another}\index{array!union!asymmetric}
-%%GONE-AWAY%%  The expression
-%%GONE-AWAY%%  \xcd`a1.overlay(a2)` (read: the array \xcd`a1` {\em overlaid with} \xcd`a2`)
-%%GONE-AWAY%%  represents an array whose underlying region is the union of that of
-%%GONE-AWAY%%  \xcd`a1` and \xcd`a2` and whose distribution maps each point \xcd`p`
-%%GONE-AWAY%%  in this region to \xcd`D2(p)` if that is defined and to \xcd`D1(p)`
-%%GONE-AWAY%%  otherwise. The value \xcd`a1.overlay(a2)(p)` is \xcd`a2(p)` if it is defined and \xcd`a1(p)` otherwise.
-%%GONE-AWAY%%  
-%%GONE-AWAY%%  This array is a reference (value) array if \xcd`a1` is.
-%%GONE-AWAY%%  
-%%GONE-AWAY%%  The expression \xcd`a1.update(a2)` updates the array \xcd`a1` in place
-%%GONE-AWAY%%  with the result of \xcd`a1.overlay(a2)`.
-%%GONE-AWAY%%  
-%%GONE-AWAY%%  \oldtodo{Define Flooding of arrays}
-%%GONE-AWAY%%  
-%%GONE-AWAY%%  \oldtodo{Wrapping an array}
-%%GONE-AWAY%%  
-%%GONE-AWAY%%  \oldtodo{Extending an array in a given direction.}
-%%GONE-AWAY%%  
+
 \subsection{Operations on Whole Arrays}
 
 \paragraph{Pointwise operations}\label{ArrayPointwise}\index{array!pointwise operations}
@@ -854,36 +712,38 @@ The following produces an array of cubes:
 %~~gen ^^^ Arrays460
 %package Arrays_pointwise_a;
 %class Example{
-%def example() {
+%static def example() {
 %~~vis
 \begin{xten}
 val A = new Array[Int](1..10, (p:Point(1))=>p(0) );
-// A = 1,2,3,4,5,6,7,8,9,10
+assert A(3) == 3 && A(4) == 4 && A(10) == 10; 
 val cube = (i:Int) => i*i*i;
 val B = A.map(cube);
-// B = 1,8,27,64,216,343,512,729,1000
+assert B(3) == 27 && B(4) == 64 && B(10) == 1000; 
 \end{xten}
 %~~siv
 %} } 
+% class Hook{ def run() {Example.example(); return true;}}
 %~~neg
 
 A variant operation lets you specify the array \Xcd{B} into which the result
-will be stored.   
+will be stored, 
 %~~gen ^^^ Arrays470
 %package Arrays.map_with_result;
 %class Example{
-%def example() {
+%static def example() {
 %~~vis
 \begin{xten}
 val A = new Array[Int](1..10, (p:Point(1))=>p(0) );
-// A = 1,2,3,4,5,6,7,8,9,10
+assert A(3) == 3 && A(4) == 4 && A(10) == 10; 
 val cube = (i:Int) => i*i*i;
 val B = new Array[Int](A.region); // B = 0,0,0,0,0,0,0,0,0,0
 A.map(B, cube);
-// B = 1,8,27,64,216,343,512,729,1000
+assert B(3) == 27 && B(4) == 64 && B(10) == 1000; 
 \end{xten}
 %~~siv
 %} } 
+% class Hook{ def run() {Example.example(); return true;}}
 %~~neg
 \noindent
 This is convenient if you have an already-allocated array lying around unused.
@@ -892,17 +752,18 @@ reuse its space:
 %~~gen ^^^ Arrays480
 %package Arrays.map_reusing_space;
 %class Example{
-%def example() {
+%static def example() {
 %~~vis
 \begin{xten}
 val A = new Array[Int](1..10, (p:Point(1))=>p(0) );
-// A = 1,2,3,4,5,6,7,8,9,10
+assert A(3) == 3 && A(4) == 4 && A(10) == 10; 
 val cube = (i:Int) => i*i*i;
 A.map(A, cube);
-// A = 1,8,27,64,216,343,512,729,1000
+assert A(3) == 27 && A(4) == 64 && A(10) == 1000; 
 \end{xten}
 %~~siv
 %} } 
+% class Hook{ def run() {Example.example(); return true;}}
 %~~neg
 
 
@@ -964,7 +825,7 @@ and \Xcd{unit} is zero.
 %~~gen ^^^ Arrays520
 % package Arrays.Reductions.And.Emulsions;
 % class Example {
-% def example() {
+% static def example() {
 %~~vis
 \begin{xten}
 val a = [1,2,3,4];
@@ -973,6 +834,7 @@ assert(sum == 10); // 10 == 1+2+3+4
 \end{xten}
 %~~siv
 %}}
+% class Hook{ def run() {Example.example(); return true;}}
 %~~neg
 
 Other orders of evaluation, degrees of parallelism, and applications of

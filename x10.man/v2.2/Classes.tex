@@ -149,7 +149,10 @@ class Fld{
 }
 \end{xten}
 %~~siv
-%
+% class Hook{ def run() {
+%   val f = new Fld();
+%   assert f.a == 1 && f.b == 3;
+%   return true;}}
 %~~neg
 \end{ex}
 
@@ -182,10 +185,16 @@ class Sub extends Super {
 }
 \end{xten}
 %~~siv
-% class Hook { def run() { return (new Sub()).superf() == 1; }} 
+% class Hook { def run() { 
+%   val sub = new Sub();
+%   assert sub.f == true;
+%   assert sub.superf() == 1;
+%   return true;} }
 %~~neg
 \end{ex}
 
+\begin{ex}
+Hidden fields of outer classes can be accessed by suitable forms: 
 %~~gen ^^^ Classes30
 % package classes.fields.secundus; 
 % NOTEST
@@ -211,7 +220,7 @@ class B extends A {
 %~~siv
 % class Hook { def run() { ((new B()).new C()).example(); return true; } }
 %~~neg
-
+\end{ex}
 
 \subsection{Field qualifiers}
 \label{FieldQualifier}
@@ -256,7 +265,7 @@ class Trans {
 }
 \end{xten}
 %~~siv
-%
+% class Hook{ def run() {(new Example()).example(); return true;}}
 %~~neg
 
 
@@ -288,7 +297,10 @@ class Proper(t:Int) {
 }
 \end{xten}
 %~~siv
-%
+% class Hook{ def run() {
+%   val p = new Proper(4);
+%   return p.t == 4;
+% } } 
 %~~neg
 
 \end{ex}
@@ -331,8 +343,10 @@ public final def x()=x;
 
 
 \index{property!initialization}
-Properties are initialized by the invocation of a special \Xcd{property}
-statement: 
+Properties are initialized in a constructor by the invocation of a special \Xcd{property}
+statement. The requirement to use the \xcd`property` statement means that all properties
+must be given values at the same time: a container either has its properties
+or it does not.
 \begin{xten}
 property(e1,..., en);
 \end{xten}
@@ -340,13 +354,40 @@ The number and types of arguments to the \Xcd{property} statement must match
 the number and types of the properties in the class declaration, in order.  
 Every constructor of a class with properties must invoke \xcd`property(...)`
 precisely once; it is a static error if X10 cannot prove that this holds.
-The requirement to use the \xcd`property` statement means that all properties
-must be given values at the same time.  
+
+
 
 By construction, the graph whose nodes are values and whose edges are
 properties is acyclic.  \Eg, there cannot be values \xcd`a` and \xcd`b` with
 properties \xcd`c` and \xcd`d` such that \xcd`a.c == b` and \xcd`b.d == a`.
 
+\begin{ex}
+%~~gen ^^^ Classes7h2f
+% package Classes7h2f;
+%~~vis
+\begin{xten}
+class Proper(a:Int, b:String) {
+  def this(a:Int, b:String) {
+      property(a, b);
+  }
+  def this(z:Int) {
+      val theA = z+5;
+      val theB = "X"+z;
+      property(theA, theB);
+  }
+  static def example() {
+      val p = new Proper(1, "one");
+      assert p.a == 1 && p.b.equals("one");
+      val q = new Proper(10);
+      assert q.a == 15 && q.b.equals("X10");
+  }
+}
+\end{xten}
+%~~siv
+% class Hook{ def run() {Proper.example(); return true;}}
+%~~neg
+
+\end{ex}
 
 \subsection{Properties and Fields}
 
@@ -493,7 +534,7 @@ pointer exception:
 \begin{xten}
 class Example {
    var f : String = "";
-   def example(x:Object){x != null} = {
+   def setF(x:Object){x != null} = {
       this.f = x.toString();
    }
 }
@@ -742,11 +783,13 @@ following considerations motivated by type parameters and dependent types.
 
 Two or more methods of a class or interface may have the same
 name if they have a different number of type parameters, or
-they have formal parameters of different types (in every instantiation of the
-type parameters). 
+they have formal parameters of different constraint-erased types (in some instantiation of the
+generic parameters). 
+
+
 
 \begin{ex}
-The following overloading of \xcd`m` 
+The following overloading of \xcd`m` is unproblematic.
 %~~gen ^^^ Classes150
 % package Classes.Mful;
 %~~vis
@@ -761,33 +804,51 @@ class Mful{
 %~~siv
 %
 %~~neg
+\end{ex}
 
-But, given the following start of a class definition: 
+
+A class definition may include methods which are ambiguous in {\em some}
+generic instantiation. (It is a compile-time error if the methods are
+ambiguous in {\em every} generic instantiation, but excluding class
+definitions which are are ambiguous in {\em some} instantiation would exclude
+useful cases.)  It is a compile-time error to {\em use} an ambiguous method
+call. 
+
+\begin{ex}
+The following class definition is acceptable.  However, the marked method
+calls are ambiguous, and hence not acceptable.
 %~~gen ^^^ Classes4d5e
 % package Classes4d5e;
 %~~vis
 \begin{xten}
 class Two[T,U]{
   def m(x:T)=1;
+  def m(x:Int)=2;
+  def m[X](x:X)=3;
+  def m(x:U)=4;
+  static def example() {
+    val t12 : Two[Int, Any] = new Two[Int, Any]();
+    // ERROR: t12.m(2);
+    val t13  :Two[String, Any] = new Two[String, Any]();
+    t13.m("ferret");
+    val t14 : Two[Boolean, Boolean] = new Two[Boolean,Boolean]();
+    // ERROR: t14.m(true);
+  }
+}
 \end{xten}
 %~~siv
-% }
 %~~neg
-it would be illegal to add any of the following: 
-\begin{itemize}
-\item 
-\xcd`def m(x:Int)=2`
-because the generic instantiation \xcd`Two[Int,Any]` would have two 
-\xcd`m(Int)` methods, the \xcd`1`; and \xcd`2` definitions.
-\item \xcd`def m[X](x:X)=3`, because
-then \xcd`Two[Int,Any]` would allow \xcd`m(1)` to mean one of things: either
-the \xcd`1` definition above, or the \xcd`3` definition via generic type
-parameter inference (\Sref{TypeParamInfer}).  
-\item \xcd`def m(x:U)=4`, because the instantiation \xcd`Two[String,String]`
-      (or indeed any one in which \xcd`T` and \xcd`U` were the same) would be
-      ambiguous, as the \xcd`1` and \xcd`4` definitions would be identical.
-\end{itemize}
+\noindent
+The call \xcd`t12.m(2)` could refer to either the \xcd`1` or \xcd`2`
+definition of \xcd`m`, so it is not allowed.   
+The call \xcd`t14.m(true)` could refer to either the \xcd`1` or \xcd`4`
+definition, so it, too, is not allowed.
 
+The call \xcd`t13.m("ferret")` refers only to the \xcd`1` definition.  If
+the \xcd`1` definition were absent, type argument inference would make it
+refer to the \xcd`3` definition.  However, X10 will choose a fully-specified
+call if there is one, before trying type inference, so this call unambiguously
+refers to \xcd`1`.
 \end{ex}
 
 
@@ -798,6 +859,8 @@ is legal:
    def n(x:Int){x==1} = "one";
    def n(x:Int){x!=1} = "not";
 \end{xten}
+
+
 
 
 The definition of a method declaration \xcdmath"m$_1$" ``having the same signature
@@ -911,7 +974,7 @@ class C {
 }
 \end{xten}
 %~~siv
-%
+% class Hook{ def run() {C.example(); return true;}}
 %~~neg
 \end{ex}
 
@@ -941,7 +1004,7 @@ class C(x:Int) {
 }
 \end{xten}
 %~~siv
-%
+% class Hook{ def run() {C.example(); return true;}}
 %~~neg
 \noindent 
 
@@ -986,13 +1049,16 @@ whose parameter has a default value of 100:
 %~~vis
 \begin{xten}
 class Ctors {
-  val a : Int;
+  public val a : Int;
   def this(a:Int) { this.a = a; }
   def this()      { this(100);  }
 }
 \end{xten}
 %~~siv
-%
+%class Hook{ def run() {
+% val x = new Ctors(10); assert x.a == 10;
+% val y = new Ctors(); assert y.a == 100;
+% return true;}}
 %~~neg
 \end{ex}
 
