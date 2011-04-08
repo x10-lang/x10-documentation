@@ -566,7 +566,7 @@ expensive, but may be more convenient.
 
 \begin{ex}
 The following code fragment contains a line which will not compile 
-with \xcd`STATIC_CHECKS` on.  (X10's type system does not attempt to propagate 
+with \xcd`STATIC_CHECKS` on (assuming the guarded \xcd`example` method above).  (X10's type system does not attempt to propagate 
 information from \xcd`if`s.)  It will compile with \xcd`STATIC_CHECKS` off,
 but it may insert an extra \xcd`null`-test for \xcd`x`.  
 %~~gen ^^^ Classes90
@@ -579,7 +579,8 @@ but it may insert an extra \xcd`null`-test for \xcd`x`.
   def exam(e:Example, x:Object) {
     if (x != null) 
        e.example(x as Object{x != null});
-       // ERROR with STATIC_CALLS: if (x != null) e.example(x); 
+       // If STATIC_CHECKS is in force: 
+       // ERROR: if (x != null) e.example(x); 
   }
 \end{xten}
 %~~siv
@@ -695,14 +696,13 @@ static, or property) also named \xcd`p`.
 A nullary property method definition may omit 
 the \xcd"def" keyword.  That is, the following are equivalent:
 
-
-
 %~~gen ^^^ Classes110
 % package classes.waifsome1;
 % class Waif(rect:Boolean, onePlace:Place, zeroBased:Boolean) {
 %~~vis
 \begin{xten}
-property def rail(): Boolean = rect && onePlace == here && zeroBased;
+property def rail(): Boolean = 
+   rect && onePlace == here && zeroBased;
 \end{xten}
 %~~siv
 %}
@@ -713,7 +713,8 @@ and
 % class Waif(rect:Boolean, onePlace:Place, zeroBased:Boolean) {
 %~~vis
 \begin{xten}
-property rail(): Boolean = rect && onePlace == here && zeroBased;
+property rail(): Boolean = 
+   rect && onePlace == here && zeroBased;
 \end{xten}
 %~~siv
 %}
@@ -827,11 +828,11 @@ class Two[T,U]{
   def m[X](x:X)=3;
   def m(x:U)=4;
   static def example() {
-    val t12 : Two[Int, Any] = new Two[Int, Any]();
+    val t12 = new Two[Int, Any]();
     // ERROR: t12.m(2);
-    val t13  :Two[String, Any] = new Two[String, Any]();
+    val t13  = new Two[String, Any]();
     t13.m("ferret");
-    val t14 : Two[Boolean, Boolean] = new Two[Boolean,Boolean]();
+    val t14 = new Two[Boolean,Boolean]();
     // ERROR: t14.m(true);
   }
 }
@@ -871,7 +872,7 @@ they are contradictory and/or wrong.}
 
 
 The {\em constraint erasure} of a type \xcdmath"T", 
-\xcdmath"$ce$(T)"
+\xcdmath"$ce$(T)",
 is obtained by removing all the constraints outside of functions in \xcd`T`,
 specificially: 
 \begin{eqnarray}
@@ -1352,10 +1353,12 @@ Writing the same code with method calls, while possible, is far less elegant:
 \begin{xten}
   public static def uglymain() {
      val X = new UglyPoly([0,1]);
-     val t <: UglyPoly = X.mult(7).plus(
-                          X.mult(X).mult(X).mult(6));  
-     val u <: UglyPoly = const(3).plus(
-                           X.mult(5)).minus(X.mult(X).mult(7));
+     val t <: UglyPoly 
+           = X.mult(7).plus(
+               X.mult(X).mult(X).mult(6));  
+     val u <: UglyPoly 
+           = const(3).plus(
+               X.mult(5)).minus(X.mult(X).mult(7));
      val v <: UglyPoly = t.mult(u).minus(1);
      for( i in -3 .. 3) {
        x10.io.Console.OUT.println(
@@ -1398,18 +1401,22 @@ The user-definable operations are (in order of precedence): \\
 implicit type coercions\\
 postfix \xcd`()`\\
 \xcd`as T`\\
-unary \xcd`-`, unary \xcd`+`, \xcd`!`, \xcd`~`\\
+these unary operators:  \xcd`- + ! ~ | & / ^ * %`\\
 \xcd`..`\\
-\xcd`*     `  \xcd`/     `  \xcd`%` \\
+\xcd`*      /       %      **`\\
 \xcd`+` \xcd`     -` \\
-\xcd`<<    ` \xcd`>>    ` \xcd`>>>   ` \xcd`->` \\
-\xcd`>     ` \xcd`>=    ` \xcd`<     ` \xcd`<=     ` 
+\xcd`<<     >>      >>>    ->     <-     >-      -<      !`\\
+\xcd`>      ` \xcd`>=     ` \xcd`<     ` \xcd`<=     ` 
+\xcd`~      !~`\\
 \xcd`&` \\
 \xcd`^` \\
 \xcd`|` \\
 \xcd`&&` \\
 \xcd`||` \\
 \end{tabular}
+
+Several of these operators have no standard meaning on any library type, and
+are included purely for programmer convenience.  
 
 
 Many operators may be defined either in \xcd`static` or instance forms.  Those
@@ -1426,7 +1433,8 @@ like static methods.
 %~~vis
 \begin{xten}
 static class Trace(n:Int){
-  public static operator !(f:Trace) = new Trace(10 * f.n + 1);
+  public static operator !(f:Trace) 
+      = new Trace(10 * f.n + 1);
   public operator -this = new Trace (10 * this.n + 2);
 }
 static class Brace extends Trace{
@@ -1495,9 +1503,11 @@ appear in a use of the operator.  So,
 \begin{xten}
 class Poly {
   public val coeff : Array[Int](1);
-  public def this(coeff: Array[Int](1)) { this.coeff = coeff;}
+  public def this(coeff: Array[Int](1)) { 
+    this.coeff = coeff;}
   public def degree() = coeff.size-1;
-  public def  a(i:Int) = (i<0 || i>this.degree()) ? 0 : coeff(i);
+  public def  a(i:Int) 
+    f= (i<0 || i>this.degree()) ? 0 : coeff(i);
 
   public operator this + (p:Poly) =  new Poly(
      new Array[Int](
@@ -1539,7 +1549,8 @@ an overloaded method definition.
 %    public operator (n : Int) + this = new Poly([n as Int]) + this;
 %~~vis
 \begin{xten}
-   public operator this + (n : Int) = new Poly([n as Int]) + this;
+   public operator this + (n : Int) 
+          = new Poly([n as Int]) + this;
 \end{xten}
 %~~siv
 % 
@@ -1575,7 +1586,8 @@ allow it as a method on \xcd`Poly` as well.
 %      ));
 %~~vis
 \begin{xten}
-   public operator (n : Int) + this = new Poly([n as Int]) + this;
+   public operator (n : Int) + this 
+          = new Poly([n as Int]) + this;
 \end{xten}
 %~~siv
 % 
@@ -1805,7 +1817,8 @@ addition to add it to \xcd`x`.
 
 %~~vis
 \begin{xten}
-  public static operator (c : Int) : Poly = new Poly([c as Int]);
+  public static operator (c : Int) : Poly 
+     = new Poly([c as Int]);
 
   public static operator (p:Poly) + (q:Poly) = new Poly(
       new Array[Int](
@@ -1840,7 +1853,7 @@ is an operator call, to an operator defined with
 \xcd`public operator this(b:B, c:C, d:D)`.  It may be overloaded.
 For
 example, an ordered dictionary structure could allow subscripting by numbers
-with \xcd`public operator this(i:Int)`, and by string-valued keys with 
+with \xcd`public operator this(i:Int)`, and by strings with 
 \xcd`public operator this(s:String)`.  
 
 
@@ -1882,9 +1895,10 @@ class Oddvec {
   }
   public operator this(i:Int) = v(i);
   public operator this(i:Int, j:Int) = [v(i),v(j)];
-  public operator this(i:Int) = (newval:Int) = {v(i) = newval;}
-  public operator this(i:Int, j:Int) = (newval:Int) = {
-       v(i) = newval; v(j) = newval+1;} 
+  public operator this(i:Int) = (newval:Int) 
+      = {v(i) = newval;}
+  public operator this(i:Int, j:Int) = (newval:Int) 
+      = { v(i) = newval; v(j) = newval+1;} 
   public def example() {
     this(1) = 6;   assert this(1) == 6;
     this(1) += 7;  assert this(1) == 13;
@@ -1977,9 +1991,9 @@ interfaces \xcdmath"I$_1$, $\dots$, I$_k$" and defines properties
 specifies a guard \xcd"c" is given by:
 
 \begin{xtenmath}
-$\mathit{inv}$(I$_1$) && $\dots$ && $\mathit{inv}$(I$_k$) 
-    && self.x$_1$ instanceof P$_1$ &&  $\dots$ &&  self.x$_n$ instanceof P$_n$ 
-    && c  
+$\mathit{inv}$(I$_1$) && $\dots$ && $\mathit{inv}$(I$_k$) &&
+self.x$_1$ instanceof P$_1$ &&  $\dots$ &&  self.x$_n$ instanceof P$_n$ 
+&& c  
 \end{xtenmath}
 
 Similarly the type invariant associated with any class \xcd"C" that
@@ -1990,9 +2004,9 @@ specifies a guard \xcd"c" is
 given by the same thing with the invariant of the superclass \xcd`D` conjoined:
 \begin{xtenmath}
 $\mathit{inv}$(I$_1$) && $\dots$ && $\mathit{inv}$(I$_k$) 
-    && self.x$_1$ instanceof P$_1$ &&  $\dots$ &&  self.x$_n$ instanceof P$_n$ 
-    && c  
-    && $\mathit{inv}$(D)
+&& self.x$_1$ instanceof P$_1$ &&  $\dots$ &&  self.x$_n$ instanceof P$_n$ 
+&& c  
+&& $\mathit{inv}$(D)
 \end{xtenmath}
 
 

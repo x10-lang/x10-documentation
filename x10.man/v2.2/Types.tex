@@ -192,10 +192,10 @@ class LinkedList[X] {
 %
 %~~neg
 It doesn't
-matter what type the cell is, but it has to have {\em some} type.
-\xcd`LinkedList[Int]` is a linked list of integers;
-\xcd`LinkedList[LinkedList[String]]` a list of lists of strings.
-Note that \xcd`LinkedList` is {\em not} a type -- it is missing a type parameter.
+matter what type the cell's element is, but it has to have {\em some} type.
+\xcd`LinkedList[Int]` is a linked list of integers.
+\xcd`LinkedList[LinkedList[Byte]]` is a list of lists of bytes.
+Note that \xcd`LinkedList` is {\em not} a usable type -- it is missing a type parameter.
 
 
 
@@ -215,10 +215,10 @@ An example of such a function is \xcd`(x:Int) => x+1`.
 
 The names of the formal parameters are bound in the type, and may be changed
 consistently in the usual way without modifying the type.  
-For example, 
+For example, \\
 \xcd`(a:Int, b:Int{self!=a})=>Int{self!=a, self!=b}` 
-and 
-\xcd`(c:Int, d:Int{self!=c})=>Int{self!=c, self!=d}` 
+and \\
+\xcd`(c:Int, d:Int{self!=c})=>Int{self!=c, self!=d}` \\
 are equivalent types.  
 
 
@@ -257,8 +257,9 @@ class Position {
 %
 %~~neg
 \end{ex}
-Class instances, also called objects, are created by constructor calls: 
-\xcd`new Position()`. Class
+Class instances, also called objects, are created by constructor calls, 
+such as \xcd`new Position()`
+Class
 instances have fields and methods, type members, and value properties bound at
 construction time. In addition, classes have static members: static \xcd`val` fields,
 methods, type definitions, and member classes and member interfaces.
@@ -817,7 +818,7 @@ but it is often convenient to give a shorter name:
 % def example() {
 %~~vis
 \begin{xten}
-type Vec(n:Int) = Array[Int]{self.rank==1 && self.size == n}; 
+type Vec(n:Int) = Array[Int]{self.rank==1, self.size == n}; 
 var example : Vec(78); 
 \end{xten}
 %~~siv
@@ -918,7 +919,8 @@ available.)  The values of type \xcd`T{e}` are the values of \xcd`T` for which
       is a special variable available only in constraints; it refers to the
       datum being constrained, and its type is the type to which the
       constraint is attached.
-\item If \xcd`Matrix` has properties \xcd`rows` and \xcd`cols`, 
+\item Suppose that \xcd`Matrix` is a matrix class with  properties \xcd`rows`
+      and \xcd`cols`.  
 %~~type~~`~~`~~ ~~class Matrix(rows:Int,cols:Int){} ^^^ Types300
       \xcd`Matrix{self.rows == self.cols}` is the type of square matrices.
 \item One way to say that \xcd`a` has the same number of columns that \xcd`b`
@@ -1086,9 +1088,16 @@ for \xcd`d`. For instance the constraint
 \xcd`x==y && y==z && z !=a` entails \xcd`x != a`.
 
 The constraint solver considers the assignment \xcd`a` to \xcd`null`
-to  satisfy any constraint of the form \xcd`a.f==t`. Thus, for
-instance, the assignment \xcd`var x:Tree{self.home==p}=null` does not
-produce an error, since \xcd`self==null` is considered a solution for \xcd`self.home==p`.
+to satisfy any constraint of the form \xcd`a.f==t`. 
+Thus, the declaration 
+\xcd`var x:Tree{self.r==p}=null` does not
+produce an error, since \xcd`self==null` satisfies the constraint
+\xcd`self.r==p`.  
+(This only applies in constraints, not in expression evaluation.  
+\xcd`if(a.f==t)...` will throw an exception if \xcd`a==null`.)
+If \xcd`null` is not an acceptable value for some class \xcd`Tree`, 
+add \xcd`self!=null` as a constraint: 
+\xcd`Tree{self!=null}` is the class of non-\xcd`null` \xcd`Tree`s.
 
 To ensure that type-checking is decidable, we require that property graphs be
 acyclic.  The property graph, at an instant in an X10 execution, is the graph
@@ -1271,9 +1280,16 @@ static def example(n:Int) {
 However, in cases where there is no object of type \xcd`T` around, there's
 nothing that can be checked. For example, X10 cannot tell -- and in fact no
 computer program can tell --  whether an
-instance of a function type \xcd`(Int)=>Int` (unary functions returning
+instance of a function type 
+\begin{xtenmath}
+(Int)=>Int
+\end{xtenmath}
+(unary functions returning
 integers) is actually an instance of a more specific type
-\xcd`(Int)=>Int{self!=0}` (unary functions returning non-zero integers).
+\begin{xtenmath}
+(Int)=>Int{self!=0}
+\end{xtenmath}
+(unary functions returning non-zero integers).
 
 In other cases, there might or might not be an object of type \xcd`T`, and X10
 cannot tell until runtime.  Consider an array \xcd`a:Array[T]`.  If \xcd`a` is
@@ -1330,13 +1346,23 @@ Example of entailment and subtyping involving constraints.
       \xcd`Int{self ==3}` is $3$.  All integers but $14$ are members of
       \xcd`Int{self != 14}`, and in particular $3$ is.  
 \item Suppose we have classes \xcd`Child <: Person`, and \xcd`Person` has a
-      long \xcd`ssn` property.  If \xcd`rhys : Child{ssn == 123456789}`, then
-      \xcd`rhys` is also a \xcd`Person` and still has \xcd`ssn==123456789`, so 
+      \xcd`ssn:Long` property.  If \xcd`rhys : Child{ssn == 123456789}`, then
+      \xcd`rhys` is also a \xcd`Person`.  
+      \xcd`rhys`'s \xcd`ssn` field is the same, \xcd`123456789`, whether 
+      \xcd`rhys` is regarded as a \xcd`Child` or a \xcd`Person`.  
+      Thus, 
       \xcd`rhys : Person{ssn==123456789}` as well.  
-      So, \xcd`Child{ssn == 123456789} <: Person{ssn == 123456789}`.
+      So, 
+\begin{xtenmath}
+Child{ssn == 123456789} <: Person{ssn == 123456789}.
+\end{xtenmath}
 \item Furthermore, since \xcd`123456789 != 555555555`, 
+      is is clear that 
       \xcd`rhys : Person{ssn != 555555555}`.  
-      So, \xcd`Child{ssn == 123456789} <: Person{ssn != 555555555}`.  
+      So, 
+\begin{xtenmath}
+Child{ssn == 123456789} <: Person{ssn != 555555555}.  
+\end{xtenmath}
 \item \xcd`T{e} <: T` for any type \xcd`T`.  That is, if you have a value
       \xcd`v` of some base type \xcd`T` which satisfied \xcd`e`, then \xcd`v`
       is of that base type \xcd`T` (with the constraint ignored).
@@ -1365,7 +1391,8 @@ which might have the same coordinates.
 %~~vis
 \begin{xten}
 struct Position(x: Int, y: Int) {}
-struct Line(start: Position, end: Position){start != end} {}
+struct Line(start: Position, end: Position){start != end}
+  {}
 \end{xten}
 
 %~~siv
@@ -1596,10 +1623,15 @@ types satisfying \xcd"Si <: Ti" and \xcd"S <: T". Then
 \xcd"(x1:S1,...,xn:Sn){c}=>T".
 
 A class or struct definition may use a function type 
-\xcd"F = (x1:T1,...,xn:Tn){c}=>T" in its 
+\begin{xtenmath}
+F = (x1:T1,...,xn:Tn){c}=>T
+\end{xtenmath}
+in its 
 implements clause; 
-this is equivalent to implementing an interface requiring the single method
-\xcd"def apply(x1:T1,...,xn:Tn){c}:T". 
+this is equivalent to implementing an interface requiring the single operator
+\begin{xtenmath}
+public operator this(x1:T1,...,xn:Tn){c}:T
+\end{xtenmath}
 Similarly, an interface
 definition may specify a function type \xcd"F" in its \xcd"extends" clause.
 Values of a class or struct implementing \xcd`F` 
@@ -1720,7 +1752,8 @@ clauses.
 Suppose that \xcd`C` is declared by one of the
 forms: 
 \begin{enumerate}
-\item \xcdmath"class C[$\vec{X}$]{c} extends D[$\vec{Y}$]{d} implements I$_1[\vec{Y_1}]${i$_1$},...,I$_n[\vec{Y_n}]${i$_n$}{"
+\item \xcdmath"class C[$\vec{X}$]{c} extends D[$\vec{Y}$]{d}"\\
+\xcdmath"implements I$_1[\vec{Y_1}]${i$_1$},...,I$_n[\vec{Y_n}]${i$_n$}{"
 \item \xcdmath"interface C[$\vec{X}$]{c} extends I$_1[\vec{Y_1}]${i$_1$},...,I$_n[\vec{Y_n}]${i$_n$}{"
 \item \xcdmath"struct C[$\vec{X}$]{c} implements I$_1[\vec{Y_1}]${i$_1$},...,I$_n[\vec{Y_n}]${i$_n$}{"
 \end{enumerate}
@@ -1790,7 +1823,7 @@ values of two or more different types.  This arises when X10 is trying to find
 a good type to describe: 
 \begin{itemize}
 %~~exp~~`~~`~~test:Boolean ~~ ^^^ Types410
-\item Conditional expressions, like \xcd`test ? 0 : "non-zero"` or even 
+\item Conditional expressions, like \xcd`test ? 0 : "non-zero"` or even \\
 %~~exp~~`~~`~~test:Boolean ~~ ^^^ Types420
       \xcd`test ? 0 : 1`;
 %~~exp~~`~~`~~ ~~ ^^^ Types430
@@ -2003,7 +2036,7 @@ class Triangle extends Shape {
 }
 \end{xten}
 \noindent
-the X10 compiler would reject this program for attempting to override
+the compiler would reject this program for attempting to override
 \xcd`isTriangle()` by a method with the wrong type, \viz,
 \xcd`Boolean{self==true}`.  In this case, supply the type that is actually
 intended for \xcd`isTriangle`, such as 
@@ -2249,7 +2282,8 @@ class Example {
      new Cl[X1, X2, Point]();
   static def example() {
     val a = new Cl[Int, Boolean, String]();
-    val b : Cl[Boolean, String, Point] = me[Boolean, String](a);
+    val b : Cl[Boolean, String, Point] 
+          = me[Boolean, String](a);
   }
 }
 \end{xten}

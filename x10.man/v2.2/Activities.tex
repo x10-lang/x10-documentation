@@ -18,7 +18,7 @@ For example,
 sets \xcd`x` to zero.  However, activities determine the places at which they
 may be blocked and resumed, by \xcd`when` and similar constructs.  There are
 no means by which one activity can arbitrarily interrupt, block, or resume
-another, no method  \xcd`activity.interrupt()`.
+another.
 
 
 \index{activity!running}
@@ -196,9 +196,11 @@ uncaught exceptions generated during the execution of \xcd"S".
 
 Note that repeatedly \xcd"finish"ing a statement has little effect after
 the first \xcd"finish": \xcd"finish finish S" is indistinguishable
-from \xcd"finish S" if \xcd`S` throws no exceptions.  (If \xcd`S` throws
-exceptions, \xcd`finish S` wraps them in one layer of 
-\xcd`MultipleExceptions` and \xcd`finish finish S` in two layers.)
+from \xcd"finish S" if \xcd`S` terminates normally.  If \xcd`S` throws
+exceptions, \xcd`finish S` collects the exceptions and wraps them in a 
+\xcd`MultipleExceptions`, whereas \xcd`finish finish S` does the same, and
+then puts that \xcd`MultipleExceptions` inside of a second
+\xcd`MultipleExceptions`. 
 
 
 \section{Initial activity}\label{initial-computation}
@@ -206,7 +208,7 @@ exceptions, \xcd`finish S` wraps them in one layer of
 \index{activity!initial}
 
 An \Xten{} computation is initiated from the command line on the
-presentation of a class or struct name \xcd"C". The class or struct must have a
+presentation of a class or struct name \xcd"C". The container must have a
 \xcd"public static def main(a: Array[String](1)):void" method, 
 or a \xcd"public static def main(a: Array[String]):void" method, 
 otherwise an exception is thrown
@@ -260,10 +262,10 @@ However, this often results in excessive communication and parallelism. Instead 
 programmer may want to write: 
 %~~gen ^^^ Activities80
 % package Activities.Activities.Activities;
+% KNOWNFAIL-at
 % class EquivCode {
 % static def S(pt:Point) {}
 % static def example(D:Dist) {
-% KNOWNFAIL-at
 %~~vis
 \begin{xten}
 for (place in D.places()) async at (place; p, D, *) {

@@ -218,8 +218,10 @@ compiler will print a warning if it is left out.
 \Xcd{cajoled()} is only called after all fields are set, so it
 can read anything; its annotation, too, is not required.   \Xcd{SeeAlso} is able to override \Xcd{aplomb()}, because
 \Xcd{aplomb()} is \xcd`@NonEscaping("a")`; it cannot override the final method
-\Xcd{boric()} or the private one \Xcd{cajoled()}.  Even for overriding
-\Xcd{aplomb()}, it is crucial that \Xcd{SeeAlso.aplomb()} be
+\Xcd{boric()} or the private one \Xcd{cajoled()}.  
+The method \Xcd{aplomb()} can be overridden, but it is crucial that the 
+subclass's version, 
+\Xcd{SeeAlso.aplomb()}, be 
 declared \xcd`@NonEscaping("a")`, just like \Xcd{C2.aplomb()}.
 %~~gen ^^^ ObjectInitialization10
 %package ObjInit.C2;
@@ -245,7 +247,8 @@ final class C2 {
   }
   @NonEscaping final def boric() {
     y = b;
-    this.aplomb(); // allowed; a is definitely set before boric is called
+    this.aplomb(); // allowed; 
+       // a is definitely set before boric is called
     // z = c; // not allowed; c is not definitely written
   }
   @NonEscaping private def cajoled() {

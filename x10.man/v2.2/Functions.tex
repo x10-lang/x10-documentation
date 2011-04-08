@@ -392,7 +392,8 @@ class Lambda {
       var e : Int = 0;
       val f : Int = 0;
       val closure = (var i: Int, val j: Int) => {
-    	  return a + b + d + f + i + j + this.a + Lambda.this.a;
+    	  return a + b + d + f + i 
+               + j + this.a + Lambda.this.a;
           // c and e are not usable here
       };
       return closure;
@@ -594,8 +595,8 @@ be a function which returns {$n$} on its {$n^{th}$} invocation. However,
 
 
 Every function type implements all the methods of \Xcd{Any}.
-\xcd`f.equals(g)` is equivalent to \xcd`f==g`.  \xcd`f.hashCode()`, 
-\xcd`f.toString()`, and \xcd`f.typeName()` are implementation-dependent, but
+\xcd`f.equals(g)` is equivalent to \xcd`f==g`.  The behavior of   \xcd`hashCode`, 
+\xcd`toString`, and \xcd`typeName` is implementation-dependent, but 
 respect \xcd`equals` and the basic contracts of \xcd`Any`. 
 
 \index{function!equals}

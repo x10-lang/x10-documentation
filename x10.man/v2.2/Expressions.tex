@@ -321,7 +321,7 @@ public operator this(f:F, g:G) = "value";
 Method selection rules are given in \Sref{sect:MethodResolution}.
 
 Guard satisfaction depends on the \xcd`STATIC_CHECKS` compiler flag. 
-With \xcd`STATIC_CHECKS` on, 
+With the flag on,
 it is a static error if a method's \grammarrule{Guard} is not statically
 satisfied by the 
 caller.  
@@ -335,7 +335,7 @@ X10's strictness of checking this is under control of the \xcd`STATIC_CHECKS`
 compiler option (\Sref{sect:Callstyle}).  
 
 With \xcd`STATIC_CHECKS` turned on,  the \xcd`example` method will not
-compile.  \xcd`this.div(100)`  is not allowed; there is no
+compile.  The call \xcd`this.div(100)`  is not allowed; there is no
 guarantee that \xcd`denom != 0`.  Casting \xcd`this` to a type 
 whose constraint implies \xcd`denom != 0` permits the method call.
 
@@ -455,7 +455,13 @@ For a binary operator $\diamond$, the $\diamond$-assignment expression
 \xcdmath"x $\diamond$= e" combines the current value of \xcd`x` with the value
 of \xcd`e` by {$\diamond$}, and stores the result back into \xcd`x`.  
 \xcd`i += 2`, for example, adds 2 to \xcd`i`. For variables and fields, 
-\xcdmath"x $\diamond$= e" behaves just like \xcdmath"x = x $\diamond$ e". 
+\begin{xtenmath}
+x $\diamond$= e 
+\end{xtenmath}
+behaves just like 
+\begin{xtenmath}
+x = x $\diamond$ e.
+\end{xtenmath}
 
 The subscripting forms of \xcdmath"a(i) $\diamond$= b" are slightly subtle.
 Subexpressions of \xcd`a` and \xcd`i` are only evaluated once.  However,
@@ -1001,13 +1007,14 @@ to the same type: \xcd`100 as Long == 100L`.
 compared for equality.  
 
 \item For objects, the story is different. Unconstrained object types can
-      always be compared for equality. Given objects \xcd`a:Person` and
+      always be compared for equality. Given objects of unrelated classes
+      \xcd`a:Person` and 
       \xcd`b:Theory`, \xcd`a==b` could be true if \xcd`a==null` and
       \xcd`b==null`. 
 
 \item Constrained object types may or may not be comparable.  For example,  
       if \xcd`Person` and \xcd`Theory` are both direct subclasses of
-      \xcd`Object`, and \xcd`a:Person{self!=null}` and \xcd`b:Theory`, then
+      \xcd`Object`, and \xcd`a:Person` and \xcd`b:Theory{self!=null}`, then
       \xcd`a==b` is not allowed, since the two could not possibly be equal.
 
 \item Explicit casts erase type information.  If you wanted
@@ -1282,7 +1289,7 @@ conversion.
 %~~vis
 \begin{xten}
 class Thing {
-  public static operator (x:Thing) as Object = "very different";
+  public static operator (x:Thing) as Object = "different";
   public static def example() {
     val t = new Thing();
     val o = t as Object;
@@ -1317,7 +1324,6 @@ to determine whether an object is an instance of the given type:
                     \| RelationalExp \xcd"<=" RangeExp \\
                     \| RelationalExp \xcd">=" RangeExp \\
                     \| RelationalExp \xcd"instanceof" Type \\
-                    \| RelationalExp \xcd"in" ShiftExp \\
 \end{bbgrammar}
 %##)
 
@@ -1485,17 +1491,18 @@ functions that take \xcd`Array[Int](1)`s, such as conversions to \xcd`Point`.
 These functions do {\em not} take
 \xcd`Array[Int{self==0}]`'s.
 
-(Suppose that the function took \xcd`a:Array[Int](1)` and did 
-the operation \xcd`a(i)=100`.   This operation is perfectly fine for
+(Suppose that the function took \xcd`a:Array[Int](1)` and 
+performed 
+the operation \xcd`a(i)=100`.   This operation is fine for
 an \xcd`Array[Int](1)`, which is all the compiler knows about \xcd`a`.  
-However, it is invalid for an \xcd`Array[Int{self==0}](1)`, because it assigns
+However, it is wrong for an \xcd`Array[Int{self==0}](1)`, because it assigns
 a non-zero value to an element of the array, violating the type constraint
 which says that all the elements are zero.  So, \xcd`Array[Int{self==0}](1)`
 is not and must not be a subtype of \xcd`Array[Int](1)` --- the two types are simply unrelated.
 %~~type~~`~~`~~ ~~ ^^^ Expressions150
-Since there are far more uses for \xcd`Array[Int](1)` than
+\xcd`Array[Int](1)` is far more useful than 
 %~~type~~`~~`~~ ~~ ^^^ Expressions160
-\xcd`Array[Int{self==0}](1)`, the compiler produces the former.)
+\xcd`Array[Int{self==0}](1)`, and so the compiler produces the former.)
 \end{ex}
 
 
@@ -1503,7 +1510,7 @@ Since there are far more uses for \xcd`Array[Int](1)` than
 \begin{ex}
 Occasionally one does actually need \xcd`Array[Int{self==0}](1)`, 
 or, say, \xcd`Array[Eel{self != null}](1)`, an array of non-null \xcd`Eel`s.  
-For these cases, cast one of the elements of the array to the desired type,
+For these cases, cast one or more of the elements of the array to the desired type,
 and the array constructor will do the right thing.  
 %~~gen ^^^ Expressions170
 %package Expressions.ArrayCtor.Details;
@@ -1517,7 +1524,8 @@ val zero <: Array[Int{self == 0}](1)
 val non1 <: Array[Int{self != 1}](1) 
           = [0 as Int{self != 1}];
 val eels <: Array[Eel{self != null}](1) 
-          = [ new Eel() as Eel{self != null}, new Eel(), new Eel()];
+          = [new Eel() as Eel{self != null}, 
+             new Eel(), new Eel()];
 \end{xten}
 %~~siv
 %}}
@@ -1531,7 +1539,13 @@ val eels <: Array[Eel{self != null}](1)
 \index{conversion}\index{coercion}
 \index{type!conversion}\index{type!coercion}
 
-\XtenCurrVer{} supports the following coercions and conversions.
+
+A {\em coercion} does not change object identity; a coerced object may
+be explicitly coerced back to its original type through a cast. A {\em
+  conversion} may change object identity if the type being converted
+to is not the same as the type converted from. \Xten{} permits both 
+user-defined coercions and conversions (\Sref{sec:user-defined-conversions}).
+
 
 \subsection{Coercions}
 
@@ -1542,12 +1556,6 @@ val eels <: Array[Eel{self != null}](1)
 \end{bbgrammar}
 %##)
 
-
-A {\em coercion} does not change object identity; a coerced object may
-be explicitly coerced back to its original type through a cast. A {\em
-  conversion} may change object identity if the type being converted
-to is not the same as the type converted from. \Xten{} permits
-user-defined conversions (\Sref{sec:user-defined-conversions}).
 
 \paragraph{Subsumption coercion.}
 A value of a subtype may be implicitly coerced to any supertype.  
@@ -1622,9 +1630,12 @@ class HappyChild extends Child implements Happy {}
 class Example {
   static def example() {
     var p : Person = new HappyChild();
-    val cl : Childlike = p as Childlike; // class -> interface
-    val hc : Happy = cl as Happy; //        interface -> interface
-    val ch : Child = hc as Child; //        interface -> class
+    // class -> interface
+    val cl : Childlike = p as Childlike; 
+    // interface -> interface
+    val hc : Happy = cl as Happy; 
+    // interface -> class
+    val ch : Child = hc as Child; 
     var r : Cyborg = Cyborg();
     val rl : Personable = r as Personable; 
     // ERROR: val no = r as Childlike;
@@ -1650,7 +1661,7 @@ satisfied.
 \index{cast}
 \index{\Xcd{as}}
 
-\limitation{It is currently a static error, rather than the specified
+\limitation{It is currently a static error, rather than a 
 \xcd`ClassCastException`, when the cast is statically determinable to be
 impossible.}
 
@@ -1680,7 +1691,7 @@ approximation is good enough.
       instead: \xcd`1e110 as Int` is 
       \xcd`Int.MAX_VALUE`, \viz{} \xcd`2147483647`. 
 
-\item Casting a \xcd`Double` to a \xcd`Float` normally truncates binary digits: 
+\item Casting a \xcd`Double` to a \xcd`Float` normally truncates binary digits: \\
 %~~exp~~`~~`~~ ~~ ^^^ Expressions220
       \xcd`0.12345678901234567890 as Float` is approximately \xcd`0.12345679f`.  This can
       turn a nonzero \xcd`Double` into \xcd`0.0f`, the zero of type
@@ -1706,7 +1717,7 @@ approximation is good enough.
 
 \item Casting an unsigned integer type to a signed integer type of the same
       size (\eg, \xcd`UInt` to \xcd`Int`) preserves 2's-complement bit pattern
-      (\eg,  
+      (\eg,  \\
       \xcd`UInt.MAX_VALUE as Int == -1`.   Casting an unsigned integer type to
       a signed integer type of a different size is equivalent to first casting
       to an unsigned integer type of the target size, and then casting to a
@@ -1811,7 +1822,8 @@ is more information available.
 The code for \Xcd{x10.lang.Point} contains a conversion from 
 one-dimensional \xcd`Array`s of integers to \xcd`Point`s of the same length: 
 \begin{xten}
-  public operator (r: Array[Int](1)): Point(r.length) = make(r);
+  public operator (r: Array[Int](1)): Point(r.length) 
+         = make(r);
 \end{xten}
 This conversion is used whenever an array of integers appears in a 
 context that requires a \xcd`Point`, such as subscripting. Note 

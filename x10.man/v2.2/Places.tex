@@ -17,9 +17,9 @@ the program is started, and remains fixed through the run of the program. See
 the {\tt README} documentation on how to set command line and configuration
 options to set the number of places.
 
-Places are first-class values in X10, as instances of the built-in struct,
+Places are first-class values in X10, as instances 
 \xcd"x10.lang.Place".   \xcd`Place` provides a number of useful ways to
-query places, such as \xcd`Place.places`, a \xcd`Sequence[Place]` of 
+query places, such as \xcd`Place.places`, which is a  \xcd`Sequence[Place]` of 
 the places
 available to the current run of the program.
 
@@ -545,8 +545,7 @@ The values of the original-expressions  specified by \xcd`F` in
 \xcd`at (p;F)S` are copied to \xcd`p`, as follows.
 
 First, the original-expressions are evaluated to give a vector of X10 values.
-Consider the graph of all values reachable from these values (without
-following 
+Consider the graph of all values reachable from these values (except for 
 \xcd`transient` fields 
 (\Sref{sect:transient}, \xcd`GlobalRef`s (\Sref{GlobalRef}); also custom
 serialization (\Sref{sect:ser+deser} may alter this behavior)). 
@@ -576,7 +575,8 @@ the struct \xcd`x10.lang.GlobalRef[T]` is often useful.
 The X10 runtime provides a default mechanism for
 serializing/deserializing an object graph with a given set of roots.
 This mechanism may be overridden by the programmer on a per class or
-struct basiss as described in \xcd`x10.io.CustomSerialization`. 
+struct basis as described in the API documentation for
+\xcd`x10.io.CustomSerialization`.  
 The default mechanism performs a
 deep copy of the object graph (that is, it copies the object or struct
 and, recursively, the values contained in its fields), but does not
@@ -906,12 +906,14 @@ static def example(a: Int, mathProc: Place) {
 %~~neg
 \end{ex}
 
-The abbreviated form \xcd`athome S` is equivalent to \xcd`athome(V;F)S`,
+The abbreviated forms 
+\xcd`athome (*) S` and 
+ \xcd`athome S` are equivalent to \xcd`athome(V;F)S`,
 where: 
 \begin{itemize}
 \item \xcd`V` is the list of all variables appearing on the left-hand side of
       an assignment or update statement in \xcd`S`, excluding those which
-      appear inside an \xcd`at` or \xcd`athome` statement in \xcd`S`;
+      appear inside the body of an \xcd`at` or \xcd`athome` statement in \xcd`S`;
 \item \xcd`F` is the same as for \xcd`at(p)S` (\Sref{sect:copy-spec})
 \end{itemize}
 
@@ -920,7 +922,9 @@ where:
 
 Much as the blanket \xcd`at` construct \xcd`at(p)S` is convenient for
 executing a small code body at another place, the blanket \xcd`athome`
-construct \xcd`athome S` is convenient for returning a result or two.   The
+construct \xcd`athome(*) S` 
+(which may be written as simply \xcd`athome S`)
+is convenient for returning a result or two.   The
 preceding example could have been written using blanket statements.
 
 %~~gen ^^^ Places5f9gblanket

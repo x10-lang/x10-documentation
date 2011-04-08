@@ -281,8 +281,9 @@ f &=& b x
 &=  |=  ^=
 <<= >>= >>>=
 +=  -=  *=  /=  %=
-=   ?   :  =>  ->
+=   ?   :   =>  ->
 <:  :>  @   ..
+**  !~  -<  >-
 \end{xten}
 
 The precedence of the operators is as follows.  Earlier rows of the
@@ -294,15 +295,16 @@ and \xcd`-1 as Byte` parses as \xcd`-(1 as Byte)`.
 postfix \xcd`()`\\
 \xcd`as T`, postfix \xcd`++`, postfix \xcd`--`\\
 unary \xcd`-`, unary \xcd`+`, prefix \xcd`++`, prefix \xcd`--`\\
-\xcd`!`, \xcd`~`\\
-
+unary operators \xcd`!`, \xcd`~`, \xcd`^`, \xcd`*`, \xcd`|`,
+\xcd`&`, \xcd`/`, and \xcd`%`
+\\
 \xcd`..`\\
-\xcd`*     `  \xcd`/     `  \xcd`%` \\
+\xcd`*     `  \xcd`/     `  \xcd`%   ` \xcd`**` \\
 \xcd`+` \xcd`     -` \\
-\xcd`<<    ` \xcd`>>    ` \xcd`>>>   ` \xcd`->` \\
-\xcd`>     ` \xcd`>=    ` \xcd`<     ` \xcd`<=     ` 
+\xcd`<<    ` \xcd`>>    ` \xcd`>>>   ` \xcd`->   >-    -<     <-     !` \\
+\xcd`>     ` \xcd`>=    ` \xcd`<     ` \xcd`<=  ` 
 \xcd`instanceof` \\
-\xcd`==    `   \xcd`!=` \\
+\xcd`==    `  \xcd`!=    `  \xcd`!     ` \xcd`!~   `   \\
 
 \xcd`&` \\
 \xcd`^` \\

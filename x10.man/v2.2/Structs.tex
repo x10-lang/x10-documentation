@@ -249,9 +249,9 @@ code is correctly written for both cases.
 \index{isObject}
 \index{isStruct}
 \index{isFunction}
-It is occasionally necessary to tell what kind of value \xcd`x` is: object,
-struct, or function.  Three static methods on \xcd`x10.lang.System` provide
-this test: 
+Three static methods on \xcd`x10.lang.System` 
+allow you to tell what kind of value \xcd`x` is: object,
+struct, or function.  
 \xcd`System.isObject(x)` returns true if \xcd`x` is a value of \xcd`Object`
 type, including \xcd`null`; \xcd`System.isStruct(x)` returns true if \xcd`x`
 is a \xcd`struct`; \xcd`System.isFunction(x)` returns true if \xcd`x` is a
@@ -294,7 +294,8 @@ struct Pair[T,U] {
         this.first = first;
         this.second = second;
     }
-    public def toString() = "(" + first + ", " + second + ")";
+    public def toString() 
+        = "(" + first + ", " + second + ")";
 }
 class Example {
   static def divmod(var a:UInt, b:UInt): Pair[UInt, UInt] {

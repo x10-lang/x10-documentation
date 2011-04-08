@@ -222,8 +222,10 @@ computation.
 %~~vis
 \begin{xten}
 class StmtEx {
-  def this() { x10.io.Console.OUT.println("New StmtEx made");  }
-  static def call() { x10.io.Console.OUT.println("call!");  }
+  def this() { 
+     x10.io.Console.OUT.println("New StmtEx made");  }
+  static def call() { 
+     x10.io.Console.OUT.println("call!");}
   def example() {
      var a : Int = 0;
      a = 1; // assignment
@@ -745,7 +747,8 @@ def method(x:Int) {
 
 The statement \xcd`assert E` checks that the Boolean expression \xcd`E`
 evaluates to true, and, if not, throws an \xcd`x10.lang.Error`  exception.  
-The annotated assertion \xcd`assert E : F;` checks \xcd`E`, and, if it is
+The annotated assertion statement \xcd`assert E : F;` checks \xcd`E`, and, if
+it is 
 false, throws an \xcd`x10.lang.Error` exception with \xcd`F`'s value attached
 to it. 
 
@@ -759,7 +762,7 @@ The following code compiles properly.
 class Example {
   public static def main(argv:Array[String](1)) {
     val a = 1;
-    assert a != 1 : "Changed my mind about a";
+    assert a != 1 : "Changed my mind about a.";
   }
 }
 \end{xten}
@@ -769,7 +772,7 @@ class Example {
 However, when run, it 
 prints a stack trace starting with 
 \begin{xten}
-x10.lang.Error: Changed my mind about a
+x10.lang.Error: Changed my mind about a.
 \end{xten}
 \end{ex}
 

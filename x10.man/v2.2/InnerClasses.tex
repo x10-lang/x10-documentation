@@ -307,7 +307,8 @@ rather roundabout manner.
 \begin{xten}
 abstract class Choice(name: String) {
   def this(name:String) {property(name);}
-  def choose(b:Boolean) { if (b) this.yes(); else this.no(); }
+  def choose(b:Boolean) { 
+     if (b) this.yes(); else this.no(); }
   abstract def yes():void;
   abstract def no():void;
 }
@@ -341,9 +342,12 @@ features are unavailable because they don't make sense.
       parent class \xcd`C`, which will be called to initialize the
       newly-created object of the anonymous class.
 
-\item Certain modifiers don't make sense for anonymous classes: \xcd`public`,
-      \xcd`private`, and \xcd`protected.`  Anonymous classes, being anonymous,
-      cannot be referenced at all.
+\item The \xcd`public`,
+      \xcd`private`, and \xcd`protected`  modifiers don't make sense for
+      anonymous classes:  
+      Anonymous classes, being anonymous,
+      cannot be referenced at all, so references to them can't be public,
+      private, or protected.
 
 \item Anonymous classes cannot be \xcd`abstract`.  Since they only exist in
       combination with a constructor call, they must be constructable.  The
