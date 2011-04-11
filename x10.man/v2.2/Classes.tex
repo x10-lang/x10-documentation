@@ -1507,8 +1507,7 @@ class Poly {
     this.coeff = coeff;}
   public def degree() = coeff.size-1;
   public def  a(i:Int) 
-    f= (i<0 || i>this.degree()) ? 0 : coeff(i);
-
+    = (i<0 || i>this.degree()) ? 0 : coeff(i);
   public operator this + (p:Poly) =  new Poly(
      new Array[Int](
         Math.max(this.coeff.size, p.coeff.size),

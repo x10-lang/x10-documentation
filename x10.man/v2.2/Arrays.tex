@@ -6,8 +6,9 @@ spreads the data across multiple \xcd`Place`s, {\em via} \Xcd{Dist}s.
 We refer to arrays either sort as ``general arrays''.  
 
 
-This chapter provides an overview of the \Xcd{x10.array} classes \Xcd{Array}
-and \Xcd{DistArray}, and their supporting classes \Xcd{Point}, 
+This chapter provides an overview of local and distributed arrays, 
+(the \Xcd{x10.array} classes \Xcd{Array}
+and \Xcd{DistArray}), and their supporting classes \Xcd{Point}, 
 \Xcd{IntRange}, 
 \Xcd{Region}, 
 and \Xcd{Dist}.  
@@ -100,7 +101,7 @@ all the points in it.
 %~~vis
 \begin{xten}
 val MAX_HEIGHT=20;
-val Null = Region.makeUnit();  // Empty 0-dimensional region
+val Null = Region.makeUnit(); //Empty 0-dimensional region
 val R1 = 1..100; // IntRange 
 val R2 = R1 as Region(1);
 val R3 = (0..99) * (-1..MAX_HEIGHT);
@@ -154,16 +155,16 @@ methods on \xcd`Region`.
 %~~exp~~"~~"~~ min:Array[Int](1), max:Array[Int](1)~~ ^^^Arrays3i3n
 \item \xcd"Region.makeRectangular(min, max)", 
       where \xcd"min" and \xcd"max"
-      are \xcd"Array[Int](1)"s of length \xcd"n", returns a
+      are rank-1 length-\xcd`n` integeger arrays, returns a
       \xcd"Region(n)" equal to: 
       \xcdmath`[min(0) .. max(0), $\ldots$, min(n-1)..max(n-1)]`.
 %~~exp~~"~~"~~regions : Array[Region(1){self.rect}](1) ~~ ^^^Arrays7y6l
 \item \xcd"Region.make(regions)" constructs the Cartesian product of the
       rectangular \xcd"Region(1)"s in \xcd"regions".
-%~~exp~~"~~"~~ size: int, upper: int, lower: int~~ ^^^Arrays2f2y
-\item \xcd"Region.makeBanded(size, upper, lower)" constructs the
-      banded \xcd"Region(2)" of size \xcd"size", with \Xcd{upper} bands above
-      and \Xcd{lower} bands below the diagonal.
+%~~exp~~"~~"~~ size: int, a: int, b: int~~ ^^^Arrays2f2y
+\item \xcd"Region.makeBanded(size, a, b)" constructs the
+      banded \xcd"Region(2)" of size \xcd"size", with \Xcd{a} bands above
+      and \Xcd{b} bands below the diagonal.
 %~~exp~~"~~"~~size:Int ~~ ^^^Arrays5s3q
 \item \xcd"Region.makeBanded(size)" constructs the banded \Xcd{Region(2)} with
       just the main diagonal.
@@ -333,8 +334,9 @@ An \Xcd{Array[T]} \Xcd{A} has:
 %~~exp~~`~~`~~A:Array[Int] ~~ ^^^ Arrays180
 \item \xcd`A.size`: the number of elements in \Xcd{A}.
 %~~exp~~`~~`~~A:Array[Int] ~~ ^^^ Arrays190
-\item \xcd`A.rank`, the rank of the points usable to subscript \Xcd{A}.
-      Identical to \Xcd{A.region.rank}.
+\item \xcd`A.rank`, the rank of the points usable to subscript \Xcd{A}. 
+      \xcd`A.rank` is a cached copy of 
+      \Xcd{A.region.rank}.
 \end{itemize}
 
 \subsection{Array Constructors}
@@ -473,8 +475,7 @@ provides familiar operations -- \xcd`pg.size()` for the number of places,
 \xcd`pg.iterator()` to iterate over them, etc.  
 
 \xcd`PlaceGroup` is an abstract class.  The concrete class
-\xcd`SparsePlaceGroup` is intended for a small group of places: 
-in particular, 
+\xcd`SparsePlaceGroup` is intended for a small group of places. 
 %~~exp~~`~~`~~ somePlace:Place ~~ ^^^Arrays1j6q
 \xcd`new SparsePlaceGroup(somePlace)` is a good \xcd`PlaceGroup` containing
 one place.  
@@ -605,27 +606,27 @@ For instance:
 \begin{xten}
 val ident = ([i]:Point(1)) => i;
 val data : DistArray[Int]
-    = DistArray.make[Int](Dist.makeConstant(1..1000), ident);
-val blocked = Dist.makeBlock((1..1000)*(1..1000));
+    = DistArray.make[Int](Dist.makeConstant(1..9), ident);
+val blk = Dist.makeBlock((1..9)*(1..9));
 val data2 : DistArray[Int]
-    = DistArray.make[Int](blocked, ([i,j]:Point(2)) => i*j);
+    = DistArray.make[Int](blk, ([i,j]:Point(2)) => i*j);
 \end{xten}
 %~~siv
 % }  }
 %~~neg
 
 
-%% HERE!
+
 
 {}\noindent 
 The first declaration stores in \xcd`data` a reference to a mutable
-distributed array with \xcd`1000` elements each of which is located in the
+distributed array with \xcd`9` elements each of which is located in the
 same place as the array. The element at \Xcd{[i]} is initialized to its index
 \xcd`i`. 
 
 The second declaration stores in \xcd`data2` a reference to a mutable
 two-dimensional distributed array, whose coordinates both range from 1 to
-1000, distributed in blocks over all \xcd`Place`s, 
+9, distributed in blocks over all \xcd`Place`s, 
 initialized with \xcd`i*j`
 at point \xcd`[i,j]`.
 \end{ex}
@@ -658,7 +659,8 @@ and
 The operator assignments, \xcd`a(i) += e` and so on,  are also
 available. 
 
-It is a runtime error to use either \xcd`da(p)` or \xcd`da(p)=v` at a place
+It is a runtime error to 
+access arrays, with \xcd`da(p)` or \xcd`da(p)=v`, at a place
 other than \xcd`da.dist(p)`, \viz{} at the place that the element exists. 
 
 
@@ -672,8 +674,9 @@ produces an array on region \xcd`R` initialized with value \xcd`v`
 Similarly, 
 for a distribution \xcd`D` and a value \xcd`v` of
 type \xcd`T` the expression 
-%~~genexp~~`~~`~~T ~~D:Dist, v:T ~~ ^^^ Arrays430
-\xcd`DistArray.make[T](D, (Point(D.rank))=>v)`
+\begin{xtenmath}
+DistArray.make[T](D, (Point(D.rank))=>v)
+\end{xtenmath}
 constructs a distributed array with
 distribution \xcd`D` and base type \xcd`T` initialized with \xcd`v`
 at every point.
@@ -695,7 +698,7 @@ represents the sub-\xcd`DistArray` of \xcd`da` on the region \xcd`R`.
 That is, \xcd`da | R` has the same values as \xcd`da` when subscripted by a
 %~~exp~~`~~`~~R:Region, da: DistArray[Int]{da.region.rank == R.rank} ~~ ^^^ Arrays450
 point in region \xcd`R && da.region`, and is undefined elsewhere.
-`
+
 Recall that a rich set of operators are available on distributions
 (\Sref{XtenDistributions}) to obtain sub-distributions
 (e.g. restricting to a sub-region, to a specific place etc).

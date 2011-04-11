@@ -47,9 +47,9 @@ The program starts by executing a \xcd`main` method at
 \Sref{initial-computation}. 
 
 Operations on places include \xcd`pl.next()`, which gives the next entry
-(looping around) in \xcd`Place.places` and its opposite \xcd`pl.prev()`. In
-particular, \xcd`here.next()` means ``a place other than \xcd`here`'', except
-in single-place executions.
+(looping around) in \xcd`Place.places` and its opposite \xcd`pl.prev()`. 
+In multi-place executions, 
+\xcd`here.next()` is a convenient way to express ``a place other than \xcd`here`''.
 %~~exp~~`~~`~~pl:Place~~ ^^^ Placesoif
 There are also a number of tests, like \xcd`pl.isSPE()` and 
 %~~exp~~`~~`~~pl:Place ~~ ^^^ Placesoid
@@ -159,8 +159,8 @@ examined, and (since only the copy, not the original, was modified) is observed
 to be unchanged. 
 %~~gen ^^^ Places6e1o
 % package Places6e1o;
-% class Example { static def example() { 
 % KNOWNFAIL-at
+% class Example { static def example() { 
 %~~vis
 \begin{xten}
 val a = [1,2,3];
@@ -212,17 +212,15 @@ any case; it is not located \xcd`there`.)
 %~~vis
 \begin{xten}
 var a : Int = 1;
-var b = [2,3,4];
 at(there; val d = a) {
    assert d == 1;
    // ERROR: assert a == 1;
 }
 \end{xten}
 %~~siv
-% 
-%~~neg
-% }  }
+% } } 
 % class Hook{ def run() {Example.example(); return true;}}
+%~~neg
 \end{ex}
 
 \item \xcd`var x : T = E` evaluates \xcd`E` at the initial place, copies it to
@@ -261,9 +259,9 @@ assert a == 1;
 \end{xten}
 %~~siv
 % 
-%~~neg
-% }  }
+% }  } 
 % class Hook{ def run() {Example.example(); return true;}}
+%~~neg
 \end{ex}
 
 \item \xcd`x = E`, as a copy specifier, is equivalent to \xcd`val x = E`.
@@ -287,16 +285,16 @@ not stored \xcd`here`.
 %~~vis
 \begin{xten}
 var a : Int = 1;
-var b = [2,3,4];
+var b : Array[Int] = [2,3,4];
 at(there; f = a + b(0)) {
    assert f == 3;
 }
 \end{xten}
 %~~siv
+% }  } 
+% class Hook{ def run() {Example.example(); return true;}}
 % 
 %~~neg
-% }  }
-% class Hook{ def run() {Example.example(); return true;}}
 
 
 \end{ex}
@@ -319,7 +317,7 @@ change the other.
 %  val there = here.next();
 %~~vis
 \begin{xten}
-var b = [2,3,4];
+var b : Array[Int] = [2,3,4];
 assert b(0) == 2;
 at(there; b) {
   b(0) = 200;  // Modify copy of b.
@@ -329,9 +327,9 @@ assert b(0) == 2;
 \end{xten}
 %~~siv
 % 
-%~~neg
-% }  }
+% }  } 
 % class Hook{ def run() {Example.example(); return true;}}
+%~~neg
 \end{ex}
 
 \item A field assignment statements \xcdmath"a.fld = $E_2$", evaluates 
@@ -346,8 +344,8 @@ assert b(0) == 2;
 \begin{ex}
 %~~gen ^^^ Places9v2e5
 % package Places9v2e5;
-% KNOWNFAIL-at
-% 
+% KNOWNFAIL
+% class Example {
 % static def use(Any) = 1;
 % static def example() { 
 %  val there = here.next();
@@ -392,7 +390,7 @@ avoid transmitting the original value of \xcd`b(1)`, since it will be
 overwritten immediately in any case.
 %~~gen ^^^ Places9v2e6
 % package Places9v2e6;
-% KNOWNFAIL-at
+% KNOWNFAIL
 % class Example{ 
 % static def use(Any) = 1;
 % static def example() { 
@@ -433,16 +431,16 @@ assert b(0) == 2 && b(1) == 3;
 %~~vis
 \begin{xten}
 var a : Int = 1;
-var b = [2,3,4];
+val b = [2,3,4];
 at(there; *) {
   assert a + b(0) == b(1);
 }
 \end{xten}
 %~~siv
-% 
-%~~neg
 % }  }
 % class Hook{ def run() {Example.example(); return true;}}
+%~~neg
+
 \end{ex}
 
 \end{itemize}
@@ -643,7 +641,7 @@ variable outside of \xcd`at(p;F)S` and its copy inside of \xcd`S`.
 % package Places.implicitcopyfromat;
 % class Example {
 % static def example() {
-% KNOWNFAIL-at
+% 
 %~~vis
 \begin{xten}
 val c = new Cell[Int](9); // (1)
@@ -692,11 +690,11 @@ shows that {$c_2$} is a different cell from {$c_1$}, because changes to
 %package Places.AtCopy2;
 %class example {
 %static def Example() {
-%KNOWNFAIL-at
+%
 %~~vis
 \begin{xten}
 val c = new Cell[Int](5);
-val a = new Array[c,c];
+val a : Array[Cell[Int]](1) = [c,c as Cell[Int]];
 assert(a(0)() == 5 && a(1)() == 5);     // (A)
 c.set(6);                               // (B)
 assert(a(0)() == 6 && a(1)() == 6);     // (C)
@@ -734,7 +732,7 @@ Note that we could not make a transient field \xcd`c : Int{c != 0}`, since the
 type has no default value, and copying would in fact set it to zero.
 %~~gen ^^^ Places40
 %package Places_transient_a;
-% KNOWNFAIL-at
+% 
 %~~vis
 \begin{xten}
 class Trans {
@@ -776,7 +774,7 @@ directly.
 % class GR {
 %  static def use(Any){}
 %  static def example() {
-% KNOWNFAIL-at
+% 
 %~~vis
 \begin{xten}
 val huge = "A potentially big thing";
@@ -807,7 +805,7 @@ command-line argument array.
 %~~gen ^^^ Places60
 % package Places.Atsome.Globref2;
 % class GR2 {
-% KNOWNFAIL-at
+% 
 %~~vis
 \begin{xten}
   public static def main(argv: Array[String](1)) {
@@ -824,7 +822,7 @@ command-line argument array.
 \end{xten}
 %~~siv
 %} 
-% class Hook{ def run() { GR2.main(["what, me weasel?"]); return true; }}
+% class Hook{ def run() { GR2.main(["what, me weasel?" as String]); return true; }}
 %~~neg
 
 \end{ex}
@@ -880,7 +878,7 @@ one as a \xcd`val` named \xcd`square`, and the other as an addition in to a
 partially-computed polynomial named \xcd`poly`.  
 %~~gen ^^^ Places5f9g
 % package Places5f9g;
-% KNOWNFAIL-at
+% % KNOWNFAIL-at
 % class Example { 
 %~~vis
 \begin{xten}
@@ -897,7 +895,7 @@ static def example(a: Int, mathProc: Place) {
   }
 \end{xten}
 %~~siv
-%}
+%}}
 % class Hook { def run() { 
 %   val e = example(2, here);
 %   assert e(0) == 4 && e(1) == 7;
@@ -908,7 +906,11 @@ static def example(a: Int, mathProc: Place) {
 
 The abbreviated forms 
 \xcd`athome (*) S` and 
- \xcd`athome S` are equivalent to \xcd`athome(V;F)S`,
+\xcd`athome S` 
+allow a block of assignments without specifying the variables being assigned
+to, which is convenient for a small set of assignments. 
+They 
+are both equivalent to \xcd`athome(V;F)S`,
 where: 
 \begin{itemize}
 \item \xcd`V` is the list of all variables appearing on the left-hand side of
@@ -946,7 +948,7 @@ static def example(a: Int, mathProc: Place) {
   }
 \end{xten}
 %~~siv
-%}
+%}}
 % class Hook { def run() { 
 %   val e = example(2, here);
 %   assert e(0) == 4 && e(1) == 7;

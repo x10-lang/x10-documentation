@@ -201,9 +201,9 @@ initially in the resume state for \xcd`c`, there would be a race condition;
 before {$a$} performed \xcd`c.advance()`.
 
 
-An activity may check that it is registered on a clock \xcd"c" by
+An activity may check whether or not it is registered on a clock \xcd"c" by
 %~~exp~~`~~`~~c:Clock ~~ ^^^ Clocks50
-the predicate \xcd`c.registered()`
+the method call \xcd`c.registered()`
 
 
 \begin{note}
@@ -281,9 +281,10 @@ discipline {\em are} guaranteed to be deadlock-free, just as programs which
 use only bounded loops are guaranteed to terminate.  The syntactic discipline
 is: 
 \begin{itemize}
-\item The \xcd`advance()` {method} may not be called on any clock. (The
-      \xcd`Clock.advanceAll();` method is allowed.)
-\item Inside of \xcd`finish{S}`, all clocked \xcd`async`s must be in the scope
+\item The \xcd`advance()` {instance method} shall not be called on any clock.
+      (The 
+      \xcd`Clock.advanceAll();` method is allowed for this discipline.)
+\item Inside of \xcd`finish{S}`, all clocked \xcd`async`s shall be in the scope
       an unclocked \xcd`async`.  
 \end{itemize}
 
@@ -352,7 +353,8 @@ waits for asynchronous spawned \xcd`async`s to terminate.
 A \xcd`clocked async` registers its async with the implicit clock of
 the surrounding \xcd`clocked finish`.   
 
-Both the \xcd`clocked finish` and \xcd`clocked async` may use the
+The bodies of the \xcd`clocked finish` and \xcd`clocked async`
+statements  may use the
 \xcd`Clock.advanceAll()` 
 method call to advance the implicit clock.  Since the implicit clock is not
 available in a variable, it cannot be manipulated directly. (If you want to

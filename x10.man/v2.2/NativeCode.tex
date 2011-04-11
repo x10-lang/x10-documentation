@@ -104,8 +104,8 @@ For example, a (ridiculous) way to print the sum of two numbers is:
 \begin{xten}
 import x10.compiler.Native;
 class Species {
-  @Native("c++", "printf(\"Sum=%d\", ((#1)+(#2)) )")
-  @Native("java", "System.out.println(\"\" + ((#1)+(#2)))")
+  @Native("c++","printf(\"Sum=%d\", ((#1)+(#2)) )")
+  @Native("java","System.out.println(\"\" + ((#1)+(#2)))")
   static native def printNatively(x:Int, y:Int):void;
 }
 \end{xten}

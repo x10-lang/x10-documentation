@@ -308,7 +308,7 @@ But \xcd`(Int):Array[Double](1) => null` is legal.
 \begin{example}
 The following method takes a function parameter and uses it to
 test each element of the list, returning the first matching
-element.  It returns \xcd`absent` if no element matches.
+element.  It returns \xcd`no` if no element matches.
 
 %~~gen ^^^ Functions50
 % package functions2.oh.no;
@@ -317,11 +317,10 @@ element.  It returns \xcd`absent` if no element matches.
 % static 
 %~~vis
 \begin{xten}
-
-def find[T](f: (T) => Boolean, xs: List[T], absent:T): T = {
+def find[T](f: (T) => Boolean, xs: List[T], no:T): T = {
   for (x: T in xs)
     if (f(x)) return x;
-  absent
+  no
   }
 \end{xten}
 %~~siv
@@ -596,7 +595,7 @@ be a function which returns {$n$} on its {$n^{th}$} invocation. However,
 
 Every function type implements all the methods of \Xcd{Any}.
 \xcd`f.equals(g)` is equivalent to \xcd`f==g`.  The behavior of   \xcd`hashCode`, 
-\xcd`toString`, and \xcd`typeName` is implementation-dependent, but 
+\xcd`toString`, and \xcd`typeName` is up to the implementation, but 
 respect \xcd`equals` and the basic contracts of \xcd`Any`. 
 
 \index{function!equals}

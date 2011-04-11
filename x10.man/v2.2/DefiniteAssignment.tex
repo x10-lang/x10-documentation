@@ -28,7 +28,7 @@ initializing variables.
 \begin{xten}
 def example(a:Int, b:Int) {
   val max:Int;
-  //ERROR: assert max==max; // or anything else reading max
+  //ERROR: assert max==max; // can't read 'max'
   if (a > b) max = a;
   else max = b;
   assert max >= a && max >= b;
@@ -396,7 +396,7 @@ between the \xcd`at` and the \xcd`athome`.
 %~~vis
 \begin{xten}
 var a : Int;
-at(here.next(); var a : Int = a;) {
+at(here.next(); var a : Int = a) {
   a = 1;
   a = 2; 
   athome(a) a = 3;
