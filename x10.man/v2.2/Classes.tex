@@ -27,8 +27,8 @@ hierarchy.   They may have any or all of these features:
 \end{itemize}
 
 
-\Xten{} objects do not have locks associated with them.
-Programmers should use atomic blocks (\Sref{AtomicBlocks}) for mutual
+\Xten{} objects (unlike Java objects) do not have locks associated with them.
+Programmers may use atomic blocks (\Sref{AtomicBlocks}) for mutual
 exclusion and clocks (\Sref{XtenClocks}) for sequencing multiple parallel
 operations.
 
@@ -49,7 +49,7 @@ Static, instance, and property methods of an object can be invoked.
 {}\item Casting (\Sref{ClassCast}) and instance testing with \xcd`instanceof`
 (\Sref{instanceOf}) Objects can be cast or type-tested.  
 
-\item The equality operators \xcd"==" and \xcd"!="
+\item The equality operators \xcd"==" and \xcd"!=".  
 Objects can be compared for equality with the \Xcd{==} operation.  This checks
 object {\em identity}: two objects are \Xcd{==} iff they are the same object.
 
@@ -491,6 +491,12 @@ each formal parameter corresponds to a local variable (\xcd`var` iff the
 formal parameter is \xcd`var`)
 and is initialized with the value of the actual parameter.
 
+\subsection{Final Methods}
+\index{final}
+\index{method!final}
+An instance method may be given the \xcd`final` qualifier.  \xcd`final`
+methods may not be overridden.
+
 \subsection{Generic Instance Methods}
 \index{method!generic instance}
 
@@ -558,7 +564,7 @@ With the \xcd`STATIC_CHECKS` compiler option in force (\Sref{sect:Callstyle}), t
 checked at compile time. 
 As usual with static constraint
 checking, there is no runtime cost.  Indeed, this code can be more efficient
-than usual, as it is statically provable that \xcd`x != null`.)
+than usual, as it is statically provable that \xcd`x != null`.
 
 When \xcd`STATIC_CHECKS` is not in force, dynamic checks are generated as
 needed; method guards are checked at runtime. This is potentially more
@@ -653,7 +659,8 @@ they cannot have side effects, or even much code in their bodies.
 The \xcd`eq()` method below tells if the \xcd`x` and \xcd`y`
 properties are equal; the \xcd`is(z)` method tells if they are both equal to
 \xcd`z`.  
-The \xcd`eq` and \xcd`is` property methods 
+The \xcd`eq` and \xcd`is` property methods are used in types in the
+\xcd`example` method.
 %~~gen ^^^ Classes100
 %package Classes.PropertyMethods;
 %~~vis
@@ -867,8 +874,6 @@ is legal:
 The definition of a method declaration \xcdmath"m$_1$" ``having the same signature
 as'' a method declaration \xcdmath"m$_2$" involves identity of types. 
 
-\noo{The following few paragraphs need to be stared at carefully.  I think
-they are contradictory and/or wrong.}
 
 
 The {\em constraint erasure} of a type \xcdmath"T", 
@@ -904,8 +909,9 @@ by the subclass's).
 
 
 
-In addition, the guard of a overriding method must be 
-no stronger than the guard of the overridden method.   This
+In addition, the guard of a overriding method
+must entail
+the guard of the overridden method.   This
 ensures that any virtual call to the method
 satisfies the guard of the callee.
 
@@ -920,7 +926,7 @@ their methods visible according to the access modifiers
 of the superclass/superinterfaces that are not hidden or overridden. A method \xcdmath"M$_1$" in a class
 \xcd"C" overrides
 a method \xcdmath"M$_2$" in a superclass \xcd"D" if
-\xcdmath"M$_1$" and \xcdmath"M$_2$" have the same signature with constraints erased.
+\xcdmath"M$_1$" and \xcdmath"M$_2$" have equivalent signatures.
 Methods are overriden on a signature-by-signature basis.  It is a compile-time
 error if an instance method overrides a static method.  (But is it permitted
 for an instance {\em field} to hide a static {\em field}; that's hiding, not

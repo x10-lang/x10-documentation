@@ -250,7 +250,7 @@ Variables must be given a value before they are used. This may be done by
 initialization -- giving a variable a value as part
 of its declaration. 
 
-\begin{eg}
+\begin{ex}
 These variables are all initialized: 
 %~~gen ^^^ Vars60
 %package Vars.For.Bears;
@@ -265,13 +265,13 @@ These variables are all initialized:
 %~~siv
 %}}
 %~~neg
-\end{eg}
+\end{ex}
 
 Or, a variable may be given a value by an assignment.  \xcd`var` variables may
 be assigned to repeatedly.  \xcd`val` variables may only be assigned once; the
 compiler will ensure that they are assigned before they are used.
 
-\begin{eg}
+\begin{ex}
 The variables in the following example are given their initial values by
 assignment.  Note that they could not be used before those assignments,
 nor could \xcd`immu` be assigned repeatedly.
@@ -297,7 +297,7 @@ nor could \xcd`immu` be assigned repeatedly.
 %~~siv
 %}}
 %~~neg
-\end{eg}
+\end{ex}
 
 Every class variable must be initialized before it is read, through
 the execution of an explicit initializer. Every
@@ -314,7 +314,7 @@ corresponding argument value provided by the invoker of the method. An
 exception-handling parameter is initialized to the object thrown by
 the exception. A local variable must be explicitly given a value by
 initialization or assignment, in a way that the compiler can verify
-using the rules for definite assignment \Sref{sect:DefiniteAssignment}.
+using the rules for definite assignment (\Sref{sect:DefiniteAssignment}).
 
 
 \section{Destructuring syntax}
@@ -335,8 +335,8 @@ It is often useful to get at the coordinates directly, in variables.
 %##)
 
 The syntax \xcdmath"val [a$_1$, $\ldots$, a$_n$] = e;" declares {$n$}
-\xcd`Int` variables, bound to the first {$n$} components of the \xcd`Point` value of
-\xcd`e`; it is an error if \xcd`e` is not a \xcd`Point` with at least {$n$} components.
+\xcd`Int` variables, bound to the precisely {$n$} components of the \xcd`Point` value of
+\xcd`e`; it is an error if \xcd`e` is not a \xcd`Point` with precisely {$n$} components.
 The syntax \xcdmath"val p[a$_1$, $\ldots$, a$_n$] = e;"  is similar, but also
 declares the variable \xcd`p` as \xcdmath"Point".  
 
@@ -348,16 +348,20 @@ and \xcd`33`, binds \xcd`p` to that point, and \xcd`j` and \xcd`k` to \xcd`22`
 and \xcd`33` respectively.
 %~~gen ^^^ Vars80
 % package Vars.For.Glares;
-% class DestructuringEx1 {
-% def whyJustForLocals() {
+% class Example {
+% static def example () {
 %~~vis
 \begin{xten}
 val [i] : Point = Point.make(11);
+assert i == 11;
 val p[j,k] = Point.make(22,33);
+assert j == 22 && k == 33;
 val q[l,m] = [44,55]; // coerces an array to a point.
+assert l == 44 && m == 55;
 \end{xten}
 %~~siv
 %}}
+% class Hook{ def run() {Example.example(); return true;}}
 %~~neg
  
 %%A useful idiom for iterating over a range of numbers is: 
@@ -403,13 +407,20 @@ variable \xcd`i` for the method call, initializes \xcd`i` with the value of
 \xcd`j`, increments \xcd`i`, and then returns.  \xcd`j` is never changed.
 %~~gen ^^^ Vars100
 % package Vars.For.Squares.Of.Mares;
-% class Ink {
+% class Example {
 %~~vis
 \begin{xten}
 static def inc(var i:Int) { i += 1; }
+static def example() {
+   var j : Int = 0;
+   assert j == 0;
+   inc(j);
+   assert j == 0;
+}
 \end{xten}
 %~~siv
 %}
+% class Hook{ def run() {Example.example(); return true;}}
 %~~neg
 
 
@@ -457,7 +468,11 @@ Including type information in variable declarations is generally good
 programming practice: it explains to both the compiler and human readers
 something of the intent of the variable.  However, including types in 
 \xcd`val t:T=e` can obliterate helpful information.  So, X10 allows a {\em
-documentation type declaration}, written \xcd`val t <: T = e`.  This 
+documentation type declaration}, written 
+\begin{xtenmath}
+val t <: T = e
+\end{xtenmath}
+This 
 has the same effect as \xcd`val t = e`, giving \xcd`t` the full type inferred
 from \xcd`e`; but it also confirms statically that that type is at least
 \xcd`T`.  
@@ -528,7 +543,7 @@ to compile.
 
 Like most other kinds of variables in X10, 
 the fields of an object can be either \xcd`val` or \xcd`var`. 
-Fields can be \xcd`static` (\Sref{FieldDefinitions}).
+\xcd`val` fields can be \xcd`static` (\Sref{FieldDefinitions}).
 Field declarations may have optional
 initializer expressions, as for local variables, \Sref{local-variables}.
 \xcd`var` fields without an initializer are initialized with the default value

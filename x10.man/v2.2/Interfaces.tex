@@ -14,7 +14,7 @@ The following puny example illustrates all these features:
 % NOTEST KNOWNFAIL
 %~~vis
 \begin{xten}
-interface Pushable{prio != 0} {
+interface Pushable{prio() != 0} {
   def push(): void;
   static val MAX_PRIO = 100;
   abstract class Pushedness{}
@@ -39,15 +39,15 @@ class MessageButton(text:String, prio:Int)
 \noindent
 \xcd`Pushable` defines two property methods, one normal method, and a static
 value.  It also 
-establishes an invariant, that \xcd`prio != 0`. 
+establishes an invariant, that \xcd`prio() != 0`. 
 \xcd`MessageButton` implements a constrained version of \xcd`Pushable`,
 \viz\ one with maximum priority.  It
 defines the \xcd`push()` method given in the interface, as a \xcd`public`
 method---interface methods are implicitly \xcd`public`.
 
-A concrete type---a class or struct---can {\em implement} an interface,
+A container---a class or struct---can {\em implement} an interface,
 typically by having all the methods and property methods that the interface
-requires.
+requires, and by providing a suitable \xcd`implements` clause in its definition.
 
 A variable may be declared to be of interface type.  Such a variable has all
 the property and normal methods declared (directly or indirectly) by the

@@ -88,7 +88,7 @@ interpreted as a variable. In this case, the unavailable interpretations are
 
 \begin{ex}
 In the \xcd`example` method of the following code, both a struct and a local
-variable are named \xcd`eg`.  Following the obscuring rules, The call
+variable are named \xcd`eg`.  Following the obscuring rules, the call
 \xcd`eg.ow()` in the first \xcd`assert` uses the variable rather than the struct.  
 As the second \xcd`assert` demonstrates, the struct can be accessed through
 its fully-qualified name.   Note that none of this would have happened if the
@@ -156,6 +156,7 @@ class Example {
   static def example() {
     assert m() == 1;
     assert m(true) == 2;
+    assert m(3) == 3;
     assert m(20) == 4;
   }
 }
@@ -189,7 +190,7 @@ a package or container is defined as follows:
       container \xcd`D`,
       container \xcd`D` is accessible, then \xcd`C` is accessible.  
 \item A member \xcd`m` of a container \xcd`C` is accessible from within
-      another  \xcd`E`
+      another container  \xcd`E`
       if \xcd`C` is
       accessible, and: 
       \begin{itemize}
@@ -255,10 +256,10 @@ However, X10 allows all permitted accesses, so the workaround is trivial.}
 
 Qualified access to a protected constructor is subtle.  Let \xcd`C` be a class
 with a \xcd`protected` constructor $c$, and let \xcd`S` be the innermost
-class containing a use $u$ of $c$.  There are three cases: 
+class containing a use $u$ of $c$.  There are three cases for $u$: 
 
 \begin{itemize}
-\item Super superclass construction invocations, \xcd`super(...)` or
+\item Superclass construction invocations, \xcd`super(...)` or
       \xcd`E.super(...)`, are permitted.
 \item Anonymous class instance creations, of the forms  \xcd`new C(...){...}`
       and \xcd`E.new C(...){...}`, are
@@ -364,7 +365,10 @@ The automatic import \xcd`import pack.age.*;`, loosely, imports all the public
 members of \xcd`pack.age`.  In fact, it does so somewhat carefully, avoiding
 certain errors that could occur if it were done naively.  Types defined in the
 current package, and those imported by single-type imports, shadow those
-imported by automatic imports.   Names automatically imported never shadow any
+imported by automatic imports.   
+If two automatic imports provide the same short name \xcd`n`, it is an error
+to use \xcd`n` -- but it is not an error if no conflicting name is ever used. 
+Names automatically imported never shadow any
 other names.
 
 

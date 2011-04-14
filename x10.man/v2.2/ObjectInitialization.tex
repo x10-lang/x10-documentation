@@ -5,6 +5,7 @@
 \index{object!constructor}
 \index{struct!constructor}
 
+\noo{Confirm this chapter with the paper}
 
 X10 does object initialization safely.  It avoids certain bad things which
 trouble some other languages:
@@ -105,18 +106,18 @@ as much programming as possible without leading to potential problems.
 Ultimately, they simply are elaborations of the fundamental principles that
 uninitialized fields must never be read, and \Xcd{this} must never be leaked.
 
-\subsection{Raw and Cooked Objects}
-\index{raw}
-\index{cooked}
+%%RAW%% \subsection{Raw and Cooked Objects}
+%%RAW%% \index{raw}
+%%RAW%% \index{cooked}
+%%RAW%% 
+%%RAW%% An object is {\em raw} before its constructor ends, and {\em cooked} after its
+%%RAW%% constructor ends. Note that, when an object is cooked, all its subobjects are
+%%RAW%% cooked.  
+%%RAW%% 
 
-An object is {\em raw} before its constructor ends, and {\em cooked} after its
-constructor ends. Note that, when an object is cooked, all its subobjects are
-cooked.  
 
 
-
-
-\subsection{Constructors and NonEscaping Methods}
+\subsection{Constructors and Non-Escaping Methods}
 \index{non-escaping}
 \label{sect:nonescaping}
 
@@ -131,6 +132,8 @@ present in this section.}
 %package ObjectInit.CtorAndNonEscaping.One;
 %~WRONG~vis
 \begin{xten}
+// This code violates this chapter's constraints
+// and thus will not compile in X10.
 class Escaper {
   static val Cell[Escaper] cell = new Cell[Escaper]();
   def toString() {
