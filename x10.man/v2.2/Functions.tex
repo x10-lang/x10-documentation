@@ -243,7 +243,7 @@ which is to say, \xcd`Int{self!=3}`.
        HasResultType \: \xcd":" Type & (\ref{prod:HasResultType}) \\
                     \| \xcd"<:" Type \\
 %(FROM #(prod:ClosureBody)#)
-         ClosureBody \: ConditionalExp & (\ref{prod:ClosureBody}) \\
+         ClosureBody \: Exp & (\ref{prod:ClosureBody}) \\
                     \| Annotations\opt \xcd"{" BlockStatements\opt LastExp \xcd"}" \\
                     \| Annotations\opt Block \\
 \end{bbgrammar}

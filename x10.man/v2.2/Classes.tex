@@ -644,6 +644,11 @@ Using a reference to an outer class, \xcd`Outer.this`, in a constraint, is not s
 \index{property method}
 
 %##(PropertyMethodDecl
+\begin{bbgrammar}
+%(FROM #(prod:PropertyMethodDecl)#)
+  PropertyMethodDecl \: MethMods Id TypeParams\opt FormalParams WhereClause\opt HasResultType\opt MethodBody & (\ref{prod:PropertyMethodDecl}) \\
+                    \| MethMods Id WhereClause\opt HasResultType\opt MethodBody \\
+\end{bbgrammar}
 %##)
 
 Property methods are methods that can be evaluated in constraints, as
@@ -941,7 +946,6 @@ Instances of classes are created by the \xcd`new` expression: \\
 \begin{bbgrammar}
 %(FROM #(prod:ClassInstCreationExp)#)
 ClassInstCreationExp \: \xcd"new" TypeName TypeArguments\opt \xcd"(" ArgumentList\opt \xcd")" ClassBody\opt & (\ref{prod:ClassInstCreationExp}) \\
-                    \| \xcd"new" TypeName \xcd"[" Type \xcd"]" \xcd"[" ArgumentList\opt \xcd"]" \\
                     \| Primary \xcd"." \xcd"new" Id TypeArguments\opt \xcd"(" ArgumentList\opt \xcd")" ClassBody\opt \\
                     \| AmbiguousName \xcd"." \xcd"new" Id TypeArguments\opt \xcd"(" ArgumentList\opt \xcd")" ClassBody\opt \\
 \end{bbgrammar}
@@ -2070,7 +2074,7 @@ the form of a constrained type (the ``return type'' of the constructor):
 %##(CtorDecl
 \begin{bbgrammar}
 %(FROM #(prod:CtorDecl)#)
-            CtorDecl \: Mods\opt \xcd"def" \xcd"this" TypeParams\opt FormalParams WhereClause\opt HasResultType\opt  CtorBody & (\ref{prod:CtorDecl}) \\
+            CtorDecl \: Mods\opt \xcd"def" \xcd"this" TypeParams\opt FormalParams WhereClause\opt HasResultType\opt Offers\opt CtorBody & (\ref{prod:CtorDecl}) \\
 \end{bbgrammar}
 %##)
 

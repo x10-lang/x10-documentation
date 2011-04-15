@@ -109,6 +109,7 @@ one-dimensional integer-valued arrays; it is an abbreviation for
 %(FROM #(prod:Type)#)
                 Type \: FunctionType & (\ref{prod:Type}) \\
                     \| ConstrainedType \\
+                    \| VoidType \\
 %(FROM #(prod:FunctionType)#)
         FunctionType \: TypeParams\opt \xcd"(" FormalParamList\opt \xcd")" WhereClause\opt Offers\opt \xcd"=>" Type & (\ref{prod:FunctionType}) \\
 %(FROM #(prod:ConstrainedType)#)

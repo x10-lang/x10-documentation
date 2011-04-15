@@ -110,7 +110,7 @@ class Lassie implements Dog, Star{}
 %##(NormalInterfaceDecl TypeParamsWithVariance WhereClause ExtendsInterfaces InterfaceBody InterfaceMemberDecl
 \begin{bbgrammar}
 %(FROM #(prod:NormalInterfaceDecl)#)
- NormalInterfaceDecl \: Mods\opt \xcd"interface" Id TypeParamsWithVariance\opt  WhereClause\opt ExtendsInterfaces\opt InterfaceBody & (\ref{prod:NormalInterfaceDecl}) \\
+ NormalInterfaceDecl \: Mods\opt \xcd"interface" Id TypeParamsWithVariance\opt Properties\opt WhereClause\opt ExtendsInterfaces\opt InterfaceBody & (\ref{prod:NormalInterfaceDecl}) \\
 %(FROM #(prod:TypeParamsWithVariance)#)
 TypeParamsWithVariance \: \xcd"[" TypeParamWithVarianceList \xcd"]" & (\ref{prod:TypeParamsWithVariance}) \\
 %(FROM #(prod:WhereClause)#)

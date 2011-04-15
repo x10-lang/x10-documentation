@@ -93,7 +93,7 @@ body or in supertypes, are accessible through \xcd"this".
 %##(Id
 \begin{bbgrammar}
 %(FROM #(prod:Id)#)
-                  Id \: identifier & (\ref{prod:Id}) \\
+                  Id \: \xcd"IDENTIFIER"  & (\ref{prod:Id}) \\
 \end{bbgrammar}
 %##)
 
@@ -1059,7 +1059,6 @@ compared for equality.
 \begin{bbgrammar}
 %(FROM #(prod:ClassInstCreationExp)#)
 ClassInstCreationExp \: \xcd"new" TypeName TypeArguments\opt \xcd"(" ArgumentList\opt \xcd")" ClassBody\opt & (\ref{prod:ClassInstCreationExp}) \\
-                    \| \xcd"new" TypeName \xcd"[" Type \xcd"]" \xcd"[" ArgumentList\opt \xcd"]" \\
                     \| Primary \xcd"." \xcd"new" Id TypeArguments\opt \xcd"(" ArgumentList\opt \xcd")" ClassBody\opt \\
                     \| AmbiguousName \xcd"." \xcd"new" Id TypeArguments\opt \xcd"(" ArgumentList\opt \xcd")" ClassBody\opt \\
 \end{bbgrammar}
@@ -1343,12 +1342,13 @@ to determine whether an object is an instance of the given type:
 %##(RelationalExp
 \begin{bbgrammar}
 %(FROM #(prod:RelationalExp)#)
-       RelationalExp \: RangeExp & (\ref{prod:RelationalExp}) \\
+       RelationalExp \: ShiftExp & (\ref{prod:RelationalExp}) \\
+                    \| HasZeroConstraint \\
                     \| SubtypeConstraint \\
-                    \| RelationalExp \xcd"<" RangeExp \\
-                    \| RelationalExp \xcd">" RangeExp \\
-                    \| RelationalExp \xcd"<=" RangeExp \\
-                    \| RelationalExp \xcd">=" RangeExp \\
+                    \| RelationalExp \xcd"<" ShiftExp \\
+                    \| RelationalExp \xcd">" ShiftExp \\
+                    \| RelationalExp \xcd"<=" ShiftExp \\
+                    \| RelationalExp \xcd">=" ShiftExp \\
                     \| RelationalExp \xcd"instanceof" Type \\
 \end{bbgrammar}
 %##)
@@ -1578,7 +1578,9 @@ user-defined coercions and conversions (\Sref{sec:user-defined-conversions}).
 %##(CastExp
 \begin{bbgrammar}
 %(FROM #(prod:CastExp)#)
-             CastExp \: CastExp \xcd"as" Type \\
+             CastExp \: Primary & (\ref{prod:CastExp}) \\
+                    \| ExpName \\
+                    \| CastExp \xcd"as" Type \\
 \end{bbgrammar}
 %##)
 
