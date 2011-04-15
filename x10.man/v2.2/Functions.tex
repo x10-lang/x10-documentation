@@ -305,7 +305,7 @@ It is a static error if the return type cannot be inferred.  \Eg,
 But \xcd`(Int):Array[Double](1) => null` is legal.
 
 
-\begin{example}
+\begin{ex}
 The following method takes a function parameter and uses it to
 test each element of the list, returning the first matching
 element.  It returns \xcd`no` if no element matches.
@@ -327,7 +327,8 @@ def find[T](f: (T) => Boolean, xs: List[T], no:T): T = {
 % }
 %~~neg
 
-The method may be invoked thus:
+The method may be invoked thus, to find a positive element of \xcd`xs`, or
+return \xcd`0` if there is no positive element.
 %~~gen ^^^ Functions60
 % package functions2.oh.no.my.ears;
 % import x10.util.*;
@@ -347,7 +348,7 @@ x: Int = find((x: Int) => x>0, xs, 0);
 %}}
 %~~neg
 
-\end{example}
+\end{ex}
 
 
 
@@ -376,7 +377,6 @@ enclosing class, as usual.
 
 \begin{eg}
  The following is legal.  
-However, the commented-out line would not be legal.
 Note that \xcd`a` is not a local \xcd`var` variable. It is a field of
 \xcd`this`. A reference to \xcd`a` is simply short for \xcd`this.a`, which is
 a use of a \xcd`val` variable (\xcd`this`).  

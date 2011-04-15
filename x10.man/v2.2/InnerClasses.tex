@@ -43,7 +43,7 @@ with a full class structure of its own.   The crucial characteristic of an
 inner class instance is that it has an implicit reference to an instance of
 its containing class.  
 
-
+\begin{ex}
 This feature is particularly useful when an instance of the inner class makes
 no sense without reference to an instance of the outer, and is closely tied to
 it.  For example, consider a range class, describing a span of integers {$m$}
@@ -65,8 +65,8 @@ interfere with the inner class's ability to refer to the outer class's \xcd`n`
 field: the cursor initialization 
 refers to the \xcd`Range`'s lower bound through a fully qualified name
 \xcd`Range.this.n`.
-Its \xcd`hasNext()` method refers to the outer class's \xcd`m` field, which is
-not shadowed.
+The initialization of its \xcd`n` field refers to the outer class's \xcd`m` field, which is
+not shadowed and can be referred to directly, as \xcd`m`.
 
 
 %~~gen ^^^ InnerClasses20
@@ -90,6 +90,7 @@ class Range(m:Int, n:Int) implements Iterable[Int]{
 %~~siv
 %
 %~~neg
+\end{ex}
 
 An inner class has full access to the members of its enclosing class, both
 static and instance.  In particular, it can access \xcd`private` information,
@@ -112,10 +113,14 @@ The only restriction placed on the members of inner classes is that the static
 fields of an inner class must be compile-time constant expressions. 
 
 \index{inner class!extending}
-An inner class \xcd`IC1` of some outer class \xcd`OC1` can be extended by
+Consider
+an inner class \xcd`IC1` of some outer class \xcd`OC1`, being extended by 
 another class \xcd`IC2`. However, since an \xcd`IC1` only exists as a
 dependent of an \xcd`OC1`, each \xcd`IC2` must be associated with an \xcd`OC1`
---- or a subtype thereof --- as well.   For example, one often extends an
+--- or a subtype thereof --- as well.   So, \xcd`IC2` must be an inner class
+of either \xcd`OC1` or some subclass \xcd`OC2 <: OC1`.
+
+\begin{ex}For example, one often extends an
 inner class when one extends its outer class: 
 %~~gen ^^^ InnerClasses30
 % package Classes.Innerclasses.Are.For.Innermasses;
@@ -131,6 +136,8 @@ class OC2 extends OC1 {
 %~~siv
 %
 %~~neg
+\end{ex}
+
 
 The hiding of method names has one fine point.  If an inner class defines a
 method named \xcd`doit`, then {\em all} methods named \xcd`doit` from the
@@ -164,6 +171,7 @@ class Outer {
 
 
 \subsection{Constructors and Inner Classes}
+\label{sect:InnerClassCtor}
 \index{inner class!constructor}
 
 If \xcd`IC` is an inner class of \xcd`OC`, then instance code in the body of
@@ -191,9 +199,10 @@ must be supplied to the \xcd`IC` constructor.  The syntax for doing so is:
 %~~gen ^^^ InnerClasses60
 % package Classes.Inner_a; 
 % NOTEST
+% /*NONSTATIC*/
 %~~vis
 \begin{xten}
-/*NONSTATIC*/class OC {
+class OC {
   class IC {}
   static val oc1 = new OC();
   static val oc2 = new OC();
@@ -286,7 +295,7 @@ whole new class.
 The syntax for an anonymous class is a constructor call followed immediately
 by a braced class body: \xcd`new C(1){def foo()=2;}`.
 
-In the following minimalist example, the abstract class \xcd`Choice`
+\begin{ex}In the following minimalist example, the abstract class \xcd`Choice`
 encapsulates a decision.   A \xcd`Choice` has a \xcd`yes()` and a \xcd`no()`
 method.  The \xcd`choose(b)` method will invoke one of the two.  \xcd`Choice`s
 also have names.
@@ -329,7 +338,7 @@ class Example {
 %~~siv
 %
 %~~neg
-
+\end{ex}
 
 Anonymous classes have many of the features of classes in general.  A few
 features are unavailable because they don't make sense.

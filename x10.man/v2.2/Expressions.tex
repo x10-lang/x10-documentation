@@ -44,8 +44,9 @@ represents an instance of that enclosing class.
 \begin{ex}
 \xcd`Outer` is a class containing \xcd`Inner`.  Each instance of
 \xcd`Inner` has a reference \xcd`Outer.this` to the \xcd`Outer` involved in its
-creation.  \xcd`Inner` has access to the fields of \xcd`Outer.this`, as seen
-in the \xcd`outerThree` and \xcd`alwaysTrue` methods.  Note that \xcd`Inner`
+creation.  \xcd`Inner` has access to the fields of \xcd`Outer.this`.  Note
+that \xcd`Inner`
+
 has its own \xcd`three` field, which is different from and not even the same
 type as \xcd`Outer.this.three`. 
 %~~gen ^^^ Expressions10
@@ -57,13 +58,21 @@ class Outer {
   val three = 3;
   class Inner {
      val three = "THREE";
-     def outerThree() = Outer.this.three;
-     def alwaysTrue() = outerThree() == 3;
+     def example()  {
+       assert Outer.this.three == 3;
+       assert three.equals("THREE");
+       assert this.three.equals("THREE");
+     }
   }
 }
 \end{xten}
 %~~siv
-%
+% class Hook{ def run(){
+%   val o = new Outer();
+%   val i = o.new Inner();
+%   i.example();
+%   return true;
+% } }
 %~~neg
 \end{ex}
 
@@ -167,7 +176,7 @@ of the static type of the target and its superclasses.
 
 If the field target is given by the keyword \xcd"super", the target's type is
 the superclass of the enclosing class.  This form is used to access fields of
-the parent class shadowed by same-named fields of the current class.
+the parent class hidden by same-named fields of the current class.
 
 If the field target is \xcd`Cls.super`, then the target's type is \xcd`Cls`,
 which must be an  enclosing class.  This (admittedly
@@ -379,7 +388,7 @@ class \xcd`Sup`. An invocation \xcd`this.f()` will call a nullary method named
 \xcd`f` that appears in class \xcd`Cl` itself, if there is one.  An invocation
 \xcd`super.f()` will call the nullary  \xcd`f` method in \xcd`Sup` or an
 ancestor thereof, but not one in \xcd`Cl`.  Note that \xcd`super.f()` may be
-used to invoke an \xcd`f` method in \xcd`Sup` which has been shadowed by one
+used to invoke an \xcd`f` method in \xcd`Sup` which has been overridden by one
 appearing in \xcd`Cl`.  
 
 
@@ -536,6 +545,7 @@ particular semantics of user-defined operations.
 
 Specifically, each numeric type can be converted or coerced into each other
 numeric type, perhaps with loss of accuracy.
+\begin{ex}
 %~~gen ^^^ Expressions90
 % package exp.ress.io.ns.numeric.conversions;
 % class ExampleOfConversionAndStuff {
@@ -549,7 +559,7 @@ val ok = f(n); // implicit
 %~~siv
 % } }
 %~~neg
-
+\end{ex}
 
 
 \subsection{Unary plus and unary minus}
@@ -587,7 +597,8 @@ if the right operand is zero.
 
 \section{Binary shift operations}
 
-The operands of the binary shift operations must be of integral type.
+When operands of the binary shift operations are of integral type, the
+expression performs bitwise shifts. 
 The type of the result is the type of the left operand.
 The right operand, describing a number of bits, must be unsigned: 
 %~~exp~~`~~`~~ x:Int ~~ ^^^Expressions1l4m
@@ -649,16 +660,19 @@ The type of the result is \xcd"String".
 
 \section{Logical negation}
 
-The operand of the  unary \xcd"!" operator 
-must be of type \xcd"x10.lang.Boolean".
+The  unary \xcd"!" operator 
+applied to type \xcd"x10.lang.Boolean" 
+performs logical negation.
 The type of the result is \xcd"Boolean".
 If the value of the operand is \xcd"true", the result is \xcd"false"; if
 if the value of the operand  is \xcd"false", the result is \xcd"true".
 
+
 \section{Boolean logical operations}
 
-Operands of the binary boolean logical operators must be of type \xcd"Boolean".
-The type of the result is \xcd"Boolean"
+The binary  operations \xcd`&` and \xcd`|` 
+at type \xcd`Boolean`
+perform Boolean logical operations.
 
 The \xcd"&" operator  evaluates to \xcd"true" if both of its
 operands evaluate to \xcd"true"; otherwise, the operator
@@ -669,10 +683,10 @@ operands evaluate to \xcd"false"; otherwise, the operator
 evaluates to \xcd"true".
 
 \section{Boolean conditional operations}
+\index{Boolean operations}
 
-Operands of the binary boolean conditional operators must be of type
-\xcd"Boolean". 
-The type of the result is \xcd"Boolean"
+The binary \xcd`&&` and \xcd`||` operations, on 
+\xcd"Boolean" values, give conditional or short-circuiting Boolean operations.  
 
 The \xcd"&&" operator  evaluates to \xcd"true" if both of its
 operands evaluate to \xcd"true"; otherwise, the operator
@@ -745,9 +759,9 @@ evaluates to \xcd`1` if \xcd`a` and \xcd`b` are the same, and \xcd`2` if they
 are different.   As the type of \xcd`1` is \xcd`Int{self==1}` and of \xcd`2`
 is \xcd`Int{self==2}`, the type of the conditional expression has the form
 \xcd`Int{c}`, where \xcd`self==1` and \xcd`self==2` both imply \xcd`c`.  For
-example, it might be \xcd`Int{true}` -- or perhaps it might be 
-\xcd`Int{self != 8}`. Note that this term has no most accurate type in the X10
-type system.
+example, it might be \xcd`Int{true}` -- or perhaps it might be a more accurate
+type, like \xcd`Int{self != 8}`. Note that this term has no most accurate type
+in the X10 type system.
 \end{ex}
 
 The subexpression not selected is not evaluated.
@@ -874,7 +888,7 @@ assert eq1 == eq2;
 
 
 
-\subsection{No Implicit Coercions}
+\subsection{No Implicit Coercions for {\tt ==}}
 \label{sect:eqeq-no-coerce}
 
 \xcd`==` is a primitive operation in X10 -- one of very few. Most operations,
@@ -1021,7 +1035,7 @@ compared for equality.
       to have a comparison \xcd`a==b` for \xcd`a:Person{self!=null}` and
       \xcd`b:Theory`, you could write it as \xcd`a as Object == b as Object`.
       It would, of course, return \xcd`false`, but it would not be a compiler
-      error.\footnote{Code generators often find this trick too be useful.}
+      error.\footnote{Code generators often find this trick to be useful.}
       A struct and an object may both be cast to \xcd`Any` and compared for
       equality, though they, too, will always be different.
 
@@ -1071,6 +1085,8 @@ The type of an allocation expression
 is the return type of the constructor invoked, with appropriate
 substitutions  of actual arguments for formal parameters, as
 specified in \Sref{MethodInvocationSubstitution}.
+
+\Sref{sect:InnerClassCtor} describes allocation expressions for inner classes. 
 
 It is illegal to allocate an instance of an \xcd"abstract" class.
 The usual visibility rules apply to allocations: 
@@ -1142,7 +1158,9 @@ any runtime computation at all, since, if \xcd`T1 <: T2 <: Object`, every value 
 require auto-boxing, such as \xcd`1 as Any`.  
 
 {\em Downcasts} are casts which are not upcasts.  Often they are recasting
-something from a more general to a more specific type: 
+something from a more general to a more specific type, 
+though casts that cross the type hierarchy laterally are also called
+downcasts.   
 %~~gen ^^^ Expressions3e9h
 % package Expressions3e9h;
 % class Example { static def example() { 
@@ -1157,7 +1175,10 @@ something from a more general to a more specific type:
 % class Hook{ def run() { Example.example(); return true;} } 
 %~~neg
  
-Casts that cross the type hierarchy laterally are also called downcasts.  In
+
+\begin{ex}
+
+In
 the following example, \xcd`Snack` and \xcd`Crunchy` are unrelated interfaces:
 neither inherits from the other.  Some objects are both; some are one but not
 the other.  Casting from a \xcd`Crunchy` to a \xcd`Snack` requires confirming
@@ -1180,6 +1201,8 @@ class Example{
 %~~siv
 %
 %~~neg
+
+\end{ex}
 
 An upcast \xcd`v as T2` requires no computation.  
 A downcast \xcd`v as T2` requires testing that \xcd`v` really is a value of
@@ -1224,6 +1247,9 @@ no way for the value of \xcd`E` to be of type \xcd`T{c}`, then
 For example, \xcd`1 as Int{self==2}` may fail to compile, because the compiler
 knows that \xcd`1`, which has type \xcd`Int{self==1}`, cannot possibly be of
 type \xcd`Int{self==2}`. 
+
+If, for some reason, you need to write one of these forbidden casts, cast to
+\xcd`Any` first.  \xcd`(1 as Any) as Int{self==2}` always returns false, but 
 
 \subsection{Explicit Conversions}
 
@@ -1276,8 +1302,8 @@ class Knot(s:String) {
 \label{sect:ambig-cast}
 
 If \xcd`v as T` could either be a cast or an explicit coercion, X10 treats its
-as a cast.  If the explicit conversion is desired, use the unambiguous syntax
-for the explicit conversion (\Sref{sect:type-conv}).
+as a cast.  
+
 
 \begin{ex}
 The \xcd`Thing` class provides an explicit conversion to \xcd`Object`.
@@ -1463,7 +1489,7 @@ class OrderedList[T]{T <: x10.util.Ordered[T]} {
 %##)
 
 X10 includes short syntactic forms for constructing one-dimensional arrays.
-The shortest form is to enclose some expressions in brackets: 
+Enclose some expressions in brackets to put them in an array: 
 %~~gen ^^^ Expressions140
 % package Expressions.ArrayCtor.Primo;
 % class Example {
