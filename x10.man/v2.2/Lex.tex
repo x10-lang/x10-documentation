@@ -5,13 +5,13 @@ Lexically a program consists of a stream of white space, comments,
 identifiers, keywords, literals, separators and operators, all of them
 composed of Unicode characters in the UTF-8 encoding. 
 
-\paragraph{Whitespace}
+\section{Whitespace}
 \index{white space}
 % Whitespace \index{whitespace} follows \java{} rules \cite[Chapter 3.6]{jls2}.
 ASCII space, horizontal tab (HT), form feed (FF) and line
 terminators constitute white space.
 
-\paragraph{Comments}
+\section{Comments}
 \index{comment}
 % Comments \index{comments} follows \java{} rules
 % \cite[Chapter 3.7]{jls2}. 
@@ -21,7 +21,7 @@ considered a comment and ignored; nested comments are not
 allowed.  All text from the ASCII characters
 ``\xcd"//"'' to the end of line is considered a comment and is ignored.
 
-\paragraph{Identifiers}
+\section{Identifiers}
 \index{identifier}
 \index{variable name}
 
@@ -58,81 +58,82 @@ backquoted identifiers:
 Certain  back ends and compilation options do not support all choices of
 identifier.  
 
-\paragraph{Keywords}
+\section{Keywords}
 \index{keywords}
 \Xten{} uses the following keywords:\\
 {\tt 
-\begin{tabular}{lll}
-    {\bf abstract} &
-    {\bf as}&
-    {\bf assert}\\
-    {\bf async}&
-    {\bf at}&
-    {\bf ateach}\\
-    {\it atomic}&
-    {\bf break}&
-    {\bf case}\\
-    {\bf catch}&
-    {\bf class}&
-    {\bf clocked}\\
-    {\bf continue}&
-    {\bf def}&
-    {\bf default}\\
-    {\bf do}&
-    {\bf else}&
-    {\bf extends}\\
-    {\bf false}&
-    {\bf final}&
-    {\bf finally}\\
-    {\bf finish}&
-    {\bf for}&
-    {\bf goto}\\
-    {\bf haszero}&
-    {\it here}&
-    {\bf if}\\
-    {\bf implements}&
-    {\bf import}&
-    {\bf }\\
-    {\bf instanceof}&
-    {\bf interface}&
-    {\bf native}\\
-    {\bf new}&
-    {\bf null}\\
-    {\it offer}&
-    {\bf offers}&
-    {\bf operator}\\
-    {\bf package}&
-    {\bf private}&
-    {\bf property}\\
-    {\bf protected}&
-    {\bf public}\\
-    {\bf return}&
-    {\bf self}&
-    {\bf static}\\
-    {\bf struct}&
-    {\bf super}&
-    {\bf switch}\\
-    {\bf this}&
-    {\bf throw}&
-    {\bf transient}\\
-    {\bf true}&
-    {\bf try}&
-    {\bf type}\\
-    {\bf val}&
-    {\bf var}&
-    {\bf void}\\
-    {\bf when}& 
-    {\bf while}&
+\begin{tabular}{llllll}
+    abstract &
+    as&
+    assert&
+    async&
+    at\\
+    athome &
+    ateach&
+    atomic&
+    break&
+    case\\
+    catch &
+    class&
+    clocked&
+    continue&
+    def\\
+    default &
+    do&
+    else&
+    extends&
+    false\\
+    final &
+    finally&
+    finish&
+    for&
+    goto\\
+    haszero &
+    here&
+    if&
+    implements&
+    import\\
+    in &
+    instanceof&
+    interface&
+    native&
+    new\\
+    null &
+    offer&
+    offers&
+    operator&
+    package\\
+    private &
+    property&
+    protected&
+    public&
+    return\\
+    self &
+    static&
+    struct&
+    super&
+    switch\\
+    this &
+    throw&
+    transient&
+    true&
+    try\\
+    type &
+    val&
+    var&
+    void&
+    when\\
+    while
+
 \end{tabular}
 }
 
-Keywords in {\em italics} are {\em soft} keywords, which may also be
-used as identifiers.  The other keywords, in {\bf bold}, are {\em hard}
-keywords and  may not be used as identifiers.
+Keywords may be used as identifiers by enclosing them in backquotes:
+\xcd"`new`" is an identifier, \xcd`new` is a keyword but not an identifier.  
 
 Note that the primitive type names are not considered keywords.
 
-\paragraph{Literals}\label{Literals}\index{literal}
+\section{Literals}\label{Literals}\index{literal}
 
 Briefly, \XtenCurrVer{} uses fairly standard syntax for its literals:
 integers, unsigned integers, floating point numbers, booleans, 
@@ -262,13 +263,13 @@ f &=& b x
 
 
 
-\paragraph{Separators}
+\section{Separators}
 \Xten{} has the following separators and delimiters:
 \begin{xten}
 ( )  { }  [ ]  ;  ,  .
 \end{xten}
 
-\paragraph{Operators}
+\section{Operators}
 \index{operator}
 \Xten{} has the following operator,  type constructor, and miscellaneous symbols.  (\xcd`?` and
 \xcd`:` comprise a single ternary operator, but are written separately.)
