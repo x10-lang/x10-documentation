@@ -92,6 +92,41 @@ outside.
 The following code illustrates both legal and illegal uses of shadowing.
 Note that a shadowed {\em field} name \xcd`x` can still be accessed 
 as \xcd`this.x`. 
+
+%%AT-COPY%% %~~gen ^^^ Statements4h6p
+%%AT-COPY%% % package Statements4h6p;
+%%AT-COPY%% %~~vis
+%%AT-COPY%% \begin{xten}
+%%AT-COPY%% class Shadow{
+%%AT-COPY%%   var x : Int; 
+%%AT-COPY%%   def this(x:Int) { 
+%%AT-COPY%%      // Parameter can shadow field
+%%AT-COPY%%      this.x = x; 
+%%AT-COPY%%   }
+%%AT-COPY%%   def example(y:Int) {
+%%AT-COPY%%      val x = "shadows a field";
+%%AT-COPY%%      // ERROR: val y = "shadows a param";
+%%AT-COPY%%      val z = "local";
+%%AT-COPY%%      for (a in [1,2,3]) {
+%%AT-COPY%%         // ERROR: val x = "can't shadow local var";
+%%AT-COPY%%      }
+%%AT-COPY%%      async {
+%%AT-COPY%%         val x = "can shadow through async";
+%%AT-COPY%%      }        
+%%AT-COPY%%      at (here;) {
+%%AT-COPY%%         val x = "at gives a whole new namespace";
+%%AT-COPY%%      }        
+%%AT-COPY%%      val f = () => { 
+%%AT-COPY%%        val x = "can shadow through closure";
+%%AT-COPY%%        x
+%%AT-COPY%%      };
+%%AT-COPY%%   }
+%%AT-COPY%% }
+%%AT-COPY%% \end{xten}
+%%AT-COPY%% %~~siv
+%%AT-COPY%% %
+%%AT-COPY%% %~~neg
+%%AT-COPY%% 
 %~~gen ^^^ Statements4h6p
 % package Statements4h6p;
 %~~vis
@@ -112,9 +147,6 @@ class Shadow{
      async {
         val x = "can shadow through async";
      }        
-     at (here;) {
-        val x = "at gives a whole new namespace";
-     }        
      val f = () => { 
        val x = "can shadow through closure";
        x
@@ -125,6 +157,9 @@ class Shadow{
 %~~siv
 %
 %~~neg
+
+
+
 \end{ex}
 
 \begin{ex}

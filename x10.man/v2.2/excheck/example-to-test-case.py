@@ -82,7 +82,6 @@ def parsley(line):
 import os;
 import os.path;
 import re;
-clue = "%~~"
 sep="~~"
 files = []
 currentLine = 0
@@ -575,7 +574,7 @@ def extractExamplesFrom(tf):
          while line != "": 
             if line.startswith(clue):
                 dealWithExample(f, line, basename)
-            elif line.find(clue) >= 0:
+            elif line.find(clue) >= 0 and not line.startswith("%%"):
                 doom("'" + clue + "' must appear at the start of the line!\n" + 
                      "line=" + line + "\n" +
                      "file=" + tf + "\n")

@@ -188,7 +188,7 @@ terminates normally, then \xcd"finish S" terminates normally and $A$
 continues execution with the next statement after \xcd"finish S".  If
 \xcd"S" or one of the activities spawned by it terminate abruptly,
 then \xcd"finish S" terminates abruptly and throws a single exception,
-\Xcd{x10.lang.MultipleExceptions} formed from the collection of
+of type \Xcd{x10.lang.MultipleExceptions}, formed from the collection of
 exceptions accumulated at \xcd"finish S".
 
 Thus \xcd"finish S" statement serves as a collection point for
@@ -260,7 +260,8 @@ In \xcd`ateach(p in D) S`, \xcd`D` must be either of type \xcd"Dist"
 distribution.   
 
 Instead of writing \xcd`ateach (p in D) S` the programmer should write 
-\xcd`for(p in D) at(D(p);F) async S` to get the same effect. 
+%%AT-COPY%% \xcd`for(p in D) at(D(p);F) async S` to get the same effect. 
+\xcd`for(p in D) at(D(p)) async S` to get the same effect. 
 For each point \xcd`p` in \xcd`D`, at place \xcd`D(p)`, transmitting
 information as specified by \xcd`F`, 
 \xcd`S` is
@@ -268,6 +269,24 @@ executed simultaneously.
 
 However, this often results in excessive communication and parallelism. Instead the
 programmer may want to write: 
+
+%%AT-COPY%% %~~gen ^^^ Activities80
+%%AT-COPY%% % package Activities.Activities.Activities;
+%%AT-COPY%% % class EquivCode {
+%%AT-COPY%% % static def S(pt:Point) {}
+%%AT-COPY%% % static def example(D:Dist) {
+%%AT-COPY%% %~~vis
+%%AT-COPY%% \begin{xten}
+%%AT-COPY%% for (place in D.places()) async at (place; p, D, *) {
+%%AT-COPY%%     for (p in D|here) {
+%%AT-COPY%%         S(p);
+%%AT-COPY%%     }
+%%AT-COPY%% }
+%%AT-COPY%% \end{xten}
+%%AT-COPY%% %~~siv
+%%AT-COPY%% %}} 
+%%AT-COPY%% %~~neg
+
 %~~gen ^^^ Activities80
 % package Activities.Activities.Activities;
 % class EquivCode {
@@ -275,7 +294,7 @@ programmer may want to write:
 % static def example(D:Dist) {
 %~~vis
 \begin{xten}
-for (place in D.places()) async at (place; p, D, *) {
+for (place in D.places()) async at (place) {
     for (p in D|here) {
         S(p);
     }
