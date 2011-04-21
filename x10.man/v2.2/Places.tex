@@ -1023,7 +1023,7 @@ command-line argument array.
         use(argref);
   }
   static def use(argref : GlobalRef[Array[String](1)]) {
-    at(argref.home) {
+    at(argref) {
       val argv = argref();
       argv(0) = "Hi!";
     }
@@ -1036,6 +1036,8 @@ command-line argument array.
 
 \end{ex}
 
+There is an implicit coercion from \xcd`GlobalRef[T]` to \xcd`Place`, so
+\xcd`at(argref)S` goes to \xcd`argref.home`.  
 
 
 \subsection{Warnings about \xcd`at`}

@@ -513,6 +513,19 @@ each formal parameter corresponds to a local variable (\xcd`var` iff the
 formal parameter is \xcd`var`)
 and is initialized with the value of the actual parameter.
 
+\subsection{Forms of Method Definition}
+
+There are several syntactic forms for definining methods.   The forms that
+include a block, such as \xcd`def m(){S}`, allow an arbitrary block.  These
+forms can define a \xcd`void` method, which does not return a value. 
+
+The
+forms that include an expression, such as \xcd`def m()=E`, require a
+syntactically and semantically valid expression.   These forms cannot define a
+\xcd`void` method, because expressions cannot be \xcd`void`.  
+
+There are no other semantic differences between the two forms. 
+
 \subsection{Final Methods}
 \index{final}
 \index{method!final}
@@ -1735,17 +1748,19 @@ The operator to negate a polynomial is:
 \label{sect:type-conv}
 \index{type conversion!user-defined}
 
-% \noo{How about the conversions out of the class?}
 
 Explicit type conversions, \xcd`e as A`, can be defined as operators on
-class \xcd`A`.  These must be static operators, and are defined in the 
-the form: 
+class \xcd`A`, or on the container type of \xcd`e`.  These must be static
+operators, 
+
+To define an operator in \xcd`class A` (or \xcd`struct A)` converting values
+of ttype \xcd`B` into type \xcd`A`, use the syntax: 
 \begin{xten}
 static operator (x:B) as ? {c} = ... 
 \end{xten}
 The \xcd`?` indicates the containing type \xcd`A`.  
 The guard clause \xcd`{c}` may be omitted.
-%%OP%% They may be invoked by the unambiguous syntax: 
+
 
 
 
@@ -1771,6 +1786,29 @@ class Poly {
 
 The \xcd`?` may be given a bound, such as \xcd`as ? <: Caster`, if desired.
   
+Explicit type conversions {\em out} of container \xcd`B` to some other
+container \xcd`A` may be defined in \xcd`B`, as well.  The syntax for this
+does not involve \xcd`?`.  
+
+\begin{ex}
+%~~gen ^^^ Classes3g2h
+% package Classes3g2h;
+%~~vis
+\begin{xten}
+class Numbered(n:Int) {
+  public static operator (x:Numbered) as Int = x.n;
+  public static def example(){
+     val n3 = new Numbered(3);
+     assert n3 as Int == 3;
+  }
+}
+\end{xten}
+%~~siv
+% class Hook{ def run() {Numbered.example(); return true;}}
+%~~neg
+
+\end{ex}
+
 
 There is little difference between an explicit conversion \xcd`e as T` and a
 method call \xcd`e.asT()`.  The explicit conversion does say undeniably what

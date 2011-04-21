@@ -220,12 +220,12 @@ The \xcd`@NonEscaping` annotation on \xcd`boric()` is optional, but the
 compiler will print a warning if it is left out.
 \Xcd{cajoled()} is only called after all fields are set, so it
 can read anything; its annotation, too, is not required.   \Xcd{SeeAlso} is able to override \Xcd{aplomb()}, because
-\Xcd{aplomb()} is \xcd`@NonEscaping("a")`; it cannot override the final method
+\Xcd{aplomb()} is \xcd`@NonEscaping`; it cannot override the final method
 \Xcd{boric()} or the private one \Xcd{cajoled()}.  
 The method \Xcd{aplomb()} can be overridden, but it is crucial that the 
 subclass's version, 
 \Xcd{SeeAlso.aplomb()}, be 
-declared \xcd`@NonEscaping("a")`, just like \Xcd{C2.aplomb()}.
+declared \xcd`@NonEscaping`, just like \Xcd{C2.aplomb()}.
 %~~gen ^^^ ObjectInitialization10
 %package ObjInit.C2;
 %~~vis
