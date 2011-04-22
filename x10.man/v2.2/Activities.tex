@@ -134,7 +134,7 @@ An activity is created by executing the \xcd`async` statement:
 \begin{bbgrammar}
 %(FROM #(prod:AsyncStatement)#)
       AsyncStatement \: \xcd"async" ClockedClause\opt Statement & (\ref{prod:AsyncStatement}) \\
-                    \| \xcd"clocked" \xcd"async" Statement \\
+                     \| \xcd"clocked" \xcd"async" Statement \\
 %(FROM #(prod:ClockedClause)#)
        ClockedClause \: \xcd"clocked" \xcd"(" ClockList \xcd")" & (\ref{prod:ClockedClause}) \\
 \end{bbgrammar}
@@ -171,7 +171,7 @@ termination.
 \begin{bbgrammar}
 %(FROM #(prod:FinishStatement)#)
      FinishStatement \: \xcd"finish" Statement & (\ref{prod:FinishStatement}) \\
-                    \| \xcd"clocked" \xcd"finish" Statement \\
+                     \| \xcd"clocked" \xcd"finish" Statement \\
 \end{bbgrammar}
 %##)
 
@@ -241,14 +241,14 @@ places.)
 \begin{bbgrammar}
 %(FROM #(prod:AtEachStatement)#)
      AtEachStatement \: \xcd"ateach" \xcd"(" LoopIndex \xcd"in" Exp \xcd")" ClockedClause\opt Statement & (\ref{prod:AtEachStatement}) \\
-                    \| \xcd"ateach" \xcd"(" Exp \xcd")" Statement \\
+                     \| \xcd"ateach" \xcd"(" Exp \xcd")" Statement \\
 %(FROM #(prod:LoopIndexDeclarator)#)
  LoopIndexDeclarator \: Id HasResultType\opt & (\ref{prod:LoopIndexDeclarator}) \\
-                    \| \xcd"[" IdList \xcd"]" HasResultType\opt \\
-                    \| Id \xcd"[" IdList \xcd"]" HasResultType\opt \\
+                     \| \xcd"[" IdList \xcd"]" HasResultType\opt \\
+                     \| Id \xcd"[" IdList \xcd"]" HasResultType\opt \\
 %(FROM #(prod:LoopIndex)#)
            LoopIndex \: Mods\opt LoopIndexDeclarator & (\ref{prod:LoopIndex}) \\
-                    \| Mods\opt VarKeyword LoopIndexDeclarator \\
+                     \| Mods\opt VarKeyword LoopIndexDeclarator \\
 \end{bbgrammar}
 %##)
 In \xcd`ateach(p in D) S`, \xcd`D` must be either of type \xcd"Dist"

@@ -33,9 +33,9 @@ The annotation syntax consists of an ``\texttt{@}'' followed by an interface typ
 \begin{bbgrammar}
 %(FROM #(prod:Annotations)#)
          Annotations \: Annotation & (\ref{prod:Annotations}) \\
-                    \| Annotations Annotation \\
+                     \| Annotations Annotation \\
 %(FROM #(prod:Annotation)#)
-          Annotation \: \xcd"@" NamedType & (\ref{prod:Annotation}) \\
+          Annotation \: \xcd"@" NamedTypeNoConstraints & (\ref{prod:Annotation}) \\
 \end{bbgrammar}
 %##)
 

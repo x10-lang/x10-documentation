@@ -138,26 +138,8 @@ and the copying of all data used in the operation, and must be used with care
 \begin{bbgrammar}
 %(FROM #(prod:AtStatement)#)
          AtStatement \: \xcd"at" PlaceExpSingleList Statement & (\ref{prod:AtStatement}) \\
-                    \| \xcd"at" \xcd"(" PlaceExp \xcd";" \xcd"*" \xcd")" Statement \\
-                    \| \xcd"at" \xcd"(" PlaceExp \xcd";" AtCaptureDeclarators\opt \xcd")" Statement \\
-                    \| \xcd"athome" \xcd"(" HomeVariableList \xcd")" Statement \\
-                    \| \xcd"athome" \xcd"(" HomeVariableList \xcd";" \xcd"*" \xcd")" Statement \\
-                    \| \xcd"athome" \xcd"(" HomeVariableList \xcd";" AtCaptureDeclarators\opt \xcd")" Statement \\
-                    \| \xcd"athome" Statement \\
-                    \| \xcd"athome" \xcd"(" \xcd"*" \xcd")" Statement \\
-                    \| \xcd"athome" \xcd"(" \xcd"*" \xcd";" \xcd"*" \xcd")" Statement \\
-                    \| \xcd"athome" \xcd"(" \xcd"*" \xcd";" AtCaptureDeclarators\opt \xcd")" Statement \\
 %(FROM #(prod:AtExp)#)
                AtExp \: \xcd"at" PlaceExpSingleList ClosureBody & (\ref{prod:AtExp}) \\
-                    \| \xcd"at" \xcd"(" PlaceExp \xcd";" \xcd"*" \xcd")" ClosureBody \\
-                    \| \xcd"at" \xcd"(" PlaceExp \xcd";" AtCaptureDeclarators\opt \xcd")" ClosureBody \\
-                    \| \xcd"athome" \xcd"(" HomeVariableList \xcd")" ClosureBody \\
-                    \| \xcd"athome" \xcd"(" HomeVariableList \xcd";" \xcd"*" \xcd")" ClosureBody \\
-                    \| \xcd"athome" \xcd"(" HomeVariableList \xcd";" AtCaptureDeclarators\opt \xcd")" ClosureBody \\
-                    \| \xcd"athome" ClosureBody \\
-                    \| \xcd"athome" \xcd"(" \xcd"*" \xcd")" ClosureBody \\
-                    \| \xcd"athome" \xcd"(" \xcd"*" \xcd";" \xcd"*" \xcd")" ClosureBody \\
-                    \| \xcd"athome" \xcd"(" \xcd"*" \xcd";" AtCaptureDeclarators\opt \xcd")" ClosureBody \\
 \end{bbgrammar}
 %##)
 

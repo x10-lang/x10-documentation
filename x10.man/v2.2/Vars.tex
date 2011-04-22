@@ -131,14 +131,14 @@ if (a > b) g = 1; else g = 2;  // Init. done here.
 \index{variable!val}
 \index{val}
 
-%##(LocalVariableDeclStatement LocalVariableDecl
+%##(LocVarDeclStmt LocVarDecl
 \begin{bbgrammar}
-%(FROM #(prod:LocalVariableDeclStatement)#)
-LocalVariableDeclStatement \: LocalVariableDecl \xcd";" & (\ref{prod:LocalVariableDeclStatement}) \\
-%(FROM #(prod:LocalVariableDecl)#)
-   LocalVariableDecl \: Mods\opt VarKeyword VariableDeclarators & (\ref{prod:LocalVariableDecl}) \\
-                    \| Mods\opt VariableDeclaratorsWithType \\
-                    \| Mods\opt VarKeyword FormalDeclarators \\
+%(FROM #(prod:LocVarDeclStmt)#)
+      LocVarDeclStmt \: LocVarDecl \xcd";" & (\ref{prod:LocVarDeclStmt}) \\
+%(FROM #(prod:LocVarDecl)#)
+          LocVarDecl \: Mods\opt VarKeyword VariableDeclarators & (\ref{prod:LocVarDecl}) \\
+                     \| Mods\opt VarDeclsWType \\
+                     \| Mods\opt VarKeyword FormalDeclarators \\
 \end{bbgrammar}
 %##)
 
@@ -329,8 +329,8 @@ It is often useful to get at the coordinates directly, in variables.
 \begin{bbgrammar}
 %(FROM #(prod:VariableDeclarator)#)
   VariableDeclarator \: Id HasResultType\opt \xcd"=" VariableInitializer & (\ref{prod:VariableDeclarator}) \\
-                    \| \xcd"[" IdList \xcd"]" HasResultType\opt \xcd"=" VariableInitializer \\
-                    \| Id \xcd"[" IdList \xcd"]" HasResultType\opt \xcd"=" VariableInitializer \\
+                     \| \xcd"[" IdList \xcd"]" HasResultType\opt \xcd"=" VariableInitializer \\
+                     \| Id \xcd"[" IdList \xcd"]" HasResultType\opt \xcd"=" VariableInitializer \\
 \end{bbgrammar}
 %##)
 
@@ -513,31 +513,31 @@ to compile.
 \begin{bbgrammar}
 %(FROM #(prod:FieldDeclarators)#)
     FieldDeclarators \: FieldDeclarator & (\ref{prod:FieldDeclarators}) \\
-                    \| FieldDeclarators \xcd"," FieldDeclarator \\
+                     \| FieldDeclarators \xcd"," FieldDeclarator \\
 %(FROM #(prod:FieldDecl)#)
            FieldDecl \: Mods\opt FieldKeyword FieldDeclarators \xcd";" & (\ref{prod:FieldDecl}) \\
-                    \| Mods\opt FieldDeclarators \xcd";" \\
+                     \| Mods\opt FieldDeclarators \xcd";" \\
 %(FROM #(prod:FieldDeclarator)#)
      FieldDeclarator \: Id HasResultType & (\ref{prod:FieldDeclarator}) \\
-                    \| Id HasResultType\opt \xcd"=" VariableInitializer \\
+                     \| Id HasResultType\opt \xcd"=" VariableInitializer \\
 %(FROM #(prod:HasResultType)#)
        HasResultType \: \xcd":" Type & (\ref{prod:HasResultType}) \\
-                    \| \xcd"<:" Type \\
+                     \| \xcd"<:" Type \\
 %(FROM #(prod:FieldKeyword)#)
         FieldKeyword \: \xcd"val" & (\ref{prod:FieldKeyword}) \\
-                    \| \xcd"var" \\
+                     \| \xcd"var" \\
 %(FROM #(prod:Mod)#)
                  Mod \: \xcd"abstract" & (\ref{prod:Mod}) \\
-                    \| Annotation \\
-                    \| \xcd"atomic" \\
-                    \| \xcd"final" \\
-                    \| \xcd"native" \\
-                    \| \xcd"private" \\
-                    \| \xcd"protected" \\
-                    \| \xcd"public" \\
-                    \| \xcd"static" \\
-                    \| \xcd"transient" \\
-                    \| \xcd"clocked" \\
+                     \| Annotation \\
+                     \| \xcd"atomic" \\
+                     \| \xcd"final" \\
+                     \| \xcd"native" \\
+                     \| \xcd"private" \\
+                     \| \xcd"protected" \\
+                     \| \xcd"public" \\
+                     \| \xcd"static" \\
+                     \| \xcd"transient" \\
+                     \| \xcd"clocked" \\
 \end{bbgrammar}
 %##)
 

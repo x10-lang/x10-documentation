@@ -226,26 +226,26 @@ which is to say, \xcd`Int{self!=3}`.
 \emph{closures}, \emph{operator functions}, and \emph{method
   selectors}.
 
-%##(ClosureExp FormalParams WhereClause DepParams ExistentialList HasResultType ClosureBody
+%##(ClosureExp Formals Guard DepParams ExistentialList HasResultType ClosureBody
 \begin{bbgrammar}
 %(FROM #(prod:ClosureExp)#)
-          ClosureExp \: FormalParams WhereClause\opt HasResultType\opt Offers\opt \xcd"=>" ClosureBody & (\ref{prod:ClosureExp}) \\
-%(FROM #(prod:FormalParams)#)
-        FormalParams \: \xcd"(" FormalParamList\opt \xcd")" & (\ref{prod:FormalParams}) \\
-%(FROM #(prod:WhereClause)#)
-         WhereClause \: DepParams & (\ref{prod:WhereClause}) \\
+          ClosureExp \: Formals Guard\opt HasResultType\opt Offers\opt \xcd"=>" ClosureBody & (\ref{prod:ClosureExp}) \\
+%(FROM #(prod:Formals)#)
+             Formals \: \xcd"(" FormalList\opt \xcd")" & (\ref{prod:Formals}) \\
+%(FROM #(prod:Guard)#)
+               Guard \: DepParams & (\ref{prod:Guard}) \\
 %(FROM #(prod:DepParams)#)
            DepParams \: \xcd"{" ExistentialList\opt Conjunction\opt \xcd"}" & (\ref{prod:DepParams}) \\
 %(FROM #(prod:ExistentialList)#)
-     ExistentialList \: FormalParam & (\ref{prod:ExistentialList}) \\
-                    \| ExistentialList \xcd";" FormalParam \\
+     ExistentialList \: Formal & (\ref{prod:ExistentialList}) \\
+                     \| ExistentialList \xcd";" Formal \\
 %(FROM #(prod:HasResultType)#)
        HasResultType \: \xcd":" Type & (\ref{prod:HasResultType}) \\
-                    \| \xcd"<:" Type \\
+                     \| \xcd"<:" Type \\
 %(FROM #(prod:ClosureBody)#)
          ClosureBody \: Exp & (\ref{prod:ClosureBody}) \\
-                    \| Annotations\opt \xcd"{" BlockStatements\opt LastExp \xcd"}" \\
-                    \| Annotations\opt Block \\
+                     \| Annotations\opt \xcd"{" BlockStatements\opt LastExp \xcd"}" \\
+                     \| Annotations\opt Block \\
 \end{bbgrammar}
 %##)
 

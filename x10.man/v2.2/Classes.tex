@@ -65,44 +65,44 @@ zero or more interfaces that it implements, and a class body containing the
 the definition of fields, properties, methods, and member types. Each such
 declaration introduces a class type (\Sref{ReferenceTypes}).
 
-%##(NormalClassDecl TypeParamsWithVariance TypeParamWithVarianceList Properties PropertyList Property WhereClause Super Interfaces InterfaceTypeList ClassBody ClassBodyDecls ClassMemberDecl
+%##(NormalClassDecl TypeParamsI TypeParamIList Properties PropertyList Property Guard Super Interfaces InterfaceTypeList ClassBody ClassBodyDecls ClassMemberDecl
 \begin{bbgrammar}
 %(FROM #(prod:NormalClassDecl)#)
-     NormalClassDecl \: Mods\opt \xcd"class" Id TypeParamsWithVariance\opt Properties\opt WhereClause\opt Super\opt Interfaces\opt ClassBody & (\ref{prod:NormalClassDecl}) \\
-%(FROM #(prod:TypeParamsWithVariance)#)
-TypeParamsWithVariance \: \xcd"[" TypeParamWithVarianceList \xcd"]" & (\ref{prod:TypeParamsWithVariance}) \\
-%(FROM #(prod:TypeParamWithVarianceList)#)
-TypeParamWithVarianceList \: TypeParamWithVariance & (\ref{prod:TypeParamWithVarianceList}) \\
-                    \| TypeParamWithVarianceList \xcd"," TypeParamWithVariance \\
+     NormalClassDecl \: Mods\opt \xcd"class" Id TypeParamsI\opt Properties\opt Guard\opt Super\opt Interfaces\opt ClassBody & (\ref{prod:NormalClassDecl}) \\
+%(FROM #(prod:TypeParamsI)#)
+         TypeParamsI \: \xcd"[" TypeParamIList \xcd"]" & (\ref{prod:TypeParamsI}) \\
+%(FROM #(prod:TypeParamIList)#)
+      TypeParamIList \: TypeParamI & (\ref{prod:TypeParamIList}) \\
+                     \| TypeParamIList \xcd"," TypeParamI \\
 %(FROM #(prod:Properties)#)
           Properties \: \xcd"(" PropertyList \xcd")" & (\ref{prod:Properties}) \\
 %(FROM #(prod:PropertyList)#)
         PropertyList \: Property & (\ref{prod:PropertyList}) \\
-                    \| PropertyList \xcd"," Property \\
+                     \| PropertyList \xcd"," Property \\
 %(FROM #(prod:Property)#)
             Property \: Annotations\opt Id ResultType & (\ref{prod:Property}) \\
-%(FROM #(prod:WhereClause)#)
-         WhereClause \: DepParams & (\ref{prod:WhereClause}) \\
+%(FROM #(prod:Guard)#)
+               Guard \: DepParams & (\ref{prod:Guard}) \\
 %(FROM #(prod:Super)#)
                Super \: \xcd"extends" ClassType & (\ref{prod:Super}) \\
 %(FROM #(prod:Interfaces)#)
           Interfaces \: \xcd"implements" InterfaceTypeList & (\ref{prod:Interfaces}) \\
 %(FROM #(prod:InterfaceTypeList)#)
    InterfaceTypeList \: Type & (\ref{prod:InterfaceTypeList}) \\
-                    \| InterfaceTypeList \xcd"," Type \\
+                     \| InterfaceTypeList \xcd"," Type \\
 %(FROM #(prod:ClassBody)#)
            ClassBody \: \xcd"{" ClassBodyDecls\opt \xcd"}" & (\ref{prod:ClassBody}) \\
 %(FROM #(prod:ClassBodyDecls)#)
       ClassBodyDecls \: ClassBodyDecl & (\ref{prod:ClassBodyDecls}) \\
-                    \| ClassBodyDecls ClassBodyDecl \\
+                     \| ClassBodyDecls ClassBodyDecl \\
 %(FROM #(prod:ClassMemberDecl)#)
      ClassMemberDecl \: FieldDecl & (\ref{prod:ClassMemberDecl}) \\
-                    \| MethodDecl \\
-                    \| PropertyMethodDecl \\
-                    \| TypeDefDecl \\
-                    \| ClassDecl \\
-                    \| InterfaceDecl \\
-                    \| \xcd";" \\
+                     \| MethodDecl \\
+                     \| PropertyMethodDecl \\
+                     \| TypeDefDecl \\
+                     \| ClassDecl \\
+                     \| InterfaceDecl \\
+                     \| \xcd";" \\
 \end{bbgrammar}
 %##)
 
@@ -465,40 +465,40 @@ on a class (called ``overloading'' or ``ad hoc polymorphism''). Methods may be
 declared \Xcd{public}, \Xcd{private}, \Xcd{protected}, or given default package-level access
 rights.
 
-%##(MethMods MethodDecl TypeParams FormalParams FormalParamList HasResultType MethodBody
+%##(MethMods MethodDecl TypeParams Formals FormalList HasResultType MethodBody
 \begin{bbgrammar}
 %(FROM #(prod:MethMods)#)
             MethMods \: Mods\opt & (\ref{prod:MethMods}) \\
-                    \| MethMods \xcd"property"  \\
-                    \| MethMods Mod \\
+                     \| MethMods \xcd"property"  \\
+                     \| MethMods Mod \\
 %(FROM #(prod:MethodDecl)#)
-          MethodDecl \: MethMods \xcd"def" Id TypeParams\opt FormalParams WhereClause\opt HasResultType\opt Offers\opt MethodBody & (\ref{prod:MethodDecl}) \\
-                    \| MethMods \xcd"operator" TypeParams\opt \xcd"(" FormalParam  \xcd")" BinOp \xcd"(" FormalParam  \xcd")" WhereClause\opt HasResultType\opt Offers\opt MethodBody \\
-                    \| MethMods \xcd"operator" TypeParams\opt PrefixOp \xcd"(" FormalParam  \xcd")" WhereClause\opt HasResultType\opt Offers\opt MethodBody \\
-                    \| MethMods \xcd"operator" TypeParams\opt \xcd"this" BinOp \xcd"(" FormalParam  \xcd")" WhereClause\opt HasResultType\opt Offers\opt MethodBody \\
-                    \| MethMods \xcd"operator" TypeParams\opt \xcd"(" FormalParam  \xcd")" BinOp \xcd"this" WhereClause\opt HasResultType\opt Offers\opt MethodBody \\
-                    \| MethMods \xcd"operator" TypeParams\opt PrefixOp \xcd"this" WhereClause\opt HasResultType\opt Offers\opt MethodBody \\
-                    \| MethMods \xcd"operator" \xcd"this" TypeParams\opt FormalParams WhereClause\opt HasResultType\opt Offers\opt MethodBody \\
-                    \| MethMods \xcd"operator" \xcd"this" TypeParams\opt FormalParams \xcd"=" \xcd"(" FormalParam  \xcd")" WhereClause\opt HasResultType\opt Offers\opt MethodBody \\
-                    \| MethMods \xcd"operator" TypeParams\opt \xcd"(" FormalParam  \xcd")" \xcd"as" Type WhereClause\opt Offers\opt MethodBody \\
-                    \| MethMods \xcd"operator" TypeParams\opt \xcd"(" FormalParam  \xcd")" \xcd"as" \xcd"?" WhereClause\opt HasResultType\opt Offers\opt MethodBody \\
-                    \| MethMods \xcd"operator" TypeParams\opt \xcd"(" FormalParam  \xcd")" WhereClause\opt HasResultType\opt Offers\opt MethodBody \\
+          MethodDecl \: MethMods \xcd"def" Id TypeParams\opt Formals Guard\opt HasResultType\opt Offers\opt MethodBody & (\ref{prod:MethodDecl}) \\
+                     \| MethMods \xcd"operator" TypeParams\opt \xcd"(" Formal  \xcd")" BinOp \xcd"(" Formal  \xcd")" Guard\opt HasResultType\opt Offers\opt MethodBody \\
+                     \| MethMods \xcd"operator" TypeParams\opt PrefixOp \xcd"(" Formal  \xcd")" Guard\opt HasResultType\opt Offers\opt MethodBody \\
+                     \| MethMods \xcd"operator" TypeParams\opt \xcd"this" BinOp \xcd"(" Formal  \xcd")" Guard\opt HasResultType\opt Offers\opt MethodBody \\
+                     \| MethMods \xcd"operator" TypeParams\opt \xcd"(" Formal  \xcd")" BinOp \xcd"this" Guard\opt HasResultType\opt Offers\opt MethodBody \\
+                     \| MethMods \xcd"operator" TypeParams\opt PrefixOp \xcd"this" Guard\opt HasResultType\opt Offers\opt MethodBody \\
+                     \| MethMods \xcd"operator" \xcd"this" TypeParams\opt Formals Guard\opt HasResultType\opt Offers\opt MethodBody \\
+                     \| MethMods \xcd"operator" \xcd"this" TypeParams\opt Formals \xcd"=" \xcd"(" Formal  \xcd")" Guard\opt HasResultType\opt Offers\opt MethodBody \\
+                     \| MethMods \xcd"operator" TypeParams\opt \xcd"(" Formal  \xcd")" \xcd"as" Type Guard\opt Offers\opt MethodBody \\
+                     \| MethMods \xcd"operator" TypeParams\opt \xcd"(" Formal  \xcd")" \xcd"as" \xcd"?" Guard\opt HasResultType\opt Offers\opt MethodBody \\
+                     \| MethMods \xcd"operator" TypeParams\opt \xcd"(" Formal  \xcd")" Guard\opt HasResultType\opt Offers\opt MethodBody \\
 %(FROM #(prod:TypeParams)#)
           TypeParams \: \xcd"[" TypeParamList \xcd"]" & (\ref{prod:TypeParams}) \\
-%(FROM #(prod:FormalParams)#)
-        FormalParams \: \xcd"(" FormalParamList\opt \xcd")" & (\ref{prod:FormalParams}) \\
-%(FROM #(prod:FormalParamList)#)
-     FormalParamList \: FormalParam & (\ref{prod:FormalParamList}) \\
-                    \| FormalParamList \xcd"," FormalParam \\
+%(FROM #(prod:Formals)#)
+             Formals \: \xcd"(" FormalList\opt \xcd")" & (\ref{prod:Formals}) \\
+%(FROM #(prod:FormalList)#)
+          FormalList \: Formal & (\ref{prod:FormalList}) \\
+                     \| FormalList \xcd"," Formal \\
 %(FROM #(prod:HasResultType)#)
        HasResultType \: \xcd":" Type & (\ref{prod:HasResultType}) \\
-                    \| \xcd"<:" Type \\
+                     \| \xcd"<:" Type \\
 %(FROM #(prod:MethodBody)#)
           MethodBody \: \xcd"=" LastExp \xcd";" & (\ref{prod:MethodBody}) \\
-                    \| \xcd"=" Annotations\opt \xcd"{" BlockStatements\opt LastExp \xcd"}" \\
-                    \| \xcd"=" Annotations\opt Block \\
-                    \| Annotations\opt Block \\
-                    \| \xcd";" \\
+                     \| \xcd"=" Annotations\opt \xcd"{" BlockStatements\opt LastExp \xcd"}" \\
+                     \| \xcd"=" Annotations\opt Block \\
+                     \| Annotations\opt Block \\
+                     \| \xcd";" \\
 \end{bbgrammar}
 %##)
 
@@ -612,7 +612,7 @@ information from \xcd`if`s.)  It will compile with \xcd`STATIC_CHECKS` off,
 but it may insert an extra \xcd`null`-test for \xcd`x`.  
 %~~gen ^^^ Classes90
 % package Classes.methodguardnadacastthingie;
-% // OPTIONS: -STATIC_CALLS
+%//OPTIONS: -STATIC_CHECKS
 % class Example {var f : String = ""; def example(x:Object){x != null} = {this.f = x.toString();}}
 % class Eyample {
 %~~vis
@@ -681,8 +681,8 @@ Using a reference to an outer class, \xcd`Outer.this`, in a constraint, is not s
 %##(PropertyMethodDecl
 \begin{bbgrammar}
 %(FROM #(prod:PropertyMethodDecl)#)
-  PropertyMethodDecl \: MethMods Id TypeParams\opt FormalParams WhereClause\opt HasResultType\opt MethodBody & (\ref{prod:PropertyMethodDecl}) \\
-                    \| MethMods Id WhereClause\opt HasResultType\opt MethodBody \\
+  PropertyMethodDecl \: MethMods Id TypeParams\opt Formals Guard\opt HasResultType\opt MethodBody & (\ref{prod:PropertyMethodDecl}) \\
+                     \| MethMods Id Guard\opt HasResultType\opt MethodBody \\
 \end{bbgrammar}
 %##)
 
@@ -980,9 +980,9 @@ Instances of classes are created by the \xcd`new` expression: \\
 %##(ClassInstCreationExp
 \begin{bbgrammar}
 %(FROM #(prod:ClassInstCreationExp)#)
-ClassInstCreationExp \: \xcd"new" TypeName TypeArguments\opt \xcd"(" ArgumentList\opt \xcd")" ClassBody\opt & (\ref{prod:ClassInstCreationExp}) \\
-                    \| Primary \xcd"." \xcd"new" Id TypeArguments\opt \xcd"(" ArgumentList\opt \xcd")" ClassBody\opt \\
-                    \| AmbiguousName \xcd"." \xcd"new" Id TypeArguments\opt \xcd"(" ArgumentList\opt \xcd")" ClassBody\opt \\
+ClassInstCreationExp \: \xcd"new" TypeName TypeArgs\opt \xcd"(" ArgumentList\opt \xcd")" ClassBody\opt & (\ref{prod:ClassInstCreationExp}) \\
+                     \| Primary \xcd"." \xcd"new" Id TypeArgs\opt \xcd"(" ArgumentList\opt \xcd")" ClassBody\opt \\
+                     \| AmbiguousName \xcd"." \xcd"new" Id TypeArgs\opt \xcd"(" ArgumentList\opt \xcd")" ClassBody\opt \\
 \end{bbgrammar}
 %##)
 
@@ -1188,17 +1188,17 @@ any place.
 %##(MethodDecl
 \begin{bbgrammar}
 %(FROM #(prod:MethodDecl)#)
-          MethodDecl \: MethMods \xcd"def" Id TypeParams\opt FormalParams WhereClause\opt HasResultType\opt Offers\opt MethodBody & (\ref{prod:MethodDecl}) \\
-                    \| MethMods \xcd"operator" TypeParams\opt \xcd"(" FormalParam  \xcd")" BinOp \xcd"(" FormalParam  \xcd")" WhereClause\opt HasResultType\opt Offers\opt MethodBody \\
-                    \| MethMods \xcd"operator" TypeParams\opt PrefixOp \xcd"(" FormalParam  \xcd")" WhereClause\opt HasResultType\opt Offers\opt MethodBody \\
-                    \| MethMods \xcd"operator" TypeParams\opt \xcd"this" BinOp \xcd"(" FormalParam  \xcd")" WhereClause\opt HasResultType\opt Offers\opt MethodBody \\
-                    \| MethMods \xcd"operator" TypeParams\opt \xcd"(" FormalParam  \xcd")" BinOp \xcd"this" WhereClause\opt HasResultType\opt Offers\opt MethodBody \\
-                    \| MethMods \xcd"operator" TypeParams\opt PrefixOp \xcd"this" WhereClause\opt HasResultType\opt Offers\opt MethodBody \\
-                    \| MethMods \xcd"operator" \xcd"this" TypeParams\opt FormalParams WhereClause\opt HasResultType\opt Offers\opt MethodBody \\
-                    \| MethMods \xcd"operator" \xcd"this" TypeParams\opt FormalParams \xcd"=" \xcd"(" FormalParam  \xcd")" WhereClause\opt HasResultType\opt Offers\opt MethodBody \\
-                    \| MethMods \xcd"operator" TypeParams\opt \xcd"(" FormalParam  \xcd")" \xcd"as" Type WhereClause\opt Offers\opt MethodBody \\
-                    \| MethMods \xcd"operator" TypeParams\opt \xcd"(" FormalParam  \xcd")" \xcd"as" \xcd"?" WhereClause\opt HasResultType\opt Offers\opt MethodBody \\
-                    \| MethMods \xcd"operator" TypeParams\opt \xcd"(" FormalParam  \xcd")" WhereClause\opt HasResultType\opt Offers\opt MethodBody \\
+          MethodDecl \: MethMods \xcd"def" Id TypeParams\opt Formals Guard\opt HasResultType\opt Offers\opt MethodBody & (\ref{prod:MethodDecl}) \\
+                     \| MethMods \xcd"operator" TypeParams\opt \xcd"(" Formal  \xcd")" BinOp \xcd"(" Formal  \xcd")" Guard\opt HasResultType\opt Offers\opt MethodBody \\
+                     \| MethMods \xcd"operator" TypeParams\opt PrefixOp \xcd"(" Formal  \xcd")" Guard\opt HasResultType\opt Offers\opt MethodBody \\
+                     \| MethMods \xcd"operator" TypeParams\opt \xcd"this" BinOp \xcd"(" Formal  \xcd")" Guard\opt HasResultType\opt Offers\opt MethodBody \\
+                     \| MethMods \xcd"operator" TypeParams\opt \xcd"(" Formal  \xcd")" BinOp \xcd"this" Guard\opt HasResultType\opt Offers\opt MethodBody \\
+                     \| MethMods \xcd"operator" TypeParams\opt PrefixOp \xcd"this" Guard\opt HasResultType\opt Offers\opt MethodBody \\
+                     \| MethMods \xcd"operator" \xcd"this" TypeParams\opt Formals Guard\opt HasResultType\opt Offers\opt MethodBody \\
+                     \| MethMods \xcd"operator" \xcd"this" TypeParams\opt Formals \xcd"=" \xcd"(" Formal  \xcd")" Guard\opt HasResultType\opt Offers\opt MethodBody \\
+                     \| MethMods \xcd"operator" TypeParams\opt \xcd"(" Formal  \xcd")" \xcd"as" Type Guard\opt Offers\opt MethodBody \\
+                     \| MethMods \xcd"operator" TypeParams\opt \xcd"(" Formal  \xcd")" \xcd"as" \xcd"?" Guard\opt HasResultType\opt Offers\opt MethodBody \\
+                     \| MethMods \xcd"operator" TypeParams\opt \xcd"(" Formal  \xcd")" Guard\opt HasResultType\opt Offers\opt MethodBody \\
 \end{bbgrammar}
 %##)
 
@@ -1793,6 +1793,7 @@ does not involve \xcd`?`.
 \begin{ex}
 %~~gen ^^^ Classes3g2h
 % package Classes3g2h;
+% KNOWNFAIL
 %~~vis
 \begin{xten}
 class Numbered(n:Int) {
@@ -2134,7 +2135,7 @@ the form of a constrained type (the ``return type'' of the constructor):
 %##(CtorDecl
 \begin{bbgrammar}
 %(FROM #(prod:CtorDecl)#)
-            CtorDecl \: Mods\opt \xcd"def" \xcd"this" TypeParams\opt FormalParams WhereClause\opt HasResultType\opt Offers\opt CtorBody & (\ref{prod:CtorDecl}) \\
+            CtorDecl \: Mods\opt \xcd"def" \xcd"this" TypeParams\opt Formals Guard\opt HasResultType\opt Offers\opt CtorBody & (\ref{prod:CtorDecl}) \\
 \end{bbgrammar}
 %##)
 

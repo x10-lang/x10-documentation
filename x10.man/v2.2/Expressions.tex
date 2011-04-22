@@ -25,7 +25,6 @@ is of type \xcd`Int{self==1}`, and \xcd`true` is of type
 \begin{bbgrammar}
 %(FROM #(prod:Primary)#)
              Primary \: \xcd"this" (\ref{prod:Primary}) \\
-                    \| \xcd"this" \\
                     \| ClassName \xcd"." \xcd"this" \\
 \end{bbgrammar}
 
@@ -129,11 +128,11 @@ val m = n + 56;
 \begin{bbgrammar}
 %(FROM #(prod:FieldAccess)#)
          FieldAccess \: Primary \xcd"." Id & (\ref{prod:FieldAccess}) \\
-                    \| \xcd"super" \xcd"." Id \\
-                    \| ClassName \xcd"." \xcd"super"  \xcd"." Id \\
-                    \| Primary \xcd"." \xcd"class"  \\
-                    \| \xcd"super" \xcd"." \xcd"class"  \\
-                    \| ClassName \xcd"." \xcd"super"  \xcd"." \xcd"class"  \\
+                     \| \xcd"super" \xcd"." Id \\
+                     \| ClassName \xcd"." \xcd"super"  \xcd"." Id \\
+                     \| Primary \xcd"." \xcd"class"  \\
+                     \| \xcd"super" \xcd"." \xcd"class"  \\
+                     \| ClassName \xcd"." \xcd"super"  \xcd"." \xcd"class"  \\
 \end{bbgrammar}
 %##)
 
@@ -245,20 +244,23 @@ Function literals are described in \Sref{Functions}.
 \index{method!calling}
 \index{method!invoking}
 
-%##(MethodInvocation ArgumentList
+%##(MethodInvocation ArgumentList MethodPrimaryPrefix MethodSuperPrefix MethodClassNameSuperPrefix MethodName
 \begin{bbgrammar}
 %(FROM #(prod:MethodInvocation)#)
     MethodInvocation \: MethodPrimaryPrefix \xcd"(" ArgumentList\opt \xcd")" & (\ref{prod:MethodInvocation}) \\
-                    \| MethodSuperPrefix \xcd"(" ArgumentList\opt \xcd")" \\
-                    \| MethodClassNameSuperPrefix \xcd"(" ArgumentList\opt \xcd")" \\
-                    \| MethodName TypeArguments\opt \xcd"(" ArgumentList\opt \xcd")" \\
-                    \| Primary \xcd"." Id TypeArguments\opt \xcd"(" ArgumentList\opt \xcd")" \\
-                    \| \xcd"super" \xcd"." Id TypeArguments\opt \xcd"(" ArgumentList\opt \xcd")" \\
-                    \| ClassName \xcd"." \xcd"super"  \xcd"." Id TypeArguments\opt \xcd"(" ArgumentList\opt \xcd")" \\
-                    \| Primary TypeArguments\opt \xcd"(" ArgumentList\opt \xcd")" \\
+                     \| MethodSuperPrefix \xcd"(" ArgumentList\opt \xcd")" \\
+                     \| MethodClassNameSuperPrefix \xcd"(" ArgumentList\opt \xcd")" \\
+                     \| MethodName TypeArgs\opt \xcd"(" ArgumentList\opt \xcd")" \\
+                     \| Primary \xcd"." Id TypeArgs\opt \xcd"(" ArgumentList\opt \xcd")" \\
+                     \| \xcd"super" \xcd"." Id TypeArgs\opt \xcd"(" ArgumentList\opt \xcd")" \\
+                     \| ClassName \xcd"." \xcd"super"  \xcd"." Id TypeArgs\opt \xcd"(" ArgumentList\opt \xcd")" \\
+                     \| Primary TypeArgs\opt \xcd"(" ArgumentList\opt \xcd")" \\
 %(FROM #(prod:ArgumentList)#)
         ArgumentList \: Exp & (\ref{prod:ArgumentList}) \\
-                    \| ArgumentList \xcd"," Exp \\
+                     \| ArgumentList \xcd"," Exp \\
+%(FROM #(prod:MethodName)#)
+          MethodName \: Id & (\ref{prod:MethodName}) \\
+                     \| AmbiguousName \xcd"." Id \\
 \end{bbgrammar}
 %##)
 
@@ -354,7 +356,7 @@ fail at runtime if it is zero.
 
 %~~gen ^^^ Expressions60
 %package Expressions.Calls.Guarded.By.Walls;
-% // OPTIONS: -STATIC_CALLS
+%//OPTIONS: -STATIC_CHECKS
 %~~vis
 \begin{xten}
 class DivideBy(denom:Int) {
@@ -362,7 +364,7 @@ class DivideBy(denom:Int) {
   def example() {
      val thisCast = (this as DivideBy{self.denom != 0});
      thisCast.div(100);
-     //ERROR (with STATIC_CALLS): this.div(100);  
+     //ERROR (with STATIC_CHECKS): this.div(100);  
   }
 }
 \end{xten}
@@ -394,28 +396,28 @@ appearing in \xcd`Cl`.
 
 \section{Assignment}\index{assignment}\label{AssignmentStatement}
 
-%##(Assignment LeftHandSide AssignmentOperator
+%##(Assignment LeftHandSide AsstOp
 \begin{bbgrammar}
 %(FROM #(prod:Assignment)#)
-          Assignment \: LeftHandSide AssignmentOperator AssignmentExp & (\ref{prod:Assignment}) \\
-                    \| ExpName  \xcd"(" ArgumentList\opt \xcd")" AssignmentOperator AssignmentExp \\
-                    \| Primary  \xcd"(" ArgumentList\opt \xcd")" AssignmentOperator AssignmentExp \\
+          Assignment \: LeftHandSide AsstOp AsstExp & (\ref{prod:Assignment}) \\
+                     \| ExpName  \xcd"(" ArgumentList\opt \xcd")" AsstOp AsstExp \\
+                     \| Primary  \xcd"(" ArgumentList\opt \xcd")" AsstOp AsstExp \\
 %(FROM #(prod:LeftHandSide)#)
         LeftHandSide \: ExpName & (\ref{prod:LeftHandSide}) \\
-                    \| FieldAccess \\
-%(FROM #(prod:AssignmentOperator)#)
-  AssignmentOperator \: \xcd"=" & (\ref{prod:AssignmentOperator}) \\
-                    \| \xcd"*=" \\
-                    \| \xcd"/=" \\
-                    \| \xcd"%=" \\
-                    \| \xcd"+=" \\
-                    \| \xcd"-=" \\
-                    \| \xcd"<<=" \\
-                    \| \xcd">>=" \\
-                    \| \xcd">>>=" \\
-                    \| \xcd"&=" \\
-                    \| \xcd"^=" \\
-                    \| \xcd"|=" \\
+                     \| FieldAccess \\
+%(FROM #(prod:AsstOp)#)
+              AsstOp \: \xcd"=" & (\ref{prod:AsstOp}) \\
+                     \| \xcd"*=" \\
+                     \| \xcd"/=" \\
+                     \| \xcd"%=" \\
+                     \| \xcd"+=" \\
+                     \| \xcd"-=" \\
+                     \| \xcd"<<=" \\
+                     \| \xcd">>=" \\
+                     \| \xcd">>>=" \\
+                     \| \xcd"&=" \\
+                     \| \xcd"^=" \\
+                     \| \xcd"|=" \\
 \end{bbgrammar}
 %##)
 
@@ -735,10 +737,10 @@ than negative infinity.
 \begin{bbgrammar}
 %(FROM #(prod:ConditionalExp)#)
       ConditionalExp \: ConditionalOrExp & (\ref{prod:ConditionalExp}) \\
-                    \| ClosureExp \\
-                    \| AtExp \\
-                    \| FinishExp \\
-                    \| ConditionalOrExp \xcd"?" Exp \xcd":" ConditionalExp \\
+                     \| ClosureExp \\
+                     \| AtExp \\
+                     \| FinishExp \\
+                     \| ConditionalOrExp \xcd"?" Exp \xcd":" ConditionalExp \\
 \end{bbgrammar}
 %##)
 
@@ -1058,9 +1060,9 @@ compared for equality.
 %##(ClassInstCreationExp
 \begin{bbgrammar}
 %(FROM #(prod:ClassInstCreationExp)#)
-ClassInstCreationExp \: \xcd"new" TypeName TypeArguments\opt \xcd"(" ArgumentList\opt \xcd")" ClassBody\opt & (\ref{prod:ClassInstCreationExp}) \\
-                    \| Primary \xcd"." \xcd"new" Id TypeArguments\opt \xcd"(" ArgumentList\opt \xcd")" ClassBody\opt \\
-                    \| AmbiguousName \xcd"." \xcd"new" Id TypeArguments\opt \xcd"(" ArgumentList\opt \xcd")" ClassBody\opt \\
+ClassInstCreationExp \: \xcd"new" TypeName TypeArgs\opt \xcd"(" ArgumentList\opt \xcd")" ClassBody\opt & (\ref{prod:ClassInstCreationExp}) \\
+                     \| Primary \xcd"." \xcd"new" Id TypeArgs\opt \xcd"(" ArgumentList\opt \xcd")" ClassBody\opt \\
+                     \| AmbiguousName \xcd"." \xcd"new" Id TypeArgs\opt \xcd"(" ArgumentList\opt \xcd")" ClassBody\opt \\
 \end{bbgrammar}
 %##)
 
@@ -1106,8 +1108,8 @@ possibility of a {\em ClassBody}.
 \begin{bbgrammar}
 %(FROM #(prod:CastExp)#)
              CastExp \: Primary & (\ref{prod:CastExp}) \\
-                    \| ExpName \\
-                    \| CastExp \xcd"as" Type \\
+                     \| ExpName \\
+                     \| CastExp \xcd"as" Type \\
 \end{bbgrammar}
 %##)
 
@@ -1343,13 +1345,13 @@ to determine whether an object is an instance of the given type:
 \begin{bbgrammar}
 %(FROM #(prod:RelationalExp)#)
        RelationalExp \: ShiftExp & (\ref{prod:RelationalExp}) \\
-                    \| HasZeroConstraint \\
-                    \| SubtypeConstraint \\
-                    \| RelationalExp \xcd"<" ShiftExp \\
-                    \| RelationalExp \xcd">" ShiftExp \\
-                    \| RelationalExp \xcd"<=" ShiftExp \\
-                    \| RelationalExp \xcd">=" ShiftExp \\
-                    \| RelationalExp \xcd"instanceof" Type \\
+                     \| HasZeroConstraint \\
+                     \| SubtypeConstraint \\
+                     \| RelationalExp \xcd"<" ShiftExp \\
+                     \| RelationalExp \xcd">" ShiftExp \\
+                     \| RelationalExp \xcd"<=" ShiftExp \\
+                     \| RelationalExp \xcd">=" ShiftExp \\
+                     \| RelationalExp \xcd"instanceof" Type \\
 \end{bbgrammar}
 %##)
 
@@ -1389,7 +1391,7 @@ rejects it.
 \begin{bbgrammar}
 %(FROM #(prod:SubtypeConstraint)#)
    SubtypeConstraint \: Type  \xcd"<:" Type  & (\ref{prod:SubtypeConstraint}) \\
-                    \| Type  \xcd":>" Type  \\
+                     \| Type  \xcd":>" Type  \\
 \end{bbgrammar}
 %##)
 
@@ -1579,8 +1581,8 @@ user-defined coercions and conversions (\Sref{sec:user-defined-conversions}).
 \begin{bbgrammar}
 %(FROM #(prod:CastExp)#)
              CastExp \: Primary & (\ref{prod:CastExp}) \\
-                    \| ExpName \\
-                    \| CastExp \xcd"as" Type \\
+                     \| ExpName \\
+                     \| CastExp \xcd"as" Type \\
 \end{bbgrammar}
 %##)
 

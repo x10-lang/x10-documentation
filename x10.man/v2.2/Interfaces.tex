@@ -107,27 +107,31 @@ class Lassie implements Dog, Star{}
 
 \label{DepType:Interface}
 
-%##(NormalInterfaceDecl TypeParamsWithVariance WhereClause ExtendsInterfaces InterfaceBody InterfaceMemberDecl
+%##(NormalInterfaceDecl TypeParamsI TypeParamI Guard ExtendsInterfaces InterfaceBody InterfaceMemberDecl
 \begin{bbgrammar}
 %(FROM #(prod:NormalInterfaceDecl)#)
- NormalInterfaceDecl \: Mods\opt \xcd"interface" Id TypeParamsWithVariance\opt Properties\opt WhereClause\opt ExtendsInterfaces\opt InterfaceBody & (\ref{prod:NormalInterfaceDecl}) \\
-%(FROM #(prod:TypeParamsWithVariance)#)
-TypeParamsWithVariance \: \xcd"[" TypeParamWithVarianceList \xcd"]" & (\ref{prod:TypeParamsWithVariance}) \\
-%(FROM #(prod:WhereClause)#)
-         WhereClause \: DepParams & (\ref{prod:WhereClause}) \\
+ NormalInterfaceDecl \: Mods\opt \xcd"interface" Id TypeParamsI\opt Properties\opt Guard\opt ExtendsInterfaces\opt InterfaceBody & (\ref{prod:NormalInterfaceDecl}) \\
+%(FROM #(prod:TypeParamsI)#)
+         TypeParamsI \: \xcd"[" TypeParamIList \xcd"]" & (\ref{prod:TypeParamsI}) \\
+%(FROM #(prod:TypeParamI)#)
+          TypeParamI \: Id & (\ref{prod:TypeParamI}) \\
+                     \| \xcd"+" Id \\
+                     \| \xcd"-" Id \\
+%(FROM #(prod:Guard)#)
+               Guard \: DepParams & (\ref{prod:Guard}) \\
 %(FROM #(prod:ExtendsInterfaces)#)
    ExtendsInterfaces \: \xcd"extends" Type & (\ref{prod:ExtendsInterfaces}) \\
-                    \| ExtendsInterfaces \xcd"," Type \\
+                     \| ExtendsInterfaces \xcd"," Type \\
 %(FROM #(prod:InterfaceBody)#)
        InterfaceBody \: \xcd"{" InterfaceMemberDecls\opt \xcd"}" & (\ref{prod:InterfaceBody}) \\
 %(FROM #(prod:InterfaceMemberDecl)#)
  InterfaceMemberDecl \: MethodDecl & (\ref{prod:InterfaceMemberDecl}) \\
-                    \| PropertyMethodDecl \\
-                    \| FieldDecl \\
-                    \| ClassDecl \\
-                    \| InterfaceDecl \\
-                    \| TypeDefDecl \\
-                    \| \xcd";" \\
+                     \| PropertyMethodDecl \\
+                     \| FieldDecl \\
+                     \| ClassDecl \\
+                     \| InterfaceDecl \\
+                     \| TypeDefDecl \\
+                     \| \xcd";" \\
 \end{bbgrammar}
 %##)
 
