@@ -10,7 +10,7 @@ As languages become more and more complex,
 
 X10 is an object oriented programming language with a sophisticated
     type system (constraints, class invariants, non-erased generics, closures)
-    and concurrency constructs (asynchronous activities, multiple places, global references).
+    and concurrency constructs (asynchronous activities, multiple places\removeGlobalRef{, global references}).
 This paper shows that object initialization is a cross-cutting concern
     that interact with other features in the language.
 We discuss several language designs that restrict these interactions,
@@ -436,9 +436,10 @@ The expression \code{at(p) E} evaluates \code{p} to a place, then copies all cap
 Note that \code{at} is a synchronous construct, meaning the current activity is blocked until the \code{at} finishes.
 This construct can also be used as a statement, in which case there is no copy back
     (but there is still a notification that is sent back when the \code{at} finishes, in order to release the blocked activity in the original place).
+\removeGlobalRef{
 \Ref{Section}{Global-references} describes how \emph{global references} are used in distributed code
     to allow objects in one place to point to objects in another place.
-
+}
 
 
 %\begin{figure}

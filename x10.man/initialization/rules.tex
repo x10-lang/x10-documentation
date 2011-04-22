@@ -6,7 +6,7 @@ We begin with object-oriented features found in mainstream languages,
 We then proceed to X10's type-system features,
     such as constraints, properties, class invariants, closures, (non-erased) generics, and structs.
 The parallel features of X10 allow writing concurrent code (using \code{finish} and \code{async}),
-    and distributed code (using \code{at} and global references).
+    and distributed code (using \code{at}\removeGlobalRef{ and global references}).
 Next we describe the inter-procedural data-flow analysis that ensures that
     a field is read only after it was assigned.
 Finally, we summarize the virtues and attributes of initialization in X10.
@@ -554,7 +554,7 @@ Finally, we see an example of usages of \code{B[T]},
 
 We now turn our attention to the parallel features of X10:
     concurrent programming (\code{finish} and \code{async})
-    and distributed programming (\code{at} and global references).
+    and distributed programming (\code{at}\removeGlobalRef{ and global references}).
 \Ref{Section}{Parallelism} already explained how parallel code is written in X10,
     and what are the common pitfalls of initialization in parallel code.
 Next we present the rules that prevent these pitfalls.
@@ -654,6 +654,7 @@ Consequently, we also report that field \code{f} was not definitely assigned.
 %}
 %\end{lstlisting}
 
+\removeGlobalRef{
 \subsection{Global references}
 \label{Section:Global-references}
 A distributed data-structures is dispersed over multiple places,
@@ -753,7 +754,7 @@ There is an RFC that suggests an annotation that will automatically convert a cl
     using this pattern.
 
 
-
+}
 
 
 \subsection{Read and write of fields}
