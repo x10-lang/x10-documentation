@@ -323,14 +323,14 @@ struct Pair[T,U] {
 }
 class Example {
   static def divmod(var a:UInt, b:UInt): Pair[UInt, UInt] {
-     assert b > 0;
-     var q : UInt = 0;
+     assert b > 0u;
+     var q : UInt = 0u;
      while (a > b) {q++; a -= b;}
      return Pair(q, a); 
   }
   static def example() {
      val qr = divmod(22, 7);
-     assert qr.first == 3 && qr.second == 1;
+     assert qr.first == 3u && qr.second == 1u;
   }
 }
 \end{xten}

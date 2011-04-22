@@ -222,8 +222,8 @@ register a sub-activity on it with \xcd`async clocked(c) S`.
 to indicate that it has completed whatever work it wishes to perform
 in the current phase of a  clock \xcd"c" it is registered with, without
 suspending itself altogether. It may do so  by executing 
-%~~exp~~`~~`~~c:Clock ~~ ^^^ Clocks60
-\xcd`c.resume()`.
+%~~stmt~~`~~`~~c:Clock ~~ ^^^ Clocks60
+\xcd`c.resume();`.
 
 
 
@@ -264,8 +264,8 @@ An activity blocked on \xcd"advance()" resumes execution once
 it is marked for progress by all the clocks it is registered with.
 
 \subsection{Dropping clocks}\index{clock!drop}\label{sec:clock:drop}
-%~~exp~~`~~`~~ c:Clock~~ ^^^ Clocks70
-An activity may drop a clock by executing \xcd`c.drop()`.
+%~~stmt~~`~~`~~ c:Clock~~ ^^^ Clocks70
+An activity may drop a clock by executing \xcd`c.drop();`.
 
 
 
