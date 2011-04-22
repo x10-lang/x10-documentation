@@ -73,7 +73,8 @@ class B extends A {
 \Ref{Figure}{Escaping-this} shows X10 code that demonstrates the interaction
     between inheritance and initialization,
     and explains by example why leaking \this during construction can cause bugs.
-In all the examples, errors issued by the X10 compiler are marked with \code{//err}.
+In all the examples, all errors issued by the X10 compiler are marked with \code{//err}
+    (and if there is no such mark then the code is correct).
 
 We say that an object is \emph{raw} (also called partially initialized) before its constructor ends,
     and afterward it is \emph{cooked} (also called fully initialized).
@@ -564,8 +565,8 @@ Next we present the rules that prevent these pitfalls.
 \begin{figure}
 \begin{lstlisting}
 class A {
-  var f1:Int;
-  val f2:Int;
+  var f1:Int; // note: var field
+  val f2:Int; // note: val field
   val f3:Int;
   def this() {//err: f2 was not definitely assigned
     async f1 = 1;
@@ -595,8 +596,10 @@ All three fields in \code{A} are asynchronously assigned,
     however, only \code{f2} is not definitely assigned.
 Assigning to \code{f3} has an enclosing \code{finish}, so
     it is definitely assigned.
-Field \code{f1} is also definitely assigned, because from rule~\userule{Rule10} it has an implicit zero field initializer.
-However, field \code{f2} is only asynchronously assigned,
+Field \code{f1} is also definitely assigned, because it is non-final
+    so from rule~\userule{Rule10} it has an implicit zero field initializer.
+However, field \code{f2} is final so it does not have an implicit field initializer.
+Moreover, \code{f2} is only asynchronously assigned,
     and the constructor does not wait for this assignment to finish,
     thus violating rule~\userule{Rule13}.
 (The exact data-flow analysis to enforce rule~\userule{Rule13} is described in
@@ -713,6 +716,9 @@ Note how \code{root()} returns the referent of the global reference.
 class GlobalCounter {
   private val root = new GlobalRef(this);
   transient var count:Int;
+  def this() {
+    val aliasToThis = this.root(); //err
+  }
   def inc() {
     return at(root.home) root().count++;
   }
@@ -721,7 +727,7 @@ class GlobalCounter {
 \definerule{TransientRule}
 \caption{A global counter example.
     \textbf{Revision of~\userule{Rule3}:}
-        A raw \this can only escape to a global ref constructor in a private field initializer;
+        A raw \this can only escape to a \code{GlobalRef} constructor in a private field initializer;
             that field cannot be read via a raw \this receiver.
     \myrule{\arabic{TransientRule}}{The type of a \code{transient} field must satisfy \code{haszero}}
     }
@@ -731,8 +737,11 @@ class GlobalCounter {
 Note that a raw \this leaked into the constructor of \code{GlobalRef}
     which is a violation of rule~\userule{Rule3}.
 Because this idiom is common in distributed programming,
-    we relaxed this rule and allow \this to escape into a global ref,
-    but only in a private field initializer that is not read during construction.
+    we relaxed this rule and allow \this to escape but only into a \code{GlobalRef} object
+    with a severe restriction:
+    it must happen in a private field initializer that is not read during construction.
+For example, \code{root} cannot be read in the constructor
+    because it contains an alias to \code{this} that might escape.
 
 As in Java, the \code{transient} keyword marks a field that should not be serialized.
 Upon de-serialization, such a field has the zero value.
@@ -864,6 +873,16 @@ The fixed-point calculation, in every iteration, increases \code{\itshape reads}
     until a fixed-point is reached.
 
 
+\subsection{Static initialization}
+X10 does not support dynamic class loading as opposed to Java,
+    and all static fields in X10 are final.
+Thus, initialization of static fields is a one-time phase, %denoted the static-init phase,
+    that is done before the \code{main} method is executed.
+Reading a static field in this phase \emph{waits} until the field is initialized,
+    which may lead to dead-lock.
+However, in practice, deadlock is rare,
+    and usually found quickly the first time a program is executed.
+%The exact details can be found in the language specification.
 
 \subsection{Virtues and attributes of initialization in X10}
 We assume there is a single \this variable, because all nested classes were converted to static,

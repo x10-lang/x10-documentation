@@ -25,6 +25,18 @@ annotations are required.  We decided that this, in combination with the
 disadvantages given above, was too problematic to justify the advantages of
 Java-style object initialization.
 
+For example, consider field \code{birthday} that cannot be \code{null}, i.e., it does not have a default value:
+\begin{lstlisting}
+class Person { val birthday:Date{self!=null}; ...}
+\end{lstlisting}
+Then in this design the programmer would have to specify a default value for this field,
+    e.g., \code{Date.MIN\_DATE}.
+The field would be initialized with this default value, and it's final value would be assigned only later.
+Specifying default values seems like a cumbersome design.
+%However, in most cases this default value is not even used because
+%    a final field should be read only after it was written.
+%Therefore, forcing a programmer to assign default values seemed like a problematic design.
+
 \subsection{Proto Design}
 
 If we want to allow some of the programs that the Hardhat design rejects, such

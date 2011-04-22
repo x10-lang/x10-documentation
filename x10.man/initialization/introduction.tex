@@ -49,7 +49,7 @@ Finally, if the type-system is augmented, for example, with non-null types, then
     a default value no longer exists,
     which leads to complicated type-systems for initialization~\cite{Fahndrich:2007:EOI:1297027.1297052,XinQi:2009}.
 
-\mbox{C++} is sacrifices type-safety on the alter of performance. %as usual, gives you enough rope to hang yourself, but in an amazing speed.
+\mbox{C++} sacrifices type-safety on the alter of performance. %as usual, gives you enough rope to hang yourself, but in an amazing speed.
 Fields are not zero-initialized, and therefore if \this leaks,
     one can read an uninitialized field.
 Moreover, method calls are statically bound during construction,
@@ -234,7 +234,10 @@ The hardhat design in X10 (described in \Ref{Section}{rules})
     because its rules prohibit leaking \this,
     and they only allow calling private or final methods (that cannot be overridden).
 It is possible to annotate a method with \code{@NoThisAccess},
-    which allows overriding but prohibits any access to \this.  This can be useful, e.g., if you want to subclass and override a factory method to change the concrete type of the object constructed, when the original class uses the factory method in its constructor.
+    which allows overriding but prohibits any access to \this.
+This can be useful, e.g., if you want to subclass and override a factory method
+    to change the concrete type of the object constructed,
+    when the original class uses the factory method in its constructor.
 It is possible to fix the bugs in this example by following the hardhat initialization rules
     in the following way:
     (i)~Instead of leaking \this in the constructor,
@@ -246,6 +249,8 @@ It is possible to fix the bugs in this example by following the hardhat initiali
         this method cannot be overridden so it can be called during construction;
         the public non-final method \code{toString} could delegate to \code{toStringOnlyA}.
 
+The hardhat design of X10 guarantees that a field can be read only after it was written.
+Therefore, there is no need to zero-initialize all fields before executing the constructor (as done in Java).
 
 
 \subsection{Final fields, Concurrency, and Serialization}
@@ -507,8 +512,9 @@ class Fib {
 \label{Figure:DistributedFib}
 \end{figure}
 
-\Ref{Figure}{DistributedFib} shows how to calculate the fibonacci number \code{fib(n)}
+\Ref{Figure}{DistributedFib} shows how to calculate the fibonacci number \code{fib(n)} in X10
     using concurrent and distributed code.
+The keywords \code{val} and \code{var} are modifiers that correspond to final and non-final variables, respectively.
 Note how \code{fib(n-2)} is calculated asynchronously at the next place (\code{next()} returns the next place in a cyclic ordering of all places),
     while simultaneously recursively calculating \code{fib(n-1)} in the current place (that will recursively spawn a new activity, and so on).
 Therefore, the computation will recursively continue to spawn activities at the next place until \code{n} is 1.
