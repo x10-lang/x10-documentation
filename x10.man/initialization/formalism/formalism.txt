@@ -1,0 +1,195 @@
+
+Values are heap locations (I don't model "null". But a field can have an "undefined" value.).
+If a program is well-typed, then undefined values never appear and the expression is never stuck.
+When you reduced an expression to a value, then the async and finish disappears:
+async l; e  --->  e
+finish l ---> l
+
+I do model:
+finish & async
+val & var
+cannot read before write
+
+I don't model:
+* at and places (only cooked objects cross places, so no init issues there)
+* inference of method effects (their 3 sets: read, sync-write, async-write)
+(instead each method is annotated with either escaping or it is non-escaping with 3 sets).
+* inference of method return type
+* other aspects of java (null, casting, inner classes, private/final/...)
+
+
+Example program:
+
+class E extends Object {
+  this() = new Object();
+}
+class Seq extends Object {
+  this(a1:Object, a2:Object) = a2;
+}
+class C2 extends Object {
+  val fVal:E;
+  var fVar:E;
+  this(a1:E, a2:E) =
+    finish async this.fVal = a1; m(a2);
+  read() sync-write() async-write(fVar) m(a:E):E = 
+    async this.fVar = a; new E();  
+  escaping m2():Seq = new Seq(this,this.fVal);
+}
+
+
+Symbols:
+e | expression
+f | field
+m | method name
+C | class name
+l | location
+FM | field modifier
+MM | method modifier (non-escaping info)
+M | method declaration
+F | field declaration
+L | cLass declaration
+P | program
+T | type
+Keywords: new, finish, async, class, extends, Object, val, var, escaping, read, sync-write, async-write, this
+
+P ::= \ol{L}
+L ::= class C1 extends C2 { \ol{F} this(\ol{x:T})=e; \ol{M} }
+F ::= FM f:T;
+FM ::= val | var
+M ::= MM m(\ol{x:T}):T = e;
+MM ::= escaping | read(\ol{f}) sync-write(\ol{f}) async-write(\ol{f})
+
+e ::=
+e.f
+e.f = e
+e.m(\ol{e})
+new C(\ol{e})
+finish e
+async e; e
+x  (either this or a method parameter)
+l
+
+Helper methods: 
+* the usual: fields(C), methods(C), ...
+* R(m) - the fields that m can read (\bot means it can read anything)
+* SW(m) - the fields that m must sequentially write to (it can write to more)
+* AW(m) - the fields that m must asynchronously write to.
+* escaping(m) - whether m is escaping or not.
+
+* R(e) - the fields of \this that might be read in e.
+* AW(e) - the fields of \this that are definitely async written to in e.
+* SW(e) - the fields of \this that are definitely seq written to in e.
+
+Given a definition:
+MM m(\ol{x:T}):T = e;
+* R(m) = 
+\top  MM==escaping
+\ol{f}  MM==read(\ol{f}) ...
+(Regarding \top: we have that the set of all fields is a subset of \top)
+* SW(m) = 
+\emptyset  MM==escaping
+\ol{f}  MM==... sync-write(\ol{f}) ...
+Similarly, AW(m).
+
+The constructor of C cannot read anything and it must write to all fields directly declared in C:
+R(this) = \emptyset
+SW(this) = AW(this) = direct-fields(C)
+
+R(e) =
+R(e') \cup R(e")		e == e'.f = e"
+R(e')				e == finish e'
+R(e') \cup R(e")		e == async e';e"
+{f}				e == this.f
+R(e')				e == e'.f
+R(m) \cup R(\ol{e"})		e == this.m(\ol{e"})
+R(e') \cup R(\ol{e"})		e == e'.m(\ol{e"})
+R(\ol{e'})			e == new C(\ol{e'})
+\emptyset			e == l | e == x
+
+SW(e) =
+{f} \cup SW(e")			e == this.f = e"
+SW(e') \cup SW(e")		e == e'.f = e"
+AW(e')				e == finish e'
+SW(e")				e == async e';e"
+SW(e')				e == e'.f
+SW(m) \cup SW(\ol{e"})		e == this.m(\ol{e"})
+SW(e') \cup SW(\ol{e"})		e == e'.m(\ol{e"})
+SW(\ol{e'})			e == new C(\ol{e'})
+\emptyset			e == l | e == x
+
+AW(e) =
+AW(e") \cup AW(e')		e == async e';e"
+SW(e')				otherwise
+
+In a non-escaping method, "this" can be used only as a field or method receiver:
+isEscaping(e) = isEscaping(e,true)
+isEscaping(e,b) = 
+b							e == this
+false							e == l | e == x
+isEscaping(e',false) || isEscaping(e",true)		e == e'.f = e"
+isEscaping(e',b)					e == finish e'
+isEscaping(e',false) || isEscaping(e",b)		e == async e';e"
+isEscaping(e',false)					e == e'.f
+isEscaping(e',false) || isEscaping(\ol{e"},true)	e == e'.m(\ol{e"})
+isEscaping(\ol{e'},true)				e == new C(\ol{e'})
+
+An alternative definition for isEscaping (that might be more intuitive):
+isEscaping(e) = 
+true						e == this
+false						e == l | e == x
+isEscaping(e")					e == this.f = e"
+isEscaping(e') || isEscaping(e")		e == e'.f = e"
+isEscaping(e')					e == finish e'
+isEscaping(e') || isEscaping(e")		e == async e';e"
+false						e == this.f
+isEscaping(e')					e == e'.f
+isEscaping(\ol{e"})				e == this.m(\ol{e"})
+isEscaping(e') || isEscaping(\ol{e"})		e == e'.m(\ol{e"})
+isEscaping(\ol{e'})				e == new C(\ol{e'})
+
+
+Typing for
+MM m(\ol{x:T}):T = e;
+* return type  (e:T' and T'<:T)
+* if it's non-escaping, then it cannot escape \this, and 
+  R(e) \subseteq R(m)
+  SW(e) \supseteq SW(m)
+  AW(e) \supseteq AW(m)
+* SW(m) \subseteq AW(m)
+* overriding legality: if m overrides m' then:
+R(m)  \supseteq R(m')   (m can read less than m'. Note that this means that if m is escaping, then m' must be escaping.)
+AW(m) \subseteq AW(m')  (m can promise to write more than m')
+SW(m) \subseteq SW(m')
+* val can only be assigned in a ctor, and exactly once.
+
+Typing of an expression is the same as previous work.
+
+e:T
+----
+finish e:T
+
+e1:T2, e2:T2
+----
+async e1; e2 :T2
+
+...
+
+
+Reduction:
+The congruence rules for \async propogates it upward (but not crossing a \finish):
+
+(async e1; l).m(e,...)  --->  async e1; ( l.m(e,...) )
+l1.m(\ol{l},(async e1;l2),...)  --->  async e1; ( l1.m(\ol{l},l2,...) )
+new C(\ol{l},(async e1;l2),...)  --->  async e1; ( new C(\ol{l},l2,...) )
+(async e1; l).f  --->  async e1; ( l.f )
+
+e,H--->e',H	
+-----------------------------
+async e;e" ---> async e';e"
+
+e,H--->e',H	
+-----------------------------
+async e";e ---> async e";e'
+
+...
+
