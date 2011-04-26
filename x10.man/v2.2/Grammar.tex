@@ -68,7 +68,7 @@ In this grammar, $X^?$ denotes an optional $X$ element.
 
 \begin{bbgrammarappendix}
 
-(\arabic{equation}) & Arguments \refstepcounter{equation}\label{prod:Arguments}  \: \xcd"(" ArgumentList\opt \xcd")"  \\
+(\arabic{equation}) & Arguments \refstepcounter{equation}\label{prod:Arguments}  \: \xcd"(" ArgumentList \xcd")"  \\
 
 
 \end{bbgrammarappendix}
@@ -987,11 +987,8 @@ In this grammar, $X^?$ denotes an optional $X$ element.
 
 \begin{bbgrammarappendix}
 
-(\arabic{equation}) & MethodInvocation \refstepcounter{equation}\label{prod:MethodInvocation}  \: MethodPrimaryPrefix \xcd"(" ArgumentList\opt \xcd")"  \\
+(\arabic{equation}) & MethodInvocation \refstepcounter{equation}\label{prod:MethodInvocation}  \: MethodName TypeArgs\opt \xcd"(" ArgumentList\opt \xcd")"  \\
 
- &    \| MethodSuperPrefix \xcd"(" ArgumentList\opt \xcd")" \\
- &    \| MethodClassNameSuperPrefix \xcd"(" ArgumentList\opt \xcd")" \\
- &    \| MethodName TypeArgs\opt \xcd"(" ArgumentList\opt \xcd")" \\
  &    \| Primary \xcd"." Id TypeArgs\opt \xcd"(" ArgumentList\opt \xcd")" \\
  &    \| \xcd"super" \xcd"." Id TypeArgs\opt \xcd"(" ArgumentList\opt \xcd")" \\
  &    \| ClassName \xcd"." \xcd"super"  \xcd"." Id TypeArgs\opt \xcd"(" ArgumentList\opt \xcd")" \\
@@ -1511,8 +1508,9 @@ In this grammar, $X^?$ denotes an optional $X$ element.
 
 \begin{bbgrammarappendix}
 
-(\arabic{equation}) & TypeDefDecl \refstepcounter{equation}\label{prod:TypeDefDecl}  \: Mods\opt \xcd"type" Id TypeParams\opt Formals\opt Guard\opt \xcd"=" Type \xcd";"  \\
+(\arabic{equation}) & TypeDefDecl \refstepcounter{equation}\label{prod:TypeDefDecl}  \: Mods\opt \xcd"type" Id TypeParams\opt Guard\opt \xcd"=" Type \xcd";"  \\
 
+ &    \| Mods\opt \xcd"type" Id TypeParams\opt \xcd"(" FormalList \xcd")" Guard\opt \xcd"=" Type \xcd";" \\
 
 \end{bbgrammarappendix}
 

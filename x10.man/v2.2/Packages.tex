@@ -96,7 +96,7 @@ coder had followed the convention that structs have capitalized names,
 \xcd`Eg`, and variables have lower-case ones, \xcd`eg`. 
 
 %~~gen ^^^ Packages5t5g
-% NOTEST
+% 
 %~~vis
 \begin{xten}
 package obscuring;
@@ -114,6 +114,7 @@ struct eg {
 
 \end{xten}
 %~~siv
+% NOTEST
 % class Hook{ def run() { (eg()).example(); return true; } }
 %~~neg
 
@@ -281,7 +282,7 @@ Packages and protection modifiers determine which top-level names can be used
 where. Only the \xcd`public` members of package \xcd`pack.age` can be accessed
 outside of \xcd`pack.age` itself.  
 %~~gen~~Stimulus ^^^ Stimulus
-% NOTEST 
+% 
 %~~vis
 \begin{xten}
 package pack.age;
@@ -296,7 +297,7 @@ public class Stimulus {
 }
 \end{xten}
 %~~siv
-% 
+% NOTEST 
 %
 %~~neg
 

@@ -244,13 +244,10 @@ Function literals are described in \Sref{Functions}.
 \index{method!calling}
 \index{method!invoking}
 
-%##(MethodInvocation ArgumentList MethodPrimaryPrefix MethodSuperPrefix MethodClassNameSuperPrefix MethodName
+%##(MethodInvocation ArgumentList  MethodName
 \begin{bbgrammar}
 %(FROM #(prod:MethodInvocation)#)
-    MethodInvocation \: MethodPrimaryPrefix \xcd"(" ArgumentList\opt \xcd")" & (\ref{prod:MethodInvocation}) \\
-                     \| MethodSuperPrefix \xcd"(" ArgumentList\opt \xcd")" \\
-                     \| MethodClassNameSuperPrefix \xcd"(" ArgumentList\opt \xcd")" \\
-                     \| MethodName TypeArgs\opt \xcd"(" ArgumentList\opt \xcd")" \\
+    MethodInvocation \: MethodName TypeArgs\opt \xcd"(" ArgumentList\opt \xcd")" & (\ref{prod:MethodInvocation}) \\
                      \| Primary \xcd"." Id TypeArgs\opt \xcd"(" ArgumentList\opt \xcd")" \\
                      \| \xcd"super" \xcd"." Id TypeArgs\opt \xcd"(" ArgumentList\opt \xcd")" \\
                      \| ClassName \xcd"." \xcd"super"  \xcd"." Id TypeArgs\opt \xcd"(" ArgumentList\opt \xcd")" \\

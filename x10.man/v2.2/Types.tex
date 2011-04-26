@@ -720,7 +720,8 @@ mapping type parameters and value parameters to a concrete type.
 %##(TypeDefDecl TypeParams Formals Guard
 \begin{bbgrammar}
 %(FROM #(prod:TypeDefDecl)#)
-         TypeDefDecl \: Mods\opt \xcd"type" Id TypeParams\opt Formals\opt Guard\opt \xcd"=" Type \xcd";" & (\ref{prod:TypeDefDecl}) \\
+         TypeDefDecl \: Mods\opt \xcd"type" Id TypeParams\opt Guard\opt \xcd"=" Type \xcd";" & (\ref{prod:TypeDefDecl}) \\
+                     \| Mods\opt \xcd"type" Id TypeParams\opt \xcd"(" FormalList \xcd")" Guard\opt \xcd"=" Type \xcd";" \\
 %(FROM #(prod:TypeParams)#)
           TypeParams \: \xcd"[" TypeParamList \xcd"]" & (\ref{prod:TypeParams}) \\
 %(FROM #(prod:Formals)#)

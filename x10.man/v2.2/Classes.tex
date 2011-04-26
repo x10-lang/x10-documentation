@@ -1819,12 +1819,12 @@ user-defined explicit conversion.
 
 Explicit casts are most suitable for cases
 which resemble the use of explicit casts among the arithmetic types, where, 
-for example, \xcd`1 as Float` is a way to turn an integer into the
-corresponding floating-point number.  
+for example, \xcd`1.0 as Int` is a way to turn a floating-point number into the
+corresponding integer.  
 While there is nothing in X10 which
 requires it, \xcd`e as T` has the connotation that it gives a good
-approximation of \xcd`e` in type \xcd`T`, just as \xcd`1.0f` is a good
-(indeed, perfect) approximation of \xcd`1` in type \xcd`Float`.  
+approximation of \xcd`e` in type \xcd`T`, just as \xcd`1` is a good
+(indeed, perfect) approximation of \xcd`1.0` in type \xcd`Int`.  
 
 \subsection{Implicit Type Coercions}
 \label{sect:ImplicitCoercion}
