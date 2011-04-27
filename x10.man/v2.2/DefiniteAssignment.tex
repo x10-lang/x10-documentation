@@ -177,7 +177,8 @@ if (!b) {
 }
 \end{xten}
 However, most conservative approximations of program execution won't mark
-\xcd`x` as properly initialized. For this to be correct, precisely one of the
+\xcd`x` as properly initialized, though it is.   For \xcd`x` to be properly
+initialized, precisely one of the 
 two assignments to \xcd`x` must be executed. If \xcd`b` were true initially,
 it would still be true after the call to \xcd`cryptic()` --- since methods
 cannot modify their caller's local variables -- and so the first but not the
@@ -200,7 +201,7 @@ sake of obscure cases.
 X10's analysis provides at least the following guarantees. We describe them in
 terms of a statement \xcd`S` performing some collection of possible numbers of
 assignments to variables --- on a scale of ``0'', ``1'', and ``many''. For
-example, \xcd`if(b) x=1; else {x=1;x=2;y=2;}` might assign to \xcd`x` one or
+example, \xcd`if (b) x=1; else {x=1;x=2;y=2;}` might assign to \xcd`x` one or
 many times, and might assign to \xcd`y` zero or one time. Hence, after it,
 \xcd`x` is definitely assigned and may be multiply assigned, and \xcd`y` is
 neither definitely assigned nor definitely unassigned.  
@@ -208,7 +209,7 @@ neither definitely assigned nor definitely unassigned.
 These descriptions are combined in natural ways.  For example, if \xcd`R` says
 that \xcd`x` will be assigned 0 or 1 times, and \xcd`S` says it will be
 assigned precisely once, then \xcd`R;S` will assign it one or many times.  If
-only one or \xcd`R` or \xcd`S` will occur, as from \xcd`if(b)R; else S;`, 
+only one or \xcd`R` or \xcd`S` will occur, as from \xcd`if (b) R; else S;`, 
 then \xcd`x` may be assigned 0 or 1 times. 
 
 This information is sufficient for the tests X10 makes.  If \xcd`x` can is
@@ -257,8 +258,8 @@ definitely assigns \xcd`x`.
 
 When \xcd`if(E) S else T` finishes, it will have performed the assignments of
 \xcd`E`, together with those of either \xcd`S` or \xcd`T` but not both.  For
-example, \xcd`if(b) x=1; else x=2;` definitely assigns \xcd`x`,
-but \xcd`if(b) x=1;` does not.
+example, \xcd`if (b) x=1; else x=2;` definitely assigns \xcd`x`,
+but \xcd`if (b) x=1;` does not.
 
 {\tt switch} is more complex, but follows the same principles as \xcd`if`.
 For example, \xcd`switch(E){case 1: A; break; case 2: B; default: C;}`  
@@ -318,13 +319,12 @@ incompletely-constructed -- object) are the \xcd`private` and
 \begin{itemize}
 \item \xcd`m` cannot assign to local fields of the caller; methods have no
       such power.
-\item \xcd`m` can assign to \xcd`var` fields of \xcd`this` freely, unless this
-      is prohibited by an annotation; see \Sref{somewhere}
+\item \xcd`m` can assign to \xcd`var` fields of \xcd`this` freely. 
 \item \xcd`m` cannot initialize \xcd`val` fields of \xcd`this`.  (With one
-      exception; see \Sref{sect:call-another-constructor}.) 
+      exception; see \Sref{sect:call-another-ctor}.) 
 \end{itemize}
 
-Recall that every container must be fully initialized (``cooked'') upon exit
+Recall that every container must be fully initialized upon exit
 from its constructor.  
 X10 places certain restrictions on which methods can be called from a
 constructor; see \Sref{sect:nonescaping}.  One of these restrictions is that

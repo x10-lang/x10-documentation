@@ -295,13 +295,6 @@ def doGen(cmd, args, f, line, basename, fileroot):
         classname = args[0];
     fullcode = "\n".join(prelude + body + postlude)
     (packagename, code) = dissectOutPackageName(fullcode, fileroot, classname)
-    if fileroot == "Stimulus":
-        print "Stimulus in doGen"
-        print code
-        print "prelude --- \n"
-        print prelude
-        print "========================================================================================"
-
     writeX10File(packagename, classname, code, fileroot)
 
 # IN
@@ -497,10 +490,6 @@ def findAndDelete(corpus, substring):
 def writeX10File(packagename, classname, code, fileroot):
     global files
     global currentFileName
-    if fileroot == "Stimulus" :
-        print "Stimulus -- a +3 Gleaming Diviner's Brazier Of The Troll!"
-        print code
-        print "****************************************"
     packageline =  "package " + packagename.strip() + ";\n"
     code1 = packageline + code;
     fn = gennedFileDir + "/" + fileroot + ".x10"
@@ -522,9 +511,6 @@ def writeX10File(packagename, classname, code, fileroot):
     if not os.path.exists(subdir) :
         os.makedirs(subdir)
     wholeFileName =  subdir + "/" + fileroot + ".x10"
-    if fileroot == "Stimulus" :
-        print "Stimulus!"
-        print testcasecode
     cramCodeIntoFile(wholeFileName, testcasecode, NOTEST_pattern)
     produceErrorFiles(subdir, fileroot, testcasecode)
     files.append(fn)

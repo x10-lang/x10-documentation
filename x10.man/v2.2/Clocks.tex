@@ -138,8 +138,17 @@ with on termination (normal or abrupt).
 \subsection{Registering new activities on clocks}
 \index{clock!clocked statements}\label{sec:clock:register}
 
-The statement 
+%##(AsyncStatement ClockedClause
+\begin{bbgrammar}
+%(FROM #(prod:AsyncStatement)#)
+      AsyncStatement \: \xcd"async" ClockedClause\opt Statement & (\ref{prod:AsyncStatement}) \\
+                     \| \xcd"clocked" \xcd"async" Statement \\
+%(FROM #(prod:ClockedClause)#)
+       ClockedClause \: \xcd"clocked" \xcd"(" ClockList \xcd")" & (\ref{prod:ClockedClause}) \\
+\end{bbgrammar}
+%##)
 
+The \xcd`async` statement with a \xcd`clocked` clause of either form, say 
 %~~gen ^^^ Clocks30
 %package Clocks.For.Jocks;
 %class Qlocked{
@@ -179,16 +188,18 @@ are in the same phase of the clock.
 %static def example() {
 %~~vis
 \begin{xten}
-// a
+// ACTIVITY a
 val c = Clock.make();
 c.resume();
 async clocked(c) {
-  // b
+  // ACTIVITY b
   c.advance();
   b_phase_two();
+  // END OF ACTIVITY b
 }
 c.advance();
 a_phase_two();
+// END OF ACTIVITY a
 \end{xten}
 %~~siv
 %} }
@@ -208,7 +219,8 @@ the method call \xcd`c.registered()`
 
 \begin{note}
 \Xten{} does not contain a ``register'' operation that would allow an activity
-to discover a clock in a datastructure and register itself on it. Therefore,
+to discover a clock in a datastructure and register itself (or another
+process) on it. Therefore,
 while a clock \xcd`c` may be stored in a data structure by one activity
 \xcd`a` and read from it by another activity \xcd`b`, \xcd`b` cannot do much
 with \xcd`c` unless it is already registered with it.  In particular, it
@@ -287,8 +299,13 @@ is:
 \item Inside of \xcd`finish{S}`, all clocked \xcd`async`s shall be in the scope
       an unclocked \xcd`async`.  
 \end{itemize}
+X10 does not enforce this discipline.  Doing so would exclude useful programs,
+many of which are deadlock-free for reasons more subtle than the
+straightforward syntactic discipline.  Still, this discipline is useful for
+simple cases. 
 
-
+The first clause of the discipline prevents a deadlock in which an activity
+is registered on two clocks, advances one of them, and ignores the other. 
 The second clause prevents the following deadlock.  
 %~~gen ^^^ Clocks80
 % package Clocks.Finish.Hates.Clocks;
@@ -299,9 +316,9 @@ The second clause prevents the following deadlock.
 val c:Clock = Clock.make();
 async clocked(c) {                // (A) 
       finish async clocked(c) {   // (B) Violates clause 2
-            Clock.advanceAll();                 // (Bnext)
+            Clock.advanceAll();   // (Bnext)
       }
-      Clock.advanceAll();                       // (Anext)
+      Clock.advanceAll();         // (Anext)
 }
 \end{xten}
 %~~siv
@@ -320,11 +337,13 @@ until \xcd`(B)` finishes. Thus, this causes deadlock.
 From the discussion above it should be clear that the following
 equivalences hold:
 
+{\small
 \begin{eqnarray}
  \mbox{\xcd"c.resume(); Clock.advanceAll();"}       &=& \mbox{\xcd"Clock.advanceAll();"}\\
  \mbox{\xcd"c.resume(); d.resume();"} &=& \mbox{\xcd"d.resume(); c.resume();"}\\
  \mbox{\xcd"c.resume(); c.resume();"} &=& \mbox{\xcd"c.resume();"}
 \end{eqnarray}
+}
 
 Note that \xcd"Clock.advanceAll(); Clock.advanceAll();" is not the same as \xcd"Clock.advanceAll();". The
 first will wait for clocks to advance twice, and the second

@@ -222,7 +222,7 @@ method,
 otherwise an exception is thrown
 and the computation terminates.  The single statement
 \begin{xten}
-finish async (Place.FIRST_PLACE) {
+finish async at (Place.FIRST_PLACE) {
   C.main(s);
 }
 \end{xten} 
@@ -720,9 +720,20 @@ Absolute atomicity would, in principle, require all activities at place
 seriously curtail concurrency.  X10 simply requires that, when one activity is
 in an atomic section, that other activities stop {\em when they are trying to
 enter an atomic section} --- which is to say, they can continue computing on
-their own all they like.  The difference can be substantial.
+their own all they like.  The difference can be substantial, both in execution
+time and possible behaviors.
 
 However, X10's semantics do impose a certain burden on the programmer.  A
 sufficient rule of thumb is that, if {\em any} access to a
 variable is done in an atomic section, then {\em all} accesses to it must be
 in atomic sections.  
+
+Atomic sections are a powerful and convenient general solution.  Classes in
+the package 
+\xcd`x10.util.concurrent` may be more efficient and more convenient in
+particular cases.  For example, an \xcd`AtomicInteger` provides an atomic
+integer cell, with atomic get, set, compare-and-set, and add operations.
+Each \xcd`AtomicInteger` takes care of its own locking.  Accesses to one 
+\xcd`AtomicInteger` {$a$} only block activities which try to access {$a$} ---
+not others, not even if they are using different \xcd`AtomicInteger`s or even
+\xcd`atomic` blocks.
