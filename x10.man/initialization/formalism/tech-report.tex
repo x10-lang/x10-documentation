@@ -1,0 +1,362 @@
+\documentclass[9pt,a4paper]{article}
+
+%% For typesetting theorems and some math symbols.
+\usepackage{amssymb}
+\usepackage{amsthm}
+
+\usepackage{fullpage}
+
+\title{Initialization in X10 - Technical Report}
+
+\author{Yoav Zibin \texttt{yoav.zibin@gmail.com}}
+
+\date{}
+
+
+
+
+\input{commands}
+\mynewcommand{\async}{\code{async}}
+\mynewcommand{\finish}{\code{finish}}
+\mynewcommand{\R}{\code{R}}
+\mynewcommand{\SW}{\code{SW}}
+\mynewcommand{\AW}{\code{AW}}
+\mynewcommand{\Read}{\code{Read}}
+\mynewcommand{\SyncWrite}{\code{SyncWrite}}
+\mynewcommand{\AsyncWrite}{\code{AsyncWrite}}
+
+\mynewcommand{\hasync}{\code{async}}
+\mynewcommand{\hfinish}{\code{finish}}
+\mynewcommand{\hR}{\code{R}}
+\mynewcommand{\hSW}{\code{SW}}
+\mynewcommand{\hAW}{\code{AW}}
+\mynewcommand{\hObject}{\code{Object}}
+
+\mynewcommand{\hFM}{\code{FM}}
+\mynewcommand{\hMM}{\code{MM}}
+\mynewcommand{\hP}{\code{P}}
+
+\mynewcommand{\hvar}{\code{var}}
+\mynewcommand{\hval}{\code{val}}
+\mynewcommand{\hescaping}{\code{escaping}}
+\mynewcommand{\hextends}{\code{extends}}
+
+
+
+\begin{document}
+
+
+\maketitle
+
+
+\lstset{language=java,basicstyle=\ttfamily\small}
+
+\section{Introduction}
+This technical report formalizes the hardhat initialization rules in X10
+    using \emph{Featherweight X10} (FX10).
+Read first the paper ``Object Initialization in X10" to understand
+    the terminology (raw and cooked objects),
+    the initialization rules of X10,
+    and their connection with X10's concurrent and distributed constructs (\finish, \async, and \code{at}).
+
+FX10 is similar to Featherweight Java (FJ), however it is both imperative (using a heap) and it
+    models X10 specific constructs such as \finish and \async.
+FX10 also models field initialization including the fact that one can read a field only after it was definitely assigned,
+    and that final (\code{val}) fields can be assigned exactly once.
+
+FX10 does \emph{not} model other aspects of X10 such as:
+\begin{description}
+  \item[Places] X10 can run code in multiple places, and the \code{at} keyword is used to execute code in a different place.
+    Because the only raw object is \this,
+        and a raw \this cannot be captured by an \code{at},
+        then only cooked objects cross places.
+    Therefore, there is no initialization issues with \code{at} and FX10 does not model it.
+  \item[Inference]
+    X10 uses inference in various places:
+        (i)~it infers the type of a final field with an initializer,
+        (ii)~it infers method return types,
+        (iii)~using an inter-procedural dataflow analysis it infers
+            3 sets for each non-escaping method: \R, \SW, \AW.
+            \R is the set of fields that can be read by the method,
+                \SW are the fields that must be definitely-assigned by the method,
+                and \AW are the fields that must be definitely-asynchronously-assigned by the method.
+
+    FX10 does not model inference, and instead this information is explicitly presented.
+  \item[null]
+    FX10 guarantees that all fields are assigned when the object becomes cooked,
+        and that fields are read only after written to.
+    Therefore, \hnull is no longer needed.
+
+  \item[Misc]
+    Generics, constraints, casting, inner classes, overloading, co-variant return type, private/final, etc.
+\end{description}
+
+We will next describe the syntax.
+Judgements:
+
+Typing: Expression~\he has type \hC in environment $\Gamma$:
+$\Gdash \he:\hC$.
+Helper methods, like \R, \AW, and \SW.
+Reduction:
+$\he,H \reduce \he',H'$.
+
+\section{Syntax}
+
+
+\begin{figure}[htpb!]
+\begin{center}
+\begin{tabular}{|l|l|}
+\hline
+
+$\hP ::= \ol{\hL}$ & Program. \\
+
+$\hL ::= \hclass ~ \hC~\hextends~\hD~\lb~\ol{\hFM} ~ \ol{\hf}:\ol{\hC};~~\ctor(\ol{\hx}:\ol{\hC}) \lb~\super(\ol{\he});\he; \rb ~~\ol{\hM}~\rb$
+& cLass declaration. \\
+
+$\hM ::= \hMM ~ \hm(\ol{\hx}:\ol{\hC}):\hC=\he;$
+& Method declaration. \\
+
+$\hFM ::= \hval~|~\hvar$
+& Field Modifier. \\
+
+$\hMM ::= \hescaping ~~|~~ \Read(\ol{\hf})~~\SyncWrite(\ol{\hf})~~\AsyncWrite(\ol{\hf})$
+& Method Modifier. \\
+
+$\he ::= \hl ~|~ \hx ~|~ \he.\hf ~|~ \he.\hf = \he ~|~ \he.\hm(\ol{\he}) ~|~ \hnew ~ \hC(\ol{\he})~|~ \hfinish~\he~|~ \hasync~\he;\he$
+& Expressions. \\ %: locations, parameters, field access\&assignment, invocation, \code{new}
+
+\hline
+\end{tabular}
+\end{center}
+\caption{FX10 Syntax.
+    The terminals are locations (\hl), parameters and \this (\hx), field name (\hf), method name (\hm), class name (\hB,\hC,\hD,\hObject),
+        and keywords (\hescaping, \R, \SW, \AW, \hnew, \finish, \async, \hval, \hvar, \ctor).
+    The program source code cannot contain locations (\hl), because locations are only created during execution/reduction in \RULE{R-New} of \Ref{Figure}{reduction}.
+    }
+\label{Figure:syntax}
+\end{figure}
+
+
+\section{Typing}
+{Subtyping} is exactly as in FJ:
+    the transitive closure of the \hextends relation.
+That is, $\hC \st \hD$ iff \hC transitively extends $\hD$ (including the case that $\hC=\hD$.
+
+Similarly, we define:
+(i)~$\fields(\hC)=\ol{\hD} \ol{\hf}$ returns all fields of \hC (both those declared by \hC and recursively inherited from its superclass),
+(ii)~$\mtype(\hm,\hC) = \ol{\hB}\mapsto\hD$ returns the type of method \hm in class \hC,
+(iii)~$\mbody(\hm,\hC) = \ol{\hx}.\he$ returns the method body of \hm in class \hC.
+Because methods have a modifier (\hMM) in FX10, we also define:
+(iv)~$\mmodifier(\hm,\hC) = \hMM$ returns the method modifier of \hm in class \hC.
+Fields also have a modifier (\hFM) so we define:
+(v)~$\fmodifier(\hf,\hC) = \hFM$ returns the field modifier of \hf in class \hC (either \hval or \hvar).
+
+Finally, because FX10 have constructors, we define:
+(vi)~$\ctortype{}(\hC) = \ol{\hB}\mapsto\hC$ returns the type of the constructor in \hC,
+(vii)~$\ctorbody{}(\hC) = \ol{\hx}.\hsuper(\ol{\he});\he$ returns the body of the constructor.
+(Note that constructors do not have a modifier, because they implicitly must write to all fields and cannot read any.)
+
+
+
+\begin{figure*}[t]
+\begin{center}
+\begin{tabular}{|c|}
+\hline
+$\typerule{
+    \Gdash \he : \hC
+}{
+  \Gdash \finish~\he~:~\hC
+}$~\RULE{(T-finish)}
+\quad
+$\typerule{
+    \Gdash \he : \hC
+        \gap
+    \Gdash \he' : \hC'
+}{
+  \Gdash \async~\he;~\he'~:~\hC'
+}$~\RULE{(T-async)}\\\\
+
+
+$\typerule{
+}{
+  \Gdash \hl : \Gamma(\hl)
+}$~\RULE{(T-location)}
+\quad
+$\typerule{
+}{
+  \Gdash \hx : \Gamma(\hx)
+}$~\RULE{(T-parameter)}\\\\
+
+
+$\typerule{
+  \Gdash \he_0:\hC_0
+    \gap
+  \fields{}(\hC_0)=\ol{\hf}:\ol{\hC}
+}{
+  \Gdash \he_0.\hf_i : \hC_i
+}$~\RULE{(T-Field-Access)}\\\\
+
+$\typerule{
+  \Gdash \he_0:\hC_0
+    \gap
+  \fields{}(\hC_0)=\ol{\hf}:\ol{\hC}
+    \gap
+  \Gdash \he':\hC'
+    \gap
+  \Gdash \hC' \st \hC_i
+}{
+  \Gdash \he_0.\hf_i = \he' : \hC'
+}$~\RULE{(T-Field-Assign)}\\\\
+
+$\typerule{
+  \Gdash \he_0:\hC_0
+    \gap
+  \mtype{}(\hm,\hC_0)=\ol{\hD}\mapsto\hC
+    \gap
+  \Gdash \ol{\he}:\ol{\hC}
+    \gap
+  \Gdash \ol{\hC} \st \ol{\hD}
+}{
+  \Gdash \he_0.\hm(\ol{\he}) : \hC
+}$~\RULE{(T-Invoke)}\\\\
+
+$\typerule{
+  \ctortype{}(\hC)=\ol{\hD}\mapsto\hC
+    \gap
+  \Gdash \ol{\he}:\ol{\hC}
+    \gap
+  \Gdash \ol{\hC} \st \ol{\hD}
+}{
+  \Gdash \hnew ~ \hC(\ol{\he}) : \hC
+}$~\RULE{(T-New)}\\\\
+
+
+\hline
+\end{tabular}
+\end{center}
+\caption{FX10 Expression Typing Rules ($\Gdash \he:\hC$).
+    Rules \RULE{(T-finish)} and \RULE{(T-async)} handle the new constructs in FX10,
+        while the other rules are identical to those in FJ.}
+\label{Figure:expressions}
+\end{figure*}
+
+
+A method cannot assign to any \hval fields (no matter what the target is):
+\beqs{methodVal}
+    &\methodVal([\he_0,\ldots,\he_n])= \methodVal(\he_0) \code{~and~} \ldots \code{~and~}  \methodVal(\he_n)\\
+    &\methodVal(\he")=
+        \begin{cases}
+        \htrue & \he" \equiv \hl \\
+        \htrue & \he" \equiv \hx \\
+        \methodVal(\he) & \he" \equiv \he.\hf \\
+        \methodVal([\he,\he']) \code{~and~} \hFM=\hvar & \he" \equiv \he.\hf = \he' \gap \Gdash \he:\hC \gap \fmodifier{}(\hf,\hC)=\hFM \\
+        \methodVal([\he',\ol{\he}]) & \he" \equiv \he'.\hm(\ol{\he}) \\
+        \methodVal([\ol{\he}]) & \he" \equiv \hnew ~ \hC(\ol{\he}) \\
+        \methodVal(\he) & \he" \equiv \hfinish~\he \\
+        \methodVal([\he,\he']) & \he" \equiv \hasync~\he;\he' \\
+        \end{cases}
+%$\hl ~|~ \hx ~|~ \he.\hf ~|~ \he.\hf = \he ~|~ \he.\hm(\ol{\he}) ~|~ \hnew ~ \hC(\ol{\he})~|~ \hfinish~\he~|~ \hasync~\he;\he$
+\eeq
+
+A constructor can assign to a \hval field at most once and only if the target is \this:
+\beqs{ctorVal}
+    &\ctorVal([\he_0,\ldots,\he_n],F)= \ctorVal(\he_0,F) \code{~and~} \ctorVal(\he_1,\AW([\he_0]) \cup F) \code{~and~} \ldots \code{~and~}  \ctorVal(\he_n,\AW([\he_0,\ldots,\he_{n-1}]) \cup F)\\
+    &\ctorVal(\he",F)=
+        \begin{cases}
+        \htrue & \he" \equiv \hl \\
+        \htrue & \he" \equiv \hx \\
+        \ctorVal(\he,F) & \he" \equiv \he.\hf \\
+        \ctorVal([\he,\he'],F \cup \{ \hf \}) \code{~and~} \\(\hFM=\hvar \code{~or~} (\he=\this \code{~and~} \hf \not \in F)) & \he" \equiv \he.\hf = \he' \gap \Gdash \he:\hC \gap \fmodifier{}(\hf,\hC)=\hFM \\
+        \ctorVal([\he',\ol{\he}],F) & \he" \equiv \he'.\hm(\ol{\he}) \\
+        \ctorVal([\ol{\he}],F) & \he" \equiv \hnew ~ \hC(\ol{\he}) \\
+        \ctorVal(\he,F) & \he" \equiv \hfinish~\he \\
+        \ctorVal([\he,\he'],F) & \he" \equiv \hasync~\he;\he' \\
+        \end{cases}
+%$\hl ~|~ \hx ~|~ \he.\hf ~|~ \he.\hf = \he ~|~ \he.\hm(\ol{\he}) ~|~ \hnew ~ \hC(\ol{\he})~|~ \hfinish~\he~|~ \hasync~\he;\he$
+\eeq
+
+Like in FJ, we check that method declarations are ok by ensuring that the type of the method body is a subtype
+    of the return type, and that an overriding method has the same signature.
+Unlike FJ, we also check that the method modifier (whether it is \hescaping or if it has the 3 sets specified).
+Finally, we need to check that we do not assign to a \hval field ($\methodVal(\he)$).
+Note that~\eq{method-ok} requires that~$\Read(\hm,\hC) \subseteq \Read(\hm,\hC')$
+    so if \hm is escaping, then $\hm'$ must be escaping.
+
+\beqst %{method-ok}
+\typerule{
+  \Gamma = \{ \ol{\hx}:\ol{\hD},\this:\hC \} \\
+  \hclass~\hC~\hextends~\hC'~\lb~\ldots~\rb\\
+  \Gdash \he : \hD' \gap \hD' \st \hD \\
+  \methodVal(\he) \\
+  \code{if }\hMM=\Read(R)~\SyncWrite(W_s)~\AsyncWrite(W_a)\\
+    ~~\code{then } \R(\he,R) \code{~and~} W_s \subseteq W_a  \code{~and~} \SW(\he) \supseteq W_s \code{~and~} \AW(\he) \supseteq W_a\\
+  \code{if }\mtype{}(\hm,\hC')=\ol{\hD'} \mapsto \hD'\\
+    ~~\code{then } \ol{\hD'}\equiv\ol{\hD} \code{~and~} \hD'\equiv\hD \code{~and~} \\
+  \code{if }\mmodifier{}(\hm,\hC')=\hMM'\\
+    ~~\code{then } \hMM=\hescaping \Rightarrow \hMM'=\hescaping \code{~and~} \\
+    \gap \hMM=\Read(R)~\SyncWrite(W_s)~\AsyncWrite(W_a) \Rightarrow\\
+        (\hMM'=\hescaping  \code{~or~}
+        (\hMM'=\Read(R')~\SyncWrite(W'_s)~\AsyncWrite(W'_a) \code{~and~}
+            (R \subseteq R' \code{~and~} W_s \supseteq W'_s \code{~and~} W_a \supseteq W'_a))
+        \\
+}{
+  \hMM ~ \hm(\ol{\hx}:\ol{\hD}):\hD=\he ~~\OK~\IN~\hC
+}~\RULE{(T-Method)}
+\eeq
+
+Similarly, we need to check that constructor declarations are ok by checking the \hsuper call,
+    that all fields are definitely-assigned and non are read before written,
+    and that \hval fields are treated correctly (assigned at most once).
+Obviously, the constructor of \hObject has no parameters.
+
+\beqst %{ctor-ok}
+\typerule{
+  \Gamma = \{ \ol{\hx}:\ol{\hD},\this:\hC \} \\
+  \hclass~\hC~\hextends~\hC'~\lb~\ldots~\rb\\
+  F_s = \fields{}(\hC') \gap F_a = \fields{}(\hC') \gap F_d = F_a \setminus F_s \\
+  \Gdash \he' : \hB' \\
+  \Gdash \ol{\he} : \ol{\hB} \gap
+    \ctortype{}(\hC')=\ol{\hB"} \mapsto \hC'
+    \gap \Gdash \ol{\hB} \st \ol{\hB"} \\
+  \ctorVal([\ol{\he},\he'],F_s) \\
+  \R([\ol{\he}],\emptyset) \code{~and~}
+  \R(\he',F_s) \code{~and~}
+    \SW(\he') \supseteq F_d \\
+}{
+  \ctor(\ol{\hx}:\ol{\hD}) \lb~\super(\ol{\he});\he'; \rb ~~\OK~\IN~\hC
+}\gap \RULE{(T-Ctor)}
+\eeq
+
+
+As in FJ, a class is ok if its constructor \RULE{(T-Ctor)} and all its methods \RULE{(T-Method)}are ok.
+
+
+\section{Reduction}
+Heap is well-typed.
+Progress and Preservation
+
+If a program is well-typed, then undefined values never appear and the expression is never stuck.
+
+
+H, \he closed
+valCheck(\he,H)  (we have everything in H - which val fields are already assigned)
+
+
+
+\begin{Theorem}[preservation]
+  \textbf{(Progress and Preservation)}
+    For every closed expression~$\he \neq \hl$, $K$, and $H$,
+        if $K,\Gamma_{H} \vdash \he : \hC$ and $H$ is well-typed for~$K \cup K(\he)$,
+        then there exists~$H',\he',\hC'$ such that
+        (i)~$K \vdash H,\he \reducesto H',\he'$,
+        (ii)~$K,\Gamma_{H'} \vdash \he':\hC'$,
+        and~$K,\Gamma_{H'} \vdash \hC' \st \hC$,
+        (iii)~$H'$ is well-typed for~$K \cup K(\he')$,
+        (iv)~\hC, \hC', and $\he'$ are closed.
+\end{Theorem}
+\begin{proof}
+\ldots
+\end{proof}
+
+
+\end{document}
