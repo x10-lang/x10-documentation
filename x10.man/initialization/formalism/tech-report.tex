@@ -18,9 +18,9 @@
 \input{commands}
 \mynewcommand{\async}{\code{async}}
 \mynewcommand{\finish}{\code{finish}}
-\mynewcommand{\R}{\code{R}}
-\mynewcommand{\SW}{\code{SW}}
-\mynewcommand{\AW}{\code{AW}}
+\mynewcommand{\R}{\code{R}_\Gamma}
+\mynewcommand{\SW}{\code{SW}_\Gamma}
+\mynewcommand{\AW}{\code{AW}_\Gamma}
 \mynewcommand{\Read}{\code{Read}}
 \mynewcommand{\SyncWrite}{\code{SyncWrite}}
 \mynewcommand{\AsyncWrite}{\code{AsyncWrite}}
@@ -76,10 +76,10 @@ FX10 does \emph{not} model other aspects of X10 such as:
         (i)~it infers the type of a final field with an initializer,
         (ii)~it infers method return types,
         (iii)~using an inter-procedural dataflow analysis it infers
-            3 sets for each non-escaping method: \R, \SW, \AW.
-            \R is the set of fields that can be read by the method,
-                \SW are the fields that must be definitely-assigned by the method,
-                and \AW are the fields that must be definitely-asynchronously-assigned by the method.
+            3 sets for each non-escaping method: $\R$, $\SW$, $\AW$.
+            $\R$ is the set of fields that can be read by the method,
+                $\SW$ are the fields that must be definitely-assigned by the method,
+                and $\AW$ are the fields that must be definitely-asynchronously-assigned by the method.
 
     FX10 does not model inference, and instead this information is explicitly presented.
   \item[null]
@@ -91,14 +91,40 @@ FX10 does \emph{not} model other aspects of X10 such as:
     Generics, constraints, casting, inner classes, overloading, co-variant return type, private/final, etc.
 \end{description}
 
-We will next describe the syntax.
-Judgements:
 
-Typing: Expression~\he has type \hC in environment $\Gamma$:
-$\Gdash \he:\hC$.
-Helper methods, like \R, \AW, and \SW.
-Reduction:
-$\he,H \reduce \he',H'$.
+Example program:
+\begin{lstlisting}
+class E extends Object {
+  ctor() = new Object();
+}
+class Seq extends Object {
+  ctor(a1:Object, a2:Object) = a2;
+}
+class C2 extends Object {
+  val fVal:E;
+  var fVar:E;
+  ctor(a1:E, a2:E) =
+    finish async this.fVal = a1; m(a2);
+  R() SW() AW(fVar) m(a:E):E =
+    async this.fVar = a; new E();
+  escaping m2():Seq = new Seq(this,this.fVal);
+}
+class C3 extends Object {
+  var fVar:E;
+  ctor(a:E) =
+    new Seq(fVar=a,fVar); // ok
+}
+class C4 extends Object {
+  var fVar:E;
+  ctor(a:E) =
+    new Seq(fVar,fVar=a); // ERR
+}
+\end{lstlisting}
+
+We will next describe the syntax.
+Then the typing rules (e.g., $\Gdash \he:\hC$ denotes that expression~\he has type \hC in environment $\Gamma$),
+    and helper functions.
+Finally, we present the reduction rules ($\he,H \reduce \he',H'$) and our soundness proof.
 
 \section{Syntax}
 
@@ -130,7 +156,7 @@ $\he ::= \hl ~|~ \hx ~|~ \he.\hf ~|~ \he.\hf = \he ~|~ \he.\hm(\ol{\he}) ~|~ \hn
 \end{center}
 \caption{FX10 Syntax.
     The terminals are locations (\hl), parameters and \this (\hx), field name (\hf), method name (\hm), class name (\hB,\hC,\hD,\hObject),
-        and keywords (\hescaping, \R, \SW, \AW, \hnew, \finish, \async, \hval, \hvar, \ctor).
+        and keywords (\hescaping, \Read, \SyncWrite, \AsyncWrite, \hnew, \finish, \async, \hval, \hvar, \ctor).
     The program source code cannot contain locations (\hl), because locations are only created during execution/reduction in \RULE{R-New} of \Ref{Figure}{reduction}.
     }
 \label{Figure:syntax}
@@ -144,7 +170,8 @@ That is, $\hC \st \hD$ iff \hC transitively extends $\hD$ (including the case th
 
 Similarly, we define:
 (i)~$\fields(\hC)=\ol{\hD} \ol{\hf}$ returns all fields of \hC (both those declared by \hC and recursively inherited from its superclass),
-(ii)~$\mtype(\hm,\hC) = \ol{\hB}\mapsto\hD$ returns the type of method \hm in class \hC,
+    and~$\ftype{}(\hf_i,\hC) =\hD_i$.
+(ii)~$\mtype(\hm,\hC) = \ol{\hB}\mapsto\hD$ returns the type of method \hm in class \hC.
 (iii)~$\mbody(\hm,\hC) = \ol{\hx}.\he$ returns the method body of \hm in class \hC.
 Because methods have a modifier (\hMM) in FX10, we also define:
 (iv)~$\mmodifier(\hm,\hC) = \hMM$ returns the method modifier of \hm in class \hC.
@@ -155,6 +182,77 @@ Finally, because FX10 have constructors, we define:
 (vi)~$\ctortype{}(\hC) = \ol{\hB}\mapsto\hC$ returns the type of the constructor in \hC,
 (vii)~$\ctorbody{}(\hC) = \ol{\hx}.\hsuper(\ol{\he});\he$ returns the body of the constructor.
 (Note that constructors do not have a modifier, because they implicitly must write to all fields and cannot read any.)
+
+
+
+
+Function~$\R(\he,F)$ returns whether \this does not escape from \he (i.e., \this can be used only as a field or method receiver)
+    and whether \he only reads fields of \this that are in F or that have been previously written in e.
+For example,
+\beqs{R-example}
+    \R(\this.\hf,\{\hf\})&=\htrue\\
+    \R(\code{new Seq(this.f=new Object(), this.f)}, \emptyset)&=\htrue\\
+\eeq
+
+\beqs{R}
+    &\R([\he_0,\ldots,\he_n],F)= \R(\he_0,F) \hand \R(\he_1,\SW([\he_0]) \cup F) \hand \ldots \hand  \R(\he_n,\SW([\he_0,\ldots,\he_{n-1}]) \cup F)\\
+    &\R(\he",F)=
+        \begin{cases}
+        \htrue & \he" \equiv \hl \\
+        \hfalse & \he" \equiv \this \\
+        \htrue & \he" \equiv \hx \\
+        \hf \in F & \he" \equiv \this.\hf \\
+        \R(\he,F) & \he" \equiv \he.\hf \\
+        \R(\he',F) & \he" \equiv \this.\hf = \he' \\
+        \R([\he,\he'],F) & \he" \equiv \he.\hf = \he' \\
+        R \subseteq F \hand \R([\ol{\he}],F) & \he" \equiv \this.\hm(\ol{\he}) \gap \mmodifier{}(\hm,\Gamma(\this))=\Read(R) \ldots  \\
+        \R([\he',\ol{\he}],F) & \he" \equiv \he'.\hm(\ol{\he}) \\
+        \R([\ol{\he}],F) & \he" \equiv \hnew ~ \hC(\ol{\he}) \\
+        \R(\he,F) & \he" \equiv \hfinish~\he \\
+        \R(\he,F) \hand \R(\he',F) & \he" \equiv \hasync~\he;\he' \\
+        \end{cases}
+\eeq
+
+
+$\SW(\he)$ is the set of fields of \this that are definitely-(synchronously)-written in \he.
+\beqs{SW}
+    &\SW([\he_0,\ldots,\he_n])= \SW(\he_0) \hand \ldots \hand  \SW(\he_n)\\
+    &\SW(\he")=
+        \begin{cases}
+        \emptyset & \he" \equiv \hl \\
+        \emptyset & \he" \equiv \hx \\
+        \SW(\he) & \he" \equiv \he.\hf \\
+        \{ \hf \} \cup \SW(\he') & \he" \equiv \this.\hf = \he' \\
+        \SW([\he,\he']) & \he" \equiv \he.\hf = \he' \\
+        SW \cup \SW([\ol{\he}]) &
+            \he" \equiv \this.\hm(\ol{\he}) \gap \mmodifier{}(\hm,\Gamma(\this))=\ldots \SyncWrite(SW) \ldots  \\
+        \SW([\he',\ol{\he}]) & \he" \equiv \he'.\hm(\ol{\he}) \\
+        \SW([\ol{\he}]) & \he" \equiv \hnew ~ \hC(\ol{\he}) \\
+        \AW(\he) & \he" \equiv \hfinish~\he \\
+        \SW(\he') & \he" \equiv \hasync~\he;\he' \\
+        \end{cases}
+\eeq
+$\AW(\he)$ is the set of fields of \this that are asynchronously written in \he.
+Note that in $\AW(\hasync~\he;\he')$ we collect writes to fields in both \he and $\he'$,
+    whereas in $\SW$ we only consider writes in $\he'$.
+\beqs{AW}
+    &\AW([\he_0,\ldots,\he_n])= \AW(\he_0) \hand \ldots \hand  \AW(\he_n)\\
+    &\AW(\he")=
+        \begin{cases}
+        \emptyset & \he" \equiv \hl \\
+        \emptyset & \he" \equiv \hx \\
+        \AW(\he) & \he" \equiv \he.\hf \\
+        \{ \hf \} \cup \AW(\he') & \he" \equiv \this.\hf = \he' \\
+        \AW([\he,\he']) & \he" \equiv \he.\hf = \he' \\
+        AW \cup \AW([\ol{\he}]) &
+            \he" \equiv \this.\hm(\ol{\he}) \gap \mmodifier{}(\hm,\Gamma(\this))=\ldots \AsyncWrite(AW) \ldots  \\
+        \AW([\he',\ol{\he}]) & \he" \equiv \he'.\hm(\ol{\he}) \\
+        \AW([\ol{\he}]) & \he" \equiv \hnew ~ \hC(\ol{\he}) \\
+        \AW(\he) & \he" \equiv \hfinish~\he \\
+        \AW(\he) \cup \AW(\he') & \he" \equiv \hasync~\he;\he' \\
+        \end{cases}
+\eeq
+
 
 
 
@@ -243,36 +341,34 @@ $\typerule{
 
 A method cannot assign to any \hval fields (no matter what the target is):
 \beqs{methodVal}
-    &\methodVal([\he_0,\ldots,\he_n])= \methodVal(\he_0) \code{~and~} \ldots \code{~and~}  \methodVal(\he_n)\\
+    &\methodVal([\he_0,\ldots,\he_n])= \methodVal(\he_0) \hand \ldots \hand  \methodVal(\he_n)\\
     &\methodVal(\he")=
         \begin{cases}
         \htrue & \he" \equiv \hl \\
         \htrue & \he" \equiv \hx \\
         \methodVal(\he) & \he" \equiv \he.\hf \\
-        \methodVal([\he,\he']) \code{~and~} \hFM=\hvar & \he" \equiv \he.\hf = \he' \gap \Gdash \he:\hC \gap \fmodifier{}(\hf,\hC)=\hFM \\
+        \methodVal([\he,\he']) \hand \hFM=\hvar & \he" \equiv \he.\hf = \he' \gap \Gdash \he:\hC \gap \fmodifier{}(\hf,\hC)=\hFM \\
         \methodVal([\he',\ol{\he}]) & \he" \equiv \he'.\hm(\ol{\he}) \\
         \methodVal([\ol{\he}]) & \he" \equiv \hnew ~ \hC(\ol{\he}) \\
         \methodVal(\he) & \he" \equiv \hfinish~\he \\
         \methodVal([\he,\he']) & \he" \equiv \hasync~\he;\he' \\
         \end{cases}
-%$\hl ~|~ \hx ~|~ \he.\hf ~|~ \he.\hf = \he ~|~ \he.\hm(\ol{\he}) ~|~ \hnew ~ \hC(\ol{\he})~|~ \hfinish~\he~|~ \hasync~\he;\he$
 \eeq
 
 A constructor can assign to a \hval field at most once and only if the target is \this:
 \beqs{ctorVal}
-    &\ctorVal([\he_0,\ldots,\he_n],F)= \ctorVal(\he_0,F) \code{~and~} \ctorVal(\he_1,\AW([\he_0]) \cup F) \code{~and~} \ldots \code{~and~}  \ctorVal(\he_n,\AW([\he_0,\ldots,\he_{n-1}]) \cup F)\\
+    &\ctorVal([\he_0,\ldots,\he_n],F)= \ctorVal(\he_0,F) \hand \ctorVal(\he_1,\AW([\he_0]) \cup F) \hand \ldots \hand  \ctorVal(\he_n,\AW([\he_0,\ldots,\he_{n-1}]) \cup F)\\
     &\ctorVal(\he",F)=
         \begin{cases}
         \htrue & \he" \equiv \hl \\
         \htrue & \he" \equiv \hx \\
         \ctorVal(\he,F) & \he" \equiv \he.\hf \\
-        \ctorVal([\he,\he'],F \cup \{ \hf \}) \code{~and~} \\(\hFM=\hvar \code{~or~} (\he=\this \code{~and~} \hf \not \in F)) & \he" \equiv \he.\hf = \he' \gap \Gdash \he:\hC \gap \fmodifier{}(\hf,\hC)=\hFM \\
+        \ctorVal([\he,\he'],F \cup \{ \hf \}) \hand \\(\hFM=\hvar \hor (\he=\this \hand \hf \not \in F)) & \he" \equiv \he.\hf = \he' \gap \Gdash \he:\hC \gap \fmodifier{}(\hf,\hC)=\hFM \\
         \ctorVal([\he',\ol{\he}],F) & \he" \equiv \he'.\hm(\ol{\he}) \\
         \ctorVal([\ol{\he}],F) & \he" \equiv \hnew ~ \hC(\ol{\he}) \\
         \ctorVal(\he,F) & \he" \equiv \hfinish~\he \\
         \ctorVal([\he,\he'],F) & \he" \equiv \hasync~\he;\he' \\
         \end{cases}
-%$\hl ~|~ \hx ~|~ \he.\hf ~|~ \he.\hf = \he ~|~ \he.\hm(\ol{\he}) ~|~ \hnew ~ \hC(\ol{\he})~|~ \hfinish~\he~|~ \hasync~\he;\he$
 \eeq
 
 Like in FJ, we check that method declarations are ok by ensuring that the type of the method body is a subtype
@@ -289,15 +385,15 @@ Note that~\eq{method-ok} requires that~$\Read(\hm,\hC) \subseteq \Read(\hm,\hC')
   \Gdash \he : \hD' \gap \hD' \st \hD \\
   \methodVal(\he) \\
   \code{if }\hMM=\Read(R)~\SyncWrite(W_s)~\AsyncWrite(W_a)\\
-    ~~\code{then } \R(\he,R) \code{~and~} W_s \subseteq W_a  \code{~and~} \SW(\he) \supseteq W_s \code{~and~} \AW(\he) \supseteq W_a\\
+    ~~\code{then } \R(\he,R) \hand W_s \subseteq W_a  \hand \SW(\he) \supseteq W_s \hand \AW(\he) \supseteq W_a\\
   \code{if }\mtype{}(\hm,\hC')=\ol{\hD'} \mapsto \hD'\\
-    ~~\code{then } \ol{\hD'}\equiv\ol{\hD} \code{~and~} \hD'\equiv\hD \code{~and~} \\
+    ~~\code{then } \ol{\hD'}\equiv\ol{\hD} \hand \hD'\equiv\hD \hand \\
   \code{if }\mmodifier{}(\hm,\hC')=\hMM'\\
-    ~~\code{then } \hMM=\hescaping \Rightarrow \hMM'=\hescaping \code{~and~} \\
+    ~~\code{then } \hMM=\hescaping \Rightarrow \hMM'=\hescaping \hand \\
     \gap \hMM=\Read(R)~\SyncWrite(W_s)~\AsyncWrite(W_a) \Rightarrow\\
-        (\hMM'=\hescaping  \code{~or~}
-        (\hMM'=\Read(R')~\SyncWrite(W'_s)~\AsyncWrite(W'_a) \code{~and~}
-            (R \subseteq R' \code{~and~} W_s \supseteq W'_s \code{~and~} W_a \supseteq W'_a))
+        (\hMM'=\hescaping  \hor
+        (\hMM'=\Read(R')~\SyncWrite(W'_s)~\AsyncWrite(W'_a) \hand
+            (R \subseteq R' \hand W_s \supseteq W'_s \hand W_a \supseteq W'_a))
         \\
 }{
   \hMM ~ \hm(\ol{\hx}:\ol{\hD}):\hD=\he ~~\OK~\IN~\hC
@@ -319,8 +415,8 @@ Obviously, the constructor of \hObject has no parameters.
     \ctortype{}(\hC')=\ol{\hB"} \mapsto \hC'
     \gap \Gdash \ol{\hB} \st \ol{\hB"} \\
   \ctorVal([\ol{\he},\he'],F_s) \\
-  \R([\ol{\he}],\emptyset) \code{~and~}
-  \R(\he',F_s) \code{~and~}
+  \R([\ol{\he}],\emptyset) \hand
+  \R(\he',F_s) \hand
     \SW(\he') \supseteq F_d \\
 }{
   \ctor(\ol{\hx}:\ol{\hD}) \lb~\super(\ol{\he});\he'; \rb ~~\OK~\IN~\hC
@@ -332,14 +428,85 @@ As in FJ, a class is ok if its constructor \RULE{(T-Ctor)} and all its methods \
 
 
 \section{Reduction}
-Heap is well-typed.
-Progress and Preservation
 
-If a program is well-typed, then undefined values never appear and the expression is never stuck.
+\begin{figure*}[t]
+\begin{center}
+\begin{tabular}{|c|}
+\hline
+$\typerule{
+}{
+  \finish~\hl,H \reduce \hl,H
+}$~\RULE{(R-finish)}
+\quad
+$\typerule{
+}{
+  \async~\hl;\he,H \reduce \he,H
+}$~\RULE{(R-async)}
+\\\\
+
+$\typerule{
+    H(\hl)=\hC(\ol{\hf}\mapsto\ol{\hl'})
+}{
+  \hl.\hf_i,H \reduce \hl_i',H
+}$~\RULE{(R-Field-Access)}
+\quad
+$\typerule{
+    H(\hl)=\hC(F)
+        \gap
+    F' = F[ \hf \mapsto \hl"]
+}{
+  \hl.\hf=\hl",H \reduce \hl",H[ \hl \mapsto \hC(F')]
+}$~\RULE{(R-Field-Assign)}
+\\\\
+
+$\typerule{
+    \hl" \not \in \dom(H)
+}{
+  \hnew ~ \hC(\ol{\hl}),H \reduce \hl",H[ \hl" \mapsto \hC()]
+}$~\RULE{(R-New)}
+\quad
+$\typerule{
+    H(\hl')=\hC(\ldots)
+        \gap
+    \mbody{}(\hm,\hC)=\ol{x}.\he
+}{
+  \hl'.\hm(\ol{\hl}),H \reduce [\ol{\hl}/\ol{x},\hl'/\this]\he,H
+}$~\RULE{(R-Invoke)}
+\\\\
+%$\he ::= \hl ~|~ \hx ~|~  ~|~ ~|~  ~|~
+
+\hline
+\end{tabular}
+\end{center}
+\caption{FX10 Reduction Rules ($H,\he \reducesto H',\he'$).
+    Rules \RULE{(RA-*)} handle the concurrent nature of \hasync.}
+\label{Figure:expressions}
+\end{figure*}
+
+
+Heap is \emph{well-typed} iff
+    each field location is a subtype (using~$\Gamma_H$) of the declared field type,
+    i.e., for every location~\hl,
+        where $H[\hl] = \code{C}(\ol{\hf}\mapsto\ol{\hl'})$
+        and
+        for every field~$\hf_i$, we have that
+        $\Gamma_H \vdash \Gamma_H(\hl_i') \st \ftype{}(\hf_i,\hC)$.
+
+
+An expression~\he is called \emph{closed} if it does not contain
+    any free variables (i.e., method parameters \hx that include the variable~\this).
+
+
+Consider a program \hP and a closed expression \he.
+If a program is well-typed, then the expression can always be reduced to a value
+    (therefore, a field is always read after written to).
+Moreover, $\reductionVal$ is preserved during the reduction,
+    i.e., a \hval is assigned at most once.
+
 
 
 H, \he closed
-valCheck(\he,H)  (we have everything in H - which val fields are already assigned)
+$\reductionVal(\he,H)$  (we have everything in H - which val fields are already assigned)
 
 
 
@@ -348,7 +515,7 @@ valCheck(\he,H)  (we have everything in H - which val fields are already assigne
     For every closed expression~$\he \neq \hl$, $K$, and $H$,
         if $K,\Gamma_{H} \vdash \he : \hC$ and $H$ is well-typed for~$K \cup K(\he)$,
         then there exists~$H',\he',\hC'$ such that
-        (i)~$K \vdash H,\he \reducesto H',\he'$,
+        (i)~$H,\he \reducesto H',\he'$,
         (ii)~$K,\Gamma_{H'} \vdash \he':\hC'$,
         and~$K,\Gamma_{H'} \vdash \hC' \st \hC$,
         (iii)~$H'$ is well-typed for~$K \cup K(\he')$,
