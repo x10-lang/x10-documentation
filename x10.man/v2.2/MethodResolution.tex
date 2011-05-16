@@ -14,7 +14,7 @@ out that the call \Xcd{zap(1..4)} should call \xcd`zap(Object)`, and
 \begin{ex}
 %~~gen ^^^ MethodResolution10
 %package MethodResolution.yousayyouwantaresolution;
-% KNOWNFAIL
+% // This depends on https://jira.codehaus.org/browse/XTENLANG-2696
 %~~vis
 \begin{xten}
 class Res {
@@ -37,7 +37,6 @@ class Res {
   def m(x:Surface) = 3;
   def m(x:Deface) = 4; 
 
-
   def example() {
      assert m(100) == 1 : "Int"; 
      assert m(new C()) == 0 : "C";
@@ -45,17 +44,18 @@ class Res {
      assert m(new Ace()) == 3 : "Ace";
      // ERROR: m(new Face());
 
+     // The match must be exact.
+     // ERROR: assert m(here) == 3 : "Place";
+
      // Boolean could be handled directly, or by 
      // implicit coercion Boolean -> Ace.
      // Direct matches always win.
-     assert m(here) == 3 : "Place";
      assert m(true) == 2 : "Boolean"; 
-
-
   }
 \end{xten}
 %~~siv
 %  public static def main(argv:Array[String](1)) {(new Res()).example(); Console.OUT.println("That's all!");}
+% public def claim() { val ace : Ace = here; assert m(ace)==3; }
 % }
 % class Hook{ def run(){ (new Res()).example(); return true;} }
 %~~neg
@@ -76,11 +76,18 @@ However, a \xcd`Face` is both a \xcd`Surface` and a \xcd`Deface`, so there is
 no unique best match for the invocation \xcd`m(new Face())`.  This invocation
 would be forbidden, and a compile-time error issued.
 
-None of the defined methods match \xcd`Place`. However, there is an implicit
-coercion (\Sref{sect:ImplicitCoercion}) from \xcd`Place` to \xcd`Ace`.  So, 
-the \xcd`Ace` method will be called for \xcd`m(here)` --- with the implicit
-coercion applied to \xcd`here` before the method call.
-(\limitationx: this does not currently compile in all cases.)
+
+The match must be exact.  There is an implicit coercion 
+from \xcd`Place` to \xcd`Ace`, and \xcd`Ace` implements \xcd`Surface`, so the
+code
+\begin{xten}
+val ace : Ace = here;
+assert m(ace) == 3;
+\end{xten}
+works, by using the \xcd`Surface` form of \xcd`m`.  But doing it in one step
+requires a deeper search than X10 performs\footnote{In general this search is
+unbounded, so X10 can't perform it.}, and is not allowed.
+
 
 For \xcd`m(true)`, both the \xcd`Boolean` and, with the implicit coercion,
 \xcd`Ace` methods could apply.  Since the \xcd`Boolean` method applies

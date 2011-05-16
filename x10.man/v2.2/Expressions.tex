@@ -50,7 +50,7 @@ has its own \xcd`three` field, which is different from and not even the same
 type as \xcd`Outer.this.three`. 
 %~~gen ^^^ Expressions10
 % package exp.vexp.pexp.lexp.shexp; 
-% NOTEST
+% //NOTEST-this-doesn't-get-converted-to-a-legit-test
 %~~vis 
 \begin{xten}
 class Outer {
@@ -186,7 +186,7 @@ by same-named fields of some more recent ancestor.
 This illustrates all four cases of field access.
 %~~gen ^^^ Expressions30
 % package exp.re.ssio.ns.fiel.dacc.ess;
-% NOTEST
+% //NOTEST-inner-class-foo
 %~~vis
 \begin{xten}
 class Uncle {
@@ -906,7 +906,7 @@ One may not test that a \xcd`Long` variable is \xcd`==` to an integer like
 \xcd`0`: 
 %~~gen ^^^ Expressions6q7k
 % package Expressions6q7k;
-% // NOTEST-https://jira.codehaus.org/browse/XTENLANG-2624
+% 
 % class Example{ static def example() { 
 %~~vis
 \begin{xten}
@@ -1304,30 +1304,37 @@ as a cast.
 
 
 \begin{ex}
-The \xcd`Thing` class provides an explicit conversion to \xcd`Object`.
-However, since \xcd`Thing` is a subclass of \xcd`Object`, 
+The \xcd`Person` class provides an explicit conversion 
+from its subclass \xcd`Fop` to itself. 
+However, since \xcd`Fop` is a subclass of \xcd`Person`, 
 using the \xcd`as` operator invokes the upcast, rather than the explicit
-conversion.  
-%~~gen ^^^ Expressions7s3n
-% package Expressions7s3n;
+conversion.  This is visible in the example because the user-defined operator 
+\xcd`f as Person` returns \xcd`new Person()` (just like the \xcd`asPerson`
+method), while the 
+upcast returns \xcd`f` itself.  
+%~~gen ^^^ Expressions6y9i
+% package Expressions6y9i;
 %~~vis
 \begin{xten}
-class Thing {
-  public static operator (x:Thing) as Object = "different";
+class Person {
+  static operator (f:Fop) as Person = new Person();
+  static def asPerson(f:Fop) = new Person();
   public static def example() {
-    val t = new Thing();
-    val o = t as Object;
-    assert o instanceof Thing;
+     val f = new Fop();
+     val cast = f as Person;
+     assert cast == f;
+     val meth = asPerson(f);
+     assert meth != f;
   }
 }
+class Fop extends Person {}
 \end{xten}
 %~~siv
-% //    val p = Thing.operator as[Object](t);
-% //    assert p.equals("very different");
-% class Hook{ def run() { Thing.example(); return true; } }
+% class Hook{ def run() {Person.example(); return true;}}
 %~~neg
+
 The definition of an explicit conversion in this case is of little value,
-since any use of it in the \xcd`t as Object` syntax will invoke the upcast.  
+since any use of it in the \xcd`f as Person` syntax will invoke the upcast.  
 \end{ex}
 
 \section{\Xcd{instanceof}}

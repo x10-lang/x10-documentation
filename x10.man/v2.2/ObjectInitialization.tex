@@ -337,7 +337,7 @@ preventing this; a constructor call of an inner class is no
 different from a method as far as leaking is concerned.
 %~~gen ^^^ ObjectInitialization30
 % package ObjInit.InnerClass; 
-% NOTEST
+% // NOTEST-packaging-issue
 %~~vis
 \begin{xten}
 class Outer {
@@ -630,7 +630,7 @@ class Example (
    }
 
    def someMethod() =
-        prop + staticField + instanceField;     // (P)
+        prop + staticField() + instanceField;     // (P)
 }
 \end{xten}
 %~~siv

@@ -148,7 +148,7 @@ def parsley(line):
 def doStmt(cmd, args, f, line, basename, fileroot):
     global currentLine
     if len(args) != 3 and len(args) != 4:
-        doom("'stmt' takes 3 args -- in " + basename  + "\nline="  + line + " ... plus optionally a fourth for imports and such.")
+        doom("'stmt' takes 3 args -- in " + basename  + "\nline="  + line + " ... plus optionally a fourth for imports and such.  This one has " + str(len(args)))
     starter = args[0]
     ender = args[1]
     formals = args[2].strip()
@@ -232,7 +232,7 @@ def doGenExp(cmd, args, f, line, basename, fileroot):
 #     }}
 def doType(cmd, args, f, line, basename, fileroot):
     if len(args) != 3 and len(args) != 4:
-        doom("'type' takes 3 args -- in " + basename  + "\nline="  + line + " ... plus optionally a fourth for imports and such.")
+        doom("'type' takes 3 args -- in " + basename  + "\nline="  + line + " ... plus optionally a fourth for imports and such.  This one has " + str(len(args)))
     starter = args[0]
     global currentLine
     ender = args[1]

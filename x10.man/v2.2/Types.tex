@@ -385,8 +385,9 @@ In the following interface, \xcd`PI` is a static field,
 It can't insist that implementations provide a static method 
 like \xcd`meth`, or a nullary constructor.
 %~~gen ^^^ Types2y3i
-% NOTEST
+% 
 % package Types2y3i;
+% // NOTEST-stupid-packaging-issue
 %~~vis
 \begin{xten}
 interface Stat {
@@ -1596,9 +1597,9 @@ if there is no such element, where, for the sake of example, we constrain the
 type of \xcd`i` to avoid one of the many integers which are not possible subscripts:  
 %~~gen ^^^ Types_constraint_b
 % package Types_constraint_b;
-% NOTEST
+% //NOTEST-inner-class-foo.
 % /*NONSTATIC*/class IncrElEx {
-% static def example()  {
+%  def example()  {
 %~~vis
 \begin{xten}
 val inc = (r:Array[Int](1), i: Int{i != r.size}) => {
@@ -2088,7 +2089,8 @@ the compiler would reject this program for attempting to override
 \xcd`isTriangle()` by a method with the wrong type, \viz,
 \xcd`Boolean{self==true}`.  In this case, supply the type that is actually
 intended for \xcd`isTriangle`: 
-\begin{xtenmath}def isTriangle() :Boolean =false;
+\begin{xtenmath}
+def isTriangle() : Boolean =false;
 \end{xtenmath}
 
 The return type of a closure can be omitted.
@@ -2126,7 +2128,7 @@ A method or closure that has expression-free \xcd`return` statements
 \xcd`void` is not a type; there are no \xcd`void` values, nor can \xcd`void`
 be used as the argument of a generic type. However, \xcd`void` takes the
 syntactic place of a type in a few contexts. A method returning \xcd`void` can be specified by
-\xcd`def m():void`: 
+\xcd`def m():void`, and similarly for a closure: 
 
 %~~gen ^^^ Types520
 % package Types.voidd;
@@ -2134,6 +2136,7 @@ syntactic place of a type in a few contexts. A method returning \xcd`void` can b
 % static 
 %~~vis
 \begin{xten}
+def m():void {return;}
 val f : () => void = () => {return;};
 \end{xten}
 %~~siv
@@ -2171,7 +2174,7 @@ may omit the
 explicit type arguments.  
 X10 will compute a type from the types of the actual arguments. 
 
-(Exception: it is an error if the method call provides no information about
+(As an exception of sorts, it is an error if the method call provides no information about
 a type parameter that must be inferred.  For example, given the method
 definition \xcd`def m[T](){...}`, an invocation \xcd`m()` is considered a
 static error.  The compiler has no idea what \xcd`T` the programmer intends.)
@@ -2216,7 +2219,8 @@ inside of the type of a variable; X10 can extract it.
 The \xcd`first` method below returns the first element of a one-dimensional
 array.  The type parameter \xcd`T` represents the type of the array's
 elements. There is no parameter of type \xcd`T`. There is one of type
-\xcd`Array[T]{c}`; X10 strips off the constraint \xcd`{c}` and the
+\xcd`Array[T]{c}`.  When doing type inference, 
+X10 strips off the constraint \xcd`{c}` and the
 \xcd`Array[...]` type to get at the \xcd`T` inside.
 %~~gen ^^^ Types3d5j
 % package Types3d5j;
@@ -2254,12 +2258,17 @@ it reasons as follows.
 
 
 
-Suppose that \xcdmath"b$_i$" has type \xcdmath"T$_i$".  Then, X10 is seeking a
-set of type {$B$} bindings 
+% Suppose that \xcdmath"b$_i$" has type \xcdmath"T$_i$".  
+Let 
 \begin{xtenmath}
-X$_j$ = U$_j$, 
+T$_i \mbox{\rm ~be the type of }$ b$_i$
 \end{xtenmath}
-for $1 \le j \le t$, 
+Then, X10 is seeking a
+set {$B$}  of type 
+bindings 
+\begin{xtenmath}
+$B = \{$ X$_1$ = U$_1, \ldots, $ X$_t$=U$_t\}$
+\end{xtenmath}
 such that 
 \xcdmath"T$_i$ <: S$^*_i$" for {$1 \le i \le n$}, where \xcdmath"S$^*$" is
 \xcd`S` with each type variable \xcdmath"X$_j$" replaced by the corresponding
@@ -2272,11 +2281,11 @@ explicitly.)
 
 Let $B_0$ be the set {$\{ T_i \subtype S_i | 1 \le i \le n\}$}.  Let
 {$B_{n+1}$} be {$B_n$} with one element {$F \subtype G$} or 
-{$F \typeeq G$} removed, and
-{$C(F \subtype G)$} 
-or {$C(F \typeeq G)$} (defined below) added.  Repeat this until 
+{$F = G$} removed, and
+{$\mbox{\it Strip}(F \subtype G)$} 
+or {$\mbox{\it Strip}(F = G)$}, where     {\em Strip} is defined below, added.  Repeat this until 
 {$B_n$} consists entirely of comparisons with type variables (\viz, 
-\xcdmath"Y$_j$ == U", 
+\xcdmath"Y$_j$ = U", 
 \xcdmath"Y$_j$ <: U", and
 \xcdmath"Y$_j$ :> U"), 
 or until some {$n$} exceeds a predefined compiler limit. 
@@ -2284,11 +2293,11 @@ or until some {$n$} exceeds a predefined compiler limit.
 The candidate inferred types may be read off of {$B_n$}.  The guessed binding
 for \xcdmath"X$_j$" is: 
 \begin{itemize}
-\item If there is an equality \xcdmath"X$_j$==W" in {$B_n$}, then guess the
+\item If there is an equality \xcdmath"X$_j$=W" in {$B_n$}, then guess the
       binding \xcdmath"X$_j$=W".  Note that there may be several such
       equalities with different choices of \xcd`W`; pick any one.  If the
       chosen binding does not equal the others, the candidate binding will be
-      rejected later. 
+      rejected later and type inference will fail. 
 \item Otherwise, if there is one or more upper bounds 
 \xcdmath"X$_j$ <: V$_k$" in {$B_n$}, guess the binding 
 \xcdmath"X$_j$ = V$_+$", where 
@@ -2304,7 +2313,7 @@ binding \xcdmath"U$_j$", but the
 bindings do not work --- 
 that is, if 
 \xcdmath"a.m[U$_1$, $\ldots$, U$_t$](b$_1$, $\ldots$,b$_n$)"
-is not a call of 
+is not a well-typed call of 
 the original method 
 \xcdmath"def m[X$_1$, $\ldots$, X$_t$](y$_1$: S$_1$, $\ldots$, y$_n$:S$_n$)"
 --- then type inference also fails.
@@ -2313,21 +2322,22 @@ the original method
 
 Given a type relation
 {$r$} of the form {$F \subtype G$}
-or {$F \typeeq G$}, we compute the set {$C(r)$} of
+or {$F = G$}, we compute the set {$\mbox{\it Strip}(r)$} of
 replacement constraints.  There are a number of cases; we present only the
 interesting ones. 
 
 \begin{itemize}
 \item If $F$ has the form \xcdmath"$F'${c}", then  
-\xcdmath"$C(r)$" is defined to be
- \xcdmath"$F'$ == $G$" if $r$ is an equality, or 
+\xcdmath"$\mbox{\it Strip}(r)$" is defined to be
+ \xcdmath"$F'$ = $G$" if $r$ is an equality, or 
  \xcdmath"$F'$ <: $G$" if {$r$} is a subtyping.
 That is, we erase type constraints.  
 Validity is not an issue at this point in the algorithm, as 
 we check at the end that the result is valid.
-Note that, if the equation had the form \xcdmath"Z{c} == A", it could be
-solved by either \xcd`Z==A` or by \xcd`Z = A{c}`.  By dropping constraints in this
-rule, we choose the former solution. 
+Note that, if the equation had the form \xcdmath"Z{c} = A", it could be
+solved by either \xcd`Z=A` or by \xcd`Z = A{c}`.  By dropping constraints in this
+rule, we choose the former solution, which tends to give more general types in
+results. 
 
 \item Similarly, we drop constraints on {$G$} as well.
 
@@ -2335,14 +2345,14 @@ rule, we choose the former solution.
 and 
 {$G$}
 has the form \xcdmath"K[G$_1$, $\ldots$, G$_k$]", 
-then {$C(r)$} has one type relation comparing each parameter of 
+then {$\mbox{\it Strip}(r)$} has one type relation comparing each parameter of 
 {$F$} with the corresponding one of {$G$}: 
-\[C(r) = \{ F_l \typeeq G_l | 1 \le l \le k \} \]
+\[\mbox{\it Strip}(r) = \{ F_l = G_l | 1 \le l \le k \} \]
 
-For example, the constraint \xcdmath"List[X] == List[Y]" induces the
-constraint \xcd`X==Y`.  
+For example, the constraint \xcdmath"List[X] = List[Y]" induces the
+constraint \xcd`X=Y`.  
 \xcd`List[X] <: List[Y]` also induces the same constraint.  The only way that
-\xcd`List[X]` could be a subtype of \xcd`List[Y]` in X10 is if \xcd`X==Y`.
+\xcd`List[X]` could be a subtype of \xcd`List[Y]` in X10 is if \xcd`X=Y`.
 List of different types are incomparable.\footnote{The situation would be more
 complex if X10 had covariant and contravariant types.}
 
@@ -2376,30 +2386,80 @@ class Example {
 %~~neg
 The method call for \xcd`b` has explicit type parameters.  
 The call for \xcd`c` infers the parameters.  The computation 
-starts with one equation, saying that the type of the formal parameter of 
-\xcd`me` has to be the same as the type of the actual parameter, \viz, the
-type of \xcd`a`:
+starts with one equation, saying that the formal parameter of 
+\xcd`me` has to be able to accept the actual parameter \xcd`a`:
 \begin{xtenmath}
-Cl[Int, X1, X2] == Cl[Int, Boolean, String]
+ Cl[Int, Boolean, String] <: Cl[Int, X1, X2] 
 \end{xtenmath}
 Note that both terms are \xcd`Cl` of three things. 
 This is broken into three equations: 
 \begin{xtenmath}
-Int == Int
+Int = Int
 \end{xtenmath}
 which is easy to satisfy,
 \begin{xtenmath}
-X1 == Boolean
+X1 = Boolean
 \end{xtenmath}
 which suggests a possible value for \xcd`X1`,  and 
 \begin{xtenmath}
-X2 == String
+X2 = String
 \end{xtenmath}
 which suggests a value for \xcd`X2`.  
 All of these equations are simple enough, so the algorithm terminates. 
 
-Then, X10 confirms that the binding \xcd`X1==Boolean`, \xcd`X2==String`
-atually generates a correct call, which it does.  
+Then, X10 confirms that the binding \xcd`X1=Boolean`, \xcd`X2=String`
+actually generates a correct call, which it does.  
+\end{ex}
+
+
+\begin{ex}
+When there is no way to infer types correctly, the type inference algorithm
+will fail.   Consider the program: 
+\begin{xten}
+public class Failsome {
+  static def fail[X](a:Array[X], b:Array[X]):void {}
+  public static def main(argv:Array[String](1)) {
+    val aint  : Array[Int]     = [1,2,3];
+    val abool : Array[Boolean] = [true, false];
+    fail(aint, abool);    // THIS IS WRONG
+  }
+}
+\end{xten}
+The type inference computation starts, as always, by insisting that the types
+of the formals to \xcd`fail` are capable of accepting the actuals: 
+\begin{xtenmath}
+$B_0=\{$Array[Int] <: Array[X]$,$ Array[Boolean] <: Array[X]$\}$
+\end{xtenmath}
+Arbitrarily picking the first relation to {\it Strip} first, we get:
+\begin{xtenmath}
+$B_1=\{$Int = X$,$ Array[Boolean] <: Array[X] $\}$
+\end{xtenmath}
+and then 
+\begin{xtenmath}
+$B_2=\{$Int = X$,$ Boolean = X $\}$
+\end{xtenmath}
+(At this point it is clear to a human that $B$ is inconsistent, but the
+algorithm's check comes a bit later.)
+{$B_2$} consists entirely of comparisons with type variables, so the loop is
+over.  Arbitrarily picking the first equality, it guesses the binding 
+\begin{xtenmath}
+$B=\{$X = Int$\}$.
+\end{xtenmath}
+In the validation step, it checks that 
+\begin{xtenmath}
+fail[Int](aint, abool)
+\end{xtenmath}
+is a well-typed call to \xcd`fail`.  Of course it is not; \xcd`abool` would
+have to be a value of type \xcd`Array[Int]`, which it is not.  So type
+inference fails at this point.  In this case it is correct: there is no way to
+give a proper type to this program.\footnote{
+In particular, \xcd`X=Any` doesn't work either.  An \xcd`Array[Int]` is not an
+\xcd`Array[Any]` --- and it must not be, for you can put a boolean value into
+an \xcd`Array[Any]`, but you cannot put a boolean value into an
+\xcd`Array[Int]`.  However, if the types of the arguments had simply been 
+\xcd`X` rather than \xcd`Array[X]`, then type inference would correctly infer
+\xcd`X=Any`.
+}
 \end{ex}
 
 \section{Type Dependencies}
@@ -2421,7 +2481,7 @@ In the following, \xcd`A` directly depends on \xcd`B`, \xcd`C`, \xcd`D`,
 \xcd`E`, and \xcd`F`.    It does not directly depend on \xcd`G`.
 %~~gen ^^^ Types6a9m
 % package Types6a9m;
-% NOTEST
+% // NOzzTEST
 % class B{ static class C{}}
 % class D{ static interface E{}}
 % interface F[X]{}
@@ -2473,7 +2533,7 @@ type error.
 \begin{enumerate}
 
 
-\item The library type \xcd`IndexedMemoryChuck` provides a low-level interface
+\item The library type \xcd`x10.util.IndexedMemoryChunk` provides a low-level interface
       to blocks of memory.  A few methods on that class are not type-safe. See
       the API if you must.
 
