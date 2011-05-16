@@ -109,8 +109,10 @@ with no special restrictions. \xcd`super` inside an inner class refers to the
 inner class's superclass. If it is necessary to refer to the outer classes's
 superclass, use a qualified name of the form {\em Outer}\xcd`.super`.
 
-The only restriction placed on the members of inner classes is that the static
-fields of an inner class must be compile-time constant expressions. 
+The members of inner classes must be instance members.  They cannot be static
+members.  Classes, interfaces, static methods, static fields, and typedefs are
+not allowed as members of inner classes. 
+The same restriction applies to local classes (\Sref{sect:LocalClasses}.
 
 \index{inner class!extending}
 Consider
@@ -230,7 +232,7 @@ instance method is an inner class.
  Local classes are local to the block in which they are defined.
 They have access to almost everything defined at that point in the method; the
 one exception is that they cannot use \xcd`var` variables. Local classes
-cannot be \xcd`public` \xcd`protected`, or \xcd`private`, because they are
+cannot be \xcd`public`, \xcd`protected`, or \xcd`private`, because they are
 only visible from within the block of declaration. They cannot be
 \xcd`static`.
 
@@ -273,6 +275,12 @@ of \xcd`Local`.
 \end{ex}
 
 
+The members of inner classes must be instance members.  They cannot be static
+members.  Classes, interfaces, static methods, static fields, and typedefs are
+not allowed as members of local classes. 
+The same restriction applies to inner classes (\Sref{InnerClasses}. 
+
+
 
 
 
@@ -280,9 +288,9 @@ of \xcd`Local`.
 \index{class!anonymous}
 \index{anonymous class}
 
-It is possible to define a new class and instantiate it as part of an
+It is possible to define a new local class and instantiate it as part of an
 expression.  The new class can extend an extant class or interface.  Its body
-can include all of the usual members of a class. It can refer to any
+can include all of the usual members of a local class. It can refer to any
 identifiers available at that point in the expression --- except for \xcd`var`
 variables.  An anonymous class in a static context is a static inner class.
 
