@@ -1,0 +1,99 @@
+
+\mynewcommand{\hvar}{\code{var}}
+\mynewcommand{\hval}{\code{val}}
+
+\section{Final fields}
+\hval and \hvar fields.
+
+\subsection{Syntax}
+
+
+\begin{figure}[htpb!]
+\begin{center}
+\begin{tabular}{|l|l|}
+\hline
+
+$\hF ::= \hFM ~ \hf:\hC$
+& Field declaration. \\
+
+$\hFM ::= \hval~|~\hvar$
+& Field Modifier. \\
+
+\hline
+\end{tabular}
+\end{center}
+\caption{FX10 Syntax changes to support final fields (\hval).
+    The new terminals are \hval and \hvar.
+    }
+\label{Figure:syntax-val}
+\end{figure}
+
+
+\section{Typing}
+Fields also have a modifier (\hFM) so we define:
+    $\fmodifier(\hf,\hC) = \hFM$ returns the field modifier of \hf in class \hC (either \hval or \hvar).
+
+A method cannot assign to any \hval fields (no matter what the target is):
+\beqs{methodVal}
+    &\methodVal([\he_0,\ldots,\he_n])= \methodVal(\he_0) \hand \ldots \hand  \methodVal(\he_n)\\
+    &\methodVal(\he")=
+        \begin{cases}
+        \htrue & \he" \equiv \hl \\
+        \htrue & \he" \equiv \hx \\
+        \methodVal(\he) & \he" \equiv \he.\hf \\
+        \methodVal([\he,\he']) \hand \hFM=\hvar & \he" \equiv \he.\hf = \he' \gap \Gdash \he:\hC \gap \fmodifier{}(\hf,\hC)=\hFM \\
+        \methodVal([\he',\ol{\he}]) & \he" \equiv \he'.\hm(\ol{\he}) \\
+        \methodVal([\ol{\he}]) & \he" \equiv \hnew ~ \hC(\ol{\he}) \\
+        \methodVal(\he) & \he" \equiv \hfinish~\he \\
+        \methodVal([\he,\he']) & \he" \equiv \hasync~\he;\he' \\
+        \end{cases}
+\eeq
+
+A constructor can assign to a \hval field at most once and only if the target is \this:
+\beqs{ctorVal}
+    &\ctorVal([\he_0,\ldots,\he_n],F)= \ctorVal(\he_0,F) \hand \ctorVal(\he_1,\AW([\he_0]) \cup F) \hand \ldots \hand  \ctorVal(\he_n,\AW([\he_0,\ldots,\he_{n-1}]) \cup F)\\
+    &\ctorVal(\he",F)=
+        \begin{cases}
+        \htrue & \he" \equiv \hl \\
+        \htrue & \he" \equiv \hx \\
+        \ctorVal(\he,F) & \he" \equiv \he.\hf \\
+        \ctorVal([\he,\he'],F \cup \{ \hf \}) \hand \\(\hFM=\hvar \hor (\he=\this \hand \hf \not \in F)) & \he" \equiv \he.\hf = \he' \gap \Gdash \he:\hC \gap \fmodifier{}(\hf,\hC)=\hFM \\
+        \ctorVal([\he',\ol{\he}],F) & \he" \equiv \he'.\hm(\ol{\he}) \\
+        \ctorVal([\ol{\he}],F) & \he" \equiv \hnew ~ \hC(\ol{\he}) \\
+        \ctorVal(\he,F) & \he" \equiv \hfinish~\he \\
+        \ctorVal([\he,\he'],F) & \he" \equiv \hasync~\he;\he' \\
+        \end{cases}
+\eeq
+
+We need to check that we do not assign to a \hval field ($\methodVal(\he)$).
+
+
+\beqst %{method-ok}
+\typerule{
+  \methodVal(\he)
+}{
+  \hMM ~ \hm(\ol{\hx}:\ol{\hD}):\hD=\he ~~\OK~\IN~\hC
+}~\RULE{(T-Method-val)}
+\eeq
+
+Similarly, we need to check for constructors that \hval fields are treated correctly (assigned at most once).
+
+\beqst %{ctor-ok}
+\typerule{
+  \hclass~\hC~\hextends~\hC'~\lb~\ldots~\rb
+    \gap
+  F_s = \fields{}(\hC')
+    \gap
+  \ctorVal([\ol{\he},\he'],F_s)
+}{
+  \ctor(\ol{\hx}:\ol{\hD}) \lb~\super(\ol{\he});\he'; \rb ~~\OK~\IN~\hC
+}\gap \RULE{(T-Ctor)}
+\eeq
+
+
+
+Moreover, $\reductionVal$ is preserved during the reduction,
+    i.e., a \hval is assigned at most once.
+
+H, \he closed
+$\reductionVal(\he,H)$  (we have everything in H - which val fields are already assigned)
