@@ -159,8 +159,8 @@ The statement in the body of an \xcd"async" is subject to the
 restriction that it must be acceptable as the body of a \xcd"void"
 method for an anonymous inner class declared at that point in the code. For
 example, it may reference \xcd`val` variables in lexically enclosing scopes,
-but 
-not \xcd`var` variables.
+but not \xcd`var` variables.  Similarly, it cannot \xcd`break` or
+\xcd`continue` surrounding loops.
 
 
 \section{Finish}\index{finish}\label{finish}
@@ -307,6 +307,8 @@ for (place in D.places()) async at (place) {
 If the programmer wishes to execute \xcd`S` in parallel at each place,
 \xcd`S(p)` may be replaced by 
 \xcd`async S(p)`.
+
+\xcd`break` and \xcd`continue` statements may not be applied to \xcd`ateach`.
 
 \section{\xcd`var`s and Activities}
 

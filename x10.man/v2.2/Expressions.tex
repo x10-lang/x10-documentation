@@ -1372,10 +1372,15 @@ For example, \xcd`3 instanceof Int{self==x}` is an overly-complicated way of
 saying \xcd`3==x`.
 
 
+
 However, it is a static error if \xcd`e` cannot possibly be an instance of
 \xcd`C{c}`; the compiler will reject \xcd`1 instanceof Int{self == 2}` because
 \xcd`1` can never satisfy \xcd`Int{self == 2}`. Similarly, \Xcd{1 instanceof
 String} is a static error, rather than an expression always returning false. 
+
+If \xcd`x instanceof T` returns \xcd`true` for some value \xcd`x` and type
+\xcd`T`, then \xcd`x as T` will evaluate normally.  
+
 
 \limitationx
 X10 does not currently handle \xcd`instanceof` of generics in the way you

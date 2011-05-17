@@ -1862,7 +1862,14 @@ static operator (u:U) : T = e;
 
 Implicit coercions are used automatically by the compiler on method calls 
 (\Sref{sect:MethodResolution}) and assignments (\Sref{domedomedome}).
-
+Implicit coercions may be used when a value of type \xcd`T` appears in a
+context expecting a value of type \xcd`U`.  If \xcd`T <: U`, no implicit
+coercion is needed; \eg, a method \xcd`m` expecting an \xcd`Int` argument may 
+be called as \xcd`m(3)`, with an argument of type \xcd`Int{self==3}`, which is
+a subtype of \xcd`m`'s argument type \xcd`Int`. 
+However, if it is not the case that \xcd`T <: U`, but there is an implicit
+coercion from \xcd`T` to \xcd`U` defined in container \xcd`U`, then this
+implicit coercion will be applied.
 
 \begin{ex}
 We can define an implicit coercion from \xcd`Int` to \xcd`Poly`,

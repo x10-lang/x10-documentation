@@ -321,9 +321,12 @@ using the rules for definite assignment (\Sref{sect:DefiniteAssignment}).
 \index{variable declarator!destructuring}
 \index{destructuring}
 \Xten{} permits a \emph{destructuring} syntax for local variable
-declarations with explicit initializers,  and for formal parameters, of type \xcd`Point`, \Sref{point-syntax}. 
-A point is a sequence of zero or more \xcd`Int`-valued coordinates.  
-It is often useful to get at the coordinates directly, in variables. 
+declarations with explicit initializers,  and for formal parameters, of type
+\xcd`Point`, \Sref{point-syntax} and \xcd`Array`, \Sref{XtenArrays}.
+A point is a sequence of zero or more \xcd`Int`-valued coordinates; an array
+is an indexed collection of data. 
+It is often useful to get at the coordinates or elements directly, in
+variables.
 
 %##(VariableDeclarator
 \begin{bbgrammar}
@@ -334,11 +337,24 @@ It is often useful to get at the coordinates directly, in variables.
 \end{bbgrammar}
 %##)
 
-The syntax \xcdmath"val [a$_1$, $\ldots$, a$_n$] = e;" declares {$n$}
+The syntax \xcdmath"val [a$_1$, $\ldots$, a$_n$] = e;", 
+where \xcd`e` is a \xcd`Point`,
+declares {$n$}
 \xcd`Int` variables, bound to the precisely {$n$} components of the \xcd`Point` value of
 \xcd`e`; it is an error if \xcd`e` is not a \xcd`Point` with precisely {$n$} components.
 The syntax \xcdmath"val p[a$_1$, $\ldots$, a$_n$] = e;"  is similar, but also
-declares the variable \xcd`p` as \xcdmath"Point".  
+declares the variable \xcd`p` to be of type \xcdmath"Point(n)".  
+
+
+The syntax \xcdmath"val [a$_1$, $\ldots$, a$_n$] = e;", 
+where \xcd`e` is an \xcd`Array[T]` for some type \xcd`T`,
+declares {$n$}
+variables of type \xcd`T`, bound to the precisely {$n$} components of the \xcd`Array[T]` value of
+\xcd`e`; it is an error if \xcd`e` is not a \xcd`Array[T]` 
+with \xcd`rank==1` and \xcdmath"size==$n$". 
+The syntax \xcdmath"val p[a$_1$, $\ldots$, a$_n$] = e;"  is similar, but also
+declares the variable \xcd`p` to be of type
+\xcdmath"Array[T]{rank==1,size==n}".   
 
 
 \begin{ex}
@@ -356,30 +372,34 @@ val [i] : Point = Point.make(11);
 assert i == 11;
 val p[j,k] = Point.make(22,33);
 assert j == 22 && k == 33;
-val q[l,m] = [44,55]; // coerces an array to a point.
+val q[l,m] = [44,55] as Point; 
 assert l == 44 && m == 55;
+//ERROR: val [n] = p;
 \end{xten}
 %~~siv
 %}}
 % class Hook{ def run() {Example.example(); return true;}}
 %~~neg
- 
-%%A useful idiom for iterating over a range of numbers is: 
-%%%~x~gen ^^^ Vars90
-%%%package Vars.For.Swear.Bears;
-%%% class ForBear {
-%%% def forbear() {
-%%%~x~vis
-%%\begin{xten}
-%%var sum : Int = 0;
-%%for ([i] in 1..100) sum += i;
-%%\end{xten}
-%%%~x~siv
-%%% ; } } 
-%%%~x~neg
-%%\noindent
-%%The brackets in \xcd`[i]` introduce destructuring, making X10 treat \xcd`i`
-%%as an \xcd`Int`; without them, it would be a \xcd`Point`.  
+
+Destructuring is allowed wherever a \xcd`Point` or \xcd`Array[T]` variable is
+declared, \eg, as the formal parameters of a method.
+\begin{ex}
+The methods below take a single argument each: a three-element point for
+\xcd`example1`, a three-element array for \xcd`example2`.  The argument itself
+is bound to \xcd`x` in both cases, and its elements are bound to \xcd`a`,
+\xcd`b`, and \xcd`c`.  
+%~~gen ^^^ Vars2e6j
+% package Vars2e6j;
+%class Example {
+%~~vis
+\begin{xten}
+static def example1(x[a,b,c]:Point){}
+static def example2(x[a,b,c]:Array[String]{rank==1,size==3}){}
+\end{xten}
+%~~siv
+%}
+%~~neg
+\end{ex}
 
 \end{ex}
 
