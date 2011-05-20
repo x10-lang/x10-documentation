@@ -47,6 +47,7 @@ method---interface methods are implicitly \xcd`public`.
 
 \limitation{X10 may not always detect that type invariants of interfaces are
 satisfied, even when they obviously are.}
+%% TODO - is this a JIRA?  
 
 A container---a class or struct---can {\em implement} an interface,
 typically by having all the methods and property methods that the interface
@@ -146,15 +147,15 @@ defined at the interface.
 
 
 
-A class \xcd"C"  implements an interface \xcd"I" if
-\begin{itemize}
-\item \xcd`I`, or a subtype of \xcd`I`, appears in the \xcd`implements` list
-      of \xcd`C`, 
-\item \xcd`C`'s property methods include all the property methods  of \xcd"I",
-\item Each method \xcd`m` defined by \xcd`I` is also a method of \xcd`C` --
-      with the {\em  \xcd`public`} modifier added.   These methods may be
-      \xcd`abstract` if \xcd`C` is \xcd`abstract`.
-\end{itemize}
+A class \xcd"C"  implements an interface \xcd"I" if \xcd`I`, or a subtype of \xcd`I`, appears in the \xcd`implements` list
+of \xcd`C`.  
+In this case,
+ \xcd`C` implicitly gets all the methods and property methods of \xcd`I`,
+      as \xcd`abstract` \xcd`public` methods.  If \xcd`C` does not declare
+      them explicitly, then they are \xcd`abstract`, and \xcd`C` must be
+      \xcd`abstract` as well.   If \xcd`C` does declare them all, \xcd`C` may
+      be concrete.
+
 
 
 If \xcd`C` implements \xcd`I`, then the class invariant

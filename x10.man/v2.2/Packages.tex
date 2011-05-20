@@ -246,9 +246,9 @@ class D extends C {
 %
 %~~neg
 
-\limitation{Some X10 compilers improperly allow access to {\tt xhax} -- as,
+\limitation{The X10 compiler improperly allows access to {\tt xhax} -- as,
 indeed, some Java compilers do, despite Java having the analogous rule.
-However, X10 allows all permitted accesses, so the workaround is trivial.}
+The compiler allows you to do everything the spec says and a bit more.}
 
 \item An access through a qualified name \xcd`Q.N` is permitted precisely when
       the type of \xcd`Q` is \xcd`D` or a subtype of \xcd`D`. 
@@ -376,8 +376,12 @@ other names.
 
 \subsection{Implicit Imports}
 
-The packages \xcd`x10.lang` and \xcd`x10.array` are automatically imported in all files
-without need for further specification.
+The packages \xcd`x10.lang`, \xcd`x10.array` are automatically imported in all
+files without need for further specification.
+Furthermore, the public static members of the class named \xcd`_` in
+\xcd`x10.lang` are imported everywhere as well. This provides a number of
+aliases, such as \xcd`Console` and \xcd`int` for \xcd`x10.io.Console` and
+\xcd`Int`. 
 
 %%BARD-HERE
 

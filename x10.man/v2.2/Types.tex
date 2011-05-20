@@ -1365,6 +1365,13 @@ This could lead to program failures, as illustrated by the failing assertion.
 \end{xten}
 \end{ex}
 
+\subsubsection{Stripped Generic Casts}
+
+Since constraints are not preserved at runtime, \xcd`instanceof` and \xcd`as`
+cannot pay attention to them.  In particular, when types are used generically,
+they may not behave as one would expect.
+
+\noo{Finish this!}
 
 
 \subsection{Example of Constraints}
