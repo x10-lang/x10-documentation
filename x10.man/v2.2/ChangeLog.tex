@@ -2,7 +2,40 @@
 
 \section{Changes from \Xten{} v2.1}
 
+\begin{enumerate}
 
+\item Covariance and contravariance are gone.
+
+\item Operator definitions are regularized.  A number of new operator symbols
+      are available.
+
+\item The operator \xcd`in` is gone.  \xcd`in` is now only a keyword.
+
+\item Method functions and operator functions are gone.
+
+\item \xcd`m..n` is now a type of struct called \xcd`IntRange`.  
+
+\item \xcd`for(i in m..n)` now works.  The old forms, \xcd`for((i) in m..n)`
+      and \xcd`for([i] in m..n)`, are no longer needed.
+
+\item \xcd`(e as T)` now has type \xcd`T`.  (It used to have an identity
+      constraint conjoined in.)
+
+\item \xcd`var`s can no longer be assigned in their place of origin.  Use a
+      \xcd`GlobalRef[Cell[T]]` instead.  We'll have a new idiom for this in 2.3.
+
+\item The \xcd`-STATIC_CALLS` command-line flag is now \xcd`-STATIC_CHECKS`.
+
+\item Any string may be written in backquotes to make an identifier: {\tt
+      `while`}.
+
+\item The \xcd`next` and \xcd`resume` keywords are gone; they have been
+      replaced by static methods on \xcd`Clock`.
+
+\item The typed array construction syntax \xcd`new Array[T][t1,t2]` is gone.
+      Use \xcd`[t1 as T, t2]` (if just plain \xcd`[t1,t2]` doesn't work).
+
+\end{enumerate}
 
 
 \section{Changes from \Xten{} v2.0.6}

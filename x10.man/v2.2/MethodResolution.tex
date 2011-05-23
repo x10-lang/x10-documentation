@@ -141,6 +141,20 @@ of the following forms.  There may be any number of arguments.
 %%OP%%       so that the invocation is \xcd`A.m(b)`.
 \end{itemize}
 
+The meaning of an invocation of the form \xcd`m(b)`, with any number of
+arguments, depends slightly on its context.  Inside of a constraint, it might
+mean \xcd`self.m(b)`.  Outside of a constraint, there is no \xcd`self`
+defined, so it can't mean that.  The first of these that applies will be
+chosen. 
+\begin{enumerate}
+\item Invoke a method on \xcd`this`, \viz{} \xcd`this.m(b)`.  Inside a
+      constraint, it may also invoke a property method on \xcd`self`, \viz.
+      \xcd`self.m(b)`.  It is an error if both \xcd`this.m(b)` and
+      \xcd`self.m(b)` are possible.
+\item Invoke a function named \xcd`m` in a local or field.
+\item Construct a structure named \xcd`m`.
+\end{enumerate}
+
 Static method invocations, \xcd`A.m(b)`, where \xcd`A` is a container name,
 can only be static.  There may be any number of arguments.
 \begin{itemize}
@@ -385,6 +399,31 @@ the other, or either to be more specific.  \xcd`specific` is computed as:
 \item If \xcd`m2` is acceptable for the invocation \xcd`invo2`,
       \xcd`specific(m1,m2)` returns true; 
 \item Otherwise, \xcd`specific(m1,m2)` returns false.
+\end{enumerate}
+
+\subsection{Field Resolution}
+
+An identifier \xcd`p` can refer to a number of things.  The rules are somewhat
+different inside and outside of a constraint.
+
+Outside of a constraint, the compiler chooses
+the first one from the following list which applies: 
+\begin{enumerate}
+\item A local variable named \xcd`p`.
+\item A field of \xcd`this`, \viz{} \xcd`this.p`.
+\item A nullary property method, \xcd`this.p()`
+\item A member type named \xcd`p`.
+\item A package named \xcd`p`.
+\end{enumerate}
+
+Inside of a constraint, the rules are slightly different, because \xcd`self`
+is available, and packages cannot be used per se.
+\begin{enumerate}
+\item A local variable named \xcd`p`.
+\item A property of \xcd`this` or of \xcd`self`, \viz{} \xcd`this.p` or
+      \xcd`self.p`.  If both are available, report an error.
+\item A nullary property method, \xcd`this.p()`
+\item A member type named \xcd`p`.
 \end{enumerate}
 
 \subsection{Other Disambiguations}

@@ -541,6 +541,7 @@ operations whenever possible, the compiler neither enforces nor assumes any
 particular semantics of user-defined operations. 
 
 \subsection{Conversions and coercions}
+\label{sect:ConvAndCoerc}
 
 Specifically, each numeric type can be converted or coerced into each other
 numeric type, perhaps with loss of accuracy.
@@ -1388,6 +1389,50 @@ X10 does not currently handle \xcd`instanceof` of generics in the way you
 might expect.  For example, \xcd`r instanceof Array[Int{self != 0}]` does
 not test that every element of \xcd`r` is non-zero; instead, the compiler
 rejects it.
+
+
+\subsection{Nulls in Constraints in {\tt as} and {\tt instanceof}}
+
+Both \xcd`as` and \xcd`instanceof` expressions can throw
+\xcd`NullPointerException`s, if the constraints involve selecting fields
+or properties of variables which are bound to \xcd`null`.  
+
+These operations give some guarantees for any type \xcd`T`, constraint
+\xcd`c`, and class 
+\xcd`SomeObj` with an \xcd`a` field:
+\begin{enumerate}
+\item \xcd`null instanceof T` always returns \xcd`false`.  It never throws an
+      exception.  It 
+      never returns \xcd`true`, not even in cases where \xcd`null` could be
+      assigned to a variable of type \xcd`T`.  
+\item \xcd`null` can be assigned to a variable of type
+      \xcd`SomeObj{self.a==b}`, or, more broadly, to a variable 
+      of a constrained object type whose constraint does not explicitly
+      exclude \xcd`null`.  This is the case even though \xcd`null.a==b` would
+      throw a \xcd`NullPointerException` rather than evaluate to either
+      \xcd`true` `
+      or \xcd`false`.
+\item If \xcd`x instanceof T` returns \xcd`true`, then \xcd`x as T` is a cast
+      rather than an explicit conversion, and will succeed and have static
+      type \xcd`T`.
+\item If the static type of \xcd`x` is \xcd`T`, then \xcd`x instanceof T` and
+      \xcd`x as T` will do one of these: 
+      \begin{itemize}
+      \item Succeed, with \xcd`x instanceof T` returning \xcd`true`, and 
+            \xcd`x as T` being a cast and returning value of type \xcd`T`; {\bf or}
+
+      \item (if \xcd`x==null`) succeed, with \xcd`x instanceof T` returning
+            \xcd`false` and \xcd`x as T` returning a null value of type
+            \xcd`T`.  
+      \item Throw a \xcd`NullPointerException`.
+      \end{itemize}
+\item If \xcd`x instanceof SomeObj{self.a==b}` is \xcd`true`, then \xcd`x.a==b`
+      evaluates to \xcd`true` (rather than a null pointer exception).  Indeed, 
+      in general, if \xcd`x instanceof T{c}` succeeds, then \xcd`cc` evaluates
+      to true, where \xcd`cc` is \xcd`c` with suitable occurrences of
+      \xcd`self` replaced by \xcd`x`.  
+\end{enumerate}
+
 
 
 \section{Subtyping expressions}
