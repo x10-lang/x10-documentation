@@ -1421,10 +1421,11 @@ These operations give some guarantees for any type \xcd`T`, constraint
       \item Succeed, with \xcd`x instanceof T` returning \xcd`true`, and 
             \xcd`x as T` being a cast and returning value of type \xcd`T`; {\bf or}
 
-      \item (if \xcd`x==null`) succeed, with \xcd`x instanceof T` returning
-            \xcd`false` and \xcd`x as T` returning a null value of type
-            \xcd`T`.  
       \item Throw a \xcd`NullPointerException`.
+      \item If \xcd`x==null`, then \xcd`x instanceof T` will always return
+            \xcd`false`, and \xcd`x as T` will either return a \xcd`null` of
+            type \xcd`T`, or, if \xcd`T` has a constraint which tries to
+            extract a field of \xcd`x`, will throw a \xcd`NullPointerException`.
       \end{itemize}
 \item If \xcd`x instanceof SomeObj{self.a==b}` is \xcd`true`, then \xcd`x.a==b`
       evaluates to \xcd`true` (rather than a null pointer exception).  Indeed, 

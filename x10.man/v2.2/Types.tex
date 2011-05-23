@@ -1100,43 +1100,109 @@ is allowed as a constraint, but \xcd`i==0L` is an error, and
 \subsubsection{Semantics of constraints}
 \index{constraint!semantics}
 \label{SemanticsOfConstraints}
-An assignment of values to variables is said to be a {\em solution} for a
-constraint \xcd`c` if under this assignment \xcd`c` evaluates to
-\xcd`true`. For instance, the assignment that maps 
-the variables \xcd`a` and \xcd`b` to a value \xcd`t` is a solution for
-the constraint \xcd`a==b`. An assignment that maps \xcd`a` to 
-\xcd`s` and \xcd`b` to a distinct value \xcd`t` is a solution for 
-\xcd`a != b`. 
 
-An instance \xcd"o" of \xcd"C" is said to be of type \xcd"C{c}" (or {\em
-belong to} \xcd"C{c}") if the constraint \xcd"c" evaluates to \xcd"true" in
-the current lexical environment augmented with the binding \xcd"self"
-$\mapsto$ \xcd"o".
+%%ENT%% An assignment of values to variables is said to be a {\em solution} for a
+%%ENT%% constraint \xcd`c` if under this assignment \xcd`c` evaluates to
+%%ENT%% \xcd`true`. For instance, the assignment that maps 
+%%ENT%% the variables \xcd`a` and \xcd`b` to a value \xcd`t` is a solution for
+%%ENT%% the constraint \xcd`a==b`. An assignment that maps \xcd`a` to 
+%%ENT%% \xcd`s` and \xcd`b` to a distinct value \xcd`t` is a solution for 
+%%ENT%% \xcd`a != b`. 
+%%ENT%% 
+%%ENT%% An instance \xcd"o" of \xcd"C" is said to be of type \xcd"C{c}" (or {\em
+%%ENT%% belong to} \xcd"C{c}") if the constraint \xcd"c" evaluates to \xcd"true" in
+%%ENT%% the current lexical environment augmented with the binding \xcd"self"
+%%ENT%% $\mapsto$ \xcd"o".
+%%ENT%% 
+%%ENT%% A constraint \xcd`c` is said to {\em entail} a
+%%ENT%% constraint \xcd`d` if every solution for \xcd`c` is also a solution
+%%ENT%% for \xcd`d`. For instance the constraint
+%%ENT%% \xcd`x==y && y==z && z !=a` entails \xcd`x != a`.
+%%ENT%% 
+%%ENT%% The constraint solver considers the assignment \xcd`a` to \xcd`null`
+%%ENT%% to satisfy any constraint of the form \xcd`a.f==t`. 
+%%ENT%% Thus, the declaration 
+%%ENT%% \xcd`var x:Tree{self.r==p}=null` does not
+%%ENT%% produce an error, since \xcd`self==null` satisfies the constraint
+%%ENT%% \xcd`self.r==p`.  
+%%ENT%% (This only applies in constraints, not in expression evaluation.  
+%%ENT%% \xcd`if(a.f==t)...` will throw an exception if \xcd`a==null`.)
+%%ENT%% If \xcd`null` is not an acceptable value for some class \xcd`Tree`, 
+%%ENT%% add \xcd`self!=null` as a constraint: 
+%%ENT%% \xcd`Tree{self!=null}` is the class of non-\xcd`null` \xcd`Tree`s.
 
-A constraint \xcd`c` is said to {\em entail} a
-constraint \xcd`d` if every solution for \xcd`c` is also a solution
-for \xcd`d`. For instance the constraint
-\xcd`x==y && y==z && z !=a` entails \xcd`x != a`.
+The logic of constraints is designed to allow a common and important X10
+idiom: 
+%~~gen ^^^ Types9l9q
+% package Types9l9q;
+% class Example {
+%~~vis
+\begin{xten}
+class Thing(p:Int){}
+static def example(){
+   var x : Thing{x.p==3} = null;
+}
+\end{xten}
+%~~siv
+%}
+% class Hook{ def run() {Example.example(); return true;}}
+%~~neg
+That is, \xcd`null` must be an instance of \xcd`Thing{x.p==3}`.  
+Of course, it cannot be the case that \xcd`null.p==3` --- nor can it equal
+anything else.  When evaluated at runtime, \xcd`null.p` must throw a
+\xcd`NullPointerException` rather than returning any value at all.
 
-The constraint solver considers the assignment \xcd`a` to \xcd`null`
-to satisfy any constraint of the form \xcd`a.f==t`. 
-Thus, the declaration 
-\xcd`var x:Tree{self.r==p}=null` does not
-produce an error, since \xcd`self==null` satisfies the constraint
-\xcd`self.r==p`.  
-(This only applies in constraints, not in expression evaluation.  
-\xcd`if(a.f==t)...` will throw an exception if \xcd`a==null`.)
-If \xcd`null` is not an acceptable value for some class \xcd`Tree`, 
-add \xcd`self!=null` as a constraint: 
-\xcd`Tree{self!=null}` is the class of non-\xcd`null` \xcd`Tree`s.
+So, X10's logic of constraints --- {\em unlike} the logic of runtime ---
+allows \xcdmath"x$=$null" to satisfy \xcd`x.p==3`.  Building this logic
+requires a few definitions.
 
-To ensure that type-checking is decidable, we require that property graphs be
-acyclic.  The property graph, at an instant in an X10 execution, is the graph
-whose nodes are all objects in existence at that instance, with an edge from
+The property graph, at an instant in an X10 execution, is the graph
+whose nodes are all objects in existence at that instance, plus \xcd`null`,
+with an edge from 
 {$x$} to {$y$} if {$x$} is an object with a property whose value is {$y$}. 
-The rules for constructors guarantee this.
+The rules for constructors guarantee that property graphs are acyclic, which
+is crucial for decidability.
 
-Constraints participate in the subtyping relationship in a natural way:
+As is standard in mathematical logic, we introduce the concept of a
+{\em valuation} {$v$}, which is a mapping from variable names to their values
+-- in our case, nodes of an X10 property graph.  A valuation {$v$} can be
+extended to values to all constraint formulas.  The crucial definitions are: 
+\begin{xtenmath}
+$v($ a.b$\ldots$.l.m == n.o$\ldots$.y.z$) = $
+  a$=$null $\vee$ a.b$=$null $\vee$ $\ldots$ a.b$\ldots$.l$=$null 
+  $\vee$ n$=$null $\vee$ n.o$=$null $\vee$ $\ldots$ n.o$\ldots$.y$=$null 
+  $\vee$ $v($a$)$.b$\ldots$.l.m $=$ $v($n$)$.o$\ldots$.y.
+
+$v($ a.b$\ldots$.l.m != n.o$\ldots$.y.z$) = $
+  a$=$null $\vee$ a.b$=$null $\vee$ $\ldots$ a.b$\ldots$.l$=$null 
+  $\vee$ n$=$null $\vee$ n.o$=$null $\vee$ $\ldots$ n.o$\ldots$.y$=$null 
+  $\vee$ $v($a$)$.b$\ldots$.l.m $\ne$ $v($n$)$.o$\ldots$.y.
+\end{xtenmath}
+For example, \xcdmath"$v($a.b==1$)$" is true if either \xcdmath"$v($a$)=$null"
+or if \xcdmath"$v($a$)$" is a container whose \xcd`b`-field is equal to {$1$}.
+While such a valuation is perfectly well-defined, it has properties that need
+to be understood in light of the fact that \xcd`==` is {\em not} mathematical
+equality.\footnote{No experienced programmer should actually think that
+\xcd`==` is mathematical equality in any case.  It is quite common for two
+objects to appear identical but not be \xcd`==`.  X10's discrepancy between the
+two concepts is orthogonal to the familiar one.}  
+Given any valuation in which \xcdmath"$v($a$)=$null", both 
+\xcdmath"$v($a.b==1 && a.b==2$)$" 
+and
+\xcdmath"$v($a.b==1 && a.b!=1$)$" 
+are true.  
+This does not contradict logic and mathematics, and it does not
+assert that in X10 there is a number which is both 1 and 2.
+It simply reflects the fact that, while \xcd`==` is similar to mathematical equality in
+many respects, it is ultimately a different operation, and in constraints it
+is given a \xcd`null`-safe interpretation.
+
+From this definition of valuation, we define {\em entailment} in the standard
+way.  Given constraints \xcd`c` and \xcd`d`, we define {\em \xcd`c` entails
+\xcd`d`}, sometimes written \xcdmath"c $\models$ d", if for all valuations
+{$v$} such that \xcdmath"$v($c$)$" is true, \xcdmath"$v($d$)$" is also true. 
+
+Subtyping of constrained types is defined in terms of entailment. 
 \xcdmath"S[S1,$\ldots$, Sm]{c}" 
 is a subtype of 
 \xcdmath"T[T1,$\ldots$, Tn]{d}" 
@@ -1366,13 +1432,80 @@ This could lead to program failures, as illustrated by the failing assertion.
 \end{xten}
 \end{ex}
 
-\subsubsection{Stripped Generic Casts}
+\subsection{Stripped Generic Casts}
+\label{sect:StrippedGenericCasts}
 
 Since constraints are not preserved at runtime, \xcd`instanceof` and \xcd`as`
-cannot pay attention to them.  In particular, when types are used generically,
-they may not behave as one would expect.
+cannot pay attention to them.  When types are used generically,
+they may not behave as one would expect were one to imagine that their
+constraints were kept.  Specifically, constraints at runtime are, in effect,
+simply replaced by \xcd`true`.
 
-\noo{Finish this!}
+\begin{ex}
+The following code defines generic methods \xcd`inst` and \xcd`cast`, which
+look like generic versions of \xcd`instanceof` and \xcd`as`.  The
+\xcd`example()` code shows that \xcd`inst` and \xcd`cast` behave quite
+differently from \xcd`instanceof` and \xcd`as`, due to the loss of constraint
+information.  
+
+The first section of \xcd`assert`s shows the behavior of \xcd`instanceof` and
+\xcd`at`.  We have a value \xcd`pea`, such that \xcd`pea.p==1`.
+It behaves as if its \xcd`p` field were \xcd`1`: it answers \xcd`true` to 
+\xcd`self.p==1`, and \xcd`false` to \xcd`self.p==2`.  This is entirely as
+desired.
+
+The following section of \xcd`assert` and \xcd`val` statements does the
+analogous thing, but using the generic methods \xcd`inst` and \xcd`cast`
+rather than the built-in operations \xcd`instanceof` and \xcd`cast`.
+\xcd`pea` answers \xcd`true` to \xcd`inst` checks concerning both
+\xcd`Pea{p==1}` and \xcd`Pea{p==2}`, and can be \xcd`cast()` into both these
+types.  This behavior is not what one would expect from runtime types that
+keep constraint information.  It is, however, precisely what one would expect
+from runtime types that have their constraints replaced by \xcd`true`.  
+
+The \xcd`cast2` line shows how to use this fact to violate the constraint
+system at runtime.   This dynamic cast produces an object of type
+\xcd`Pea{p==2}` for which \xcd`p!=2`.  
+
+%~~gen ^^^ Types9j6e
+% package Types9j6e;
+%~~vis
+\begin{xten}
+class Generic {
+  public static def inst[T](x:Any):Boolean = x instanceof T;
+  public static def cast[T](x:Any):T       = x as T;
+}
+class Pea(p:Int) {}
+class Example{
+  static def example() {
+     val pea : Pea = new Pea(1);
+     // These are what you'd expect: 
+     assert (pea instanceof Pea{p==1});
+     assert (pea as Pea{p==1}).p == 1;
+     assert ! (pea instanceof Pea{p==2}); 
+     // 'val x = pea as Pea{p==2};' throws a FailedDynamicCheckException.
+
+     // But the genericized versions don't do the same thing:
+     assert Generic.inst[Pea{p==1}](pea);
+     assert Generic.inst[Pea{p==2}](pea);
+     // No exception here!
+     val cast1: Pea{p==1} = Generic.cast[Pea{p==1}](pea);
+     val cast2: Pea{p==2} = Generic.cast[Pea{p==2}](pea);
+     assert cast2.p == 1;
+     assert !(cast2 instanceof Pea{p==2});
+  }
+}
+
+\end{xten}
+%~~siv
+%class Hook{ def run() {Example.example(); return true;}}
+%~~neg
+\end{ex}
+
+While in some cases it would be possible to keep constraints around at runtime
+and operate efficiently on them, in other cases it would not.  
+
+
 
 
 \subsection{Example of Constraints}
@@ -2538,6 +2671,10 @@ type system: places where a program can pass the typechecker and still have a
 type error.
 
 \begin{enumerate}
+
+\item As seen in \Sref{sect:StrippedGenericCasts}, generic types do not have
+      constraint information at runtime.  This allows one to write code which
+      violates constraints at runtime, as seen in the example in that section. 
 
 
 \item The library type \xcd`x10.util.IndexedMemoryChunk` provides a low-level interface
