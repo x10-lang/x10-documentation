@@ -1241,7 +1241,7 @@ For examples of constraints and entailment, see (\Sref{ConstraintExamples})
 
 
 The constraint solver is sound in that if it claims that \xcd`c` entails \xcd`d`
-then in fact it is the case that every value that satisfies \xcd`c`
+then in fact it is the case that every valuation that satisfies \xcd`c`
 satisfies \xcd`d`. 
 
 \limitationx{}
@@ -1250,6 +1250,8 @@ in which \xcd`c` entails \xcd`d` but the solver cannot establish it. For
 instance it cannot establish that \xcd`a != b && a != c && b != c`
 entails \xcd`false` if \xcd`a`, \xcd`b`, and \xcd`c` are of type
 \xcd`Boolean`.
+Similarly, although \xcd`a.b==1 && a.b==2` entails \xcd`a==null`, the
+constraint solver does not deduce this fact. 
 
 
 Certain other constraint entailments are prohibitively expensive to calculate.  The issues
