@@ -179,6 +179,8 @@ The array \xcd`aa` in the following example is an \xcd`Array[Any]`.  It
 initially holds two objects.  Then, its elements are replaced by two structs,
 both of which are auto-boxed.  Note that no fussing is required to put an
 integer into an \xcd`Array[Any]`.  
+However, an array of structs, such as \xcd`ah`, holds {\em unboxed} structs
+and does not incur boxing overhead.
 %~~gen ^^^ Structs3q6l
 % package Structs3q6l;
 %~~vis
@@ -188,6 +190,7 @@ struct Horse(x:Int){
     val aa : Array[Any](1) = ["an Object" as Any, "another one"];
     aa(0) = Horse(8);
     aa(1) = 13;
+    val ah : Array[Horse](1) = [Horse(7), Horse(13)];
   }
 }
 \end{xten}
@@ -264,40 +267,40 @@ otherwise encourage the use of unsigned arithmetic.
 
 
  
-\section{Generic programming with structs}
-\index{struct!generic}
-\index{generic!struct}
-
-
-
-The programmer must be aware of the different interpretations of
-equality (\Sref{StableEquality}) for structs and classes and ensure that the
-code is correctly written for both cases. 
-
-\index{isObject}
-\index{isStruct}
-\index{isFunction}
-Three static methods on \xcd`x10.lang.System` 
-allow you to tell what kind of value \xcd`x` is: object,
-struct, or function.  
-\xcd`System.isObject(x)` returns true if \xcd`x` is a value of \xcd`Object`
-type, including \xcd`null`; \xcd`System.isStruct(x)` returns true if \xcd`x`
-is a \xcd`struct`; \xcd`System.isFunction(x)` returns true if \xcd`x` is a
-closure value.  Precisely one of these three functions returns true for any
-X10 value \xcd`x`.  
-
-\begin{xten}
-val x:X = ...;
-if (System.isObject(x)) { // x is a real object
-   val x2 = x as Object; // this cast will always succeed.
-   ...
-} else if (System.isStruct(x)) { // x is a struct
-   ...
-} else {  
-  assert System.isFunction(x);
-}
-\end{xten}
- 
+%%WRONG%% \section{Generic programming with structs}
+%%WRONG%% \index{struct!generic}
+%%WRONG%% \index{generic!struct}
+%%WRONG%% 
+%%WRONG%% 
+%%WRONG%% 
+%%WRONG%% The programmer must be aware of the different interpretations of
+%%WRONG%% equality (\Sref{StableEquality}) for structs and classes and ensure that the
+%%WRONG%% code is correctly written for both cases. 
+%%WRONG%% 
+%%WRONG%% \index{isObject}
+%%WRONG%% \index{isStruct}
+%%WRONG%% \index{isFunction}
+%%WRONG%% Three static methods on \xcd`x10.lang.System` 
+%%WRONG%% allow you to tell what kind of value \xcd`x` is: object,
+%%WRONG%% struct, or function.  
+%%WRONG%% \xcd`System.isObject(x)` returns true if \xcd`x` is a value of \xcd`Object`
+%%WRONG%% type, including \xcd`null`; \xcd`System.isStruct(x)` returns true if \xcd`x`
+%%WRONG%% is a \xcd`struct`; \xcd`System.isFunction(x)` returns true if \xcd`x` is a
+%%WRONG%% closure value.  Precisely one of these three functions returns true for any
+%%WRONG%% X10 value \xcd`x`.  
+%%WRONG%% 
+%%WRONG%% \begin{xten}
+%%WRONG%% val x:X = ...;
+%%WRONG%% if (System.isObject(x)) { // x is a real object
+%%WRONG%%    val x2 = x as Object; // this cast will always succeed.
+%%WRONG%%    ...
+%%WRONG%% } else if (System.isStruct(x)) { // x is a struct
+%%WRONG%%    ...
+%%WRONG%% } else {  
+%%WRONG%%   assert System.isFunction(x);
+%%WRONG%% }
+%%WRONG%% \end{xten}
+%%WRONG%%  
   
 \section{Example structs}
 
@@ -350,6 +353,7 @@ Static nested structs may be defined, essentially as static nested classes
 except for making them structs
 (\Sref{StaticNestedClasses}).  Inner structs may be defined, essentially as
 inner classes except making them structs (\Sref{InnerClasses}).
+\limitationx{} Nested structs must be currently be declared static.
 
 \section{Default Values}
 

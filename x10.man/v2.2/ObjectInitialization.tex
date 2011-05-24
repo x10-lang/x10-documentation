@@ -84,6 +84,8 @@ escape as well. The following class prints an uninitialized value:
 % NOCOMPILE
 %~~vis
 \begin{xten}
+// This code violates this chapter's constraints
+// and thus will not compile in X10.
 class Example {
   val a: Int;
   def this() { 
@@ -193,8 +195,8 @@ A method can, however, be safe to call from constructors without being marked
 Implicitly non-escaping methods need to obey the same constraints on
 \Xcd{this}, \Xcd{super}, and variable usage as \Xcd{@NonEscaping} methods. An
 implicitly non-escaping method {\em could} be marked as
-\xcd`@NonEscaping` for some list of variables; the compiler, in
-effect, infers the annotation. In addition, implicitly non-escaping methods
+\xcd`@NonEscaping`; the compiler, in
+effect, infers the annotation. In addition, all non-escaping methods
 must be \Xcd{private} or \Xcd{final} or members of a \Xcd{final} class; this
 corresponds to the hereditary nature of \Xcd{@NonEscaping} (by forbidding
 inheritance of implicitly non-escaping methods).
@@ -207,13 +209,9 @@ The first requirement on non-escaping methods is that they do not allow
 only be used for field access and assignment, and as the receiver of
 non-escaping methods.
 
-Finally, if a method \Xcd{m} in class \Xcd{C} is marked
-\xcd`@NonEscaping`, then every method which overrides \Xcd{m} in any
-subclass of \Xcd{C} must be annotated with precisely the same annotation,
-\xcd`@NonEscaping`, as well.
 
-The following example uses most of the possible variations (leaving out
-\Xcd{final} class).  \Xcd{aplomb()} explicitly forbids reading any field but
+The following example uses the possible variations.  \Xcd{aplomb()} 
+explicitly forbids reading any field but
 \Xcd{a}. \Xcd{boric()} is called after \Xcd{a} and \Xcd{b} are set, but
 \Xcd{c} is not.
 The \xcd`@NonEscaping` annotation on \xcd`boric()` is optional, but the
@@ -222,10 +220,6 @@ compiler will print a warning if it is left out.
 can read anything; its annotation, too, is not required.   \Xcd{SeeAlso} is able to override \Xcd{aplomb()}, because
 \Xcd{aplomb()} is \xcd`@NonEscaping`; it cannot override the final method
 \Xcd{boric()} or the private one \Xcd{cajoled()}.  
-The method \Xcd{aplomb()} can be overridden, but it is crucial that the 
-subclass's version, 
-\Xcd{SeeAlso.aplomb()}, be 
-declared \xcd`@NonEscaping`, just like \Xcd{C2.aplomb()}.
 %~~gen ^^^ ObjectInitialization10
 %package ObjInit.C2;
 %~~vis
@@ -277,7 +271,8 @@ and one of them implicit.
       of the constructor.  If it is not supplied, the compiler treats it as a
       nullary super-call \Xcd{super()};
 \item If the class or struct has properties, there must be a single
-      \Xcd{property(...)} command in the constructor.  Every execution path
+      \Xcd{property(...)} command in the constructor, or a \xcd`this(...)`
+      constructor call.  Every execution path
       through the constructor must go through this \Xcd{property(...)} command
       precisely once.   The second segment of the constructor is the code
       following the first segment, up to and including the \Xcd{property()}
@@ -313,7 +308,11 @@ class Overdone(y:Int) extends Overlord  {
     val rp1 = r+1;
     property(rp1);                 // (2)
     // field initializations here  // (3)
-    a = r + 2;                     // (4)
+    a = r + 2 + b;                 // (4)
+  }
+  def this() {
+    this(10);                      // (1), (2), (3)
+    val x = a + b;                 // (4)
   }
 }//Overdone
 \end{xten}

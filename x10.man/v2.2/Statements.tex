@@ -381,6 +381,7 @@ statement. A labeled break statement exits the enclosing
 statement with the given label.
 It is illegal to break out of a statement not defined in the current
 method, constructor, initializer, or closure.  
+\xcd`break` is only allowed in sequential code.
 
 \begin{ex}
 The following code searches for an element of a two-dimensional
@@ -419,6 +420,7 @@ innermost enclosing loop, and proceeds on to the next.  A labeled
 \xcd`continue` does the same to the enclosing loop with that label.
 It is illegal to continue a loop not defined in the current
 method, constructor, initializer, or closure.
+\xcd`continue` is only allowed in sequential code.
 
 
 
@@ -933,7 +935,8 @@ the statement following the \xcd"try" statement, at the branch target, or at
 the caller as appropriate.
 If the \xcd"try" block completes
 exceptionally, the \xcd"finally" block is evaluated after the
-matching \xcd"catch" block, if any, and then the
+matching \xcd"catch" block, if any, and when and if the \xcd`finally` block
+finishs normally, the
 exception is rethrown.
 
 
@@ -944,26 +947,35 @@ variables of the same name.
 The \xcd`example()` method below executes without any assertion errors
 %~~gen ^^^ Statements9x3m
 % package Statements9x3m;
-% KNOWNFAIL
+% 
 %~~vis
 \begin{xten}
-class Exn extends Throwable{}
-class SubExn(n:Int) extends Exn{}
 class Example {
-  static def example() {
-    var correct : Boolean = false;
+  class SeriousExn extends Throwable {}
+  class SillyExn   extends Throwable {}
+  var didFinally : Boolean = false;
+  def example() {
     try {
-       throw new SubExn(4);
+       throw new SillyExn();
+       assert false; // This cannot happen
     }
-    catch (e : Exn)          { correct = true; }
-    catch (e : SubExn)       { assert false; }
-    catch (e : Throwable)    { assert false; }
-    assert correct; 
+    catch(SillyExn)   {return true;}
+    catch(SeriousExn) {return false;}
+    finally {
+       this.didFinally = true;
+    }
+    return false;
+  }
+  static def doExample() {
+    val e = new Example();
+    assert e.example();
+    assert e.didFinally == true;
   }
 }
 \end{xten}
 %~~siv
-% class Hook { def run() { Example.example(); return true; } }
+% 
+% class Hook { def run() { Example.doExample(); return true; } }
 %~~neg
 
 \end{ex}

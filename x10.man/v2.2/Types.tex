@@ -1347,6 +1347,7 @@ type-checking failed.
 %%PLACE%%
 
 \subsection{Limitation: Runtime Constraint Erasure}
+\label{sect:RuntimeConstraintErasure}
 \index{cast!to generic type}
 
 The X10 runtime does not maintain a representation of constraints.
@@ -1619,8 +1620,8 @@ Default values, or lack of them, is defined thus:
 \begin{itemize}
 \item The fundamental numeric types (\xcd`Int`, \xcd`UInt`,
       \xcd`Long`, \xcd`ULong`, 
-%%limitation%%       \xcd`Short`, \xcd`UShort`, \xcd`Byte`,
-%%limitation%%       \xcd`UByte`, 
+  \xcd`Short`, \xcd`UShort`, \xcd`Byte`,
+   \xcd`UByte`, 
       \xcd`Float`, \xcd`Double`) all have default value 0.
 \item \xcd`Boolean` has default value \xcd`false`.
 \item \xcd`Char` has default value \xcd`'\0'`.

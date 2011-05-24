@@ -15,14 +15,6 @@ In this grammar, $X^?$ denotes an optional $X$ element.
 
 \begin{bbgrammarappendix}
 
-(\arabic{equation}) & AmbiguousName \refstepcounter{equation}\label{prod:AmbiguousName}  \: Id  \\
-
- &    \| AmbiguousName \xcd"." Id \\
-
-\end{bbgrammarappendix}
-
-\begin{bbgrammarappendix}
-
 (\arabic{equation}) & AndExp \refstepcounter{equation}\label{prod:AndExp}  \: EqualityExp  \\
 
  &    \| AndExp \xcd"&" EqualityExp \\
@@ -318,7 +310,7 @@ In this grammar, $X^?$ denotes an optional $X$ element.
 (\arabic{equation}) & ClassInstCreationExp \refstepcounter{equation}\label{prod:ClassInstCreationExp}  \: \xcd"new" TypeName TypeArgs\opt \xcd"(" ArgumentList\opt \xcd")" ClassBody\opt  \\
 
  &    \| Primary \xcd"." \xcd"new" Id TypeArgs\opt \xcd"(" ArgumentList\opt \xcd")" ClassBody\opt \\
- &    \| AmbiguousName \xcd"." \xcd"new" Id TypeArgs\opt \xcd"(" ArgumentList\opt \xcd")" ClassBody\opt \\
+ &    \| ValueOrTypeName \xcd"." \xcd"new" Id TypeArgs\opt \xcd"(" ArgumentList\opt \xcd")" ClassBody\opt \\
 
 \end{bbgrammarappendix}
 
@@ -555,7 +547,7 @@ In this grammar, $X^?$ denotes an optional $X$ element.
 
 (\arabic{equation}) & ExpName \refstepcounter{equation}\label{prod:ExpName}  \: Id  \\
 
- &    \| AmbiguousName \xcd"." Id \\
+ &    \| ValueOrTypeName \xcd"." Id \\
 
 \end{bbgrammarappendix}
 
@@ -999,7 +991,7 @@ In this grammar, $X^?$ denotes an optional $X$ element.
 
 (\arabic{equation}) & MethodName \refstepcounter{equation}\label{prod:MethodName}  \: Id  \\
 
- &    \| AmbiguousName \xcd"." Id \\
+ &    \| ValueOrTypeName \xcd"." Id \\
 
 \end{bbgrammarappendix}
 
@@ -1605,6 +1597,14 @@ In this grammar, $X^?$ denotes an optional $X$ element.
  &    \| \xcd"*" UnaryExp \\
  &    \| \xcd"/" UnaryExp \\
  &    \| \xcd"%" UnaryExp \\
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}
+
+(\arabic{equation}) & ValueOrTypeName \refstepcounter{equation}\label{prod:ValueOrTypeName}  \: Id  \\
+
+ &    \| ValueOrTypeName \xcd"." Id \\
 
 \end{bbgrammarappendix}
 

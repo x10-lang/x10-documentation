@@ -100,10 +100,7 @@ resolves to the \xcd`Boolean` method, without an error.
 The basic concept of method resolution is:
 \begin{enumerate}
 \item List all the methods that could possibly be used, inferring generic
-      types but not performing implicit coercions.    If the
-      \xcd`STATIC_CHECKS` compiler flag is specified, the constraints must
-      match exactly at this step; if not, they do not, but run-time tests will
-      be generated if necessary.
+      types but not performing implicit coercions.    
 \item If one possible method is more specific than all the others, that one 
       is the desired method.
 \item If there are two or more methods neither of which is more specific than
@@ -117,6 +114,15 @@ The basic concept of method resolution is:
 \item If no methods were found even with coercions, then the method invocation
       is undetermined.  Method resolution fails and reports an error.
 \end{enumerate}
+
+After method resolution is done, there is a validation phase that checks the
+legality of the call, based on the \xcd`STATIC_CHECKS` compiler flag.  
+With \xcd`STATIC_CHECKS`, the method's constraints must be satisfied; that is,
+they must be entailed (\Sref{SemanticsOfConstraints}) by the information in
+force at the point of the call.  With \xcd`DYNAMIC_CHECKS`, if the constraint
+is not entailed at that point, a dynamic check is inserted to make sure that
+it is true at runtime.
+
 \noindent
 In the presence of X10's highly-detailed type system, some subtleties arise. 
 One point, at least, is {\em not} subtle. The same procedure is used, {\em
@@ -205,12 +211,19 @@ or
 %%OP%%       \xcdmath"B.operator $\star$(a,b)".
 \end{itemize}
 \noindent
-If none of those resolve to a method, then either operand may be cast to the
-other. 
-The following alternate calls are attempted: 
+If none of those resolve to a method, then either operand may be implicitly
+coerced to the
+other.  If one of the following two situations obtains, it will be done; if
+both, the expression causes a static error.
 \begin{itemize}
-\item \xcdmath"(a as B)$\star$(b)"
-\item \xcdmath"a $\star$ (b as A)"
+\item An implicit coercion from \xcd`A` to \xcd`B`, and 
+      an operator \xcdmath"B $\star$ B" can be used, by 
+      coercing \xcd`a` to be of type \xcd`B`, and then using \xcd`B`'s
+      $\star$.  
+\item An implicit coercion from \xcd`B` to \xcd`A`, and 
+      an operator \xcdmath"A $\star$ A" can be used,
+      coercing \xcd`b` to be of type \xcd`A`, and then using \xcd`A`'s
+      $\star$.  
 \end{itemize}
 
 An application \xcd`a(b)`, for any number of arguments, can come from a number
@@ -237,33 +250,27 @@ come from an indexed assignment definition:
 An implicit coercion, in 
 which a value \xcd`a:A` is used in a context which requires a value of some
 other non-subtype \xcd`B`, 
-can come from one of two places: an implicit coercion operation defined on
-\xcd`B`, or, failing that, one defined on \xcd`A`:
-\begin{enumerate}
+can only come from implicit coercion operation defined on
+\xcd`B`: 
+\begin{itemize}
 \item an implicit coercion in \xcd`B`:
       \xcd`static operator (a:A):B`;
 %%OP%%       so that the coercion is \xcd`B.operator[B](a)`;
-\item or, failing that, an implicit coercion in \xcd`A`:
-      \xcd`static operator this():B`.
-%%OP%%       so that the coercion is \xcd`A.operator[B](a)`
-\end{enumerate}
+\end{itemize}
 
 An explicit conversion \xcd`a as B` can come from an explicit conversion
-operator, or an implicit coercion operator.  X10 tries three things, in order,
-only checking 2 if 1 fails, and 3 if 2 fails: 
+operator, or an implicit coercion operator.  X10 tries two things, in order,
+only checking 2 if 1 fails: 
 \begin{enumerate}
 \item An \xcd`as` operator in \xcd`B`: 
       \xcdmath"static operator (a:A) as ?";
 %%OP%%       so that the conversion is \xcd`B.operator as[B](a)`
 
 \item or, failing that, an implicit coercion in \xcd`B`:
-      \xcd`static operator (a:A):B`;
+      \xcd`static operator (a:A):B`.
 %%OP%% , so that the conversion is 
 %%OP%%       \xcd`B.operator[B](a)`;
-\item or, failing that, an implicit coercion in \xcd`A`:
-      \xcd`static operator this():B`.
-%%OP%% , so that the conversion is 
-%%OP%%       \xcd`A.operator[B](a)`.
+
 \end{enumerate}
 
 
@@ -295,8 +302,6 @@ resolution, is:
       method, the receiver will be the first formal parameter.\footnote{The
       variable names are relevant because one formal can be mentioned in a
       later type, or even a constraint: {\tt def f(a:Int, b:Point\{rank==a\})=...}.}
-\item The constraint \xcd`c` of the method \xcd`M`. If no constraint is specified, \xcd`c` is
-      \xcd`true`. 
 \item A {\em unique identifier} \xcd`id`, sufficient to tell the compiler
       which method body is intended.  A file name and position in that file
       would suffice.  The details of the identifier are not relevant.
@@ -335,8 +340,8 @@ throws an exception if the call cannot be resolved.
 The procedure for computing \xcd`resolve(invo, context)` is: 
 \begin{enumerate}
 \item Eliminate from \xcd`context` those methods which are not {\em
-      acceptable}; \viz, those whose name, type parameters, formal parameters,
-      and constraint do not suitably match \xcd`invo`.  In more detail:
+      acceptable}; \viz, those whose name, type parameters, and formal parameters
+      do not suitably match \xcd`invo`.  In more detail:
       \begin{itemize}
       \item The method name \xcd`m` must simply equal the invocation name \xcdmath"m$'$";
       \item X10 infers type parameters, by an algorithm given in \Sref{TypeParamInfer}.
@@ -353,8 +358,6 @@ The procedure for computing \xcd`resolve(invo, context)` is:
             used to resolve the method, they will be called on the arguments
             before the method is invoked.
             
-      \item The formal constraint \xcd`c` must be satisfied in the invoking
-            context. 
       \end{itemize}
 \item Eliminate from \xcd`context` those methods which are not {\em
       available}; \viz, those which cannot be called due to visibility

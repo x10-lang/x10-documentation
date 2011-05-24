@@ -254,10 +254,13 @@ The initializer of a field in an interface may be any expression.  It is
 evaluated under the same rules as a \xcd`static` field of a class. 
 
 \begin{ex}
-In this example, a local class (\Sref{sect:LocalClasses}) \xcd`B` is defined,
-with an inner interface \xcd`I`.  The field \xcd`V` of \xcd`I` uses a variable
-\xcd`n` which is global to \xcd`B`.   In this case it is a truly baroque way
-to bind a \xcd`val`, but other uses are nontrivial.
+In this example, a class \xcd`TheOne` is defined,
+with an inner interface \xcd`WelshOrFrench`, whose field \xcd`UN` (named in
+either Welsh or French) has value 1.  Note that \xcd`WelshOrFrench` does not
+define any methods, so it can be trivially added to the \xcd`implements`
+clause of any class, as it is for \xcd`Onesome`. 
+This allows the body of \xcd`Onesome` to use \xcd`UN` through an unqualified
+name, as is done in \xcd`example()`.
 
 %~~gen ^^^ Interfaces3l4a
 % package Interfaces3l4a;

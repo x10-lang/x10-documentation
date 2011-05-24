@@ -77,16 +77,21 @@ This option tells the compiler to produce its output files in the specified dire
 This option tells which runtime implementation to use.  The choices are
 \xcd`lapi`, \xcd`pgp`, \xcd`sockets`, \xcd`mpi`, and \xcd`standalone`.
 
+\subsection{Executable File {\tt -o {\em path}}}
 
+This option tells the compiler what path to use for the executable file. 
 
 \section{Execution Options: Java}
 
 The Java execution command \xcd`x10` has a number of options as well. 
 
-\subsection{{\tt -NUMBER\_OF\_LOCAL\_PLACES={\em number}}}
+\subsection{Class Path: {\tt -classpath {\em path}}}
 
-This option controls how many \xcd`Place`s the system will run on.  The
-default is four, but you may control it as you wish.
+This option specifies the search path for class files. 
+
+\subsection{Library Path: {\tt -libpath {\em path}}}
+
+This option specifies the search path for native libraries.
 
 \subsection{Heap Size: {\tt -mx {\em size}}}
 

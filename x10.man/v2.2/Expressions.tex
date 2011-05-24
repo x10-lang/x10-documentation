@@ -23,8 +23,8 @@ is of type \xcd`Int{self==1}`, and \xcd`true` is of type
 \index{\Xcd{this}}
 
 \begin{bbgrammar}
-%(FROM #(prod:Primary)#)
-             Primary \: \xcd"this" (\ref{prod:Primary}) \\
+%(NO LONGER FROM #(prod:Primary)#)
+             Primary \: \xcd"this" & (\ref{prod:Primary}) \\
                     \| ClassName \xcd"." \xcd"this" \\
 \end{bbgrammar}
 
@@ -44,9 +44,7 @@ represents an instance of that enclosing class.
 \xcd`Outer` is a class containing \xcd`Inner`.  Each instance of
 \xcd`Inner` has a reference \xcd`Outer.this` to the \xcd`Outer` involved in its
 creation.  \xcd`Inner` has access to the fields of \xcd`Outer.this`.  Note
-that \xcd`Inner`
-
-has its own \xcd`three` field, which is different from and not even the same
+that \xcd`Inner` has its own \xcd`three` field, which is different from and not even the same
 type as \xcd`Outer.this.three`. 
 %~~gen ^^^ Expressions10
 % package exp.vexp.pexp.lexp.shexp; 
@@ -257,7 +255,7 @@ Function literals are described in \Sref{Functions}.
                      \| ArgumentList \xcd"," Exp \\
 %(FROM #(prod:MethodName)#)
           MethodName \: Id & (\ref{prod:MethodName}) \\
-                     \| AmbiguousName \xcd"." Id \\
+                     \| ValueOrTypeName \xcd"." Id \\
 \end{bbgrammar}
 %##)
 
@@ -390,6 +388,11 @@ ancestor thereof, but not one in \xcd`Cl`.  Note that \xcd`super.f()` may be
 used to invoke an \xcd`f` method in \xcd`Sup` which has been overridden by one
 appearing in \xcd`Cl`.  
 
+Note that there's only one choice for which \xcd`f` is invoked by
+\xcd`super.f()` -- \viz{} the lowest one in the class hierarchy above
+\xcd`Cl`.  So, \xcd`super.f()` performs static dispatch, like a static 
+method call. This is generally more efficient than a dynamic dispatch, like an
+instance method call.
 
 \section{Assignment}\index{assignment}\label{AssignmentStatement}
 
@@ -456,7 +459,7 @@ assignment:
       array assignment, mutatis mutandis, but there is no actual guarantee,
       and the compiler makes no assumptions about how this works for arbitrary \xcd`a`.
       Naturally, it is a static error if no suitable assignment operator
-      for \xcd`a`.
+      for \xcd`a` exists..
 \end{enumerate}
 
 For a binary operator $\diamond$, the $\diamond$-assignment expression
@@ -477,7 +480,8 @@ Subexpressions of \xcd`a` and \xcd`i` are only evaluated once.  However,
 one call to the application operator, and one to the assignment operator.
 If subscripting is implemented strangely for
 the class of \xcd`a`, the behavior is {\em not} necessarily updating a single
-storage location. Specifically, \xcd`A()(I()) += B()` is tantamount to: 
+storage location. Specifically, \xcd`A()(I()) += B()` is tantamount to the
+following code, except for the unspecified order of evaluation of the expressions: 
 %~~gen ^^^ Expressions80
 % package expressions.stupid.addab;
 % class Example {
@@ -485,9 +489,11 @@ storage location. Specifically, \xcd`A()(I()) += B()` is tantamount to:
 %~~vis
 \begin{xten}
 {
+  // The order of these evaluations is not specified
   val aa = A();  // Evaluate A() once
   val ii = I();  // Evaluate I() once
   val bb = B();  // Evaluate B() once
+  // But they happen before this:
   val tmp = aa(ii) + bb; // read aa(ii)
   aa(ii) = tmp;  // write sum back to aa(ii)
 }
@@ -545,6 +551,7 @@ particular semantics of user-defined operations.
 
 Specifically, each numeric type can be converted or coerced into each other
 numeric type, perhaps with loss of accuracy.
+
 \begin{ex}
 %~~gen ^^^ Expressions90
 % package exp.ress.io.ns.numeric.conversions;
@@ -655,8 +662,8 @@ The type of the result is \xcd"String".
 
  For example, 
 %~~exp~~`~~`~~ ~~ ^^^ Expressions100
-      \xcd`"one " + 2 + here` 
-      evaluates to  \xcd`one 2(Place 0)`.  
+      \xcd`"one " + 2 + true` 
+      evaluates to  \xcd`one 2true`.  
 
 \section{Logical negation}
 
@@ -731,16 +738,12 @@ than negative infinity.
 \index{expression!conditional}
 \label{Conditional}
 
-%##(ConditionalExp
+
 \begin{bbgrammar}
-%(FROM #(prod:ConditionalExp)#)
-      ConditionalExp \: ConditionalOrExp & (\ref{prod:ConditionalExp}) \\
-                     \| ClosureExp \\
-                     \| AtExp \\
-                     \| FinishExp \\
-                     \| ConditionalOrExp \xcd"?" Exp \xcd":" ConditionalExp \\
+%(HACKED UP FROM #(prod:ConditionalExp)#)
+      ConditionalExp \: ConditionalOrExp \xcd"?" Exp \xcd":" ConditionalExp  & (\ref{prod:ConditionalExp}) \\
 \end{bbgrammar}
-%##)
+
 
 A conditional expression evaluates its first subexpression (the
 condition); if \xcd"true"
@@ -828,18 +831,6 @@ and \xcd`b` are extremely identical.
       if \xcd`a` and \xcd`b` are the same object.
 \item If one operand is \xcd`null`, then \xcd`a==b` holds iff the other is
       also \xcd`null`.
-\item If the operands both have struct type and are not in \xcd`x10.lang`, then they must be structurally equal;
-that is, they must be instances of the same struct
-and all their fields or components must be \xcd"==".   
-
-
-
-\item The definition of equality for function types is specified in
-      \Sref{FunctionEquality}.
-\item No implicit coercions are performed by \xcd`==`.  
-\item It is a static error to have an expression \xcd`a == b` if the types of
-      \xcd`a` and \xcd`b` are disjoint.  
-
 \item The structs in \xcd`x10.lang` have unsurprising concepts of \xcd`==`: 
      \begin{itemize}
      \item In \xcd`Boolean`, \xcd`true == true` and \xcd`false == false`. 
@@ -850,6 +841,15 @@ and all their fields or components must be \xcd"==".
      \item The integral types, \xcd`Byte`, \xcd`Short`, \xcd`Int`, \xcd`Long`,
            and their unsigned versions, use binary equality.
      \end{itemize}
+\item If the operands both have struct type and are not in \xcd`x10.lang`, then they must be structurally equal;
+that is, they must be instances of the same struct
+and all their fields or components must be \xcd"==".   
+\item The definition of equality for function types is specified in
+      \Sref{FunctionEquality}.
+\item No implicit coercions are performed by \xcd`==`.  
+\item It is a static error to have an expression \xcd`a == b` if the types of
+      \xcd`a` and \xcd`b` are disjoint.  
+
 
 \end{itemize}
 
@@ -965,8 +965,10 @@ arguments, so \xcd`100` gets coerced to \xcd`100L`.
 
 \subsection{Non-Disjointness Requirement}
 
-It is a static error to have an expression \xcd`a==b` where \xcd`a` and
-\xcd`b` could not possibly be equal, based on their types.  This is a
+It is, in many cases, a static error to have an expression \xcd`a==b` where \xcd`a` and
+\xcd`b` could not possibly be equal, based on their types.  (In one case it is
+a static error even though they {\em could} be equal.)
+This is a
 practical codicil to \Sref{sect:eqeq-no-coerce}.  Consider the illegal code 
 \begin{xten}
 // NOT ALLOWED
@@ -1024,12 +1026,23 @@ compared for equality.
       always be compared for equality. Given objects of unrelated classes
       \xcd`a:Person` and 
       \xcd`b:Theory`, \xcd`a==b` could be true if \xcd`a==null` and
-      \xcd`b==null`. 
+      \xcd`b==null`. Despite this, \xcd`a==b` is a static error, because it is
+      generally a programming mistake.  \xcd`a as Object == b as Object` can
+      be used to express the equality, if it is necessary.
 
-\item Constrained object types may or may not be comparable.  For example,  
-      if \xcd`Person` and \xcd`Theory` are both direct subclasses of
-      \xcd`Object`, and \xcd`a:Person` and \xcd`b:Theory{self!=null}`, then
-      \xcd`a==b` is not allowed, since the two could not possibly be equal.
+\item Constraints are ignored in determining whether an equality is statically
+      allowed.  For example, the following is allowed: 
+%~~gen ^^^ Expressions4w6f
+% package Expressions4w6f;
+% class Example {
+%~~vis
+\begin{xten}
+def m(a:Int{self==1}, b:Int{self==2}) = (a==b);
+\end{xten}
+%~~siv
+%}
+%~~neg
+
 
 \item Explicit casts erase type information.  If you wanted
       to have a comparison \xcd`a==b` for \xcd`a:Person{self!=null}` and
@@ -1060,7 +1073,7 @@ compared for equality.
 %(FROM #(prod:ClassInstCreationExp)#)
 ClassInstCreationExp \: \xcd"new" TypeName TypeArgs\opt \xcd"(" ArgumentList\opt \xcd")" ClassBody\opt & (\ref{prod:ClassInstCreationExp}) \\
                      \| Primary \xcd"." \xcd"new" Id TypeArgs\opt \xcd"(" ArgumentList\opt \xcd")" ClassBody\opt \\
-                     \| AmbiguousName \xcd"." \xcd"new" Id TypeArgs\opt \xcd"(" ArgumentList\opt \xcd")" ClassBody\opt \\
+                     \| ValueOrTypeName \xcd"." \xcd"new" Id TypeArgs\opt \xcd"(" ArgumentList\opt \xcd")" ClassBody\opt \\
 \end{bbgrammar}
 %##)
 
@@ -1146,7 +1159,12 @@ a value of another
 type \xcd`T2`.  The
 value itself does not change, nor is a new value computed.  The only
 run-time computation that happens is to check that \xcd`v` is indeed a value
-of type \xcd`T2` (which, in many cases, is unnecessary), and auto-boxing (\Sref{auto-boxing}).
+of type \xcd`T2` (which, in many cases, is unnecessary), and auto-boxing
+(\Sref{auto-boxing}).
+
+Casts to generic types can be unsound.   The instantiations of the generic
+types have constraints, but the runtime does not preserve the representation
+of these types.  See \Sref{sect:RuntimeConstraintErasure} for more details.
 
 There are two forms of casts.  {\em Upcasts} happen when \xcd`T1 <: T2`, that
 is, when a value is being cast to a more general type.  Upcasts often don't require
@@ -1248,7 +1266,8 @@ knows that \xcd`1`, which has type \xcd`Int{self==1}`, cannot possibly be of
 type \xcd`Int{self==2}`. 
 
 If, for some reason, you need to write one of these forbidden casts, cast to
-\xcd`Any` first.  \xcd`(1 as Any) as Int{self==2}` always returns false, but 
+\xcd`Any` first.  \xcd`(1 as Any) as Int{self==2}` always returns false, but
+compiles.
 
 \subsection{Explicit Conversions}
 
@@ -1267,30 +1286,35 @@ The numeric types in \xcd`x10.lang` have explicit conversions, as described in
 \xcd`1 as Float` and the like.  
 
 \begin{ex}
-\xcd`Knot`s have an explicit conversion operator to \xcd`String`, and an
-implicit coercion to \xcd`Int`.  Note that the implicit coercion can be used
-explicitly, with \xcd`k as Int`, as well as implicitly in \xcd`Math.abs(k)`. 
-%~~gen ^^^ Expressions7e1e
-% package Expressions7e1e;
-%KNOWNFAIL
+The following class has an explicit conversion from \xcd`Int` to \xcd`Knot`, and
+an implicit one from \xcd`String` to \xcd`Knot`.  \xcd`a` uses the explicit
+conversion, \xcd`b` uses the implicit coercion, and \xcd`c` uses the implicit
+coercion explicitly. 
+%~~gen ^^^ Expressions2p4c
+% package Expressions2p4c;
 %~~vis
 \begin{xten}
-class Knot(s:String) { 
+class Knot(s:String){
+  public def is(t:String):Boolean = s.equals(t);
   // explicit conversion
-  public static operator (x:Knot) as String = x.s + "!";
+  public static operator (n:Int) as Knot = new Knot("knot-" + n);
   // implicit coercion
-  public static operator (x:Knot) : Int = x.s.length();
+  public static operator (s:String):Knot = new Knot(s);
+  // using them
   public static def example() {
-     val k = new Knot("frayed");
-     assert "frayed!".equals(k as String);
-     assert (k as Int) == 6;
-     assert Math.abs(k) == 6; 
+     val a : Knot = 1 as Knot; 
+     val b : Knot = "frayed";
+     val c : Knot = "three" as Knot;
+     assert a.is("knot-1") && b.is("frayed") && c.is("three");
   }
 }
 \end{xten}
 %~~siv
-% class Hook{ def run() { Knot.example(); return true; } } 
+% class Hook{ def run() {Knot.example(); return true;}}
 %~~neg
+
+
+
 
 \end{ex}
 
@@ -1301,7 +1325,7 @@ class Knot(s:String) {
 \label{sect:ambig-cast}
 
 If \xcd`v as T` could either be a cast or an explicit coercion, X10 treats its
-as a cast.  
+as a cast.  With the \xcd`VERBOSE` compiler flag, this is flagged as a warning.
 
 
 \begin{ex}
@@ -1312,7 +1336,7 @@ using the \xcd`as` operator invokes the upcast, rather than the explicit
 conversion.  This is visible in the example because the user-defined operator 
 \xcd`f as Person` returns \xcd`new Person()` (just like the \xcd`asPerson`
 method), while the 
-upcast returns \xcd`f` itself.  
+upcast returns \xcd`f` itself.   
 %~~gen ^^^ Expressions6y9i
 % package Expressions6y9i;
 %~~vis
@@ -1322,7 +1346,7 @@ class Person {
   static def asPerson(f:Fop) = new Person();
   public static def example() {
      val f = new Fop();
-     val cast = f as Person;
+     val cast = f as Person; // WARNING on this line
      assert cast == f;
      val meth = asPerson(f);
      assert meth != f;
@@ -1337,6 +1361,323 @@ class Fop extends Person {}
 The definition of an explicit conversion in this case is of little value,
 since any use of it in the \xcd`f as Person` syntax will invoke the upcast.  
 \end{ex}
+
+\section{Coercions and conversions}
+\label{XtenConversions}
+\label{User-definedCoercions}
+\index{conversion}\index{coercion}
+\index{type!conversion}\index{type!coercion}
+
+
+A {\em coercion} does not change object identity; a coerced object may
+be explicitly coerced back to its original type through a cast. A {\em
+  conversion} may change object identity if the type being converted
+to is not the same as the type converted from. \Xten{} permits both 
+user-defined coercions and conversions (\Sref{sec:user-defined-conversions}).
+
+
+\subsection{Coercions}
+
+%##(CastExp
+\begin{bbgrammar}
+%(FROM #(prod:CastExp)#)
+             CastExp \: Primary & (\ref{prod:CastExp}) \\
+                     \| ExpName \\
+                     \| CastExp \xcd"as" Type \\
+\end{bbgrammar}
+%##)
+
+
+\paragraph{Subsumption coercion.}
+A value of a subtype may be implicitly coerced to any supertype.  
+\index{coercion!subsumption}
+
+\begin{ex}
+If \xcd`Child <: Person` and \xcd`val rhys:Child`, then \xcd`rhys` may be used
+in any context that expects a \xcd`Person`.  For example, 
+%~~gen ^^^ Expressions7f1h
+% package Expressions7f1h;
+% class Person{}
+% class Child extends Person {}
+%~~vis
+\begin{xten}
+class Example {
+  def greet(Person) = "Hi!";
+  def example(rhys: Child) {
+     greet(rhys);
+  }
+}
+\end{xten}
+%~~siv
+%
+%~~neg
+
+Similarly, \xcd`2` (whose innate type is \xcd`Int{self==2}`)
+is usable in a context requiring a non-zero integer
+(\xcd`Int{self != 0}`).  
+\end{ex}
+
+\paragraph{Explicit Coercion (Casting with \xcd"as")}
+
+All classes and interfaces allow the use of the \xcd`as` operator for explicit
+type coercion.  
+Any class or
+interface may be cast to any interface.  
+Any interface may be cast to
+any class.  Also, any interface can be cast to a struct that implements
+(directly or indirectly) that interface.
+
+\begin{ex}
+In the following code, a \xcd`Person` is cast to \xcd`Childlike`.  There is
+nothing in the class definition of \xcd`Person` that suggests that a
+\xcd`Person` can be \xcd`Childlike`.  However, the \xcd`Person` in question,
+\xcd`p`, is actually a \xcd`HappyChild` --- a subclass of \xcd`Person` --- and
+is, in fact, \xcd`Childlike`.  
+
+Similarly, the \xcd`Childlike` value \xcd`cl` is cast to \xcd`Happy`.  Though
+these two interfaces are unrelated, the value of \xcd`cl` is, in fact,
+\xcd`Happy`.  And the \xcd`Happy` value \xcd`hc` is cast to the class
+\xcd`Child`, though there is no relationship between the two, but the actual
+value is a \xcd`HappyChild`, and thus the cast is correct at runtime.
+
+\xcd`Cyborg` is a struct rather than a class.  So, it cannot have substructs,
+and all the interfaces of all \xcd`Cyborg`s are known: a \xcd`Cyborg` is
+\xcd`Personable`, but not \xcd`Childlike` or \xcd`Happy`.  So, it is correct
+and meaningful to cast \xcd`r` to \xcd`Personable`.  There is no way that a
+cast to \xcd`Childlike` could succeed, so \xcd`r as Childlike` is a static error.
+
+%~~gen ^^^ Expressions180
+% package Types.Coercions;
+% // NOTEST https://jira.codehaus.org/browse/XTENLANG-2623;
+%~~vis
+\begin{xten}
+interface Personable {}
+class Person implements Personable {}
+interface Childlike extends Personable {}
+class Child extends Person implements Childlike {}
+struct Cyborg implements Personable {}
+interface Happy {}
+class HappyChild extends Child implements Happy {}
+class Example {
+  static def example() {
+    var p : Person = new HappyChild();
+    // class -> interface
+    val cl : Childlike = p as Childlike; 
+    // interface -> interface
+    val hc : Happy = cl as Happy; 
+    // interface -> class
+    val ch : Child = hc as Child; 
+    var r : Cyborg = Cyborg();
+    val rl : Personable = r as Personable; 
+    // ERROR: val no = r as Childlike;
+  }
+}
+\end{xten}
+%~~siv
+% class Hook{ def run(){ Example.example(); return true; } }
+%~~neg
+
+
+
+
+\end{ex}
+
+
+If the value coerced is not an instance of the target type,
+and no coercion operators that can convert it to that type are defined, 
+a \xcd"ClassCastException" is thrown.  Casting to a constrained
+type may require a run-time check that the constraint is
+satisfied.
+\index{coercion!explicit}
+\index{cast}
+\index{\Xcd{as}}
+
+{It is a static error, rather than a 
+\xcd`ClassCastException`, when the cast is statically determinable to be
+impossible.}
+
+
+
+\paragraph{Effects of explicit numeric coercion}
+\label{sec:effects-of-explicit-numeric-coercions}
+
+Coercing a number of one type to another type gives the best approximation of
+the number in the result type, or a suitable disaster value if no
+approximation is good enough.  
+
+\begin{itemize}
+\item Casting a number to a {\em wider} numeric type is safe and effective,
+      and can be done by an implicit conversion as well as an explicit
+%~~exp~~`~~`~~ ~~ ^^^ Expressions190
+      coercion.  For example, \xcd`4 as Long` produces the \xcd`Long` value of
+      4. 
+\item Casting a floating-point value to an integer value truncates the digits
+      after the decimal point, thereby rounding the number towards zero.  
+%~~exp~~`~~`~~ ^^^ Expressions200
+      \xcd`54.321 as Int` is \xcd`54`, and 
+%~~exp~~`~~`~~ ~~ ^^^ Expressions210
+      \xcd`-54.321 as Int` is \xcd`-54`.
+      If the floating-point value is too large to represent as that kind of
+      integer, the coercion returns the largest or smallest value of that type
+      instead: \xcd`1e110 as Int` is 
+      \xcd`Int.MAX_VALUE`, \viz{} \xcd`2147483647`. 
+
+\item Casting a \xcd`Double` to a \xcd`Float` normally truncates binary digits: \\
+%~~exp~~`~~`~~ ~~ ^^^ Expressions220
+      \xcd`0.12345678901234567890 as Float` is approximately \xcd`0.12345679f`.  This can
+      turn a nonzero \xcd`Double` into \xcd`0.0f`, the zero of type
+      \xcd`Float`: 
+%~~exp~~`~~`~~ ~~ ^^^ Expressions230
+      \xcd`1e-100 as Float` is \xcd`0.0f`.  Since 
+      \xcd`Double`s can be as large as about \xcd`1.79E308` and \xcd`Float`s
+      can only be as large as about \xcd`3.4E38f`, a large \xcd`Double` will
+      be converted to the special \xcd`Float` value of \xcd`Infinity`: 
+%~~exp~~`~~`~~ ~~ ^^^ Expressions240
+      \xcd`1e100 as Float` is \xcd`Infinity`.
+\item Integers are coerced to smaller integer types by truncating the
+      high-order bits. If the value of the large integer fits into the smaller
+      integer's range, this gives the same number in the smaller type: 
+%~~exp~~`~~`~~ ~~ ^^^ Expressions250
+      \xcd`12 as Byte` is the \xcd`Byte`-sized 12, 
+%~~exp~~`~~`~~ ~~ ^^^ Expressions260
+      \xcd`-12 as Byte` is -12. 
+      However, if the larger integer {\em doesn't} fit in the smaller type,
+%~~exp~~`~~`~~ ~~ ^^^ Expressions270
+      the numeric value and even the sign can change: \xcd`254 as Byte` is
+      the \xcd`Byte`sized \xcd`-2y`.  
+
+\item Casting an unsigned integer type to a signed integer type of the same
+      size (\eg, \xcd`UInt` to \xcd`Int`) preserves 2's-complement bit pattern
+      (\eg,  \\
+      \xcd`UInt.MAX_VALUE as Int == -1`.   Casting an unsigned integer type to
+      a signed integer type of a different size is equivalent to first casting
+      to an unsigned integer type of the target size, and then casting to a
+      signed integer type.
+
+\item Casting a signed integer type to an unsigned one is similar.  
+
+\end{itemize}
+
+\subsubsection{User-defined Coercions}
+\index{coercion!user-defined}
+
+Users may define coercions from arbitrary types into the container type
+\xcd`B`, and coercions from \xcd`B` to arbitrary types, by providing
+\xcd`static operator` definitions for the \xcd`as` operator in the definition of
+\xcd`B`.  
+
+\begin{ex}
+
+%~~gen ^^^ Expressions2j7z
+% package Expressions2j7z;
+% KNOWNFAIL
+%~~vis
+\begin{xten}
+class Bee {
+  public static operator (x:Bee) as Int = 1;
+  public static operator (x:Int) as Bee = new Bee();
+  def example() {
+    val b:Bee = 2 as Bee; 
+    assert (b as Int) == 1;
+  }
+}
+\end{xten}
+%~~siv
+%
+%~~neg
+
+
+\end{ex}
+
+
+
+\subsection{Conversions}
+\index{conversion}
+\index{type!conversion}
+
+\paragraph{Widening numeric conversion.}
+\label{WideningConversions}
+A numeric type may be implicitly converted to a wider numeric type. In
+particular, an implicit conversion may be performed between a numeric
+type and a type to its right, below:
+
+\begin{xten}
+Byte < Short < Int < Long < Float < Double
+UByte < UShort < UInt < ULong
+\end{xten}
+
+Furthermore, an unsigned integer value may be implicitly coerced to a signed type
+large 
+enough to hold any value of the type: \xcd`UByte` to \xcd`Short`, \xcd`UShort`
+to \xcd`Int`, \xcd`UInt` to \xcd`Long`.  There are no implicit conversions
+from signed to unsigned numbers, since they cannot treat negatives properly.
+
+There are no implicit conversions in cases when overflow is possible.  For
+example, there is no implicit conversion between \xcd`Int` and \xcd`UInt`.  If
+it is necessary to convert between these types, use \xcd`n as Int` or 
+\xcd`n as UInt`, generally with a test to ensure that the value will fit and
+code to handle the case in which it does not.  
+
+
+\index{conversion!widening}
+\index{conversion!numeric}
+
+\paragraph{String conversion.}
+Any value that is an operand of the binary
+\xcd"+" operator may
+be converted to \xcd"String" if the other operand is a \xcd"String".
+A conversion to \xcd"String" is performed by invoking the \xcd"toString()"
+method.
+
+\index{conversion!string}
+
+\paragraph{User defined conversions.}\label{sec:user-defined-conversions}
+\index{conversion!user-defined}
+
+The user may define implicit conversion operators from type \Xcd{A} {\em to} a
+container type \Xcd{B} by specifying an operator in \Xcd{B}'s definition of the form:
+
+\begin{xten}
+  public static operator (r: A): T = ... 
+\end{xten}
+
+The return type \Xcd{T} should be a subtype of \Xcd{B}. The return
+type need not be specified explicitly; it will be computed in the
+usual fashion if it is not. However, it is good practice for the
+programmer to specify the return type for such operators explicitly.
+The return type can be more specific than simply \xcd`B`, for cases when there
+is more information available.
+
+
+\begin{ex}
+The code for \Xcd{x10.lang.Point} contains a conversion from 
+one-dimensional \xcd`Array`s of integers to \xcd`Point`s of the same length: 
+\begin{xten}
+  public operator (r: Array[Int](1)): Point(r.size) 
+         = make(r);
+\end{xten}
+This conversion is used whenever an array of integers appears in a 
+context that requires a \xcd`Point`, such as subscripting. Note 
+that \xcd`a` requires a \xcd`Point` of rank 2 as a subscript, and that 
+a two-element \xcd`Array` (like \xcd`[2,4]`) is converted to a 
+\xcd`Point(2)`.
+%~~gen ^^^ Expressions4f4y
+% package Expressions4f4y;
+% class Example { def example() {
+% 
+%~~vis
+\begin{xten}
+val a = new Array[String]((2..3) * (4..5), "hi!");
+a([2,4]) = "converted!";
+\end{xten}
+%~~siv
+%} } 
+%~~neg
+
+
+\end{ex}
+
+
 
 \section{\Xcd{instanceof}}
 \label{instanceOf}
@@ -1388,7 +1729,7 @@ X10 does not currently handle \xcd`instanceof` of generics in the way you
 %~NO~exp~~`~~`~~r:Array[Int](1) ~~
 might expect.  For example, \xcd`r instanceof Array[Int{self != 0}]` does
 not test that every element of \xcd`r` is non-zero; instead, the compiler
-rejects it.
+gives an unsound cast warning.
 
 
 \subsection{Nulls in Constraints in {\tt as} and {\tt instanceof}}
@@ -1560,32 +1901,19 @@ val ints <: Array[Int](1) = [1,3,7,21];
 %~~neg
 
 The expression \xcdmath"[e$_1$, $\ldots$, e$_n$]" produces an \Xcd{n}-element
-\xcd`Array[T](1)`, where \xcd`T` is the computed common supertype (\Sref{LCA}) of the {\bf
-base types} of the expressions  \xcdmath"e$_i$". 
+\xcd`Array[T](1)`, where \xcd`T` is the computed common supertype (\Sref{LCA})
+of the types of of the expressions  \xcdmath"e$_i$". 
 
 \begin{ex}
 The type of
 \xcd`[0,1,2]` is \Xcd{Array[Int](1)}.    
-More importantly, the type of 
-\xcd`[0]` is also \xcd`Array[Int](1)`.  It is {\em not} 
-\xcd`Array[Int{self==0}](1)`, even though all the elements are all 
-of type \xcd`Int{self==0}`.  This is subtle but important. There are many
-functions that take \xcd`Array[Int](1)`s, such as conversions to \xcd`Point`.
-These functions do {\em not} take
-\xcd`Array[Int{self==0}]`'s.
+The type of 
+\xcd`[0]` is  \xcd`Array[Int{self==0}](1)`. 
 
-(Suppose that the function took \xcd`a:Array[Int](1)` and 
-performed 
-the operation \xcd`a(i)=100`.   This operation is fine for
-an \xcd`Array[Int](1)`, which is all the compiler knows about \xcd`a`.  
-However, it is wrong for an \xcd`Array[Int{self==0}](1)`, because it assigns
-a non-zero value to an element of the array, violating the type constraint
-which says that all the elements are zero.  So, \xcd`Array[Int{self==0}](1)`
-is not and must not be a subtype of \xcd`Array[Int](1)` --- the two types are simply unrelated.
-%~~type~~`~~`~~ ~~ ^^^ Expressions150
-\xcd`Array[Int](1)` is far more useful than 
-%~~type~~`~~`~~ ~~ ^^^ Expressions160
-\xcd`Array[Int{self==0}](1)`, and so the compiler produces the former.)
+To make an \xcd`Array[Int](1)` containing just a \xcd`0`, use
+\xcd`[0 as Int]`.  The \xcd`as Int` masks more detailed type information, such
+as the fact that \xcd`0` is zero.
+
 \end{ex}
 
 
@@ -1615,321 +1943,6 @@ val eels <: Array[Eel{self != null}](1)
 %~~neg
 \end{ex}
 
-
-\section{Coercions and conversions}
-\label{XtenConversions}
-\label{User-definedCoercions}
-\index{conversion}\index{coercion}
-\index{type!conversion}\index{type!coercion}
-
-
-A {\em coercion} does not change object identity; a coerced object may
-be explicitly coerced back to its original type through a cast. A {\em
-  conversion} may change object identity if the type being converted
-to is not the same as the type converted from. \Xten{} permits both 
-user-defined coercions and conversions (\Sref{sec:user-defined-conversions}).
-
-
-\subsection{Coercions}
-
-%##(CastExp
-\begin{bbgrammar}
-%(FROM #(prod:CastExp)#)
-             CastExp \: Primary & (\ref{prod:CastExp}) \\
-                     \| ExpName \\
-                     \| CastExp \xcd"as" Type \\
-\end{bbgrammar}
-%##)
-
-
-\paragraph{Subsumption coercion.}
-A value of a subtype may be implicitly coerced to any supertype.  
-\index{coercion!subsumption}
-
-\begin{ex}
-If \xcd`Child <: Person` and \xcd`val rhys:Child`, then \xcd`rhys` may be used
-in any context that expects a \xcd`Person`.  For example, 
-%~~gen ^^^ Expressions7f1h
-% package Expressions7f1h;
-% class Person{}
-% class Child extends Person {}
-%~~vis
-\begin{xten}
-class Example {
-  def greet(Person) = "Hi!";
-  def example(rhys: Child) {
-     greet(rhys);
-  }
-}
-\end{xten}
-%~~siv
-%
-%~~neg
-
-Similarly, \xcd`2` (whose innate type is \xcd`Int{self==2}`)
-is usable in a context requiring a non-zero integer
-(\xcd`Int{self != 0}`).  
-\end{ex}
-
-\paragraph{Explicit Coercion (Casting with \xcd"as")}
-
-All classes and interfaces allow the use of the \xcd`as` operator for explicit
-type coercion.  
-Any class or
-interface may be cast to any interface.  
-Any interface may be cast to
-any class.  Also, any interface can be cast to a struct that implements
-(directly or indirectly) that interface.
-
-\begin{ex}
-In the following code, a \xcd`Person` is cast to \xcd`Childlike`.  There is
-nothing in the class definition of \xcd`Person` that suggests that a
-\xcd`Person` can be \xcd`Childlike`.  However, the \xcd`Person` in question,
-\xcd`p`, is actually a \xcd`HappyChild` --- a subclass of \xcd`Person` --- and
-is, in fact, \xcd`Childlike`.  
-
-Similarly, the \xcd`Childlike` value \xcd`cl` is cast to \xcd`Happy`.  Though
-these two interfaces are unrelated, the value of \xcd`cl` is, in fact,
-\xcd`Happy`.  And the \xcd`Happy` value \xcd`hc` is cast to the class
-\xcd`Child`, though there is no relationship between the two, but the actual
-value is a \xcd`HappyChild`, and thus the cast is correct at runtime.
-
-\xcd`Cyborg` is a struct rather than a class.  So, it cannot have substructs,
-and all the interfaces of all \xcd`Cyborg`s are known: a \xcd`Cyborg` is
-\xcd`Personable`, but not \xcd`Childlike` or \xcd`Happy`.  So, it is correct
-and meaningful to cast \xcd`r` to \xcd`Personable`.  There is no way that a
-cast to \xcd`Childlike` could succeed, so \xcd`r as Childlike` is a static error.
-
-%~~gen ^^^ Expressions180
-% package Types.Coercions;
-% // NOTEST https://jira.codehaus.org/browse/XTENLANG-2623;
-%~~vis
-\begin{xten}
-interface Personable {}
-class Person implements Personable {}
-interface Childlike extends Personable {}
-class Child extends Person implements Childlike {}
-struct Cyborg implements Personable {}
-interface Happy {}
-class HappyChild extends Child implements Happy {}
-class Example {
-  static def example() {
-    var p : Person = new HappyChild();
-    // class -> interface
-    val cl : Childlike = p as Childlike; 
-    // interface -> interface
-    val hc : Happy = cl as Happy; 
-    // interface -> class
-    val ch : Child = hc as Child; 
-    var r : Cyborg = Cyborg();
-    val rl : Personable = r as Personable; 
-    // ERROR: val no = r as Childlike;
-  }
-}
-\end{xten}
-%~~siv
-% class Hook{ def run(){ Example.example(); return true; } }
-%~~neg
-
-
-
-
-\end{ex}
-
-
-If the value coerced is not an instance of the target type,
-and no coercion operators that can convert it to that type are defined, 
-a \xcd"ClassCastException" is thrown.  Casting to a constrained
-type may require a run-time check that the constraint is
-satisfied.
-\index{coercion!explicit}
-\index{cast}
-\index{\Xcd{as}}
-
-\limitation{It is currently a static error, rather than a 
-\xcd`ClassCastException`, when the cast is statically determinable to be
-impossible.}
-
-
-
-\paragraph{Effects of explicit numeric coercion}
-\label{sec:effects-of-explicit-numeric-coercions}
-
-Coercing a number of one type to another type gives the best approximation of
-the number in the result type, or a suitable disaster value if no
-approximation is good enough.  
-
-\begin{itemize}
-\item Casting a number to a {\em wider} numeric type is safe and effective,
-      and can be done by an implicit conversion as well as an explicit
-%~~exp~~`~~`~~ ~~ ^^^ Expressions190
-      coercion.  For example, \xcd`4 as Long` produces the \xcd`Long` value of
-      4. 
-\item Casting a floating-point value to an integer value truncates the digits
-      after the decimal point, thereby rounding the number towards zero.  
-%~~exp~~`~~`~~ ^^^ Expressions200
-      \xcd`54.321 as Int` is \xcd`54`, and 
-%~~exp~~`~~`~~ ~~ ^^^ Expressions210
-      \xcd`-54.321 as Int` is \xcd`-54`.
-      If the floating-point value is too large to represent as that kind of
-      integer, the coercion returns the largest or smallest value of that type
-      instead: \xcd`1e110 as Int` is 
-      \xcd`Int.MAX_VALUE`, \viz{} \xcd`2147483647`. 
-
-\item Casting a \xcd`Double` to a \xcd`Float` normally truncates binary digits: \\
-%~~exp~~`~~`~~ ~~ ^^^ Expressions220
-      \xcd`0.12345678901234567890 as Float` is approximately \xcd`0.12345679f`.  This can
-      turn a nonzero \xcd`Double` into \xcd`0.0f`, the zero of type
-      \xcd`Float`: 
-%~~exp~~`~~`~~ ~~ ^^^ Expressions230
-      \xcd`1e-100 as Float` is \xcd`0.0f`.  Since 
-      \xcd`Double`s can be as large as about \xcd`1.79E308` and \xcd`Float`s
-      can only be as large as about \xcd`3.4E38f`, a large \xcd`Double` will
-      be converted to the special \xcd`Float` value of \xcd`Infinity`: 
-%~~exp~~`~~`~~ ~~ ^^^ Expressions240
-      \xcd`1e100 as Float` is \xcd`Infinity`.
-\item Integers are coerced to smaller integer types by truncating the
-      high-order bits. If the value of the large integer fits into the smaller
-      integer's range, this gives the same number in the smaller type: 
-%~~exp~~`~~`~~ ~~ ^^^ Expressions250
-      \xcd`12 as Byte` is the \xcd`Byte`-sized 12, 
-%~~exp~~`~~`~~ ~~ ^^^ Expressions260
-      \xcd`-12 as Byte` is -12. 
-      However, if the larger integer {\em doesn't} fit in the smaller type,
-%~~exp~~`~~`~~ ~~ ^^^ Expressions270
-      the numeric value and even the sign can change: \xcd`254 as Byte` is
-      the \xcd`Byte`sized \xcd`-2y`.  
-
-\item Casting an unsigned integer type to a signed integer type of the same
-      size (\eg, \xcd`UInt` to \xcd`Int`) preserves 2's-complement bit pattern
-      (\eg,  \\
-      \xcd`UInt.MAX_VALUE as Int == -1`.   Casting an unsigned integer type to
-      a signed integer type of a different size is equivalent to first casting
-      to an unsigned integer type of the target size, and then casting to a
-      signed integer type.
-
-\item Casting a signed integer type to an unsigned one is similar.  
-
-\end{itemize}
-
-\subsubsection{User-defined Coercions}
-\index{coercion!user-defined}
-
-Users may define coercions from arbitrary types into the container type
-\xcd`B`, and coercions from \xcd`B` to arbitrary types, by providing
-\xcd`static operator` definitions for the \xcd`as` operator in the definition of
-\xcd`B`.  
-
-\begin{ex}
-
-%~~gen ^^^ Expressions2j7z
-% package Expressions2j7z;
-% KNOWNFAIL
-%~~vis
-\begin{xten}
-class Bee {
-  public static operator (x:Bee) as Int = 1;
-  public static operator (x:Int) as Bee = new Bee();
-  def example() {
-    val b:Bee = 2 as Bee; 
-    assert (b as Int) == 1;
-  }
-}
-\end{xten}
-%~~siv
-%
-%~~neg
-
-
-\end{ex}
-
-
-
-\subsection{Conversions}
-\index{conversion}
-\index{type!conversion}
-
-\paragraph{Widening numeric conversion.}
-\label{WideningConversions}
-A numeric type may be implicitly converted to a wider numeric type. In
-particular, an implicit conversion may be performed between a numeric
-type and a type to its right, below:
-
-\begin{xten}
-Byte < Short < Int < Long < Float < Double
-UByte < UShort < UInt < ULong
-\end{xten}
-
-Furthermore, an unsigned integer type may be implicitly coerced a signed type
-large 
-enough to hold any value of the type: \xcd`UByte` to \xcd`Short`, \xcd`UShort`
-to \xcd`Int`, \xcd`UInt` to \xcd`Long`.  There are no implicit conversions
-from signed to unsigned numbers, since they cannot treat negatives properly.
-
-There are no implicit conversions in cases when overflow is possible.  For
-example, there is no implicit conversion between \xcd`Int` and \xcd`UInt`.  If
-it is necessary to convert between these types, use \xcd`n as Int` or 
-\xcd`n as UInt`, generally with a test to ensure that the value will fit and
-code to handle the case in which it does not.  
-
-
-\index{conversion!widening}
-\index{conversion!numeric}
-
-\paragraph{String conversion.}
-Any value that is an operand of the binary
-\xcd"+" operator may
-be converted to \xcd"String" if the other operand is a \xcd"String".
-A conversion to \xcd"String" is performed by invoking the \xcd"toString()"
-method.
-
-\index{conversion!string}
-
-\paragraph{User defined conversions.}\label{sec:user-defined-conversions}
-\index{conversion!user-defined}
-
-The user may define implicit conversion operators from type \Xcd{A} {\em to} a
-container type \Xcd{B} by specifying an operator in \Xcd{B}'s definition of the form:
-
-\begin{xten}
-  public static operator (r: A): T = ... 
-\end{xten}
-
-The return type \Xcd{T} should be a subtype of \Xcd{B}. The return
-type need not be specified explicitly; it will be computed in the
-usual fashion if it is not. However, it is good practice for the
-programmer to specify the return type for such operators explicitly.
-The return type can be more specific than simply \xcd`B`, for cases when there
-is more information available.
-
-
-\begin{ex}
-The code for \Xcd{x10.lang.Point} contains a conversion from 
-one-dimensional \xcd`Array`s of integers to \xcd`Point`s of the same length: 
-\begin{xten}
-  public operator (r: Array[Int](1)): Point(r.length) 
-         = make(r);
-\end{xten}
-This conversion is used whenever an array of integers appears in a 
-context that requires a \xcd`Point`, such as subscripting. Note 
-that \xcd`a` requires a \xcd`Point` of rank 2 as a subscript, and that 
-a two-element \xcd`Array` (like \xcd`[2,4]`) is converted to a 
-\xcd`Point(2)`.
-%~~gen ^^^ Expressions4f4y
-% package Expressions4f4y;
-% class Example { def example() {
-% 
-%~~vis
-\begin{xten}
-val a = new Array[String]((2..3) * (4..5), "hi!");
-a([2,4]) = "converted!";
-\end{xten}
-%~~siv
-%} } 
-%~~neg
-
-
-\end{ex}
 
 \section{Parenthesized Expressions}
 

@@ -24,6 +24,7 @@ hierarchy.   They may have any or all of these features:
 \item Constructors;
 \item Properties;
 \item Static and instance nested containers.
+\item Static type definitions
 \end{itemize}
 
 
@@ -39,14 +40,18 @@ special type, \Xcd{GlobalRef[T]}, allows explicit cross-place references.
 The basic operations on objects are:
 \begin{itemize}
 
-{}\item Field access (\Sref{FieldAccess}). 
+\item Construction (\Sref{ObjectInitialization}).  Objects are created, 
+      their \xcd`var` and \xcd`val` fields initialized, and other invariants
+      established.
+
+\item Field access (\Sref{FieldAccess}). 
 The static, instance, and property fields of an object can be retrieved; \xcd`var` fields
 can be set.  
 
-{}\item Method invocation (\Sref{MethodInvocation}).  
+\item Method invocation (\Sref{MethodInvocation}).  
 Static, instance, and property methods of an object can be invoked.
 
-{}\item Casting (\Sref{ClassCast}) and instance testing with \xcd`instanceof`
+\item Casting (\Sref{ClassCast}) and instance testing with \xcd`instanceof`
 (\Sref{instanceOf}) Objects can be cast or type-tested.  
 
 \item The equality operators \xcd"==" and \xcd"!=".  
@@ -157,6 +162,7 @@ class Fld{
 \end{ex}
 
 \subsection{Field hiding}
+\label{sect:FieldHiding}
 \index{field!hiding}
 
 
@@ -346,23 +352,6 @@ public val x : T;
 % def this(y:T) { x=y; }
 % }
 %~~neg
-\noindent It also defines a nullary getter method, 
-%~~gen ^^^ Classes70
-% package Classes_nullary_getter_a;
-% class Exampllll[T] {
-% public val x : T;
-% def this(y:T) { x=y; }
-%~~vis
-\begin{xten}
-public final def x()=x;
-\end{xten}
-%~~siv
-%}
-%~~neg
-
-
-
-
 
 \index{property!initialization}
 Properties are initialized in a constructor by the invocation of a special \Xcd{property}
@@ -726,10 +715,9 @@ in \xcd`abstract` classes, and may be specified in interfaces, but are
 implicitly \xcd`final` in 
 non-\xcd`abstract` classes. 
 
-The expression may contain invocations of other property methods. It is the
-responsibility of the programmer to ensure that the evaluation of a property
-terminates at compile-time, otherwise the type-checker will not terminate and
-the program will fail to compile in a potentially most unfortunate way.
+The expression may contain invocations of other property methods.  The
+compiler ensures that there are no circularities in property methods, so
+property method evaluations always terminate.
 
 Property methods in classes are implicitly \xcd"final"; they cannot be
 overridden.  It is a static error if a superclass has a property method with a
@@ -778,7 +766,7 @@ property methods perform limited computations, have no side effects, and
 always return the same value, since
 they have to be expressed in the constraint sublanguage.  In this sense, a
 nullary property method does not behave hugely different from a property.
-indeed, a compilation scheme which cached the value of the property method
+Indeed, a compilation scheme which cached the value of the property method
 would all but erase the distinction.  Other methods may
 have more behavior, \eg, side effects, so we keep the \xcd`()` to make it
 clear that a method call is potentially large.
@@ -977,26 +965,60 @@ ce({\tt T})
 
 
 
- Two methods are said to have {\em equivalent signatures} if (a) they have the
+ Two methods are said to have {\em erasedly equivalent signatures} if (a) they have the
  same number of type parameters, 
 (b) they have the same number of formal (value) parameters, and (c)
-for each formal parameter the constraint erasure of its types are equivalent.
+for each formal parameter the constraint erasure of its types are erasedly equivalent.
 It is a 
 compile-time error for there to be two methods with the same name and
-equivalent signatures in a class (either defined in that class or in a
-superclass), unless the signatures are identical and one of the methods is
+erasedly equivalent signatures in a class (either defined in that class or in a
+superclass), unless the signatures are identical (without erasures) and one of the methods is
 defined in a superclass (in which case the superclass's method is overridden
-by the subclass's).
+by the subclass's, and the subclass's method's return type must be a subtype of
+the superclass's method's return type).  
 
  
 
 
 
-In addition, the guard of a overriding method
+In addition, the guard of an overridden method
 must entail
-the guard of the overridden method.   This
+the guard of the overriding method.   This
 ensures that any virtual call to the method
 satisfies the guard of the callee.
+
+\begin{ex}
+In the following example, the call to \xcd`s.recip(3)` in \xcd`example()`
+will invoke \xcd`Sub.recip(n)`.  The call is legitimate because
+\xcd`Super.recip`'s guard, \xcd`n != 0`, is satisfied by \xcd`3`.  
+The guard on \xcd`Sub.recip(n)` is simply
+\xcd`true`, which is also satisfied.  However, if we had used the \xcd`ERROR`
+line's definition, the guard on \xcd`Sub.recip(n)` would be \xcd`n != 0, n != 3`, which
+is not satisfied by \xcd`3`, so -- despite the call statically type-checking
+-- at runtime the call would violate its guard and (in this case) throw an exception.
+%~~gen ^^^ Classes5l3r
+% package Classes5l3r;
+%~~vis
+\begin{xten}
+class Super {
+  def recip(n:Int){n != 0} = 1.0/n;
+}
+class Sub extends Super{
+  //ERROR: def recip(n:Int){n != 0, n != 3} = 1.0/(n * (n-3));
+  def recip(n:Int){true} = 1.0/n;
+}
+class Example{
+  static def example() {
+     val s : Super = new Sub();
+     s.recip(3);
+  }
+}
+\end{xten}
+%~~siv
+%
+%~~neg
+
+\end{ex}
 
 
   If a class \xcd"C" overrides a method of a class or interface
@@ -1009,10 +1031,11 @@ their methods visible according to the access modifiers
 of the superclass/superinterfaces that are not hidden or overridden. A method \xcdmath"M$_1$" in a class
 \xcd"C" overrides
 a method \xcdmath"M$_2$" in a superclass \xcd"D" if
-\xcdmath"M$_1$" and \xcdmath"M$_2$" have equivalent signatures.
+\xcdmath"M$_1$" and \xcdmath"M$_2$" have erasedly equivalent signatures.
 Methods are overriden on a signature-by-signature basis.  It is a compile-time
 error if an instance method overrides a static method.  (But is it permitted
-for an instance {\em field} to hide a static {\em field}; that's hiding, not
+for an instance {\em field} to hide a static {\em field}; that's hiding
+(\Sref{sect:FieldHiding}), not 
 overriding, and hence totally different.)
 
 \section{Constructors}
@@ -1025,7 +1048,7 @@ Instances of classes are created by the \xcd`new` expression: \\
 %(FROM #(prod:ClassInstCreationExp)#)
 ClassInstCreationExp \: \xcd"new" TypeName TypeArgs\opt \xcd"(" ArgumentList\opt \xcd")" ClassBody\opt & (\ref{prod:ClassInstCreationExp}) \\
                      \| Primary \xcd"." \xcd"new" Id TypeArgs\opt \xcd"(" ArgumentList\opt \xcd")" ClassBody\opt \\
-                     \| AmbiguousName \xcd"." \xcd"new" Id TypeArgs\opt \xcd"(" ArgumentList\opt \xcd")" ClassBody\opt \\
+                     \| ValueOrTypeName \xcd"." \xcd"new" Id TypeArgs\opt \xcd"(" ArgumentList\opt \xcd")" ClassBody\opt \\
 \end{bbgrammar}
 %##)
 
@@ -1158,7 +1181,8 @@ constructor body, it could, in principle, mean either a constructor call or an
 operator evaluation.   This ambiguity is resolved so that \xcd`this()` always
 means the constructor invocation.  If, for some reason, it is necessary to
 invoke an application operator as the first meaningful statement of a
-constructor, precede it with a dummy statement, such as \xcd`if(false);`  
+constructor, write the target of the application as \xcd`(this)`, \eg,
+\xcd`(this)(a,b);`. 
 
 \section{Static initialization}
 \label{StaticInitialization}
@@ -1178,18 +1202,18 @@ the following fashion. (The implementation may do something more
 efficient as long as it is faithful to this semantics.)
 
 \begin{xten}
-Within the scope of a new finish
-for every static field f of every class C 
-   (with type T and initializer e):
-async {
-  val l = e; 
-  ateach (Dist.makeUnique()) {
-     assign l to the static f field of 
-         the local C class object;
-     mark the f field of the local C 
-         class object as initialized;
-  }
-}
+finish
+   for every static field f of every class C 
+      (with type T and initializer e):
+   async {
+     val l = e; 
+     ateach (Dist.makeUnique()) {
+        assign l to the static f field of 
+            the local C class object;
+        mark the f field of the local C 
+            class object as initialized;
+     }
+   }
 \end{xten}
 
 During this phase, any read of a static field \Xcd{C.f} (where \Xcd{f} is of type \Xcd{T})
@@ -1474,12 +1498,15 @@ the \xcd`..` operator won't compute the \xcd`zeroBased` and \xcd`rail`
 properties as it does for \xcd`Int` ranges; (3) \xcd`*` won't track ranks, as
 it does for \xcd`Region`s; 
 (4) \xcd`&&` and \xcd`||` won't short-circuit, as they do for \xcd`Boolean`s, 
-(5) \xcd`a==b` will only coincide with
-\xcd`a.equals(b)` if coded that way; and (6) it is impossible to define an
+(5) the built-in notion of equality \xcd`a==b` will only coincide with
+the programmible notion \xcd`a.equals(b)`, as they do for most library types,
+if coded that way; and (6) it is 
+impossible to define an 
 operation like \xcd`String.+` which converts both its left and right arguments
 from any type.  For example, a \xcd`Polar` type might
 have many representations for the origin, as radius 0 and any angle; these
-will be \xcd`equals()`, but will not be \xcd`==`.}  (However, \xcd`&&` and
+will be \xcd`equals()`, but will not be \xcd`==`; whereas for the standard
+\xcd`Complex` type, the two equalities are the same.}  (However, \xcd`&&` and
 \xcd`||` 
 are only short-circuiting for \xcd`Boolean` expressions; user-defined versions
 of these operators have no special execution behavior.)
@@ -1803,8 +1830,6 @@ static operator (x:B) as ? {c} = ...
 \end{xten}
 The \xcd`?` indicates the containing type \xcd`A`.  
 The guard clause \xcd`{c}` may be omitted.
-There may be at most one explicit type conversion in class \xcd`A` yielding
-some other type \xcd`B`, though  there may be many yielding type \xcd`A`.
 
 
 
