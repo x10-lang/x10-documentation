@@ -46,8 +46,7 @@ If you then want to see what it did, use \xcd`-VERBOSE_CHECKS`.
 
 You may also turn on static checking, with the \xcd`-STATIC_CHECKS` flag.  With
 static checking, calls that cannot be proved correct statically will be
-marked as errors.  The program without the dynamic cast fails to compile with
-\xcd`-STATIC_CHECKS`.  
+marked as errors.  
 
 
 
@@ -63,10 +62,9 @@ These options cause the compiler to print a list of all command-line options.
 This option tells the compiler where to look for X10 source code.  
 
 
-\subsection{Class Path: {\tt -classpath {\em path}}}
+\subsection{(Deprecated) Class Path: {\tt -classpath {\em path}}}
 
-This option tells the compiler where to look for compiled code in {\tt class}
-files.
+This option is accepted for backward compatibility, but ignored.
 
 \subsection{Output Directory: {\tt -d {\em directory}}}
 

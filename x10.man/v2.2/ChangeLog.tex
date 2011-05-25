@@ -216,9 +216,7 @@ finish {
      a = 1; 
      print("a=" + a);
   }
-  async {
-     // WRONG: print("a=" + a);
-  }
+  // WRONG: print("a=" + a);
 }
 print("a=" + a);
 \end{xten}
@@ -298,6 +296,7 @@ a future version:
 \end{enumerate}
 
 \section{Changes from \Xten{} v2.0}
+Some of these changes have been made obsolete in X10 2.2.
 
 \begin{itemize}
 \item \Xcd{Any} is now the top of the type hierarchy (every object,
@@ -310,7 +309,9 @@ a future version:
 \end{itemize}
 \section{Changes from \Xten{} v1.7}
 
-The language has changed in the following way:
+The language has changed in the following ways.  
+Some of these changes have been made obsolete in X10 2.2.
+
 \begin{itemize}
 
 \item {\bf Type system changes}: There are now three kinds of entities

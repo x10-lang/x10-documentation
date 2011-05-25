@@ -327,16 +327,16 @@ A(p) = t;
 modifies the value associated with \Xcd{p} to be \Xcd{t}, and leaves all other
 values in \Xcd{A} unchanged.
 
-An \Xcd{Array[T]} \Xcd{A} has: 
+An \Xcd{Array[T]} named \Xcd{a} has: 
 \begin{itemize}
-%~~exp~~`~~`~~A:Array[Int] ~~ ^^^ Arrays170
-\item \xcd`A.region`: the \Xcd{Region} upon which \Xcd{A} is defined.
-%~~exp~~`~~`~~A:Array[Int] ~~ ^^^ Arrays180
-\item \xcd`A.size`: the number of elements in \Xcd{A}.
-%~~exp~~`~~`~~A:Array[Int] ~~ ^^^ Arrays190
-\item \xcd`A.rank`, the rank of the points usable to subscript \Xcd{A}. 
-      \xcd`A.rank` is a cached copy of 
-      \Xcd{A.region.rank}.
+%~~exp~~`~~`~~a:Array[Int] ~~ ^^^ Arrays170
+\item \xcd`a.region`: the \Xcd{Region} upon which \Xcd{a} is defined.
+%~~exp~~`~~`~~a:Array[Int] ~~ ^^^ Arrays180
+\item \xcd`a.size`: the number of elements in \Xcd{a}.
+%~~exp~~`~~`~~a:Array[Int] ~~ ^^^ Arrays190
+\item \xcd`a.rank`, the rank of the points usable to subscript \Xcd{a}. 
+      \xcd`a.rank` is a cached copy of 
+      \Xcd{a.region.rank}.
 \end{itemize}
 
 \subsection{Array Constructors}
@@ -351,7 +351,7 @@ For example, an array of a thousand \xcd`"oh!"`s can be made by:
 
 To construct and initialize an array, call the two-argument constructor. 
 \Xcd{new Array[T](R, f)} constructs an array of elements of type \Xcd{T} on
-region \Xcd{R}, with \Xcd{A(p)} initialized to \Xcd{f(p)} for each point
+region \Xcd{R}, with \Xcd{a(p)} initialized to \Xcd{f(p)} for each point
 \Xcd{p} in \Xcd{R}.  \Xcd{f} must be a function taking a point of rank
 \Xcd{R.rank} to a value of type \Xcd{T}.  
 
@@ -370,13 +370,13 @@ Other constructors are available; see the API documentation and
 \subsection{Array Operations}
 \index{array!operations on}
 
-The basic operation on \Xcd{Array}s is subscripting.  If \Xcd{A:Array[T]} and 
-\xcd`p:Point{rank == A.rank}`, then \Xcd{a(p)} is the value of type \Xcd{T}
-appearing at position \Xcd{p} in \Xcd{A}.    The syntax is identical to
+The basic operation on \Xcd{Array}s is subscripting.  If \Xcd{a:Array[T]} and 
+\xcd`p:Point{rank == a.rank}`, then \Xcd{a(p)} is the value of type \Xcd{T}
+appearing at position \Xcd{p} in \Xcd{a}.    The syntax is identical to
 function application, and, indeed, arrays may be used as functions.
-\Xcd{A(p)} may be assigned to, as well, by the usual assignment syntax
-%~~exp~~`~~`~~A:Array[Int], p:Point{rank == A.rank}, t:Int ~~ ^^^ Arrays230
-\xcd`A(p)=t`.
+\Xcd{a(p)} may be assigned to, as well, by the usual assignment syntax
+%~~exp~~`~~`~~a:Array[Int], p:Point{rank == a.rank}, t:Int ~~ ^^^ Arrays230
+\xcd`a(p)=t`.
 (This uses the application and setting syntactic sugar, as given in \Sref{set-and-apply}.)
 
 Sometimes it is more convenient to subscript by integers.  Arrays of rank 1-4
@@ -403,14 +403,14 @@ A4(2,3,4,5) = A4(1,1,1,1)+1;
 Iteration over an \Xcd{Array} is defined, and produces the \Xcd{Point}s of the
 array's region.  If you want to use the values in the array, you have to
 subscript it.  For example, you could take the logarithm of every element of an
-\Xcd{Array[Int]} by: 
+\Xcd{Array[Double]} by: 
 %~~gen ^^^ Arrays250
 %package Arrays250;
 %class Example{
-%static def example(A:Array[Double]) {
+%static def example(a:Array[Double]) {
 %~~vis
 \begin{xten}
-for (p in A) A(p) = Math.log(A(p));
+for (p in a) a(p) = Math.log(a(p));
 \end{xten}
 %~~siv
 %}}
@@ -647,7 +647,7 @@ The value of \xcd`a` at a point \xcd`p` in its region of definition is
 obtained by using the indexing operation \xcd`a(p)`. 
 The value of \xcd`da` at \xcd`p` is similarly
 %~~exp~~`~~`~~da:DistArray[Int](3), p:Point(3) ~~ ^^^ Arrays390
-\xcd`da(p)`
+\xcd`da(p)`.
 This operation
 may be used on the left hand side of an assignment operation to update
 the value: 

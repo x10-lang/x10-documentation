@@ -338,7 +338,7 @@ assert result == 1;
 %~~neg
 
 This code is deterministic: the \xcd`async` will finish before the
-\xcd`println` starts, and it will print \xcd`result=1`.  
+\xcd`assert` starts, and the \xcd`assert`'s test will be true.
 
 However, without the
 \xcd`finish`, it would be wrong, and would not compile in X10.  If it were
@@ -366,8 +366,9 @@ If some accesses to shared variables are not
 protected by \xcd`atomic` or \xcd`when`, then race conditions or deadlocks may
 occur.  
 
-In particular, atomic sections are atomic with respect to each other. They may
-not be atomic with respect to non-atomic code.  
+In particular, atomic sections at the same place are atomic with respect to
+each other. They may not be atomic with respect to non-atomic code, or with
+respect to atomic sections at different places.
 
 X10 guarantees that atomic sections at the same place are mutually exclusive.
 That is, if one activity $A$ at a given place $p$ is executing an atomic

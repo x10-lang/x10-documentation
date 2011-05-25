@@ -951,24 +951,22 @@ The \xcd`example()` method below executes without any assertion errors
 %~~vis
 \begin{xten}
 class Example {
-  class SeriousExn extends Throwable {}
-  class SillyExn   extends Throwable {}
+  class ThisExn extends Throwable {}
+  class ThatExn extends Throwable {}
   var didFinally : Boolean = false;
-  def example() {
+  def example(b:Boolean) {
     try {
-       throw new SillyExn();
-       assert false; // This cannot happen
+       throw b ? new ThatExn() : new ThisExn();
     }
-    catch(SillyExn)   {return true;}
-    catch(SeriousExn) {return false;}
+    catch(ThatExn) {return true;}
+    catch(ThisExn) {return false;}
     finally {
        this.didFinally = true;
     }
-    return false;
   }
   static def doExample() {
     val e = new Example();
-    assert e.example();
+    assert e.example(true);
     assert e.didFinally == true;
   }
 }

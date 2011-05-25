@@ -94,7 +94,8 @@ Types are {\em not} inferred for methods marked as \xcd`@Native`.
 
 Parameters may be passed to external code.  \xcd`(#1)`  is the first parameter,
 \xcd`(#2)` the second, and so forth.  (\xcd`(#0)` is the name of the enclosing
-class.)  Be aware that this is macro substitution rather than normal parameter
+class, or the \xcd`this` variable.)  Be aware that this is macro substitution
+rather than normal parameter 
 passing; \eg, if the first actual parameter is \xcd`i++`, and \xcd`(#1)`
 appears twice in the external code, \xcd`i` will be incremented twice.
 For example, a (ridiculous) way to print the sum of two numbers is: 

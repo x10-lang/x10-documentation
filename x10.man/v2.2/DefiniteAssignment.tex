@@ -121,7 +121,7 @@ def example(flag:Boolean) {
 \section{Asynchronous Definite Assignment}
 
 
-Local variables (but not fields) allow {\em asynchronous assignment}. A local
+Local variables and instance fields allow {\em asynchronous assignment}. A local
 variable can be assigned in an \xcd`async` statement, and, when the
 \xcd`async` is \xcd`finish`ed, the variable is definitely assigned.  
 
@@ -320,8 +320,10 @@ incompletely-constructed -- object) are the \xcd`private` and
 \item \xcd`m` cannot assign to local fields of the caller; methods have no
       such power.
 \item \xcd`m` can assign to \xcd`var` fields of \xcd`this` freely. 
-\item \xcd`m` cannot initialize \xcd`val` fields of \xcd`this`.  (With one
-      exception; see \Sref{sect:call-another-ctor}.) 
+\item \xcd`m` cannot initialize \xcd`val` fields of \xcd`this`.  (But see
+      \Sref{sect:call-another-ctor}; when one constructor calls another as the
+      first statement of its body, the other constructor can initialize
+      v\xcd`val` fields. This is a constructor call, not a method call.) 
 \end{itemize}
 
 Recall that every container must be fully initialized upon exit
@@ -377,7 +379,9 @@ class C {
 \end{enumerate}
 
 
-\subsubsection{{\tt at} and \xcd`athome`}
+\subsubsection{{\tt at} 
+%and \xcd`athome`
+}
 
 %%AT-COPY%% \xcd`at(E)S` performs the assignments of \xcd`E`. Within \xcd`S`, only those
 %%AT-COPY%% assignments to variables \xcd`x` from the surrounding environment which take
@@ -411,7 +415,8 @@ class C {
 %%AT-COPY%% \end{ex}
 %%AT-COPY%% 
 
-\xcd`at(p)S` cannot perform any assignments.
+\xcd`at(p)S` cannot perform any assignments.  \xcd`this` cannot be read or
+written by an \xcd`at`-statement.
 
 \subsubsection{{\tt atomic}}
 

@@ -633,7 +633,7 @@ struct basis as described in the API documentation for
 The default mechanism performs a
 deep copy of the object graph (that is, it copies the object or struct
 and, recursively, the values contained in its fields), but does not
-traverse \xcd`transient` fields. \xcd`transient` fields are omitted from the
+traverse or copy \xcd`transient` fields. \xcd`transient` fields are omitted from the
 serialized data.   On deserialization, \xcd`transient` fields are initialized
 with their default values (\Sref{DefaultValues}).    The types of
 \xcd`transient` fields must therefore have default values.
