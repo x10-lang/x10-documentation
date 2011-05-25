@@ -1470,12 +1470,16 @@ The \xcd`cast2` line shows how to use this fact to violate the constraint
 system at runtime.   This dynamic cast produces an object of type
 \xcd`Pea{p==2}` for which \xcd`p!=2`.  
 
+Note that the \xcd`-VERBOSE` compiler flag will produce a warning that 
+\xcd`cast` is unsound.  
+
 %~~gen ^^^ Types9j6e
 % package Types9j6e;
 %~~vis
 \begin{xten}
 class Generic {
   public static def inst[T](x:Any):Boolean = x instanceof T;
+  // With -VERBOSE, the following line gets a warning
   public static def cast[T](x:Any):T       = x as T;
 }
 class Pea(p:Int) {}
