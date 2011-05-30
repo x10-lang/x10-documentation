@@ -1,4 +1,4 @@
-\documentclass[9pt,a4paper]{article}
+\documentclass[a4paper]{article}
 
 %% For typesetting theorems and some math symbols.
 \usepackage{amssymb}
@@ -93,15 +93,20 @@ FX10 does \emph{not} model other aspects of X10 such as:
 Example program:
 \begin{lstlisting}
 class E extends Object {
-  ctor() = new Object();
+  ctor() =
+    super();
+    new Object();
 }
 class Seq extends Object {
-  ctor(a1:Object, a2:Object) = a2;
+  ctor(a1:Object, a2:Object) =
+    super();
+    a2;
 }
 class C2 extends Object {
   fVal:E;
   fVar:E;
   ctor(a1:E, a2:E) =
+    super();
     finish
       async this.fVal = a1;
       m(a2);
@@ -113,11 +118,13 @@ class C2 extends Object {
 class C3 extends Object {
   fVar:E;
   ctor(a:E) =
+    super();
     new Seq(fVar=a,fVar); // ok
 }
 class C4 extends Object {
   fVar:E;
   ctor(a:E) =
+    super();
     new Seq(fVar,fVar=a); // ERR
 }
 \end{lstlisting}
@@ -157,7 +164,7 @@ $\he ::= \hl ~|~ \hx ~|~ \he.\hf ~|~ \he.\hf = \he ~|~ \he.\hm(\ol{\he}) ~|~ \hn
 \end{center}
 \caption{FX10 Syntax.
     The terminals are locations (\hl), parameters and \this (\hx), field name (\hf), method name (\hm), class name (\hB,\hC,\hD,\hObject),
-        and keywords (\hescaping, \Read, \SyncWrite, \AsyncWrite, \hnew, \finish, \async, \ctor).
+        and keywords (\super, \hescaping, \Read, \SyncWrite, \AsyncWrite, \hnew, \finish, \async, \ctor).
     The program source code cannot contain locations (\hl), because locations are only created during execution/reduction in \RULE{R-New} of \Ref{Figure}{reduction}.
     }
 \label{Figure:syntax}
@@ -334,7 +341,7 @@ $\typerule{
 \caption{FX10 Expression Typing Rules ($\Gdash \he:\hC$).
     Rules \RULE{(T-finish)} and \RULE{(T-async)} handle the new constructs in FX10,
         while the other rules are identical to those in FJ.}
-\label{Figure:expressions}
+\label{Figure:expression-typing}
 \end{figure*}
 
 
@@ -386,7 +393,7 @@ Obviously, the constructor of \hObject has no parameters.
 \eeq
 
 
-As in FJ, a class is ok if its constructor \RULE{(T-Ctor)} and all its methods \RULE{(T-Method)}are ok.
+As in FJ, a class is ok if its constructor \RULE{(T-Ctor)} and all its methods \RULE{(T-Method)} are ok.
 
 
 \section{Reduction}
@@ -398,12 +405,12 @@ As in FJ, a class is ok if its constructor \RULE{(T-Ctor)} and all its methods \
 $\typerule{
 }{
   \finish~\hl,H \reduce \hl,H
-}$~\RULE{(R-finish)}
+}$~\RULE{(R-Finish)}
 \quad
 $\typerule{
 }{
   \async~\hl;\he,H \reduce \he,H
-}$~\RULE{(R-async)}
+}$~\RULE{(R-Async)}
 \\\\
 
 $\typerule{
@@ -433,11 +440,11 @@ $\typerule{
         \gap
     \hclass~\hC~\hextends~\hD
         \gap
-    \hnew ~ \hD([\ol{\hl}/\ol{x},\hl'/\this]\ol{\he}),H \reduce \hl',H'
+    \hnew ~ \hD([\ol{\hl}/\ol{x}]\ol{\he}),H \reduce \hl',H'
         \gap
     H'[\hl']=\hD(F)
 }{
-  \hnew ~ \hC(\ol{\hl}),H \reduce [\ol{\hl}/\ol{x},\hl'/\this]\he",H'[ \hl" \mapsto \hC(F)]
+  \hnew ~ \hC(\ol{\hl}),H \reduce [\ol{\hl}/\ol{x},\hl'/\this]\he",H'[ \hl' \mapsto \hC(F)]
 }$~\RULE{(R-New)}
 \\\\
 $\typerule{
@@ -448,20 +455,122 @@ $\typerule{
   \hl'.\hm(\ol{\hl}),H \reduce [\ol{\hl}/\ol{x},\hl'/\this]\he,H
 }$~\RULE{(R-Invoke)}
 \\\\
-%$\he ::= \hl ~|~ \hx ~|~  ~|~ ~|~  ~|~
 
+$\typerule{
+    \he,H \reduce \he',H'
+}{
+  \he.\hm(\ol{\he}),H \reduce \he'.\hm(\ol{\he}),H'
+}$~\RULE{(RC-Receiver)}
+\\\\
+$\typerule{
+    \he,H \reduce \he',H'
+}{
+  \hl.\hm(\ol{\hl},\he,\ol{\he}),H \reduce \hl.\hm(\ol{\hl},\he',\ol{\he}),H'
+}$~\RULE{(RC-Arguments)}
+\\\\
+$\typerule{
+    \he,H \reduce \he',H'
+}{
+  \hnew ~ \hC(\ol{\hl},\he,\ol{\he}),H \reduce \hnew ~ \hC(\ol{\hl},\he',\ol{\he}),H'
+}$~\RULE{(RC-Ctor)}
+\\\\
+$\typerule{
+    \he,H \reduce \he',H'
+}{
+  \he.\hf,H \reduce \he'.\hf,H'
+}$~\RULE{(RC-Field-Access)}
+\\\\
+$\typerule{
+    \he,H \reduce \he',H'
+}{
+  \he.\hf=\he",H \reduce \he'.\hf=\he",H'
+}$~\RULE{(RC-Field-Assign1)}
+\qquad
+$\typerule{
+    \he,H \reduce \he',H'
+}{
+  \hl.\hf=\he,H \reduce \hl.\hf=\he',H'
+}$~\RULE{(RC-Field-Assign2)}
+\\\\
+$\typerule{
+    \he,H \reduce \he',H'
+}{
+  \async~\he;\he",H \reduce \async~\he';\he",H'
+}$~\RULE{(RC-Async1)}
+\qquad
+$\typerule{
+    \he,H \reduce \he',H'
+}{
+  \async~\he";\he,H \reduce \async~\he";\he',H'
+}$~\RULE{(RC-Async2)}
+\\\\
+$\typerule{
+    \he,H \reduce \he',H'
+}{
+  \finish~\he,H \reduce \finish~\he',H'
+}$~\RULE{(RC-Finish)}
+\\\\
+
+$\typerule{
+}{
+  (\async~\he;\hl).\hm(\ol{\he}),H \reduce \async~\he; \hl.\hm(\ol{\he}),H
+}$~\RULE{(RA-Receiver)}
+\\\\
+$\typerule{
+}{
+  \hl.\hm(\ol{\hl},(\async~\he;\hl'),\ol{\he}),H \reduce \async~\he; \hl.\hm(\ol{\hl},\hl',\ol{\he}),H
+}$~\RULE{(RA-Arguments)}
+\\\\
+$\typerule{
+}{
+  \hnew ~ \hC(\ol{\hl},(\async~\he;\hl'),\ol{\he}),H \reduce \async~\he; \hnew ~ \hC(\ol{\hl},\hl',\ol{\he}),H
+}$~\RULE{(RA-Ctor)}
+\\\\
+$\typerule{
+}{
+  (\async~\he;\hl).\hf,H \reduce \async~\he; \hl.\hf,H
+}$~\RULE{(RA-Field-Access)}
+\\\\
+$\typerule{
+}{
+  (\async~\he;\hl).\hf=\he",H \reduce \async~\he; \hl.\hf=\he",H
+}$~\RULE{(RA-Field-Assign1)}
+\\\\
+$\typerule{
+}{
+  \hl.\hf=(\async~\he;\hl'),H \reduce \async~\he; \hl.\hf=\hl',H
+}$~\RULE{(RA-Field-Assign2)}
+\\\\
+%
+% I don't need these two rules, because RC-Async1&2 handle these cases (we can progress on either e1 or e2 in async e1;e2
+%$\typerule{
+%}{
+%  \async~(\async~\he;\hl);\he',H \reduce \async~\he; \he',H
+%}$~\RULE{(RA-Async1)}
+%\qquad
+%$\typerule{
+%}{
+%  \async~\he';(\async~\he;\hl),H \reduce \async~\he; \async~\he';\he',H
+%}$~\RULE{(RA-Async2)}
+%\\\\
 \hline
 \end{tabular}
 \end{center}
 \caption{FX10 Reduction Rules ($H,\he \reducesto H',\he'$).
-    Rules \RULE{(RA-*)} handle the concurrent nature of \hasync.}
-\label{Figure:expressions}
+    Rules \RULE{(RC-*)} handle the congruence rules, and
+    rules \RULE{(RA-*)} handle the concurrent nature of \hasync (bringing the async to the top-level).
+    Note that we do not have an \RULE{(RA-Finish)} because an async cannot cross a finish.}
+\label{Figure:reduction}
 \end{figure*}
 
-
+An object~$\ho = \code{C}(\ol{\hf}\mapsto\ol{\hl'})$ is an instance of some class~\hC
+    where fields~$\ol{\hf}$ has been initialized to locations~$\ol{\hl'}$.
+A heap~$H$ is a mapping from locations~\hl to objects~$\ho$.
+A heap-typing~$\Gamma_H$ maps locations to their type,
+    i.e., if~$H[\hl] = \code{C}(\ldots)$ then~$\Gamma_H[\hl] = \code{C}$.
 Heap is \emph{well-typed} iff
     each field location is a subtype (using~$\Gamma_H$) of the declared field type,
-    i.e., for every location~\hl,
+    i.e., for every location in the heap~$\hl \in \dom(H)$,
         where $H[\hl] = \code{C}(\ol{\hf}\mapsto\ol{\hl'})$
         and
         for every field~$\hf_i$, we have that
@@ -492,5 +601,8 @@ If a program is well-typed, then the expression can always be reduced to a locat
 \ldots
 \end{proof}
 
+
+
+\input{val}
 
 \end{document}
