@@ -16,6 +16,10 @@
 
 
 \input{commands}
+
+\mynewcommand{\hvar}{\code{var}}
+\mynewcommand{\hval}{\code{val}}
+
 \mynewcommand{\async}{\code{async}}
 \mynewcommand{\finish}{\code{finish}}
 \mynewcommand{\R}{\code{R}_\Gamma}
@@ -60,7 +64,7 @@ Read first the paper ``Object Initialization in X10" to understand
 FX10 is similar to Featherweight Java (FJ), however it is both imperative (using a heap) and it
     models X10 specific constructs such as \finish and \async.
 FX10 also models field initialization including the fact that one can read a field only after it was definitely assigned,
-    and that final (\code{val}) fields can be assigned exactly once.
+    and that final (\code{val}) fields can be assigned exactly once (in \Ref{Section}{val}).
 
 FX10 does \emph{not} model other aspects of X10 such as:
 \begin{description}
@@ -74,10 +78,10 @@ FX10 does \emph{not} model other aspects of X10 such as:
         (i)~it infers the type of a final field with an initializer,
         (ii)~it infers method return types,
         (iii)~using an inter-procedural dataflow analysis it infers
-            3 sets for each non-escaping method: $\R$, $\SW$, $\AW$.
-            $\R$ is the set of fields that can be read by the method,
-                $\SW$ are the fields that must be definitely-assigned by the method,
-                and $\AW$ are the fields that must be definitely-asynchronously-assigned by the method.
+            3 sets for each non-escaping method: $\Read$, $\SyncWrite$, $\AsyncWrite$.
+            $\Read$ is the set of fields that can be read by the method,
+                $\SyncWrite$ are the fields that must be definitely-assigned by the method,
+                and $\AsyncWrite$ are the fields that must be definitely-asynchronously-assigned by the method.
 
     FX10 does not model inference, and instead this information is explicitly presented.
   \item[null]
@@ -86,55 +90,20 @@ FX10 does \emph{not} model other aspects of X10 such as:
     Therefore, \hnull is no longer needed.
 
   \item[Misc]
-    Generics, constraints, casting, inner classes, overloading, co-variant return type, private/final, etc.
+    Generics, constraints, casting, inner classes, overloading, co-variant return type, private/final,
+    locals, field initializers, etc.
 \end{description}
 
 
-Example program:
-\begin{lstlisting}
-class E extends Object {
-  ctor() =
-    super();
-    new Object();
-}
-class Seq extends Object {
-  ctor(a1:Object, a2:Object) =
-    super();
-    a2;
-}
-class C2 extends Object {
-  fVal:E;
-  fVar:E;
-  ctor(a1:E, a2:E) =
-    super();
-    finish
-      async this.fVal = a1;
-      m(a2);
-  R() SW() AW(fVar) m(a:E):E =
-    async this.fVar = a;
-    new E();
-  escaping m2():Seq = new Seq(this,this.fVal);
-}
-class C3 extends Object {
-  fVar:E;
-  ctor(a:E) =
-    super();
-    new Seq(fVar=a,fVar); // ok
-}
-class C4 extends Object {
-  fVar:E;
-  ctor(a:E) =
-    super();
-    new Seq(fVar,fVar=a); // ERR
-}
-\end{lstlisting}
+\paragraph{Overview}
+\Ref{Section}{Syntax} presents the syntax of FX10.
+\Ref{Section}{Typing} shows the typing rules
+    (e.g., $\Gdash \he:\hC$ denotes that expression~\he has type \hC in environment $\Gamma$),
+    and defines various helper functions.
+\Ref{Section}{Reduction} gives the reduction rules ($\he,H \reduce \he',H'$) and our soundness proof.
+Finally, \Ref{Section}{val} extends the formalism with \hval and \hvar fields.
 
-We will next describe the syntax.
-Then the typing rules (e.g., $\Gdash \he:\hC$ denotes that expression~\he has type \hC in environment $\Gamma$),
-    and helper functions.
-Finally, we present the reduction rules ($\he,H \reduce \he',H'$) and our soundness proof.
-
-\section{Syntax}
+\Section{Syntax}
 
 
 \begin{figure}[htpb!]
@@ -171,7 +140,64 @@ $\he ::= \hl ~|~ \hx ~|~ \he.\hf ~|~ \he.\hf = \he ~|~ \he.\hm(\ol{\he}) ~|~ \hn
 \end{figure}
 
 
-\section{Typing}
+\Ref{Figure}{syntax} shows the syntax of FX10.
+(\Ref{Section}{val} will later add the \hval and \hvar field modifiers.)
+
+The syntax is similar to X10 real syntax with the following difference:
+    instead of doing inference, we explicitly write the fields of \this that are initialized and read in
+    every initializing method
+    (using 3 sets: $\Read(\ol{\hf})~~\SyncWrite(\ol{\hf})~~\AsyncWrite(\ol{\hf})$).
+Initializing methods (also called non-escaping methods) cannot leak \this and they can only read fields of \this that are in the \Read set.
+Non-initializing methods (whose receiver is always a cooked object) are marked with \hescaping
+    because they can escape \this (e.g., pass \this as an argument to another method).
+
+Every class has a single constructor that must initialize all the fields of \this,
+    and it can only call only non-escaping methods.
+The constructor first calls \super to initialize the superclass fields,
+    and only then initialize the other fields.
+
+The following is an example program in this syntax:
+
+\begin{lstlisting}
+class E extends Object {
+  ctor() =
+    super();
+    new Object();
+}
+class Seq extends Object {
+  ctor(a1:Object, a2:Object) =
+    super();
+    a2;
+}
+class C2 extends Object {
+  fVal:E;
+  fVar:E;
+  ctor(a1:E, a2:E) =
+    super();
+    finish
+      async this.fVal = a1;
+      m(a2);
+  Read() SyncWrite() AsyncWrite(fVar) m(a:E):E =
+    async this.fVar = a;
+    new E();
+  escaping m2():Seq = new Seq(this,this.fVal);
+}
+class C3 extends Object {
+  fVar:E;
+  ctor(a:E) =
+    super();
+    new Seq(fVar=a,fVar); // ok
+}
+class C4 extends Object {
+  fVar:E;
+  ctor(a:E) =
+    super();
+    new Seq(fVar,fVar=a); // ERR (read before write)
+}
+\end{lstlisting}
+
+
+\Section{Typing}
 {Subtyping} is exactly as in FJ:
     the transitive closure of the \hextends relation.
 That is, $\hC \st \hD$ iff $\hC=\hD$ or \hC transitively extends $\hD$.
@@ -396,7 +422,7 @@ Obviously, the constructor of \hObject has no parameters.
 As in FJ, a class is ok if its constructor \RULE{(T-Ctor)} and all its methods \RULE{(T-Method)} are ok.
 
 
-\section{Reduction}
+\Section{Reduction}
 
 \begin{figure*}[t]
 \begin{center}
