@@ -515,6 +515,49 @@ syntactically and semantically valid expression.   These forms cannot define a
 
 There are no other semantic differences between the two forms. 
 
+\subsection{Return Types}
+
+A method with an explicit return type returns that type.
+A method without an
+explicit return type is given a return type by type inference.
+A {\em call} to a method has type given by substituting information about the
+actual \xcd`val` parameters for the formals.
+
+\begin{ex}
+
+In the example below, \xcd`met1` has an explicit return type \xcd`Ret{n==a}`.
+\xcd`met2` does not, so its return type is computed, also to be
+\xcd`Ret{n==a}`, because that's what the implicitly-defined constructor 
+returns.
+
+\xcd`use3` requires that its argument have \xcd`n==3`.  
+\xcd`example` shows that both \xcd`met1` and \xcd`met2` can be used to produce
+such an object.  In both cases, the actual argument \xcd`3` is substituted for
+the formal argument \xcd`a` in the return type expression for the method
+\xcd`Ret{n==a}`, giving the type \xcd`Ret{n==3}` as required by \xcd`use3`.
+
+%~~gen ^^^ Classes9q2w
+% package Classes9q2w;
+%~~vis
+\begin{xten}
+class Ret(n:Int) {
+  static def met1(a:Int) : Ret{n==a} = new Ret(a);
+  static def met2(a:Int)             = new Ret(a);
+  static def use3(Ret{n==3}) {}
+  static def example() {
+     use3(met1(3));
+     use3(met2(3));
+  }  
+}
+\end{xten}
+%~~siv
+%
+%~~neg
+
+
+\end{ex}
+
+
 \subsection{Final Methods}
 \index{final}
 \index{method!final}
@@ -1090,6 +1133,7 @@ class C {
 %~~neg
 \end{ex}
 
+
 \subsection{Automatic Generation of Constructors}
 \index{constructor!generated}
 
@@ -1183,6 +1227,46 @@ means the constructor invocation.  If, for some reason, it is necessary to
 invoke an application operator as the first meaningful statement of a
 constructor, write the target of the application as \xcd`(this)`, \eg,
 \xcd`(this)(a,b);`. 
+
+\subsection{Return Type of Constructor}
+
+A constructor for class \xcd`C` may have a return type \xcd`C{c}`.  The return
+type specifies a constraint on the kind of object returned.  It cannot change
+its {\em class} --- a constructor for class \xcd`C` always returns an instance
+of class \xcd`C`.  
+If no explicit return type is specified, the constructor's return type is
+inferred.
+
+\begin{ex}
+The constructor \xcd`(A)` below, having no explicit return type, 
+has its return type inferred.  
+\xcd`n` is set by the \xcd`property` statement to \xcd`1`, so the return type
+is inferred as \xcd`Ret{self.n==1}.`
+The constructor \xcd`(B)` has \xcd`Ret{n==self.n}` as an explicit return type.
+The \xcd`example()` code shows both of these in action.
+
+%~~gen ^^^ Classes1v9a
+% package Classes1v9a;
+%~~vis
+\begin{xten}
+class Ret(n:Int) {
+   def this()    { property(1); }     // (A)
+   def this(n:Int) : Ret{n==self.n} { // (B)
+      property(n);
+   }
+   static def typeIs[T](x:T){}
+   static def example() {
+     typeIs[Ret{self.n==1}](new Ret());  // uses (A)
+     typeIs[Ret{self.n==3}](new Ret(3)); // uses (B)
+   }
+}
+\end{xten}
+%~~siv
+%
+%~~neg
+
+
+\end{ex}
 
 \section{Static initialization}
 \label{StaticInitialization}

@@ -145,12 +145,12 @@ are \xcd`Double` unless marked with an \xcd`f` for \xcd`Float`.
 Less briefly, we use the following abbreviations: 
 \begin{displaymath}
 \begin{array}{rcll}
-d &=& \mbox{one or more decimal digits}\\
+d &=& \mbox{one or more decimal digits} \mbox{only starting with 0 if it is 0}\\
 d_8 &=& \mbox{one or more octal digits}\\
 d_{16} &=& \mbox{one or more hexadecimal digits, using \xcd`a`-\xcd`f`
 or \xcd`A`-\xcd`F`
 for 10-15}\\
-i &=& d 
+i &=& d  
         \mathbin{|} {\tt 0} d_8 
         \mathbin{|} {\tt 0x} d_{16}
         \mathbin{|} {\tt 0X} d_{16}

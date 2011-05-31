@@ -170,7 +170,7 @@ be accomplished in two ways:
       methods called from the constructor: they can be marked \Xcd{final} or
       \Xcd{private}, or the whole class can be \Xcd{final}.
 \item Marking the methods called from the constructor by
-      \xcd`@NonEscaping`.
+      \xcd`@NonEscaping` or \xcd`@NoThisAccess`
 \end{enumerate}
 
 \subsubsection{Non-Escaping Methods}
@@ -258,7 +258,80 @@ final class C2 {
 %
 %~~neg
 
+\subsubsection{NoThisAccess Methods}
 
+A method may be annotated \xcd`@NoThisAccess`.  \xcd`@NoThisAccess` methods
+may be called from constructors, and they may be overridden in subclasses.
+However, they may not refer to \xcd`this` in any way -- in particular, they
+cannot refer to fields of \xcd`this`, nor to \xcd`super`.
+
+\begin{ex}
+
+The class \xcd`IDed` has an \xcd`Float`-valued \xcd`id` field.  The method
+\xcd`count()` is used to initialize the \xcd`id`.  For \xcd`IDed` objects,
+the \xcd`id` is the count of \xcd`IDed`s created with the same parity of its
+\xcd`kind`.   Note that \xcd`count()` does not refer to \xcd`this`, though
+it does refer to a \xcd`static` field \xcd`counts`. 
+
+The subclass \xcd`SubIDed` has \xcd`id`s that depend on \xcd`kind%3`
+as well as the parity of \xcd`kind`.  It overrides the \xcd`count()`
+method.  The body of \xcd`count()` still cannot refer to \xcd`this`.
+Nor can it refer to \xcd`super` (which is \xcd`self` under another name).
+This precludes the use of a \xcd`super` call.  This is why we have separated
+the body of \xcd`count` out as the static method \xcd`kind2count` -- without
+that, we would have had to duplicate its body, as we could not call 
+\xcd`super.count(kind)` in a \xcd`NoThisAccess` method, as is shown by 
+the \xcd`ERROR` line \xcd`(A)`. 
+
+Note that \xcd`NoThisAccess` is in \xcd`x10.compiler` and must be imported,
+and that the overriding method \xcd`SubIDed.count` must be declared
+\xcd`@NoThisAccess` as well as the overridden method.
+Line \xcd`(B)` is not allowed because \xcd`code` is a field of \xcd`this`, 
+and field accesses are forbidden.   Line \xcd`(C)` references \xcd`this`
+directly, which, of course, is forbidden by \xcd`@NoThisAccess`.  
+
+
+%~~gen ^^^ ObjectInitialization7p2v
+% package ObjectInitialization7p2v;
+%~~vis
+\begin{xten}
+import x10.compiler.*;
+class UseNoThisAccess {
+  static class IDed {
+    protected static val counts = [0 as Int,0];
+    protected var code : Int;
+    val id: Float;
+    public def this(kind:Int) { 
+      code = kind;
+      this.id = this.count(kind); 
+    }
+    protected static def kind2count(kind:Int) = ++counts(kind % 2);
+    @NoThisAccess def count(kind:Int) : Float = kind2count(kind);
+  }
+  static class SubIDed extends IDed {
+    protected static val subcounts = [0 as Int, 0, 0];
+    public static val all = new x10.util.ArrayList[SubIDed]();
+    public def this(kind:Int) { 
+       super(kind); 
+    }
+    @NoThisAccess
+    def count(kind:Int) : Float {
+       val subcount <: Int = ++subcounts(kind % 3);
+       val supercount <: Float = kind2count(kind);
+       //ERROR: val badSuperCount = super.count(kind); //(A)
+       //ERROR: code = kind;                           //(B)
+       //ERROR: all.add(this);                         //(C)
+       return  supercount + 1.0f / subcount;
+    }
+  }
+}
+\end{xten}
+%~~siv
+%
+%~~neg
+
+
+\end{ex}
 
 \subsection{Fine Structure of Constructors}
 \label{SFineStructCtors}
@@ -629,7 +702,7 @@ class Example (
    }
 
    def someMethod() =
-        prop + staticField() + instanceField;     // (P)
+        prop + staticField() + instanceField;   // (P)
 }
 \end{xten}
 %~~siv

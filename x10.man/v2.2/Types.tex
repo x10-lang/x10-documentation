@@ -2669,6 +2669,131 @@ closure of the relation ``directly depends on''.
 
 It is a static error if any entity type $E$ depends on itself.
 
+\section{Typing of Variables and Expressions}
+
+
+Variable declarations, field declarations, and some other expressions
+introduce constraints on their types.  These extra constraints represent
+information that is known at the point of declaration.  They are used in
+deductions and type inference later on -- as indeed all constraints are, but
+the automatically-added constraints are added because they are particularly
+useful.  
+
+Any variable declaration of the form 
+\begin{xtenmath}
+val x : A ...
+\end{xtenmath}
+results in declaring \xcd`x` to have the type \xcd`A{self==x}`, rather than
+simply \xcd`A`.  (\xcd`var` declarations get no such addition, because
+\xcd`var`s cannot appear in constraints.)
+
+A field or property declaration of the form: 
+\begin{xtenmath}
+class A {
+   ... 
+   val f : B ...
+   ...
+}
+\end{xtenmath}
+results in declaring \xcd`f` to be of type \xcd`B{self==this.f}`.
+And, if \xcd`y` has type \xcd`A{c}`, then the type 
+for \xcd`y.f` has a constraint \xcd`self==y.f`, and, additionally, 
+preserves the information from \xcd`c`.  
+
+
+\begin{ex}
+
+The following code uses a method \xcd`typeIs[T](x)` to confirm, statically,
+that the type of \xcd`x` is \xcd`T` (or a subtype of \xcd`T`).  
+
+On line \xcd`(A)` we confirm that the type of \xcd`x` has 
+a \xcd`self==x` constraint.  The error line \xcd`(!A)` confirms
+that a {\em different} variable {\em doesn't} have the \xcd`self==x`
+constraint. \xcd`(B)` shows the extra information carried by a field's type.
+
+\xcd`(C)` shows the extra information carried by a field's type when the
+object's type is constrained. Note that the constraint
+\xcd`ExtraConstraint{self.n==8}` on the type of \xcd`y` has to be rewritten
+for \xcd`y.f`, since the constraint \xcd`Long{self.n==8}` is not correct or
+even well-typed. In this case, the \xcd`ExtraConstraint` whose \xcd`n`-field
+is \xcd`8` has the name \xcd`y`, so we can write the desired type with a
+conjunct \xcd`y.n==8`.\footnote{If \xcd`y` were an expression rather than a
+variable, there would be no good way to express its type in X10's type system. 
+(The compiler has a more elaborate internal representation of types, not all
+of which are expressible in X10 version 2.2.)}
+
+Note that we use one of the extra constraints here -- this reasoning requires
+the information that the type of \xcd`y` has the constraint \xcd`self==y`, so
+X10 can infer \xcd`y.n==8` from \xcd`self.n==8`. This sort of inference is the
+reason why X10 adds these constraints in the first place: without them, even
+the simplest data flows would be beyond the ability of the type system to detect.
+
+%~~gen ^^^ Types6m9z
+% package Types6m9z;
+%~~vis
+\begin{xten}
+class Extra(n:Int) {
+  val f : Long;
+  def this(n:Int, f:Long) { property(n); this.f = f; }
+  static def typeIs[T](val x:T) {}
+  public static def main(argv:Array[String](1)) {
+     val x : Extra = new Extra(1,2L);
+     typeIs[ Extra{self==x} ]   (x);    //(A)
+     val nx: Extra = new Extra(1,2L);
+     // ERROR: typeIs[ Extra{self==x} ]   (nx); //(!A)
+     typeIs[ Long{self == x.f} ]          (x.f);  //(B)
+     val y : Extra{self.n==8} = new Extra(8, 4L);
+     typeIs[ Long{self == y.f, y.n == 8}] (y.f);  //(C)
+  }
+}
+\end{xten}
+%~~siv
+%
+%~~neg
+\end{ex}
+
+Once in a while, the additional information will interfere with other
+typechecking or type inference.  In this case, use \xcd`as`
+(\Sref{XtenConversions}) to erase it, using expressions like \xcd`x as A`.
+
+\begin{ex}
+The following code creates a one-element array (\Sref{sect:ArrayCtors})
+containing \xcd`x`.  
+
+If  the \xcd`ERROR` line were to be used, 
+X10 would infer that the type of this array were \xcd`Array[T]`,
+where \xcd`T` is the type of \xcd`x` --- that is, 
+\xcd`Array[Extra{self==x}]`.  \xcd`[x]` is an array of \xcd`x`'s, not an array
+of \xcd`Extra`s.  Since \xcd`Array[Extra{self==x}]` is not a subtype of 
+\xcd`Array[Extra]`, the array \xcd`[x]` cannot be used in a place where an 
+\xcd`Array[Extra]` is called for.
+
+The expression \xcd`[x as Extra]` uses a type cast to erase the
+automatically-added extra information about \xcd`x`.  \xcd`x as Extra` simply
+has type \xcd`Extra`, and thus \xcd`[x as Extra]` is an \xcd`Array[Extra]` as
+desired. 
+
+
+%~~gen ^^^ Types1l5a
+% package Types1l5a;
+%~~vis
+\begin{xten}
+class Extra {
+  static def useArray(Array[Extra]) {} 
+  public static def main(argv:Array[String](1)) {
+     val x : Extra = new Extra();
+     //ERROR: useArray([x]);
+     useArray([x as Extra]);
+  }
+}
+\end{xten}
+%~~siv
+%
+%~~neg
+
+
+\end{ex}
+
 \section{Limitations of Strict Typing}
 
 X10's type checking provides substantial guarantees.  In most cases, a program
@@ -2695,3 +2820,4 @@ type error.
       break X10's guarantees.
 
 \end{enumerate}
+
