@@ -963,6 +963,18 @@ for(var i : Long = 0; i <= 100; i++) {}
 The operation \xcd`<=` is a regular operator, and thus uses coercions in its
 arguments, so \xcd`100` gets coerced to \xcd`100L`.  
 
+\begin{ex}
+If numbers are cast to \xcd`Any`, they are compared as values of type
+\xcd`Any`, not as numbers.  
+%~~exp~~`~~`~~ ~~ ^^^Expressions1m4g
+For example, \xcd`1 as Any == 1ul as Any`
+is not a static error (because it is comparing two values of type \xcd`Any`),
+and returns \xcd`false` (because the two \xcd`Any` values refer to different
+values --- indeed, to values of different types, \xcd`Int` and \xcd`ULong`).
+
+\end{ex}
+
+
 \subsection{Non-Disjointness Requirement}
 
 It is, in many cases, a static error to have an expression \xcd`a==b` where \xcd`a` and
