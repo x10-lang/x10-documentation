@@ -102,3 +102,57 @@ Prints a listing of all execution options.
 
 
 %\subsection{{\tt }}
+
+
+\chapter{Running X10}
+
+An X10 application is launched either by a direct invocation of the generated
+executable or using a launcher command. The specification of the number of
+places and the mapping from places to hosts is transport specific and
+discussed in \Sref{sect:RunningManaged} for Managed X10 (Java back end) and
+\Sref{sect:RunningNative} for Native X10 (C++ back end). For distributed runs,
+the x10 distribution (libraries) and the compiled application code (binary or
+bytecode) are expected to be available at the same paths on all the nodes.  
+
+Detailed, up-to-date documentation may be found at
+\xcd`http://xj.watson.ibm.com/twiki/bin/view/Main/LaunchingX10Applications`
+
+
+\section{Managed X10}
+\label{sect:RunningManaged}
+
+
+Managed X10 applications are launched using the x10 script followed by the qualified name of the main class.
+
+\begin{xten}
+x10c HelloWholeWorld.x10
+x10 HelloWholeWorld
+\end{xten}
+
+The main purpose of the x10 script is to set the jvm classpath and the
+\xcd`java.library.path` system property to ensure the x10 libraries are on the
+path.  
+
+
+\section{Native X10}
+\label{sect:RunningNative}
+
+On most platforms and for most transports, X10 applications can be launched by invoking the generated executable.
+
+\begin{xten}
+x10c++ -o HelloWholeWorld HelloWholeWorld.x10
+./HelloWholeWorld
+\end{xten}
+
+On cygwin, X10 applications must be launched using the runx10 script followed by the name of the generated executable.
+
+\begin{xten}
+x10c++ -o HelloWholeWorld HelloWholeWorld.x10
+runx10 HelloWholeWorld
+\end{xten}
+The purpose of the runx10 script is to ensure the x10 libraries are on the path. 
+
+
+
+Detailed, up-to-date documentation may be found at
+\xcd`http://xj.watson.ibm.com/twiki/bin/view/Main/X10NativeImplementation.`
