@@ -125,8 +125,17 @@ store data that is pertinent to the object.  Fields, like variables, may be
 mutable (\xcd`var`) or immutable (\xcd`val`).  
 
 Class may have {\em static fields}, which store data pertinent to the
-entire class of objects.  
-See \Sref{StaticInitialization} for more information.
+entire class of objects.  See \Sref{StaticInitialization} for more
+information. 
+\Xten{} does not permit mutable static state. A fundamental principle of the
+X10 model of computation is that all mutable state be local to some place
+(\Sref{XtenPlaces}), and, as static variables are
+globally available, they
+cannot be mutable. When mutable global state is necessary, programmers should
+use singleton classes, putting the state in an object and using place-shifting
+commands (\Sref{AtStatement}) and atomicity (\Sref{AtomicBlocks}) as necessary
+to mutate it safely.
+
 
 No two fields of the same class may have the same name.  A field may have the
 same name as a method, although for fields of functional type there is a
@@ -301,14 +310,31 @@ class Trans {
 \label{PropertiesInClasses}
 \index{property}
 
-The properties of an object (or struct) are  public \xcd`val` fields
-usable at compile time in constraints.\footnote{In many cases, a 
+The properties of an object (or struct) are a restricted form of public
+\xcd`val` fields.\footnote{In many cases, a 
 \xcd`val` field can be upgraded to a \xcd`property`, which 
 entails no compile-time or runtime cost.  Some cannot be, \eg, in cases where
 cyclic structures of \xcd`val` fields are required.} 
 For example,  every array has a \xcd`rank` telling
 how many subscripts it takes.  User-defined classes can have whatever
 properties are desired. 
+
+Properties differ from public \xcd`val` fields in a few ways: 
+\begin{enumerate}
+\item Property references are allowed on \xcd`self` in constraints:
+      \xcd`self.prop`.  Field references are not.
+\item Properties are in scope for all instance initialization expressions.
+      \xcd`val` fields are not.
+\item The graph of values reachable from a given object by following only
+      property links is acyclic.  Conversely, it is possible (and routine) for
+      two objects to point to each other with \xcd`val` fields.
+\item Properties are declared in the class header; \xcd`val` fields are
+      defined in the class body.
+\item Properties are set in constructors by a \xcd`property` statement.
+      \xcd`val` fields are set by assignment.
+\end{enumerate}
+
+
 
 Properties are defined in parentheses, after the name of the class.  They are
 given values by the \xcd`property` command in constructors.
@@ -397,6 +423,45 @@ class Proper(a:Int, b:String) {
 %~~siv
 % class Hook{ def run() {Proper.example(); return true;}}
 %~~neg
+\end{ex}
+
+\subsection{Properties and Field Initialization}
+
+Fields with explicit initializers are evaluated immediately after the
+\xcd`property` command, and all properties are in scope when initializers are
+evaluated.  
+
+\begin{ex}
+Class \xcd`Init` initializes the field \xcd`a` to be an array of \xcd`n`
+elements, where \xcd`n` is a property.    
+When \xcd`new Init(4)` is executed, the constructor first sets \xcd`n` to
+\xcd`4` via the \xcd`property` statement, and then initializes \xcd`a` to a
+4-element array.
+
+However, \xcd`Outit` uses a field rather than a property for \xcd`n`.  
+If the \xcd`ERROR` line were present, it would not compile.  \xcd`n` has not
+been definitely assigned (\Sref{sect:DefiniteAssignment}) at this point, and
+\xcd`n` has not been given its value, so \xcd`a` cannot be computed.  
+(If one insisted that \xcd`n` be a property, \xcd`a` would have to be
+initialized in the constructor, rather than by an initialization expression.)
+%~~gen ^^^ Classes9c9r
+% package Classes9c9r;
+%~~vis
+\begin{xten}
+class Init(n:Int) {
+  val a = new Array[String](0..n, "");
+  def this(n:Int) { property(n); }
+}
+class Outit {
+  val n : Int;
+  //ERROR: val a = new Array[String](0..n, "");
+  def this(m:Int) { this.n = m; }
+}
+\end{xten}
+%~~siv
+%
+%~~neg
+
 
 \end{ex}
 
@@ -1041,6 +1106,7 @@ is not satisfied by \xcd`3`, so -- despite the call statically type-checking
 -- at runtime the call would violate its guard and (in this case) throw an exception.
 %~~gen ^^^ Classes5l3r
 % package Classes5l3r;
+% // FOR-ERR-CASE-DELETE: def recip(m:Int){true} = 1.0/m;
 %~~vis
 \begin{xten}
 class Super {
@@ -1048,7 +1114,7 @@ class Super {
 }
 class Sub extends Super{
   //ERROR: def recip(n:Int){n != 0, n != 3} = 1.0/(n * (n-3));
-  def recip(n:Int){true} = 1.0/n;
+  def recip(m:Int){true} = 1.0/m;
 }
 class Example{
   static def example() {

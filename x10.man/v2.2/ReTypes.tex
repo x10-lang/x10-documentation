@@ -1,0 +1,29 @@
+\section{Type System}
+
+
+\bard{This is the revised 4.1 -- it goes after the intro, but I'm putting it
+here to work on it.}
+
+X10 has several sorts of types. 
+In this section, \xcd`S`, \xcd`T`, and 
+\xcdmath"T$_i$" range over types.  \xcd`X` ranges over type variables, 
+\xcd`M` and \xcdmath"x$_i$" over identifiers, 
+\xcd`c` over constraint expressions (\Sref{ConstrainedTypes}), 
+and \xcdmath"e$_i$" over expressions. 
+
+\begin{bbgrammar}
+Type \: \xcd`T` \\
+\xcd`T` \: \xcd`M`  & (1)\\
+  \: \xcd`X` & (2) \\
+  \: \xcd`M` \xcd"["\xcd`T`$_1$ \xcd`,` $\ldots$ \xcd`,` \xcd`T`$_n$ \xcd`]` & (3)\\
+  \: \xcd`T`$_1$  \xcd`.` \xcd`T`$_2$ & (4)\\
+  \: \xcd`F` & (5)\\
+  \: \xcd`M` \xcd"["\xcd`T`$_1$ \xcd`,` $\ldots$ \xcd`,` \xcd`T`$_n$ \xcd`]` 
+       \xcd`(` e$_1$ \xcd`,`$\ldots$\xcd`,` e$_k$ \xcd`)` & (6) \\
+\xcd`F` \: \xcd`(` \xcd`x`$_1$ \xcd`:` \xcd`T`$_1$ \xcd`,`$\ldots$\xcd`,`
+             \xcd`x`$_n$ \xcd`:` \xcd`T`$_n$ \xcd`) {` c  \xcd`} => ` \xcd`T` \\
+
+  \: \xcd`(` \xcd`x`$_1$ \xcd`:` \xcd`T`$_1$ \xcd`,`$\ldots$\xcd`,`
+             \xcd`x`$_n$ \xcd`:` \xcd`T`$_n$ \xcd`) {` c  \xcd`} => ` \xcd`void` 
+\end{bbgrammar}
+

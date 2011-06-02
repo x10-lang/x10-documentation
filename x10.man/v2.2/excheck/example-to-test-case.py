@@ -8,6 +8,14 @@
 # it will be deleted, and the example will not generate a test case.
 # Similarly, NOCOMPILE means to not generate a compile check.
 # NOTEST and NOCOMPILE are independent; both can be used to generate nothing.
+#
+# Every line containing "ERROR:" will inspire one negative test case.
+# (Its name will include "BadN" where N is the line number of the ERROR.)
+# If there is a line of the form
+#    // FOR-ERR-CASE-DELETE: s
+# Then all lines containing string s will be removed from all negative
+# test cases.
+
 
 from __future__ import with_statement
 import os;
@@ -529,6 +537,7 @@ def produceErrorFiles(subdir, fileroot, testcasecode):
             produceTheErrorFile(subdir, fileroot, lines, i)
 
 def produceTheErrorFile(subdir, fileroot, lines, i):
+    lines = removeForErrCaseDelete(lines, fileroot);
     before = "\n".join(lines[0:i])
     errorline = lines[i]
     after = "\n".join(lines[(i+1):])
@@ -546,6 +555,29 @@ def produceTheErrorFile(subdir, fileroot, lines, i):
     wholeBadFileName = subdir + "/" + badfileroot + ".x10"
     cramCodeIntoFile(wholeBadFileName, renamed_badcode, NOTEST_pattern)
 
+FOR_ERR_CASE_DELETE_RE = re.compile(".*FOR-ERR-CASE-DELETE:\\s*(\\S.*)")
+def removeForErrCaseDelete(lines, fileroot):
+    errPat = None
+    for line in lines:
+        matcho = FOR_ERR_CASE_DELETE_RE.match(line)
+        if matcho != None:
+            errPat = matcho.group(1)
+            break
+    if errPat == None:
+        return lines
+    # Otherwise, find and comment out all lines containing errPat
+    res = []
+    for line in lines:
+        p = line.find(errPat)
+        #print "<LL %s LL> %d FROM %s" % (errPat, p, line)
+    res = [(line if line.find(errPat) < 0 else "//gone!\\\\ " + line) for line in lines]
+    # And confirm that at least two lines (the FOR_ERR_CASE_DELETE and one other) are gone.
+    resJoined = "".join(res)
+    resSplit = resJoined.split("gone!")
+    if len(resSplit) < 3:
+        doom("This test case (%s) has a FOR-ERR-CASE-DELETE: '%s'\nBut it didn't comment out any lines" % (fileroot, errPat))
+    # print "remove: \n%s\n\n%s" % ("\n <1> ".join(lines), "\n <2> ".join(res))
+    return res
     
 
 # Return Foo1, Foo2, etc -- distinct class names for files from chapter Foo.

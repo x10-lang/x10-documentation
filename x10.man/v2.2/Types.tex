@@ -1,50 +1,31 @@
 \chapter{Types}
 \label{XtenTypes}\index{types}
 
+\input{ReTypes}
+
 {}\Xten{} is a {\em strongly typed} object-oriented language: every
 variable and expression has a type that is known at compile-time.
 Types limit the values that variables can hold.
 
-{}\Xten{} supports three kinds of runtime entities, {\em objects},
-{\em structs}, and {\em functions}. Objects are instances of {\em
-  classes} (\Sref{ReferenceClasses}). They may contain zero or
-more mutable fields, and a reference to the list of methods defined on them.
+{}\Xten{} supports four kinds of values, {\em objects}, {\em struct values},
+{\em functions}, and \xcd`null`. Objects are in the grand tradition of
+object-oriented languages, and the heart of most X10 computations. They are
+instances of {\em classes} 
+(\Sref{ReferenceClasses}); they hold zero or more data fields that may be
+mutable. They respond to methods, and can inherit behavior from their
+superclass.
 
-An object is represented by some (contiguous) memory chunk on the
-heap. Entities (such as variables and fields) contain a {\em
-  reference} to this chunk. That is, objects are represented through
-an extra level of indirection.  A consequence of this flexibility is
-that an entity containing a reference to an object \xcd{o} needs only
-one word of memory to represent that reference, regardess of the
-number of fields in \xcd{o}. An assignment to this entity simply
-overwrites the reference with another reference (thus taking constant
-time). Another consequence is that every class type contains the value
-\Xcd{null} corresponding to the invalid reference. \Xcd{null} is often
-useful as a default value. Further, two objects may be compared for
-identity (\Xcd{==}) in constant time by simply comparing references to
-the memory used to represent the objects. The default hash code for an
-object is based on the value of this reference. A downside of this
-flexibility is that the operations of accessing a field and invoking a
-method are more expensive than simply reading a register and
-invoking a static function.
+Struct values are similar to objects, though more restricted in ways that make
+them more efficient in space and time.  Their fields cannot be mutable, and,
+although they respond to methods, they do not inherit behavior.  
+They are instances of struct types (\Sref{XtenStructs}.
 
+Together, objects and struct values are called {\em containers},
+\index{container}
+because they hold data.  
 
-Structs are instances of {\em struct types} (\Sref{StructClasses}).  A
-struct is represented without the extra level of indirection, with a
-memory chunk of size $N$ words precisely big enough to store the value
-of every field of the struct (modulo alignment), plus whatever padding is needed. Thus structs cannot
-be shared. Entities (such as variables and fields) refering to the
-struct must allocate $N$ words to directly contain the chunk.  An
-assignment to this entity must copy the $N$ words representing the
-right hand side into the left hand side. Since there are no references
-to structs, \Xcd{null} is not a legal value for a struct
-type. Comparison for identity (\Xcd{==}) involves examining $N$
-words. Additionally, structs do not have any mutable fields, hence
-they can be freely copied. The payoff for these restrictions lies in
-that fields can be stored in registers or local variables, and 
-and method invocation is implemented by invoking a static function.
-
-Functions, called closures, lambda-expressions, and blocks in other languages, are
+Functions, called closures, lambda-expressions, and blocks in other languages,
+are 
 instances of {\em function types} (\Sref{Functions}). 
 A function has zero or more {\em formal parameters} (or {\em arguments}) and a
 {\em body}, which is 
@@ -54,29 +35,41 @@ is a unary integer function which multiplies its argument by the
 variable \xcd`y` from the surrounding block.  Functions may be freely
 copied from place to place and may be repeatedly applied. 
 
-These runtime entities are classified by {\em types}. Types are used in
+Finally, \xcd`null` is a constant, often found as the default value of
+variables of object type. While it is not an object, it may be stored in
+variables of class type -- except for types which have a constraint
+(\Sref{ConstrainedTypes}) which specifically excludes \xcd`null`.
+
+These runtime values are classified by {\em types}. Types are used in
 variable declarations (\Sref{sect:LocalVarDecl}), coercions and  explicit
 conversions (\Sref{sect:ConvAndCoerc}), object creation (\Sref{ClassCreation}),
 static state and method accessors (\Sref{FieldAccess}), and
 \xcd"instanceof" and \xcd`as` expressions (\Sref{instanceOf}).
+\bard{check for completeness}
 
+The basic relationship between values and types is the {\em is a value in}
+relation: \xcd`e` is a value in \xcd`T`.  
+We also often say ``\xcd`e` has type \xcd`T`'' to
+ or ``\xcd`e` is an element of type \xcd`T`''.  
+For example, \xcd`1` has type
+\xcd`Int` (the type of all integers representible in 32 bits). It 
+has the more general type \xcd`Any` (since all entitites have type \xcd`Any`).  
+Furthermore, it has such types as 
+``Nonzero integer'' and ``Integer equal to one'', and many others.  
+These types are expressable in X10 using constrained types
+(\Sref{ConstrainedTypes}).  \xcd`Int{self!=0}` is the type of \xcd`Int`s
+\xcd`self`\footnote{X10 automatically uses the identifier \xcd`self` for the
+element of the type being constrained.} which are not equal to zero, and 
+\xcd`Int{self==1}` is the type of the \xcd`Int`s which are equal to one.  
 
-The basic relationship between values and types is the {\em is an
-element of} relation.  We also often say ``$e$ has type $T$'' to
-mean ``$e$ is an element of type $T$''.  For example, \xcd`1` has type
-\xcd`Int` (the type of all integers representible in 32 bits). It also
-has type \xcd`Any` (since all entitites have type \xcd`Any`), type
-\xcd`Int{self != 0}` (the type of nonzero integers), type
-\xcd`Int{self == 1}` (the type of integers which are equal to \xcd`1`, which
-contains only one element), and many others. 
 
 The basic relationship between types is {\em subtyping}: \xcd`T <: U`
-holds if every instance of \xcd`T` is also an instance of \xcd`U`. Two
+holds if every value in \xcd`T` is also a value ind \xcd`U`. Two
 important kinds of subtyping are {\em subclassing} and {\em
-  strengthening}. Subclassing is a familiar notion from
+strengthening}. Subclassing is a familiar notion from
 object-oriented programming. Here we use it to refer to the
-relationship between a class and another class it extends, and the
-relationship between a class and another interface it implements. For
+relationship between a class and another class it extends
+or an interface (\Sref{XtenInterfaces}) it implements. For
 instance, in a class hierarchy with classes \xcd`Animal` and \xcd`Cat`
 such that \xcd`Cat` extends \xcd`Mammal` and \xcd`Mammal` extends
 \xcd`Animal`, every instance of \xcd`Cat` is by definition an instance
@@ -84,6 +77,7 @@ of \xcd`Animal` (and \xcd`Mammal`). We say that \xcd`Cat` is a
 subclass of \xcd`Animal`, or \xcd`Cat <: Animal` by subclassing. If
 \xcd`Animal` implements \xcd`Thing`, then \xcd`Cat` also implements
 \xcd`Thing`, and we say \xcd`Cat <: Thing` by subclassing.
+
 Strengthening is an equally familiar notion from logic.  The instances
 of \xcd`Int{self == 1}` are all elements of \xcd`Int{self != 0}` as well,
 because \xcd`self == 1` logically implies \xcd`self != 0`; so 
@@ -91,8 +85,10 @@ because \xcd`self == 1` logically implies \xcd`self != 0`; so
 of subtyping.  See \Sref{DepType:Equivalence} for the full definition
 of subtyping in X10.
 
-\subsection{Type System}
+\section{Type System}
 \index{type system}
+
+\bard{This section gets rewritten pretty much completely}
 The types in X10 are as follows.  
 
 These are the {\em elementary} types. Other
@@ -145,7 +141,7 @@ a {\em generic} (or {\em parameterized}) type.
 integers.
 
 The type {\em Type \xcd`{` Constraint \xcd`}`} refers to a constrained type.
-{\em Constraint} is a Boolean expression -- written in a {\em very} limited
+{\em Constraint} is a Boolean expression -- written in a limited
 subset of X10 -- describing the acceptable values of the constrained type.
 %~~stmt~~`~~`~~ ~~ ^^^ Types30
 For example, \xcd`var n : Int{self != 0};` guarantees that \xcd`n` is always a
@@ -298,16 +294,6 @@ class Cell[T] {
 %~~neg
 
 
-%TODO: Yoav: ``This reasoning is no longer true in the new object model''
-%% Why not?
-\Xten{} does not permit mutable static state. A fundamental principle of the
-X10 model of computation is that all mutable state be local to some place
-(\Sref{XtenPlaces}), and, as static variables are
-globally available, they
-cannot be mutable. When mutable global state is necessary, programmers should
-use singleton classes, putting the state in an object and using place-shifting
-commands (\Sref{AtStatement}) and atomicity (\Sref{AtomicBlocks}) as necessary
-to mutate it safely.
 
 \index{\Xcd{Object}}
 \index{\Xcd{x10.lang.Object}}
@@ -333,7 +319,7 @@ all instances of \xcd`C` except
 
 \subsection{Struct Types}
 
-A {\em struct declaration} \Sref{XtenStructs} introduces a {\em struct type}
+A {\em struct declaration} (\Sref{XtenStructs}) introduces a {\em struct type}
 containing all instances of the struct.  The \xcd`Coords` struct below gives
 an immutable position in 3-space: 
 %~~gen ^^^ Types120
@@ -351,11 +337,6 @@ struct Position {
 %
 %~~neg
 
-Structs have many capabilities of classes: they can have methods, implement
-interfaces, and be generic. However, they have certain restrictions; for
-example, they cannot contain mutable (\xcd`var`) fields, or inherit from
-superclasses. There is no \xcd`null` value for structs. Due to these
-restrictions, structs may be implemented more efficiently than objects.
 
 
 \subsection{Interface types}
@@ -611,28 +592,28 @@ class NonGeneric {
 \limitation{ \XtenCurrVer{}'s C++ back end requires generic methods to be
 static or final; the Java back end can accomodate generic instance methods as well. }
 
-Unlike other kinds of variables, type parameters may {\em not} be shadowed.  
-If name \xcd`X` is in scope as a type, \xcd`X` may not be rebound as a type
-variable.  
-
-\begin{ex}
-Neither \xcd`class B` nor \xcd`class C[B]` are allowed in the
-following code, because they both shadow the type variable \xcd`B`.
-%~~gen ^^^ TypesNoShadow
-% package TypesNoShadow;
-% KNOWNFAIL-https://jira.codehaus.org/browse/XTENLANG-2621
-%~~vis
-\begin{xten}
-class A[B] {
-  //ERROR: class B{} 
-  //ERROR: class C[B]{} 
-}
-\end{xten}
-%~~siv
-%
-%~~neg
-\end{ex}
-
+%%yes-they-can%% Unlike other kinds of variables, type parameters may {\em not} be shadowed.  
+%%yes-they-can%% If name \xcd`X` is in scope as a type, \xcd`X` may not be rebound as a type
+%%yes-they-can%% variable.  
+%%yes-they-can%% 
+%%yes-they-can%% \begin{ex}
+%%yes-they-can%% Neither \xcd`class B` nor \xcd`class C[B]` are allowed in the
+%%yes-they-can%% following code, because they both shadow the type variable \xcd`B`.
+%%yes-they-can%% %~~gen ^^^ TypesNoShadow
+%%yes-they-can%% % package TypesNoShadow;
+%%yes-they-can%% % KNOWNFAIL-https://jira.codehaus.org/browse/XTENLANG-2621
+%%yes-they-can%% %~~vis
+%%yes-they-can%% \begin{xten}
+%%yes-they-can%% class A[B] {
+%%yes-they-can%%   //ERROR: class B{} 
+%%yes-they-can%%   //ERROR: class C[B]{} 
+%%yes-they-can%% }
+%%yes-they-can%% \end{xten}
+%%yes-they-can%% %~~siv
+%%yes-they-can%% %
+%%yes-they-can%% %~~neg
+%%yes-they-can%% \end{ex}
+%%yes-they-can%% 
 \subsection{Use of Generics}
 
 An unconstrained type variable \Xcd{X} can be instantiated any type. Within a
@@ -951,7 +932,8 @@ of \xcd`4`, and a very difficult type to express without using \xcd`self`.
 \begin{itemize}
 %~~type~~`~~`~~ ~~ ^^^ Types290
 \item \xcd`String{self != null}` is the type of non-null strings.  \xcd`self`
-      is a special variable available only in constraints; it refers to the
+      is a special variable available only in the constraint of a constrained
+      type. It refers to the 
       datum being constrained, and its type is the type to which the
       constraint is attached.
 \item Suppose that \xcd`Matrix` is a matrix class with  properties \xcd`rows`
@@ -995,11 +977,29 @@ Constraints may refer to immutable values in the local environment:
 %~~siv
 %}}
 %~~neg
-In a variable declaration, the variable itself is in scope in its
-type. For example, \xcd`val nz: Int{nz != 0} = 1;` declares a
+In a \xcd`val` variable declaration, the variable itself is in scope in its
+type, and can be used in constraints.
+
+\begin{ex}
+For example, \xcd`val nz: Int{nz != 0} = 1;` declares a
 non-zero variable \xcd`nz`.
-\bard{This will need to be explained further once the language issues are
-sorted out.}
+In this case, \xcd`nz` could have been declared as
+\xcd`val nz: Int{self != 0} = 1`.  
+%%FAILY-jira-XTENLANG-2779%%  However, some variables can have types that cannot otherwise be expressed in
+%%FAILY-jira-XTENLANG-2779%%  X10 v2.2's type system. \Eg, 
+%%FAILY-jira-XTENLANG-2779%%  %~~gen ^^^ Types6z9j
+%%FAILY-jira-XTENLANG-2779%%  % package Types6z9j;
+%%FAILY-jira-XTENLANG-2779%%  % class Example {
+%%FAILY-jira-XTENLANG-2779%%  %   public static def example() {
+%%FAILY-jira-XTENLANG-2779%%  %~~vis
+%%FAILY-jira-XTENLANG-2779%%  \begin{xten}
+%%FAILY-jira-XTENLANG-2779%%      val a : Array[Int{self!=a.rank}] = null;
+%%FAILY-jira-XTENLANG-2779%%  \end{xten}
+%%FAILY-jira-XTENLANG-2779%%  %~~siv
+%%FAILY-jira-XTENLANG-2779%%  %} } 
+%%FAILY-jira-XTENLANG-2779%%  %~~neg
+\end{ex}
+
 
 %%TYPES-CONSTR-EXP%% We permit variable declarations \xcd"v: T" where \xcd"T" is obtained
 %%TYPES-CONSTR-EXP%% from a dependent type \xcd"C{c}" by replacing one or more occurrences
@@ -1191,16 +1191,25 @@ Given any valuation in which \xcdmath"$v($a$)=$null", both
 and
 \xcdmath"$v($a.b==1 && a.b!=1$)$" 
 are true.  
-This does not contradict logic and mathematics, and it does not
+This does not contradict logic and mathematics, 
+it does not imply that \xcdmath"$v($false$)$" is true (it's not), 
+and it does not
 assert that in X10 there is a number which is both 1 and 2.
 It simply reflects the fact that, while \xcd`==` is similar to mathematical equality in
 many respects, it is ultimately a different operation, and in constraints it
 is given a \xcd`null`-safe interpretation.
 
+
+
+
 From this definition of valuation, we define {\em entailment} in the standard
 way.  Given constraints \xcd`c` and \xcd`d`, we define {\em \xcd`c` entails
 \xcd`d`}, sometimes written \xcdmath"c $\models$ d", if for all valuations
 {$v$} such that \xcdmath"$v($c$)$" is true, \xcdmath"$v($d$)$" is also true. 
+
+\limitationx{} Although nearly-contradictory conjunctions 
+like \xcd`x.a==1 && x.a==2` entail \xcd`x==null`, X10's constraint solver does
+not currently use this rule.  If you want \xcd`x==null`, write \xcd`x==null`.  
 
 Subtyping of constrained types is defined in terms of entailment. 
 \xcdmath"S[S1,$\ldots$, Sm]{c}" 
@@ -1277,11 +1286,6 @@ typechecker to fail.
 It is hard to give a plausible example of when X10's algorithm fails, as we
 have not yet observed such a failure in practice for a correct program.  
 
-The entailment algorithm of X10 imposes a certain limit on the number of
-times such types will be unwound.   If this limit is exceeded, the compiler
-will print a warning, and type-checking will fail in a situation where it is
-semantically allowed.  In this case, insert a dynamic cast at the point where
-type-checking failed.  
 
 \limitation{ Support for comparisons of generic type variables is
   limited. This will be fixed in future releases.}
@@ -1346,96 +1350,137 @@ type-checking failed.
 %%PLACE%%
 %%PLACE%%
 
-\subsection{Limitation: Runtime Constraint Erasure}
+\subsection{Limitation: Generics and Constraints at Runtime}
 \label{sect:RuntimeConstraintErasure}
 \index{cast!to generic type}
 
-The X10 runtime does not maintain a representation of constraints.
-In many cases, it does not need to.
-If X10 has an object \xcd`x` of some type \xcd`T` around, it can check at
-runtime whether or not \xcd`x` satisfies some constraint \xcd`c`, and hence
-tell if \xcd`x` is a member of \xcd`T{c}`. 
+%%OLD%% \bard{
+%%OLD%% This subsection is trying to explain why X10 doesn't maintain a runtime rep of
+%%OLD%% constraints.  The intended message, which got kinda lost: There are a few possibilities for doing so.  Even if we did one
+%%OLD%% of them, it still wouldn't suffice.
+%%OLD%% }
 
-\begin{ex}
-Although there is no runtime representation of the constrained type 
-\xcd`Int{self==1}`, X10 can generate a (correct) test for membership in it,
-anyhow: 
-%~~gen ^^^ Types3u5w
-% package Types3u5w;
-% class Example {
-%~~vis
-\begin{xten}
-static def example(n:Int) {
-  val b = (n instanceof Int{self == 1});
-  assert b == (n == 1); 
-}
-\end{xten}
-%~~siv
-% }
-% class Hook{ def run() {Example.example(0); Example.example(1);
-% Example.example(2); return true; } }
-%~~neg
-\end{ex}
+The X10 runtime does not maintain a representation of constraints as part of
+the runtime representation of a type.  While there various approaches which
+could be used,  they would require far higher prices in space or time than
+they are worth.  A representation suitable for one use of types
+(such as keeping a closure for testing membership in the type) is unsuitable
+for others (such as determining if one type is a subtype of another).
+Furthermore, it would be necessary to compute entailment at runtime, which is
+currently impractical.  
 
-However, in cases where there is no object of type \xcd`T` around, there's
-nothing that can be checked. For example, X10 cannot tell -- and in fact no
-computer program can tell --  whether an
-instance of a function type 
-\begin{xtenmath}
-(Int)=>Int
-\end{xtenmath}
-(unary functions returning
-integers) is actually an instance of a more specific type
-\begin{xtenmath}
-(Int)=>Int{self!=0}
-\end{xtenmath}
-(unary functions returning non-zero integers).
 
-In other cases, there might or might not be an object of type \xcd`T`, and X10
-cannot tell until runtime.  Consider an array \xcd`a:Array[T]`.  If \xcd`a` is
-nonempty, there is an instance of \xcd`T` at hand, and testing it for
-constraints would be possible though potentially quite expensive. 
-But \xcd`a` might be an
-empty array, and testing its element type would be impossible. 
+
+
+
+
+
+
+
+
+
+
+
+%%OLD%% In many cases, it does not need to.
+%%OLD%% If X10 has an object \xcd`x` of some type \xcd`T` around, it can check at
+%%OLD%% runtime whether or not \xcd`x` satisfies some constraint \xcd`c`, and hence
+%%OLD%% tell if \xcd`x` is a member of \xcd`T{c}`. 
+%%OLD%% 
+%%OLD%% \begin{ex}
+%%OLD%% Although there is no runtime representation of the constrained type 
+%%OLD%% \xcd`Int{self==1}`, X10 can generate a (correct) test for membership in it,
+%%OLD%% anyhow: 
+%%OLD%% %~~gen ^^^ Types3u5w
+%%OLD%% % package Types3u5w;
+%%OLD%% % class Example {
+%%OLD%% %~~vis
+%%OLD%% \begin{xten}
+%%OLD%% static def example(n:Int) {
+%%OLD%%   val b = (n instanceof Int{self == 1});
+%%OLD%%   assert b == (n == 1); 
+%%OLD%% }
+%%OLD%% \end{xten}
+%%OLD%% %~~siv
+%%OLD%% % }
+%%OLD%% % class Hook{ def run() {Example.example(0); Example.example(1);
+%%OLD%% % Example.example(2); return true; } }
+%%OLD%% %~~neg
+%%OLD%% \end{ex}
+%%OLD%% 
+%%OLD%% However, in cases where there is no object of type \xcd`T` around, there's
+%%OLD%% nothing that can be checked. For example, X10 cannot tell -- and in fact no
+%%OLD%% computer program can tell --  whether an
+%%OLD%% instance of a function type 
+%%OLD%% \begin{xtenmath}
+%%OLD%% (Int)=>Int
+%%OLD%% \end{xtenmath}
+%%OLD%% (unary functions returning
+%%OLD%% integers) is actually an instance of a more specific type
+%%OLD%% \begin{xtenmath}
+%%OLD%% (Int)=>Int{self!=0}
+%%OLD%% \end{xtenmath}
+%%OLD%% (unary functions returning non-zero integers).
+%%OLD%% 
+%%OLD%% In other cases, there might or might not be an object of type \xcd`T`, and X10
+%%OLD%% cannot tell until runtime.  Consider an array \xcd`a:Array[T]`.  If \xcd`a` is
+%%OLD%% nonempty, there is an instance of \xcd`T` at hand, and testing it for
+%%OLD%% constraints would be possible though potentially quite expensive. 
+%%OLD%% But \xcd`a` might be an
+%%OLD%% empty array, and testing its element type would be impossible. 
+%%OLD%% 
+%%OLD%% \bard{
+%%OLD%% If you had an Array[Any] and asked if it instanceof Array[Int] -- even if it
+%%OLD%% was currently full of integers -- you'd get a wrong answer.  You'd expect in
+%%OLD%% general: 
+%%OLD%% if (x instanceof T) 
+%%OLD%%   val xt :T = x as T
+%%OLD%%   ...
+%%OLD%% to work. But it won't, if you cast an x:Array[Any] into an xt:Array[Int],
+%%OLD%% store Booleans into it through x, and take them out via xt and expect them to
+%%OLD%% be Ints.  
+%%OLD%% Ultimately, being a value of a parameterized type is a definitional matter,
+%%OLD%% not a computational one.  
+%%OLD%% }
+%%OLD%% 
 
 Rather than pay the runtime costs for keeping and manipulating constraints
 (which can be considerable), X10 omits them.
 However, this renders certain type checks uncertain: X10 needs some
-information at runtime, but does not have it.  
-Specifically, all casts to instances of generic types are forbidden.  
+information at runtime, but does not have it.    In particular, {\bf casts to
+instances of generic types, and to type variables, are potentially troublesome.}
+
 
 \begin{ex}
-The following code  needs to be, and is, statically
-rejected.  It constructs an array \xcd`a` of \xcd`Int{self==3}`'s -- integers
+The following code illustrates the dangers of casting to generic types. 
+It constructs an array \xcd`a` of \xcd`Int{self==3}`'s -- integers
 which 
 are statically known to be 3. 
 The only number that can be stored into \xcd`a` is \xcd`3`.  
-Then (in the line that is rejected) it attempts to trick the compiler into
+Then it tricks the ocmpiler into 
 thinking that it is an array of \xcd`Int`, without restriction on the
 elements, giving it the name \xcd`b` at that type.  
 The cast \xcd`aa as Array[Int]` is a cast to an instance of a generic type,
-and hence is forbidden. 
+which is the problem. 
 
-But, if that cast were allowed to work, it could store \xcd`1` into the array
-under the alias 
+But, itc an store any \xcd`Int` into the elements of 
 \xcd`b`, thereby violating 
 the invariant that all the elements of the array are 3.  
 This could lead to program failures, as illustrated by the failing assertion.  
+
+With the \xcd`-VERBOSE` compiler option, X10 prints a warning about the
+declaration of \xcd`b`.  
 \begin{xten}
   val a = new Array[Int{self==3}](0..10, 3);
   // a(0) = 1; would be illegal
   a(0) = 3; // LEGAL
   val aa = a as Any;
-  /* THE FOLLOWING IS A STATIC ERROR:
-  val b = aa as Array[Int];
+  val b = aa as Array[Int](1); // WARNED with -VERBOSE
   b(0) = 1;
   val x : Int{self==3} = a(0);
-  assert x == 3 : "This would fail at runtime.";
-  */
+  assert x == 3 : "This fails at runtime.";
 \end{xten}
 \end{ex}
 
-\subsection{Stripped Generic Casts}
 \label{sect:StrippedGenericCasts}
 
 Since constraints are not preserved at runtime, \xcd`instanceof` and \xcd`as`
@@ -1490,7 +1535,8 @@ class Example{
      assert (pea instanceof Pea{p==1});
      assert (pea as Pea{p==1}).p == 1;
      assert ! (pea instanceof Pea{p==2}); 
-     // 'val x = pea as Pea{p==2};' throws a FailedDynamicCheckException.
+     // 'val x = pea as Pea{p==2};' 
+     // throws a FailedDynamicCheckException.
 
      // But the genericized versions don't do the same thing:
      assert Generic.inst[Pea{p==1}](pea);
@@ -1629,7 +1675,9 @@ Default values, or lack of them, is defined thus:
       \xcd`Float`, \xcd`Double`) all have default value 0.
 \item \xcd`Boolean` has default value \xcd`false`.
 \item \xcd`Char` has default value \xcd`'\0'`.
-\item Struct types other than those listed above have no default value.
+\item If every field of a struct type \xcd`T` has a default value, then
+      \xcd`T` has a default value.  If any field of \xcd`T` has no default
+      value, then \xcd`T` does not.  (\Sref{sect:DefaultValuesOfStructs})
 \item A function type has a default value of \xcd`null`.
 \item A class type has a default value of \xcd`null`.
 \item The constrained type \xcd`T{c}` has the same default value as \xcd`T` if
