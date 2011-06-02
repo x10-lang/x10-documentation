@@ -915,7 +915,7 @@ In most languages, there is simply no way to say these things
 statically.  Programmers must made do with comments, \xcd`assert`
 statements, and dynamic tests.  X10 programs can do better, with {\em
   constraints} on types, and guards on class, method and type
-definitions,
+definitions.
 
 A constraint is a boolean expression \xcd`e` attached to a basic type \xcd`T`,
 written \xcd`T{e}`.  (Only a limited selection of boolean expressions is
@@ -927,15 +927,14 @@ type \xcd`T` which is being constrained.  For example, \xcd`Int{self == 4}` is
 the type of \xcd`Int`s which are equal to 4 -- the best possible description
 of \xcd`4`, and a very difficult type to express without using \xcd`self`.  
 
+\bard{The following section of examples got moved and recombined, and needs to
+be checked for consistency, sensibility, non-duplication, and libel.}
+
 \begin{ex}
 
 \begin{itemize}
 %~~type~~`~~`~~ ~~ ^^^ Types290
-\item \xcd`String{self != null}` is the type of non-null strings.  \xcd`self`
-      is a special variable available only in the constraint of a constrained
-      type. It refers to the 
-      datum being constrained, and its type is the type to which the
-      constraint is attached.
+\item \xcd`String{self != null}` is the type of non-null strings. 
 \item Suppose that \xcd`Matrix` is a matrix class with  properties \xcd`rows`
       and \xcd`cols`.  
 %~~type~~`~~`~~ ~~class Matrix(rows:Int,cols:Int){} ^^^ Types300
@@ -999,6 +998,99 @@ In this case, \xcd`nz` could have been declared as
 %%FAILY-jira-XTENLANG-2779%%  %} } 
 %%FAILY-jira-XTENLANG-2779%%  %~~neg
 \end{ex}
+
+\subsection{Examples of Constraints}
+\label{ConstraintExamples}
+
+Example of entailment and subtyping involving constraints.
+\begin{itemize}
+\item \xcd`Int{self == 3} <: Int{self != 14}`.  The only value of
+      \xcd`Int{self ==3}` is $3$.  All integers but $14$ are members of
+      \xcd`Int{self != 14}`, and in particular $3$ is.  
+\item Suppose we have classes \xcd`Child <: Person`, and \xcd`Person` has a
+      \xcd`ssn:Long` property.  If \xcd`rhys : Child{ssn == 123456789}`, then
+      \xcd`rhys` is also a \xcd`Person`.  
+      \xcd`rhys`'s \xcd`ssn` field is the same, \xcd`123456789`, whether 
+      \xcd`rhys` is regarded as a \xcd`Child` or a \xcd`Person`.  
+      Thus, 
+      \xcd`rhys : Person{ssn==123456789}` as well.  
+      So, 
+\begin{xtenmath}
+Child{ssn == 123456789} <: Person{ssn == 123456789}.
+\end{xtenmath}
+\item Furthermore, since \xcd`123456789 != 555555555`, 
+      is is clear that 
+      \xcd`rhys : Person{ssn != 555555555}`.  
+      So, 
+\begin{xtenmath}
+Child{ssn == 123456789} <: Person{ssn != 555555555}.  
+\end{xtenmath}
+\item \xcd`T{e} <: T` for any type \xcd`T`.  That is, if you have a value
+      \xcd`v` of some base type \xcd`T` which satisfied \xcd`e`, then \xcd`v`
+      is of that base type \xcd`T` (with the constraint ignored).
+\item If \xcd`A <: B`, then \xcd`A{c} <: B{c}` for every constraint \xcd`{c}`
+      for which \xcd`A{c}` and \xcd`B{c}` are defined.  That is, if every
+      \xcd`A` is also a \xcd`B`, and \xcd`a : A{c}`, then 
+      \xcd`a` is an \xcd`A` and \xcd`c` is true of it. So \xcd`a` is also a
+      \xcd`B` (and \xcd`c` is still true of 
+      it), so \xcd`a : B{c}`.  
+\end{itemize}
+
+Constraints can be used to express simple relationships between objects,
+enforcing some class invariants statically.  For example, in geometry, a line
+is determined by two {\em distinct} points; a \xcd`Line` struct can specify the
+distinctness in a type constraint:\footnote{We call them
+\xcd`Position` to avoid confusion with the built-in class \xcd`Point`. 
+Also, \xcd`Position` is a struct rather than a class so that the non-equality
+test \xcd`start != end` compares the coordinates.  If \xcd`Position` were a
+class, \xcd`start != end` would check for different \xcd`Position` objects,
+which might have the same coordinates.
+}
+
+
+%~~gen ^^^ Types340
+% package triangleExample.partOne;
+%~~vis
+\begin{xten}
+struct Position(x: Int, y: Int) {}
+struct Line(start: Position, end: Position){start != end}
+  {}
+\end{xten}
+
+%~~siv
+%~~neg
+
+Extending this concept, a \xcd`Triangle` can be defined as a figure with three
+line segments which match up end-to-end.  Note that the degenerate case in
+which two or three of the triangle's vertices coincide is excluded by the
+constraint on \xcd`Line`.  However, not all degenerate cases can be excluded
+by the type system; in particular, it is impossible to check that the three
+vertices are not collinear. 
+
+%~~gen ^^^ Types350
+%package triangleExample.partTwo;
+% struct Position(x: Int, y: Int) {
+%    def this(x:Int,y:Int){property(x,y);}
+%    }
+% class Line(start: Position, 
+%            end: Position{self != start}) {}
+% 
+%~~vis
+\begin{xten}
+struct Triangle 
+ (a: Line, 
+  b: Line{a.end == b.start}, 
+  c: Line{b.end == c.start && c.end == a.start})  
+ {}
+\end{xten}
+%~~siv
+%
+%~~neg
+
+The \xcd`Triangle` class automatically gets a ternary constructor which takes
+suitably constrained \xcd`a`, \xcd`b`, and \xcd`c` and produces a new
+triangle. 
+
 
 
 %%TYPES-CONSTR-EXP%% We permit variable declarations \xcd"v: T" where \xcd"T" is obtained
@@ -1262,35 +1354,37 @@ entails \xcd`false` if \xcd`a`, \xcd`b`, and \xcd`c` are of type
 Similarly, although \xcd`a.b==1 && a.b==2` entails \xcd`a==null`, the
 constraint solver does not deduce this fact. 
 
+\forvijay{You wrote ``Need discussion of acyclicity''.  Could I have a bit
+more detail?}
 
-Certain other constraint entailments are prohibitively expensive to calculate.  The issues
-concern constraints that connect different levels of recursively-defined
-types, such as the following.  
-%~~gen ^^^ Types330
-% package Types.Entailment.EntailFail;
-%~~vis
-\begin{xten}
-class Listlike(x:Int) {
-  val kid : Listlike{self.x == this.x};
-  def this(x:Int, kid:Listlike) { 
-     property(x); 
-     this.kid = kid as Listlike{self.x == this.x};}
-}
-\end{xten}
-%~~siv
-%
-%~~neg
-There is nothing wrong with \xcd`Listlike` itself, or with most uses of it;
-however, a sufficiently complicated use of it could, in principle, cause X10's
-typechecker to fail. 
-It is hard to give a plausible example of when X10's algorithm fails, as we
-have not yet observed such a failure in practice for a correct program.  
-
-
-\limitation{ Support for comparisons of generic type variables is
-  limited. This will be fixed in future releases.}
-% //, and existential quantification over typed variables.
-
+%%NOW-GONE%% Certain other constraint entailments are prohibitively expensive to calculate.  The issues
+%%NOW-GONE%% concern constraints that connect different levels of recursively-defined
+%%NOW-GONE%% types, such as the following.  
+%%NOW-GONE%% %~~gen ^^^ Types330
+%%NOW-GONE%% % package Types.Entailment.EntailFail;
+%%NOW-GONE%% %~~vis
+%%NOW-GONE%% \begin{xten}
+%%NOW-GONE%% class Listlike(x:Int) {
+%%NOW-GONE%%   val kid : Listlike{self.x == this.x};
+%%NOW-GONE%%   def this(x:Int, kid:Listlike) { 
+%%NOW-GONE%%      property(x); 
+%%NOW-GONE%%      this.kid = kid as Listlike{self.x == this.x};}
+%%NOW-GONE%% }
+%%NOW-GONE%% \end{xten}
+%%NOW-GONE%% %~~siv
+%%NOW-GONE%% %
+%%NOW-GONE%% %~~neg
+%%NOW-GONE%% There is nothing wrong with \xcd`Listlike` itself, or with most uses of it;
+%%NOW-GONE%% however, a sufficiently complicated use of it could, in principle, cause X10's
+%%NOW-GONE%% typechecker to fail. 
+%%NOW-GONE%% It is hard to give a plausible example of when X10's algorithm fails, as we
+%%NOW-GONE%% have not yet observed such a failure in practice for a correct program.  
+%%NOW-GONE%% 
+%%NOW-GONE%% 
+%%NOW-GONE%% \limitation{ Support for comparisons of generic type variables is
+%%NOW-GONE%%   limited. This will be fixed in future releases.}
+%%NOW-GONE%% % //, and existential quantification over typed variables.
+%%NOW-GONE%% 
 %%TYPES-CONSTR-EXP%% \emph{
 %%TYPES-CONSTR-EXP%% Subsequent implementations are intended to support boolean algebra,
 %%TYPES-CONSTR-EXP%% arithmetic, relational algebra, etc., to permit types over regions and
@@ -1561,97 +1655,6 @@ and operate efficiently on them, in other cases it would not.
 
 
 
-\subsection{Example of Constraints}
-\label{ConstraintExamples}
-
-Example of entailment and subtyping involving constraints.
-\begin{itemize}
-\item \xcd`Int{self == 3} <: Int{self != 14}`.  The only value of
-      \xcd`Int{self ==3}` is $3$.  All integers but $14$ are members of
-      \xcd`Int{self != 14}`, and in particular $3$ is.  
-\item Suppose we have classes \xcd`Child <: Person`, and \xcd`Person` has a
-      \xcd`ssn:Long` property.  If \xcd`rhys : Child{ssn == 123456789}`, then
-      \xcd`rhys` is also a \xcd`Person`.  
-      \xcd`rhys`'s \xcd`ssn` field is the same, \xcd`123456789`, whether 
-      \xcd`rhys` is regarded as a \xcd`Child` or a \xcd`Person`.  
-      Thus, 
-      \xcd`rhys : Person{ssn==123456789}` as well.  
-      So, 
-\begin{xtenmath}
-Child{ssn == 123456789} <: Person{ssn == 123456789}.
-\end{xtenmath}
-\item Furthermore, since \xcd`123456789 != 555555555`, 
-      is is clear that 
-      \xcd`rhys : Person{ssn != 555555555}`.  
-      So, 
-\begin{xtenmath}
-Child{ssn == 123456789} <: Person{ssn != 555555555}.  
-\end{xtenmath}
-\item \xcd`T{e} <: T` for any type \xcd`T`.  That is, if you have a value
-      \xcd`v` of some base type \xcd`T` which satisfied \xcd`e`, then \xcd`v`
-      is of that base type \xcd`T` (with the constraint ignored).
-\item If \xcd`A <: B`, then \xcd`A{c} <: B{c}` for every constraint \xcd`{c}`
-      for which \xcd`A{c}` and \xcd`B{c}` are defined.  That is, if every
-      \xcd`A` is also a \xcd`B`, and \xcd`a : A{c}`, then 
-      \xcd`a` is an \xcd`A` and \xcd`c` is true of it. So \xcd`a` is also a
-      \xcd`B` (and \xcd`c` is still true of 
-      it), so \xcd`a : B{c}`.  
-\end{itemize}
-
-Constraints can be used to express simple relationships between objects,
-enforcing some class invariants statically.  For example, in geometry, a line
-is determined by two {\em distinct} points; a \xcd`Line` struct can specify the
-distinctness in a type constraint:\footnote{We call them
-\xcd`Position` to avoid confusion with the built-in class \xcd`Point`. 
-Also, \xcd`Position` is a struct rather than a class so that the non-equality
-test \xcd`start != end` compares the coordinates.  If \xcd`Position` were a
-class, \xcd`start != end` would check for different \xcd`Position` objects,
-which might have the same coordinates.
-}
-
-
-%~~gen ^^^ Types340
-% package triangleExample.partOne;
-%~~vis
-\begin{xten}
-struct Position(x: Int, y: Int) {}
-struct Line(start: Position, end: Position){start != end}
-  {}
-\end{xten}
-
-%~~siv
-%~~neg
-
-Extending this concept, a \xcd`Triangle` can be defined as a figure with three
-line segments which match up end-to-end.  Note that the degenerate case in
-which two or three of the triangle's vertices coincide is excluded by the
-constraint on \xcd`Line`.  However, not all degenerate cases can be excluded
-by the type system; in particular, it is impossible to check that the three
-vertices are not collinear. 
-
-%~~gen ^^^ Types350
-%package triangleExample.partTwo;
-% struct Position(x: Int, y: Int) {
-%    def this(x:Int,y:Int){property(x,y);}
-%    }
-% class Line(start: Position, 
-%            end: Position{self != start}) {}
-% 
-%~~vis
-\begin{xten}
-struct Triangle 
- (a: Line, 
-  b: Line{a.end == b.start}, 
-  c: Line{b.end == c.start && c.end == a.start})  
- {}
-\end{xten}
-%~~siv
-%
-%~~neg
-
-The \xcd`Triangle` class automatically gets a ternary constructor which takes
-suitably constrained \xcd`a`, \xcd`b`, and \xcd`c` and produces a new
-triangle. 
 
 \section{Default Values}
 \index{default value}
