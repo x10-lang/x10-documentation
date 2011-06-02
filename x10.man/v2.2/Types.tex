@@ -204,13 +204,16 @@ listed formal parameters and returning a result of {\em Type}.  In
 The closely-related void function type 
 {\em \xcd`(` Formals{$^?$} \xcd`) =>`  \xcd`void`}  takes the listed
 parameters and returns no value.
-For example, 
+
+\begin{ex}
 \begin{xtenmath}
 \xcd`(x:Int) => Int{self != x}` 
 \end{xtenmath}
 is the type of integer-valued functions which have no fixed points -- that is,
 for which the output is an integer different from the input.
 An example of such a function is \xcd`(x:Int) => x+1`.
+\end{ex}
+
 For fundamental reasons, X10 --- or any other computer program --- cannot
 tell in general whether a function has any fixed points or not.  So, X10
 programs using such types must prove to X10 that they are correct. Often this
@@ -228,6 +231,7 @@ will involve a run-time check, expressed as a cast, such as:
 %~~neg
 
 
+\bard{Rewrite the following para}
 The names of the formal parameters are bound in the type, and may be changed
 consistently in the usual way without modifying the type.  
 For example, \\
@@ -475,6 +479,7 @@ class Coords(x: Int, y: Int) {
 %~~siv
 %~~neg
 \end{ex}
+\bard{Replace this by something that is actually true}
 Properties, unlike other public \xcd`val` fields, can be used  
 at compile time in {constraints}. This allows us
 to specify subtypes based on properties, by appending a boolean expression to
@@ -616,9 +621,9 @@ static or final; the Java back end can accomodate generic instance methods as we
 %%yes-they-can%% 
 \subsection{Use of Generics}
 
-An unconstrained type variable \Xcd{X} can be instantiated any type. Within a
-generic struct or class, all the operations of \Xcd{Any} are available on a
-variable of type unconstrained \Xcd{X}. Additionally, variables of type
+An unconstrained type variable \Xcd{X} can be instantiated by any type. All
+the operations of \Xcd{Any} are available on a 
+variable of type \Xcd{X}. Additionally, variables of type
 \Xcd{X} may be used with \Xcd{==, !=}, in \Xcd{instanceof}, and casts.  
 
 If a type variable is constrained, the operations implied by its constraint
@@ -721,7 +726,7 @@ until the type no longer contains a defined type or a predetermined
 compiler limit is reached (in which case the compiler declares an
 error). Thus, recursive type definitions are not permitted.
 
-Thus type definitions are considered applicative and not generative --
+Type definitions are considered applicative and not generative --
 they do not define new types, only aliases for existing types.
 
 \label{TypeDefGuard}
@@ -738,17 +743,19 @@ However, \xcd`T()` is not allowed. If there is an argument list, it must be
 nonempty.  This avoids a possible confusion between 
 \xcd`type T = ...` and \xcd`type T() = ...`.  
 
-A type definition for a type \xcd`T` must appear: 
+A type definition for a type \xcd`T` can appear: 
 \begin{itemize}
 \item As a top-level definition in a file named \xcd`T.x10`; or
 \item As a static member in a container definition; or
-\item In a block statment.
+\item In a block statement. \bard{check this}
 \end{itemize}
 
 
 \paragraph{Use of type definitions in constructor invocations}
+
+\bard{Vijay asks, ``what about interface and anonymous class/structs?''}
 If a type definition has no type parameters and no value
-parameters and is an alias for a class type, a \xcd"new"
+parameters and is an alias for a container type, a \xcd"new"
 expression may be used to create an instance of the class using
 the type definition's name.
 Given the following type definition:
@@ -835,12 +842,13 @@ var example : Vec(78);
 %~~neg
 
 %
-The following examples are legal type definitions, given \xcd`import x10.util.*`:
+The following examples are legal type definitions, 
 %~~gen ^^^ Types270
 % package Types.TypeDef.Examples;
-% import x10.util.*;
+% 
 %~~vis
 \begin{xten}
+import x10.util.*;
 class TypeExamples {
   static type StringSet = Set[String];
   static type MapToList[K,V] = Map[K,List[V]];
@@ -911,12 +919,17 @@ has rows (so they can be multiplied).  In the multicore setting, one
 might wish to know that two values are located at the same processor,
 or that one is located at the same place as the current computation.
 
-In most languages, there is simply no way to say these things
+In most languages, there is simply no way to say and check these things
 statically.  Programmers must made do with comments, \xcd`assert`
 statements, and dynamic tests.  X10 programs can do better, with {\em
   constraints} on types, and guards on class, method and type
 definitions.
 
+\bard{Vijay said we neet distinguish between a {\bf constraint expression}
+(which can appear in places like a property method definition or a guard), 
+and a {\bf constrained type} like \xcd`T{c}`.  That is, a constraint doesn't
+need to be {\bf attached}.
+}
 A constraint is a boolean expression \xcd`e` attached to a basic type \xcd`T`,
 written \xcd`T{e}`.  (Only a limited selection of boolean expressions is
 available.)  The values of type \xcd`T{e}` are the values of \xcd`T` for which
@@ -1120,6 +1133,13 @@ conjoined constraints: \xcd`S{c,d}` in turn is the same as \xcd`S{c && d}`.
 \index{expression!allowed in constraint}
 \index{expression!constraint}
 
+\forvijay{You wrote ``self vs. this in super type, interfaces, class
+invariant''.  I think we decided that self could appear there and this
+couldn't, and we'd write a polite error message explaining that?  Since the
+restriction on it in those places is the same as the restriction on self.  
+If you confirm this (or deny it), I'll write a JIRA about it.
+}
+
 Only a few kinds of expressions can appear in constraints.  For fundamental
 reasons of mathematical logic, the more kinds of expressions that can appear
 in constraints, the harder it is to compute the essential properties of
@@ -1138,12 +1158,14 @@ Only the following forms of expression are allowed in constraints.
 \item Accessible, immutable (\xcd`val`) variables and parameters;
 % \item Accessible and immutable fields of objects;
 % \item Properties of the type being constrained;
-\item \xcd`this`, if the constraint is in a place where \xcd`this` is defined;
-\item \xcd`here`, if the constraint is in a place where \xcd`here` is defined;
+\item \xcd`this`, if the constraint is at a point in the program where \xcd`this` is defined;
+\item \xcd`here`, if the constraint is at a point in the program where \xcd`here` is defined;
 \item \xcd`self`;
 \item A field selection expression \xcd`t.f`, where \xcd`t` is a value
       expression allowed in constraints, and \xcd`f` is a field of \xcd`t`'s
-      type.    
+      type.   
+\bard{Vijay wrote ``However, self can be the receiver only for properties and
+prop methods} 
  \item Invocations of property methods,  \xcd`p(a,b,...,c)` or
       \xcd`a.p(b,c,...d)`, where the receiver and arguments must be
        value expressions acceptable in constraints, as long as the expansion
@@ -1175,6 +1197,7 @@ all value expressions are of the forms which may appear in constraints:
 \item Testing a type for a default: \Xcd{T haszero}.
 \end{enumerate}
 
+\forvijay{You wrote ``not true'' by this.  What, then, is true?}
 All variables appearing in a constraint expression must be visible wherever
 that expression can used.  \Eg, properties and public fields of an object are
 always permitted, but private fields of an object can only constrain private
