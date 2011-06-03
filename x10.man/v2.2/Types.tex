@@ -231,9 +231,15 @@ will involve a run-time check, expressed as a cast, such as:
 %~~neg
 
 
-\bard{Rewrite the following para}
-The names of the formal parameters are bound in the type, and may be changed
-consistently in the usual way without modifying the type.  
+
+The names of the formal parameters are bound in the type; the scope of a
+formal \xcdmath"x$i$" is its type \xcdmath"T$_i$", all \xcdmath"T$j$" with
+$j>i$, the constraint \xcd`c`, and the result type \xcd`T`.  
+For example, the type 
+\xcd`(n:Int)=>Int{self!=n}`
+describes integer-valued functions that have no fixed point
+
+
 For example, \\
 \xcd`(a:Int, b:Int{self!=a})=>Int{self!=a, self!=b}` 
 and \\

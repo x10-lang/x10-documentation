@@ -9,7 +9,11 @@ In this section, \xcd`S`, \xcd`T`, and
 \xcdmath"T$_i$" range over types.  \xcd`X` ranges over type variables, 
 \xcd`M` and \xcdmath"x$_i$" over identifiers, 
 \xcd`c` over constraint expressions (\Sref{ConstrainedTypes}), 
-and \xcdmath"e$_i$" over expressions. 
+and \xcdmath"e$_i$" over expressions.\footnote{The actual grammar, as given in 
+\Sref{Grammar}, is slightly more intricate for technical reasons.  
+The set of types is the same, however, and this grammar is better for
+exposition.} 
+
 
 \begin{bbgrammar}
 Type \: \xcd`T` \\
@@ -20,6 +24,8 @@ Type \: \xcd`T` \\
   \: \xcd`F` & (5)\\
   \: \xcd`M` \xcd"["\xcd`T`$_1$ \xcd`,` $\ldots$ \xcd`,` \xcd`T`$_n$ \xcd`]` 
        \xcd`(` e$_1$ \xcd`,`$\ldots$\xcd`,` e$_k$ \xcd`)` & (6) \\
+  \: \xcd`M` 
+       \xcd`(` e$_1$ \xcd`,`$\ldots$\xcd`,` e$_k$ \xcd`)` & (6) \\
 \xcd`F` \: \xcd`(` \xcd`x`$_1$ \xcd`:` \xcd`T`$_1$ \xcd`,`$\ldots$\xcd`,`
              \xcd`x`$_n$ \xcd`:` \xcd`T`$_n$ \xcd`) {` c  \xcd`} => ` \xcd`T` \\
 
@@ -27,3 +33,25 @@ Type \: \xcd`T` \\
              \xcd`x`$_n$ \xcd`:` \xcd`T`$_n$ \xcd`) {` c  \xcd`} => ` \xcd`void` 
 \end{bbgrammar}
 
+The types mean: 
+\begin{enumerate}
+\item A type given by an identifier \xcd`M`, like \xcd`Point`, \xcd`Int`, or
+      \xcd`int`, can refer to a unit -- a class, struct type, or interface.
+      \Sref{nuUnitType}.
+      Or, it can refer to a name defined by a \xcd`type` statement,
+      \Sref{nuTypedef}; \eg, \xcd`int` is an alias for the type \xcd`Int`. 
+\item A type variable \xcd`X` refers to a parameter type of a generic
+      (parameterized) type, as described in \Sref{nuParameterizedType}.
+\item A type \xcd`M[T,U]` is an instance of a generic type, also described in 
+      \Sref{nuParameterizedType}.
+\item A type \xcd`T.U` is a qualified type: a unit \xcd`U` appearing inside of
+      the unit \xcd`T`, as described in \Sref{nuQualifiedTypes}.
+\item A type \xcd`F`, such as \xcd`(x:Int){true}=>Int`, is a function type.
+      Its values are functions, \eg, taking integers to integers. They are
+      described in \Sref{nuFunctionTypes}.
+\item A term \xcd`M[T](e)` is an instance of a parameterized type definition.  
+      \eg, \xcd`Array[Int](1)` is the type of one-dimensional arrays of
+      integers, and \xcd`Region(1)` is the type of one-dimensional regions of
+      points (\Sref{XtenRegions}).  
+      This is described in \Sref{nuTypedef}.
+\end{enumerate}
