@@ -1,7 +1,7 @@
 \chapter{Types}
 \label{XtenTypes}\index{types}
 
-\input{ReTypes}
+
 
 {}\Xten{} is a {\em strongly typed} object-oriented language: every
 variable and expression has a type that is known at compile-time.
@@ -88,74 +88,94 @@ of subtyping in X10.
 \section{Type System}
 \index{type system}
 
-\bard{This section gets rewritten pretty much completely}
-The types in X10 are as follows.  
 
-These are the {\em elementary} types. Other
-syntactic forms for types exist, but they are simply abbreviations for types
-in the following system.  For example, \xcd`Array[Int](1)` is the type of
-one-dimensional integer-valued arrays; it is an abbreviation for
-\xcd`Array[Int]{rank==1}`.\\
+X10 has several sorts of types. 
+In this section, \xcd`S`, \xcd`T`, and 
+\xcdmath"T$_i$" range over types.  \xcd`X` ranges over type variables, 
+\xcd`M` and \xcdmath"x$_i$" over identifiers, 
+\xcd`c` over constraint expressions (\Sref{ConstrainedTypes}), 
+and \xcdmath"e$_i$" over expressions.  
+For compactness, slanted brackets are used to indicate optional elements.  
+\footnote{The actual grammar, as given in 
+\Sref{Grammar}, is slightly more intricate for technical reasons.  
+The set of types is the same, however, and this grammar is better for
+exposition.} 
 
-% remove \refstepcounter{equation}
-% snag the argument of \label{X}
-% change the (\arabic{equation}) into (\ref{X})
 
-%##(Type FunctionType ConstrainedType
 \begin{bbgrammar}
-%(FROM #(prod:Type)#)
-                Type \: FunctionType & (\ref{prod:Type}) \\
-                     \| ConstrainedType \\
-                     \| VoidType \\
-%(FROM #(prod:FunctionType)#)
-        FunctionType \: TypeParams\opt \xcd"(" FormalList\opt \xcd")" Guard\opt Offers\opt \xcd"=>" Type & (\ref{prod:FunctionType}) \\
-%(FROM #(prod:ConstrainedType)#)
-     ConstrainedType \: NamedType & (\ref{prod:ConstrainedType}) \\
-                     \| AnnotatedType \\
+Type \: \xcd`T` \\
+\xcd`T` \: \xcd`M`  & (1)\\
+  \| \xcd`X` & (2) \\
+  \| \xcd`M` \xcd"["\xcd`T`$_1$ \xcd`,` $\ldots$ \xcd`,` \xcd`T`$_n$ \xcd`]` & (3)\\
+  \| \xcd`T`$_1$  \xcd`.` \xcd`T`$_2$ & (4)\\
+  \| \xcd`F` & (5)\\
+  \| \xcd`M` [\xcd"["\xcd`T`$_1$ \xcd`,` $\ldots$ \xcd`,` \xcd`T`$_n$ \xcd`]` ]
+       \xcd`(` e$_1$ \xcd`,`$\ldots$\xcd`,` e$_k$ \xcd`)` & (6) \\
+  \| \xcd`T{c}` & (7) \\
+\xcd`F` \: \xcd`(` [\xcd`x`$_1$ \xcd`:`] \xcd`T`$_1$ \xcd`,`$\ldots$\xcd`,`
+             [\xcd`x`$_n$ \xcd`:`] \xcd`T`$_n$ \xcd`)` [ \xcd`{` c  \xcd`}` ] \xcd` => ` \xcd`T` \\
+  \| \xcd`(` [\xcd`x`$_1$ \xcd`:`] \xcd`T`$_1$ \xcd`,`$\ldots$\xcd`,`
+             [\xcd`x`$_n$ \xcd`:`] \xcd`T`$_n$ \xcd`)` [ \xcd`{` c  \xcd`}` ] \xcd` => ` \xcd`void` \\
+
 \end{bbgrammar}
-%##)
 
 
-Types may be given by name. 
-For example, 
-%~~type~~`~~`~~ ~~ ^^^ Types10
-\xcd`Int`
-is the type of 32-bit integers.
-Given a class declaration 
-%~~gen ^^^ Types20
-%package Types.Core.TypeName; 
+A type given by $(1)$ is an identifier \xcd`M`, like \xcd`Point`, \xcd`Int`, or
+\xcd`int`.  It refer to a unit -- a class, struct type, or interface, 
+(\Sref{nuUnitType}).  
+Or, it can refer to a name defined by a \xcd`type` statement
+(\Sref{nuTypedef}); 
+
+\begin{ex}
+\xcd`String` refers to the standard class
+of strings, \xcd`Int` to the standard struct type of integers, 
+and \xcd`Any` to the interface that describes
+all X10 values.  
+\xcd`int` is an alias for the type \xcd`Int`, for the
+comfort of programmers used to other languages in the C family. 
+\end{ex}
+
+
+A type of the form $(2)$, a type variable \xcd`X`, refers to a parameter type
+of a generic (parameterized) type, as described in \Sref{nuParameterizedType}.
+
+\begin{ex}
+The class \xcd`Pair[X]` below provides a simplistic way to keep two things of
+the same type together.\footnote{In practice, most people would use an
+\xcd`Array` rather than making a new \xcd`Pair` class.}  \xcd`Pair[Int]` holds
+two integers; 
+\xcd`Pair[Pair[String]]` holds two pairs of strings.  Within the definition of
+\xcd`Pair`, the type variable \xcd`X` is the parameter type of \xcd`Pair` --
+that is, the type which this pair is a pair of.   
+%~~gen ^^^ ReTypes3b2e
+% package ReTypes3b2e;
 %~~vis
 \begin{xten}
-class Triple { /* ... */ }
+class Pair[X]{
+  public val first : X; 
+  public val second: X;
+  public def this(f:X, s:X) {first = f; second = s;}
+}
 \end{xten}
 %~~siv
 %
 %~~neg
-the identifier \xcd`Triple` may be used as a type.
+\end{ex}
 
-The type {\em TypeName \xcd`[` Types{$^?$} \xcd`]`} is an instance of
-a {\em generic} (or {\em parameterized}) type. 
- For example,
-\xcd`Array[Int]` is the type of arrays of integers. 
-\xcd`HashMap[String,Int]` is the type of hash maps from strings to
-integers.
 
-The type {\em Type \xcd`{` Constraint \xcd`}`} refers to a constrained type.
-{\em Constraint} is a Boolean expression -- written in a limited
-subset of X10 -- describing the acceptable values of the constrained type.
-%~~stmt~~`~~`~~ ~~ ^^^ Types30
-For example, \xcd`var n : Int{self != 0};` guarantees that \xcd`n` is always a
-non-zero integer. 
-%~~stmt~~`~~`~~ ~~class Triple{} ^^^ Types40
-Similarly, \xcd`var x : Triple{x != null};` defines a \xcd`Triple`-valued
-variable \xcd`x` whose value is never null.
 
-The qualified type {\em Type \xcd`.` Type} refers to an instance of a {\em
-nested} type; that is, a class or struct defined inside of another class or
-struct, and holding an implicit reference to the outer.  For example, given
-the type declaration 
-%~~gen ^^^ Types50
-% package Types.Core.Hardcore.Qualified;
+A type of form {$(3)$}, \xcd`M[T,U]`, is a use of a  generic type, also described in 
+\Sref{nuParameterizedType}. 
+The types inside the brackets are the actual parameters corresponding to the
+formal parameters of the parameterized type \xcd`M`.  
+\xcd`Pair[Int]`, above, is an example of a use of the generic type \xcd`Pair`. 
+
+A type of form {$(4)$}, \xcd`T.U`, is a qualified type: a unit \xcd`U` appearing inside of
+the unit \xcd`T`, as described in \Sref{nuQualifiedTypes}.
+
+\begin{ex}
+%~~gen ^^^ Types50f9f
+% package Types50f9f;
 %~~vis
 \begin{xten}
 class Outer {
@@ -171,81 +191,289 @@ then
 %~~type~~`~~`~~ ~~class Outer {class Inner { /* ... */ }} ^^^ Types70
 \xcd`Outer.Inner`.
 
-Type variables, {\em TypeVar}, refer to types that are parameters.  For
-example, the following class defines a cell in a linked list.  
-%~~gen ^^^ Types80
-% package Types.Core.Bore.Lore;
-%~~vis
-\begin{xten}
-class LinkedList[X] {
-  val head : X;
-  val tail : LinkedList[X];
-  def this(head:X, tail:LinkedList[X]) {
-     this.head = head; this.tail = tail;
-  }
-}
-\end{xten}
-%~~siv
-%
-%~~neg
-It doesn't
-matter what type the cell's element is, but it has to have {\em some} type.
-\xcd`LinkedList[Int]` is a linked list of integers.
-\xcd`LinkedList[LinkedList[Byte]]` is a list of lists of bytes.
-Note that \xcd`LinkedList` is {\em not} a usable type -- it is missing a type parameter.
-
-
-
-The function type 
-{\em \xcd`(` Formals{$^?$} \xcd`) =>`  Type} 
-refers to functions taking the
-listed formal parameters and returning a result of {\em Type}.  In
-\XtenCurrVer, function types may not be generic.
-The closely-related void function type 
-{\em \xcd`(` Formals{$^?$} \xcd`) =>`  \xcd`void`}  takes the listed
-parameters and returns no value.
-
-\begin{ex}
-\begin{xtenmath}
-\xcd`(x:Int) => Int{self != x}` 
-\end{xtenmath}
-is the type of integer-valued functions which have no fixed points -- that is,
-for which the output is an integer different from the input.
-An example of such a function is \xcd`(x:Int) => x+1`.
 \end{ex}
 
-For fundamental reasons, X10 --- or any other computer program --- cannot
-tell in general whether a function has any fixed points or not.  So, X10
-programs using such types must prove to X10 that they are correct. Often this
-will involve a run-time check, expressed as a cast, such as: 
-%~~gen ^^^ Types3x7m
-% package Types3x7m;
-% class Example {
+A type of form {$(5)$}, \xcd`F`, such as \xcd`(x:Int)=>Int`, is a function type.
+Its values are functions, \eg, the squaring function taking integers to
+integers. They are
+described in \Sref{nuFunctionTypes}.
+
+\begin{ex}
+\xcd`square` is the squaring function on integers.  It is used in the
+\xcd`assert` line.
+%~~gen ^^^ ReTypes9e4b
+% package ReTypes9e4b;
+% class Example { 
+% static public def example() {
 %~~vis
 \begin{xten}
-  val plus1 : (x:Int) => Int{self != x} = 
-     (x:Int) => (x+1) as Int{self != x}; 
+val square : (x:Int)=>Int
+           = (x:Int)=>x*x;
+assert square(5) == 25;
 \end{xten}
 %~~siv
-%}
+% } } 
+% class Hook{ def run() {Example.example(); return true;}}
+%~~neg
+\end{ex}
+
+
+
+A term of form {$(6)$}, such as \xcd`M[T](e)`, is an instance of a
+parameterized type definition.  Such types may be parameterized by both types
+and values. 
+This is described in \Sref{nuTypedef}.
+
+\begin{ex}
+\xcd`Array[Int](1)` is the type of one-dimensional arrays of
+integers.  It has one type parameter giving the type of element, here
+\xcd`Int`.  It has one value parameter giving the number of dimensions, here
+\xcd`1`.  
+\xcd`Region(1)` is the type of one-dimensional regions of
+points (\Sref{XtenRegions}).  
+\end{ex}
+
+In the function types {$(6)$}, the variable names are bound.  As with all
+bound variables in X10, they can be renamed. So, for example,
+the types \xcd`(x:Int)=>Int{self!=x}` and \xcd`(y:Int)=>Int{self!=y}` are
+equivalent, as they differ by nothing but the names of bound variables. 
+This is more visible with types
+than with, say, methods or functions, because we can test equality of types.
+
+Furthermore, if a variable \xcd`x` does not appear anywhere in a function type
+\xcd`F` save as an argument name, it (and its ``\xcd`:`'') can be omitted.
+\Eg, the types 
+\xcd`(x:Int)=>Int`
+and 
+\xcd`(Int)=>Int`
+are equivalent.
+
+\begin{ex}
+%~~gen ^^^ ReTypes3h6w
+% package ReTypes3h6w;
+% class Example{ static def example() {
+%~~vis
+\begin{xten}
+val f : (x:Int)=>Int{self!=x} = (x:Int) => (x+1) as Int{self!=x}; 
+val g : (y:Int)=>Int{self!=y} = f;
+val t : (x:Int)=>Int          = (x:Int) => x;
+val u : ( Int )=>Int          = t;
+\end{xten}
+%~~siv
+%}}
+%~~neg
+\end{ex}
+
+
+A term of form {$(7)$}, \xcd`T{c}`, is a type whose values are the values of
+type \xcd`T` for which the constraint \xcd`c` is true.  This is described in
+\Sref{nuConstrainedType}. 
+
+\begin{ex}
+A variable of class \xcd`Point`, unconstrained, can contain \xcd`null`: 
+%~~gen ^^^ ReTypes7j6c
+% package ReTypes7j6c;
+% class Example { 
+% static public def example() {
+%~~vis
+\begin{xten}
+var gotNPE: Boolean = false;
+val p : Point = null; 
+try {
+  val q = p * 2; // method invocation, NPE
+}
+catch(NullPointerException) {
+  gotNPE = true;
+}
+assert gotNPE;
+\end{xten}
+%~~siv
+% } } 
+% class Hook{ def run() {Example.example(); return true;}}
 %~~neg
 
+A suitable constraint on that type will prevent a \xcd`null` from ever being
+assigned to the variable.  The variable \xcd`self`, in a constraint, refers to
+the value being constrained, so the constraint \xcd`self != null` means
+``which is not null''.  So, adding a \xcd`{self!=null}` constraint to 
+\xcd`Point` results in a compile-time error, rather than a runtime null
+pointer exception.  
+%~~gen ^^^ ReTypes6w6h
+% package ReTypes6w6h;
+% class Example {
+% static public def example() {
+%~~vis
+\begin{xten}
+// ERROR: p : Point{self!=null} = null;
+\end{xten}
+%~~siv
+%}} 
+%~~neg
+\end{ex}
 
 
-The names of the formal parameters are bound in the type; the scope of a
-formal \xcdmath"x$i$" is its type \xcdmath"T$_i$", all \xcdmath"T$j$" with
-$j>i$, the constraint \xcd`c`, and the result type \xcd`T`.  
-For example, the type 
-\xcd`(n:Int)=>Int{self!=n}`
-describes integer-valued functions that have no fixed point
-
-
-For example, \\
-\xcd`(a:Int, b:Int{self!=a})=>Int{self!=a, self!=b}` 
-and \\
-\xcd`(c:Int, d:Int{self!=c})=>Int{self!=c, self!=d}` \\
-are equivalent types.  
-
+%%NOW-GONE%% \section{Type System}
+%%NOW-GONE%% \index{type system}
+%%NOW-GONE%% 
+%%NOW-GONE%% 
+%%NOW-GONE%% \bard{This section gets rewritten pretty much completely}
+%%NOW-GONE%% The types in X10 are as follows.  
+%%NOW-GONE%% 
+%%NOW-GONE%% These are the {\em elementary} types. Other
+%%NOW-GONE%% syntactic forms for types exist, but they are simply abbreviations for types
+%%NOW-GONE%% in the following system.  For example, \xcd`Array[Int](1)` is the type of
+%%NOW-GONE%% one-dimensional integer-valued arrays; it is an abbreviation for
+%%NOW-GONE%% \xcd`Array[Int]{rank==1}`.\\
+%%NOW-GONE%% 
+%%NOW-GONE%% % remove \refstepcounter{equation}
+%%NOW-GONE%% % snag the argument of \label{X}
+%%NOW-GONE%% % change the (\arabic{equation}) into (\ref{X})
+%%NOW-GONE%% 
+%%NOW-GONE%% %##(Type FunctionType ConstrainedType
+%%NOW-GONE%% \begin{bbgrammar}
+%%NOW-GONE%% %(FROM #(prod:Type)#)
+%%NOW-GONE%%                 Type \: FunctionType & (\ref{prod:Type}) \\
+%%NOW-GONE%%                      \| ConstrainedType \\
+%%NOW-GONE%%                      \| VoidType \\
+%%NOW-GONE%% %(FROM #(prod:FunctionType)#)
+%%NOW-GONE%%         FunctionType \: TypeParams\opt \xcd"(" FormalList\opt \xcd")" Guard\opt Offers\opt \xcd"=>" Type & (\ref{prod:FunctionType}) \\
+%%NOW-GONE%% %(FROM #(prod:ConstrainedType)#)
+%%NOW-GONE%%      ConstrainedType \: NamedType & (\ref{prod:ConstrainedType}) \\
+%%NOW-GONE%%                      \| AnnotatedType \\
+%%NOW-GONE%% \end{bbgrammar}
+%%NOW-GONE%% %##)
+%%NOW-GONE%% 
+%%NOW-GONE%% 
+%%NOW-GONE%% Types may be given by name. 
+%%NOW-GONE%% For example, 
+%%NOW-GONE%% %~~type~~`~~`~~ ~~ ^^^ Types10
+%%NOW-GONE%% \xcd`Int`
+%%NOW-GONE%% is the type of 32-bit integers.
+%%NOW-GONE%% Given a class declaration 
+%%NOW-GONE%% %~~gen ^^^ Types20
+%%NOW-GONE%% %package Types.Core.TypeName; 
+%%NOW-GONE%% %~~vis
+%%NOW-GONE%% \begin{xten}
+%%NOW-GONE%% class Triple { /* ... */ }
+%%NOW-GONE%% \end{xten}
+%%NOW-GONE%% %~~siv
+%%NOW-GONE%% %
+%%NOW-GONE%% %~~neg
+%%NOW-GONE%% the identifier \xcd`Triple` may be used as a type.
+%%NOW-GONE%% 
+%%NOW-GONE%% The type {\em TypeName \xcd`[` Types{$^?$} \xcd`]`} is an instance of
+%%NOW-GONE%% a {\em generic} (or {\em parameterized}) type. 
+%%NOW-GONE%%  For example,
+%%NOW-GONE%% \xcd`Array[Int]` is the type of arrays of integers. 
+%%NOW-GONE%% \xcd`HashMap[String,Int]` is the type of hash maps from strings to
+%%NOW-GONE%% integers.
+%%NOW-GONE%% 
+%%NOW-GONE%% The type {\em Type \xcd`{` Constraint \xcd`}`} refers to a constrained type.
+%%NOW-GONE%% {\em Constraint} is a Boolean expression -- written in a limited
+%%NOW-GONE%% subset of X10 -- describing the acceptable values of the constrained type.
+%%NOW-GONE%% %~~stmt~~`~~`~~ ~~ ^^^ Types30
+%%NOW-GONE%% For example, \xcd`var n : Int{self != 0};` guarantees that \xcd`n` is always a
+%%NOW-GONE%% non-zero integer. 
+%%NOW-GONE%% %~~stmt~~`~~`~~ ~~class Triple{} ^^^ Types40
+%%NOW-GONE%% Similarly, \xcd`var x : Triple{x != null};` defines a \xcd`Triple`-valued
+%%NOW-GONE%% variable \xcd`x` whose value is never null.
+%%NOW-GONE%% 
+%%NOW-GONE%% The qualified type {\em Type \xcd`.` Type} refers to an instance of a {\em
+%%NOW-GONE%% nested} type; that is, a class or struct defined inside of another class or
+%%NOW-GONE%% struct, and holding an implicit reference to the outer.  For example, given
+%%NOW-GONE%% the type declaration 
+%%NOW-GONE%% %~~gen ^^^ Types50
+%%NOW-GONE%% % package Types.Core.Hardcore.Qualified;
+%%NOW-GONE%% %~~vis
+%%NOW-GONE%% \begin{xten}
+%%NOW-GONE%% class Outer {
+%%NOW-GONE%%   class Inner { /* ... */ }
+%%NOW-GONE%% }
+%%NOW-GONE%% \end{xten}
+%%NOW-GONE%% %~~siv
+%%NOW-GONE%% %
+%%NOW-GONE%% %~~neg
+%%NOW-GONE%% then 
+%%NOW-GONE%% %~~exp~~`~~`~~ ~~ NOTEST class Outer {class Inner { /* ... */ }} ^^^ Types60
+%%NOW-GONE%% \xcd`(new Outer()).new Inner()` creates a value of type 
+%%NOW-GONE%% %~~type~~`~~`~~ ~~class Outer {class Inner { /* ... */ }} ^^^ Types70
+%%NOW-GONE%% \xcd`Outer.Inner`.
+%%NOW-GONE%% 
+%%NOW-GONE%% Type variables, {\em TypeVar}, refer to types that are parameters.  For
+%%NOW-GONE%% example, the following class defines a cell in a linked list.  
+%%NOW-GONE%% %~~gen ^^^ Types80
+%%NOW-GONE%% % package Types.Core.Bore.Lore;
+%%NOW-GONE%% %~~vis
+%%NOW-GONE%% \begin{xten}
+%%NOW-GONE%% class LinkedList[X] {
+%%NOW-GONE%%   val head : X;
+%%NOW-GONE%%   val tail : LinkedList[X];
+%%NOW-GONE%%   def this(head:X, tail:LinkedList[X]) {
+%%NOW-GONE%%      this.head = head; this.tail = tail;
+%%NOW-GONE%%   }
+%%NOW-GONE%% }
+%%NOW-GONE%% \end{xten}
+%%NOW-GONE%% %~~siv
+%%NOW-GONE%% %
+%%NOW-GONE%% %~~neg
+%%NOW-GONE%% It doesn't
+%%NOW-GONE%% matter what type the cell's element is, but it has to have {\em some} type.
+%%NOW-GONE%% \xcd`LinkedList[Int]` is a linked list of integers.
+%%NOW-GONE%% \xcd`LinkedList[LinkedList[Byte]]` is a list of lists of bytes.
+%%NOW-GONE%% Note that \xcd`LinkedList` is {\em not} a usable type -- it is missing a type parameter.
+%%NOW-GONE%% 
+%%NOW-GONE%% 
+%%NOW-GONE%% 
+%%NOW-GONE%% The function type 
+%%NOW-GONE%% {\em \xcd`(` Formals{$^?$} \xcd`) =>`  Type} 
+%%NOW-GONE%% refers to functions taking the
+%%NOW-GONE%% listed formal parameters and returning a result of {\em Type}.  In
+%%NOW-GONE%% \XtenCurrVer, function types may not be generic.
+%%NOW-GONE%% The closely-related void function type 
+%%NOW-GONE%% {\em \xcd`(` Formals{$^?$} \xcd`) =>`  \xcd`void`}  takes the listed
+%%NOW-GONE%% parameters and returns no value.
+%%NOW-GONE%% 
+%%NOW-GONE%% \begin{ex}
+%%NOW-GONE%% \begin{xtenmath}
+%%NOW-GONE%% \xcd`(x:Int) => Int{self != x}` 
+%%NOW-GONE%% \end{xtenmath}
+%%NOW-GONE%% is the type of integer-valued functions which have no fixed points -- that is,
+%%NOW-GONE%% for which the output is an integer different from the input.
+%%NOW-GONE%% An example of such a function is \xcd`(x:Int) => x+1`.
+%%NOW-GONE%% \end{ex}
+%%NOW-GONE%% 
+%%NOW-GONE%% For fundamental reasons, X10 --- or any other computer program --- cannot
+%%NOW-GONE%% tell in general whether a function has any fixed points or not.  So, X10
+%%NOW-GONE%% programs using such types must prove to X10 that they are correct. Often this
+%%NOW-GONE%% will involve a run-time check, expressed as a cast, such as: 
+%%NOW-GONE%% %~~gen ^^^ Types3x7m
+%%NOW-GONE%% % package Types3x7m;
+%%NOW-GONE%% % class Example {
+%%NOW-GONE%% %~~vis
+%%NOW-GONE%% \begin{xten}
+%%NOW-GONE%%   val plus1 : (x:Int) => Int{self != x} = 
+%%NOW-GONE%%      (x:Int) => (x+1) as Int{self != x}; 
+%%NOW-GONE%% \end{xten}
+%%NOW-GONE%% %~~siv
+%%NOW-GONE%% %}
+%%NOW-GONE%% %~~neg
+%%NOW-GONE%% 
+%%NOW-GONE%% 
+%%NOW-GONE%% 
+%%NOW-GONE%% The names of the formal parameters are bound in the type; the scope of a
+%%NOW-GONE%% formal \xcdmath"x$i$" is its type \xcdmath"T$_i$", all \xcdmath"T$j$" with
+%%NOW-GONE%% $j>i$, the constraint \xcd`c`, and the result type \xcd`T`.  
+%%NOW-GONE%% For example, the type 
+%%NOW-GONE%% \xcd`(n:Int)=>Int{self!=n}`
+%%NOW-GONE%% describes integer-valued functions that have no fixed point
+%%NOW-GONE%% 
+%%NOW-GONE%% 
+%%NOW-GONE%% For example, \\
+%%NOW-GONE%% \xcd`(a:Int, b:Int{self!=a})=>Int{self!=a, self!=b}` 
+%%NOW-GONE%% and \\
+%%NOW-GONE%% \xcd`(c:Int, d:Int{self!=c})=>Int{self!=c, self!=d}` \\
+%%NOW-GONE%% are equivalent types.  
+%%NOW-GONE%% 
 
 
 \section{Classes, Structs,  and interfaces}
