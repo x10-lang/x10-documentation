@@ -76,16 +76,12 @@ structs (unlike classes) cannot be \xcd`null`.
 \section{Struct declaration}
 \index{struct!declaration}
 
-%##(StructDecl TypeParamsI TypeParamI Properties Guard Interfaces ClassBody
+%##(StructDecl TypeParamsI Properties Guard Interfaces ClassBody
 \begin{bbgrammar}
 %(FROM #(prod:StructDecl)#)
           StructDecl \: Mods\opt \xcd"struct" Id TypeParamsI\opt Properties\opt Guard\opt Interfaces\opt ClassBody & (\ref{prod:StructDecl}) \\
 %(FROM #(prod:TypeParamsI)#)
          TypeParamsI \: \xcd"[" TypeParamIList \xcd"]" & (\ref{prod:TypeParamsI}) \\
-%(FROM #(prod:TypeParamI)#)
-          TypeParamI \: Id & (\ref{prod:TypeParamI}) \\
-                     \| \xcd"+" Id \\
-                     \| \xcd"-" Id \\
 %(FROM #(prod:Properties)#)
           Properties \: \xcd"(" PropertyList \xcd")" & (\ref{prod:Properties}) \\
 %(FROM #(prod:Guard)#)

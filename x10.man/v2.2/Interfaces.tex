@@ -1,4 +1,41 @@
 \chapter{Interfaces}
+
+
+\bard{The following stuff needs a home (maybe):}
+
+Classes and structs may be declared to implement multiple interfaces. Semantically, the
+interface type is the set of all objects that are instances of classes
+or structs that
+implement the interface. A class or struct implements an interface if it is declared to
+and if it concretely or abstractly implements all the methods and properties
+defined in the interface. For example, \xcd`Kim` implements
+\xcd`Person`, and hence \xcd`Named` and \xcd`Mobile`. It would be a static
+error if \xcd`Kim` had no \xcd`name` method, unless \xcd`Kim` were also
+declared \xcd`abstract`.
+
+%~~gen ^^^ Types140
+%interface Named {
+%   def name():String;
+% }
+% interface Mobile {
+%   def move(howFar:Int):void;
+% }
+% interface Person extends Named, Mobile {}
+% interface NamedPoint extends Named, Mobile{} 
+%~~vis
+\begin{xten}
+class Kim implements Person {
+   var pos : Int = 0;
+   public def name() = "Kim (" + pos + ")";
+   public def move(dPos:Int) { pos += dPos; }
+}
+\end{xten}
+%~~siv
+%
+%~~neg
+
+\bard{OK, back to the real chapter now}
+
 \label{XtenInterfaces}\index{interface}
 
 An interface specifies signatures for zero or more public methods, property
@@ -111,16 +148,12 @@ class Lassie implements Dog, Star{}
 
 \label{DepType:Interface}
 
-%##(NormalInterfaceDecl TypeParamsI TypeParamI Guard ExtendsInterfaces InterfaceBody InterfaceMemberDecl
+%##(InterfaceDecl TypeParamsI Guard ExtendsInterfaces InterfaceBody InterfaceMemberDecl
 \begin{bbgrammar}
-%(FROM #(prod:NormalInterfaceDecl)#)
- NormalInterfaceDecl \: Mods\opt \xcd"interface" Id TypeParamsI\opt Properties\opt Guard\opt ExtendsInterfaces\opt InterfaceBody & (\ref{prod:NormalInterfaceDecl}) \\
+%(FROM #(prod:InterfaceDecl)#)
+       InterfaceDecl \: Mods\opt \xcd"interface" Id TypeParamsI\opt Properties\opt Guard\opt ExtendsInterfaces\opt InterfaceBody & (\ref{prod:InterfaceDecl}) \\
 %(FROM #(prod:TypeParamsI)#)
          TypeParamsI \: \xcd"[" TypeParamIList \xcd"]" & (\ref{prod:TypeParamsI}) \\
-%(FROM #(prod:TypeParamI)#)
-          TypeParamI \: Id & (\ref{prod:TypeParamI}) \\
-                     \| \xcd"+" Id \\
-                     \| \xcd"-" Id \\
 %(FROM #(prod:Guard)#)
                Guard \: DepParams & (\ref{prod:Guard}) \\
 %(FROM #(prod:ExtendsInterfaces)#)
@@ -132,10 +165,7 @@ class Lassie implements Dog, Star{}
  InterfaceMemberDecl \: MethodDecl & (\ref{prod:InterfaceMemberDecl}) \\
                      \| PropertyMethodDecl \\
                      \| FieldDecl \\
-                     \| ClassDecl \\
-                     \| InterfaceDecl \\
-                     \| TypeDefDecl \\
-                     \| \xcd";" \\
+                     \| TypeDecl \\
 \end{bbgrammar}
 %##)
 
@@ -170,6 +200,42 @@ All interface members are \xcd`public`, whether or not they are declared
 public.  There is little purpose to non-public methods of an interface; they
 would specify that implementing classes and structs have methods that cannot
 be seen.
+
+\section{Member Specification}
+\bard{Revised -- check!} 
+
+An interface can specify that all containers implementing it must have certain
+instance methods.  It cannot require constructors or static methods, though.
+
+
+\begin{ex}
+The \xcd`Stat` interface requires that its implementers provide 
+an \xcd`ick` method.  
+It can't insist that implementations provide a static method 
+like \xcd`meth`, or a nullary constructor.
+%~~gen ^^^ Interfaces2y3i
+% 
+% package Interfaces2y3i;
+% // NOTEST-stupid-packaging-issue
+%~~vis
+\begin{xten}
+interface Stat {
+  def ick():void; 
+  // ERROR: static def meth():Int;
+  // ERROR: static def this();
+}
+class Example implements Stat {
+  public def ick() {}
+  def example() {
+     this.ick();
+  }
+}
+\end{xten}
+%~~siv
+%
+%~~neg
+
+\end{ex}
 
 \section{Property Methods}
 

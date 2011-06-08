@@ -128,9 +128,6 @@ val m = n + 56;
          FieldAccess \: Primary \xcd"." Id & (\ref{prod:FieldAccess}) \\
                      \| \xcd"super" \xcd"." Id \\
                      \| ClassName \xcd"." \xcd"super"  \xcd"." Id \\
-                     \| Primary \xcd"." \xcd"class"  \\
-                     \| \xcd"super" \xcd"." \xcd"class"  \\
-                     \| ClassName \xcd"." \xcd"super"  \xcd"." \xcd"class"  \\
 \end{bbgrammar}
 %##)
 
@@ -255,7 +252,7 @@ Function literals are described in \Sref{Functions}.
                      \| ArgumentList \xcd"," Exp \\
 %(FROM #(prod:MethodName)#)
           MethodName \: Id & (\ref{prod:MethodName}) \\
-                     \| ValueOrTypeName \xcd"." Id \\
+                     \| FullyQualifiedName \xcd"." Id \\
 \end{bbgrammar}
 %##)
 
@@ -1085,7 +1082,7 @@ def m(a:Int{self==1}, b:Int{self==2}) = (a==b);
 %(FROM #(prod:ClassInstCreationExp)#)
 ClassInstCreationExp \: \xcd"new" TypeName TypeArgs\opt \xcd"(" ArgumentList\opt \xcd")" ClassBody\opt & (\ref{prod:ClassInstCreationExp}) \\
                      \| Primary \xcd"." \xcd"new" Id TypeArgs\opt \xcd"(" ArgumentList\opt \xcd")" ClassBody\opt \\
-                     \| ValueOrTypeName \xcd"." \xcd"new" Id TypeArgs\opt \xcd"(" ArgumentList\opt \xcd")" ClassBody\opt \\
+                     \| FullyQualifiedName \xcd"." \xcd"new" Id TypeArgs\opt \xcd"(" ArgumentList\opt \xcd")" ClassBody\opt \\
 \end{bbgrammar}
 %##)
 

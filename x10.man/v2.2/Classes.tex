@@ -1,6 +1,48 @@
+
+
 \chapter{Classes}
 \label{XtenClasses}\index{class}
 \label{ReferenceClasses}
+
+
+
+\bard{This subsection got moved from Types.  Put it in the right place, OK?}
+\subsection{Use of Generics}
+
+An unconstrained type variable \Xcd{X} can be instantiated by any type. All
+the operations of \Xcd{Any} are available on a 
+variable of type \Xcd{X}. Additionally, variables of type
+\Xcd{X} may be used with \Xcd{==, !=}, in \Xcd{instanceof}, and casts.  
+
+If a type variable is constrained, the operations implied by its constraint
+are available as well.
+
+\begin{ex}
+The interface \xcd`Named` describes entities which know their own name.  The
+class \xcd`NameMap[T]` is a specialized map which stores and retrieves
+\xcd`Named` entities by name.  The call \xcd`t.name()` in \xcd`put()` is only
+valid because the constraint \xcd`{T <: Named}` implies that \xcd`T` is a
+subtype of \xcd`Named`, and hence provides all the operations of \xcd`Named`. 
+%~~gen ^^^ Types6e6x
+% package Types6e6x;
+% import x10.util.*;
+%~~vis
+\begin{xten}
+interface Named { def name():String; }
+class NameMap[T]{T <: Named} {
+   val m = new HashMap[String, T]();
+   def put(t:T) { m.put(t.name(), t); }
+   def get(s:String):T = m.getOrThrow(s);
+}
+\end{xten}
+%~~siv
+%
+%~~neg
+
+
+\end{ex}
+
+
 
 \section{Principles of X10 Objects}\label{XtenObjects}\index{object}
 \index{class}
@@ -70,15 +112,15 @@ zero or more interfaces that it implements, and a class body containing the
 the definition of fields, properties, methods, and member types. Each such
 declaration introduces a class type (\Sref{ReferenceTypes}).
 
-%##(NormalClassDecl TypeParamsI TypeParamIList Properties PropertyList Property Guard Super Interfaces InterfaceTypeList ClassBody ClassBodyDecls ClassMemberDecl
+%##(ClassDecl TypeParamsI TypeParamIList Properties PropertyList Property Guard Super Interfaces InterfaceTypeList ClassBody ClassBodyDecls ClassMemberDecl
 \begin{bbgrammar}
-%(FROM #(prod:NormalClassDecl)#)
-     NormalClassDecl \: Mods\opt \xcd"class" Id TypeParamsI\opt Properties\opt Guard\opt Super\opt Interfaces\opt ClassBody & (\ref{prod:NormalClassDecl}) \\
+%(FROM #(prod:ClassDecl)#)
+           ClassDecl \: Mods\opt \xcd"class" Id TypeParamsI\opt Properties\opt Guard\opt Super\opt Interfaces\opt ClassBody & (\ref{prod:ClassDecl}) \\
 %(FROM #(prod:TypeParamsI)#)
          TypeParamsI \: \xcd"[" TypeParamIList \xcd"]" & (\ref{prod:TypeParamsI}) \\
 %(FROM #(prod:TypeParamIList)#)
-      TypeParamIList \: TypeParamI & (\ref{prod:TypeParamIList}) \\
-                     \| TypeParamIList \xcd"," TypeParamI \\
+      TypeParamIList \: TypeParam & (\ref{prod:TypeParamIList}) \\
+                     \| TypeParamIList \xcd"," TypeParam \\
 %(FROM #(prod:Properties)#)
           Properties \: \xcd"(" PropertyList \xcd")" & (\ref{prod:Properties}) \\
 %(FROM #(prod:PropertyList)#)
@@ -104,10 +146,7 @@ declaration introduces a class type (\Sref{ReferenceTypes}).
      ClassMemberDecl \: FieldDecl & (\ref{prod:ClassMemberDecl}) \\
                      \| MethodDecl \\
                      \| PropertyMethodDecl \\
-                     \| TypeDefDecl \\
-                     \| ClassDecl \\
-                     \| InterfaceDecl \\
-                     \| \xcd";" \\
+                     \| TypeDecl \\
 \end{bbgrammar}
 %##)
 
@@ -1157,7 +1196,7 @@ Instances of classes are created by the \xcd`new` expression: \\
 %(FROM #(prod:ClassInstCreationExp)#)
 ClassInstCreationExp \: \xcd"new" TypeName TypeArgs\opt \xcd"(" ArgumentList\opt \xcd")" ClassBody\opt & (\ref{prod:ClassInstCreationExp}) \\
                      \| Primary \xcd"." \xcd"new" Id TypeArgs\opt \xcd"(" ArgumentList\opt \xcd")" ClassBody\opt \\
-                     \| ValueOrTypeName \xcd"." \xcd"new" Id TypeArgs\opt \xcd"(" ArgumentList\opt \xcd")" ClassBody\opt \\
+                     \| FullyQualifiedName \xcd"." \xcd"new" Id TypeArgs\opt \xcd"(" ArgumentList\opt \xcd")" ClassBody\opt \\
 \end{bbgrammar}
 %##)
 

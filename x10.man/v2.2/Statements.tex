@@ -199,16 +199,17 @@ val f : (Int)=>Int
 \index{block}
 \label{Blocks}
 
-%##(Block BlockStatements BlockStatement
+%##(Block BlockStatements BlockInteriorStatement
 \begin{bbgrammar}
 %(FROM #(prod:Block)#)
                Block \: \xcd"{" BlockStatements\opt \xcd"}" & (\ref{prod:Block}) \\
 %(FROM #(prod:BlockStatements)#)
-     BlockStatements \: BlockStatement & (\ref{prod:BlockStatements}) \\
-                     \| BlockStatements BlockStatement \\
-%(FROM #(prod:BlockStatement)#)
-      BlockStatement \: LocVarDeclStmt & (\ref{prod:BlockStatement}) \\
+     BlockStatements \: BlockInteriorStatement & (\ref{prod:BlockStatements}) \\
+                     \| BlockStatements BlockInteriorStatement \\
+%(FROM #(prod:BlockInteriorStatement)#)
+BlockInteriorStatement \: LocVarDeclStmt & (\ref{prod:BlockInteriorStatement}) \\
                      \| ClassDecl \\
+                     \| StructDecl \\
                      \| TypeDefDecl \\
                      \| Statement \\
 \end{bbgrammar}

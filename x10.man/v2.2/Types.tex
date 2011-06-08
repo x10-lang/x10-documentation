@@ -18,7 +18,7 @@ superclass.
 Struct values are similar to objects, though more restricted in ways that make
 them more efficient in space and time.  Their fields cannot be mutable, and,
 although they respond to methods, they do not inherit behavior.  
-They are instances of struct types (\Sref{XtenStructs}.
+They are instances of struct types (\Sref{XtenStructs}).
 
 Together, objects and struct values are called {\em containers},
 \index{container}
@@ -86,6 +86,7 @@ of subtyping.  See \Sref{DepType:Equivalence} for the full definition
 of subtyping in X10.
 
 \section{Type System}
+\label{sect:TypeSystem}
 \index{type system}
 
 
@@ -122,9 +123,9 @@ Type \: \xcd`T` \\
 
 A type given by $(1)$ is an identifier \xcd`M`, like \xcd`Point`, \xcd`Int`, or
 \xcd`int`.  It refer to a unit -- a class, struct type, or interface, 
-(\Sref{nuUnitType}).  
+(\Sref{ReferenceTypes}).  
 Or, it can refer to a name defined by a \xcd`type` statement
-(\Sref{nuTypedef}); 
+(\Sref{TypeDefs}); 
 
 \begin{ex}
 \xcd`String` refers to the standard class
@@ -137,7 +138,7 @@ comfort of programmers used to other languages in the C family.
 
 
 A type of the form $(2)$, a type variable \xcd`X`, refers to a parameter type
-of a generic (parameterized) type, as described in \Sref{nuParameterizedType}.
+of a generic (parameterized) type, as described in \Sref{TypeParameters}.
 
 \begin{ex}
 The class \xcd`Pair[X]` below provides a simplistic way to keep two things of
@@ -165,7 +166,8 @@ class Pair[X]{
 
 
 A type of form {$(3)$}, \xcd`M[T,U]`, is a use of a  generic type, also described in 
-\Sref{nuParameterizedType}. 
+\Sref{TypeParameters}, or a generic \xcd`type`-defined type without
+value parameters (\Sref{TypeDefs}). 
 The types inside the brackets are the actual parameters corresponding to the
 formal parameters of the parameterized type \xcd`M`.  
 \xcd`Pair[Int]`, above, is an example of a use of the generic type \xcd`Pair`. 
@@ -476,8 +478,14 @@ pointer exception.
 %%NOW-GONE%% 
 
 
-\section{Classes, Structs,  and interfaces}
+\section{Unit Types: Classes, Struct Types,  and Interfaces}
+\index{unit type}
 \label{ReferenceTypes}
+
+Most X10 computation manipulates values via the {\em unit} types: classes,
+struct types, and interfaces.  These types share a great deal of structure,
+though there are important differences. 
+
 
 \subsection{Class types}
 
@@ -487,69 +495,46 @@ pointer exception.
 \index{declaration!class declaration}
 \index{declaration!reference class declaration}
 
-A {\em class declaration} (\Sref{XtenClasses}) declares a {\em class type},
-giving its name, behavior, data, and relationships to other classes and
-interfaces. 
+\index{\Xcd{Object}}
+\index{\Xcd{x10.lang.Object}}
+
+A {\em class declaration}  declares a {\em class type} (\Sref{XtenClasses}),
+giving its name, behavior, and data.  It may inherit from one {\em parent}
+class, and, if no parent class is specified, it implicitly inherits from 
+\xcd`x10.lang.Object`.  It may also implement zero or more interfaces, each
+one of which becomes a supertype of it.
 
 \begin{ex}
 The \xcd`Position` class below could describe the position of a slider
-control: 
+control.  The \xcd`example` method uses \xcd`Position` as a type.
+\xcd`Position` is a subtype of the class \xcd`Object` and the type
+\xcd`Poser`. 
 %~~gen ^^^ Types100
 % package Types.By.Cripes.Classes;
 %~~vis
 \begin{xten}
-class Position {
+interface Poser {
+  def pos():Int;
+  }
+class Position implements Poser {
   private var x : Int = 0;
   public def move(dx:Int) { x += dx; }
   public def pos() : Int = x;
+  static def example() {
+    var p : Position; 
+  }
 }
 \end{xten}
 %~~siv
 %
 %~~neg
 \end{ex}
-Class instances, also called objects, are created by constructor calls, 
-such as \xcd`new Position()`
-Class
-instances have fields and methods, type members, and value properties bound at
-construction time. In addition, classes have static members: static \xcd`val` fields,
-methods, type definitions, and member classes and member interfaces.
-
-Classes may be {\em generic}, \ie, defined with one or more type
-parameters (\Sref{TypeParameters}).  
-
-%~~gen ^^^ Types110
-%~~vis
-\begin{xten}
-class Cell[T] {
-  var contents : T;
-  public def this(t:T) { contents = t;  }
-  public def putIn(t:T) { contents = t; }
-  public def get() = contents;
-  }
-\end{xten}
-%~~siv
-%~~neg
 
 
 
-\index{\Xcd{Object}}
-\index{\Xcd{x10.lang.Object}}
-
-Classes are structured in a single-inheritance hierarchy. All classes extend
-the class \xcd"x10.lang.Object", directly or indirectly. Each class other than
-\xcd`Object` extends a single parent class.  \xcd`Object` provides no behaviors
-of its own, beyond those required by \xcd`Any`.
-
-\index{class!reference class}
-\index{reference class type}
-\index{\Xcd{Object}}
-\index{\Xcd{x10.lang.Object}}
 
 
 \index{null}
-
-
 The null value, represented by the literal
 \xcd"null", is a value of every class type \xcd`C`. The type whose values are
 all instances of \xcd`C` except 
@@ -558,8 +543,14 @@ all instances of \xcd`C` except
 \subsection{Struct Types}
 
 A {\em struct declaration} (\Sref{XtenStructs}) introduces a {\em struct type}
-containing all instances of the struct.  The \xcd`Coords` struct below gives
-an immutable position in 3-space: 
+containing all instances of the struct.     Struct types can include nearly
+all the features that classes have.  They can implement interfaces, which
+become their supertypes just as for classes; but they do not have
+superclasses, and cannot extend anything.  
+
+\begin{ex}
+The \xcd`Coords` struct  gives
+an immutable position in 3-space.  It is used as a type in \xcd`example()`: 
 %~~gen ^^^ Types120
 % package Types.Structs.Coords;
 %~~vis
@@ -569,12 +560,15 @@ struct Position {
   def this(x:Double, y:Double, z:Double) {
      this.x = x; this.y = y; this.z = z;
   }
+  static def example(p: Position, q: Array[Position]) {  
+     var r : Position = p;
+  }
 }
 \end{xten}
 %~~siv
 %
 %~~neg
-
+\end{ex}
 
 
 \subsection{Interface types}
@@ -586,49 +580,21 @@ struct Position {
 \index{declaration!interface declaration}
 
 An {\em interface declaration} (\Sref{XtenInterfaces}) defines an {\em
-interface type}, specifying a set of methods 
-%type members, 
-and properties which must be provided by any class declared to implement the
-interface. 
+interface type}, specifying a set of instance method signatures  and property
+method signatures 
+which must be provided by any container declared to implement the interface.
+They can also declare static \xcd`val` fields, which are provided to all
+units implementing or extending the interface.   They do not have code, and
+cannot implement anything.
+An interface may extend multiple interfaces.  
+Each interface it extends becomes one of its superclasses.
 
-
-Interfaces can also have static members: static fields, type
-definitions, and member classes, structs and interfaces.  However,
-interfaces cannot specify that implementing classes must provide
-static members or constructors.
 
 \begin{ex}
-In the following interface, \xcd`PI` is a static field, 
-\xcd`Vec` a static type definition, 
-\xcd`Pair` a static member class.
-It can't insist that implementations provide a static method 
-like \xcd`meth`, or a nullary constructor.
-%~~gen ^^^ Types2y3i
-% 
-% package Types2y3i;
-% // NOTEST-stupid-packaging-issue
-%~~vis
-\begin{xten}
-interface Stat {
-  static val PI = 3.14159; 
-  static type R = Double;
-  static class Pair(x:R, y:R) {}
-  // ERROR: static def meth():Int;
-  // ERROR: static def this();
-}
-class Example {
-  static def example() {
-     val p : Stat.Pair = new Stat.Pair(Stat.PI, Stat.PI);
-  }
-}
-\end{xten}
-%~~siv
-%
-%~~neg
-
-\end{ex}
-
-An interface may extend multiple interfaces.  
+\xcd`Named` and \xcd`Mobile` are interfaces, each specifying a single method.  
+\xcd`Person` and \xcd`NamedPoint` are subtypes of both of them.  They are used
+as types 
+in the \xcd`example` method.
 %~~gen ^^^ Types130
 %package Types.For.Snipes.Interfaces;
 %~~vis
@@ -637,46 +603,27 @@ interface Named {
   def name():String;
 }
 interface Mobile {
+  def where():Int;
   def move(howFar:Int):void;
 }
-interface Person extends Named, Mobile {}
 interface NamedPoint extends Named, Mobile {} 
-\end{xten}
-%~~siv
-%
-%~~neg
-
-
-Classes and structs may be declared to implement multiple interfaces. Semantically, the
-interface type is the set of all objects that are instances of classes
-or structs that
-implement the interface. A class or struct implements an interface if it is declared to
-and if it concretely or abstractly implements all the methods and properties
-defined in the interface. For example, \xcd`Kim` implements
-\xcd`Person`, and hence \xcd`Named` and \xcd`Mobile`. It would be a static
-error if \xcd`Kim` had no \xcd`name` method, unless \xcd`Kim` were also
-declared \xcd`abstract`.
-
-%~~gen ^^^ Types140
-%interface Named {
-%   def name():String;
-% }
-% interface Mobile {
-%   def move(howFar:Int):void;
-% }
-% interface Person extends Named, Mobile {}
-% interface NamedPoint extends Named, Mobile{} 
-%~~vis
-\begin{xten}
-class Kim implements Person {
-   var pos : Int = 0;
-   public def name() = "Kim (" + pos + ")";
-   public def move(dPos:Int) { pos += dPos; }
+class Person implements Named, Mobile {
+   var name:String; var pos: Int;
+   public def name() = this.name; 
+   public def move(howFar:Int) { pos += howFar; }
+   public def where() = this.pos;
+   public def example(putAt:Mobile) {
+      this.pos = putAt.where();
+   }
 }
+
 \end{xten}
 %~~siv
 %
 %~~neg
+\end{ex}
+
+
 
 
 \subsection{Properties}
@@ -713,12 +660,12 @@ class Coords(x: Int, y: Int) {
 %~~siv
 %~~neg
 \end{ex}
-\bard{Replace this by something that is actually true}
-Properties, unlike other public \xcd`val` fields, can be used  
-at compile time in {constraints}. This allows us
-to specify subtypes based on properties, by appending a boolean expression to
-the type. For example, the type \xcd"Coords{x==0}" is the set of all points
-whose \xcd"x" property is \xcd"0".  Details of this substantial topic are
+
+Properties of \xcd`self` can be used in constraints.  This places certain
+restrictions on how properties can be used, but allows a great deal of
+compile-time constraint checking.  For a simple example, 
+\xcd`new Coords(0,0)` is known to be an instance of \xcd`Coords{self.x==0}`.  
+Details of this substantial topic are
 found in \Sref{ConstrainedTypes}.
 
 
@@ -756,45 +703,37 @@ declared with $k \geq 1$ type parameters.
 A generic class (or struct, interface, or type definition) 
 can be used to form a type by supplying $k$ types as type arguments within
 \xcd`[` \ldots \xcd`]`.
-%%When instantiated,
-%%with concrete (\viz, non-generic) types for its parameters, 
-%%a generic type becomes a concrete type and can be
-%%used like any other type. 
-For example,
-\xcd`Stack` is a generic class, 
-%~~type~~`~~`~~ ~~class Stack[T]{} ^^^ Types180
-\xcd`Stack[Int]` is a type, and can be used as one: 
-%~~stmt~~`~~`~~ ~~class Stack[T]{} ^^^ Types190
-\xcd`var stack : Stack[Int];`
 
-\begin{ex}A \xcd`Cell[T]` is a generic object, capable of holding a value of type
-\xcd`T`.  For example, a \xcd`Cell[Int]` can hold an \xcd`Int`, and a
-\xcd`Cell[Cell[Int{self!=0}]]` can hold a \xcd`Cell` which in turn can
-only hold non-zero numbers. 
-%% vj: Dont know what this saying: bound immutably... but mutable?
-%% \xcd`Cell`s are actually useful in situations
-%%where values must be bound immutably for one reason, but need to be mutable.
-%~~gen ^^^ Types200
-% package ch4;
+
+
+
+\begin{ex}
+\xcd`Bottle[T]` is a generic class.  A \xcd`Bottle[T]`can hold a value of type
+\xcd`T`; the variable \xcd`yup` in \xcd`example()` 
+is of type \xcd`Bottle[Boolean]` and thus 
+can hold a \xcd`Boolean`.  Hoever, \xcd`Bottle` alone is not a
+type.\footnote{By contrast, in Java, the equivalent of \xcd`Bottle` alone {\em
+would} be a type, via type erasure of generics.}
+%~~gen ^^^ Types110
 %~~vis
 \begin{xten}
-class Cell[T] {
-    var x: T;
-    def this(x: T) { this.x = x; }
-    def get(): T = x;
-    def set(x: T) = { this.x = x; }
+class Bottle[T] {
+  var contents : T;
+  public def this(t:T) { contents = t;  }
+  public def putIn(t:T) { contents = t; }
+  public def get() = contents;
+  static def example() {
+    val yup : Bottle[Boolean] = new Bottle[Boolean](true);
+    //ERROR: var nope : Bottle = null;
+  }
 }
 \end{xten}
 %~~siv
 %~~neg
 
-
-\xcd"Cell[Int]" is the type of \xcd`Int`-holding cells.  
-The \xcd"get" method on a \xcd`Cell[Int]` returns an \xcd"Int"; the
-\xcd"set" method takes an \xcd"Int" as argument.  Note that
-\xcd"Cell" alone is not a legal type because the parameter is
-not bound.
 \end{ex}
+
+
 
 A class (whether generic or not) may have generic methods.
 
@@ -853,40 +792,7 @@ static or final; the Java back end can accomodate generic instance methods as we
 %%yes-they-can%% %~~neg
 %%yes-they-can%% \end{ex}
 %%yes-they-can%% 
-\subsection{Use of Generics}
 
-An unconstrained type variable \Xcd{X} can be instantiated by any type. All
-the operations of \Xcd{Any} are available on a 
-variable of type \Xcd{X}. Additionally, variables of type
-\Xcd{X} may be used with \Xcd{==, !=}, in \Xcd{instanceof}, and casts.  
-
-If a type variable is constrained, the operations implied by its constraint
-are available as well.
-
-\begin{ex}
-The interface \xcd`Named` describes entities which know their own name.  The
-class \xcd`NameMap[T]` is a specialized map which stores and retrieves
-\xcd`Named` entities by name.  The call \xcd`t.name()` in \xcd`put()` is only
-valid because the constraint \xcd`{T <: Named}` implies that \xcd`T` is a
-subtype of \xcd`Named`, and hence provides all the operations of \xcd`Named`. 
-%~~gen ^^^ Types6e6x
-% package Types6e6x;
-% import x10.util.*;
-%~~vis
-\begin{xten}
-interface Named { def name():String; }
-class NameMap[T]{T <: Named} {
-   val m = new HashMap[String, T]();
-   def put(t:T) { m.put(t.name(), t); }
-   def get(s:String):T = m.getOrThrow(s);
-}
-\end{xten}
-%~~siv
-%
-%~~neg
-
-
-\end{ex}
 
 
 %%NO-VARIANCE%% \subsection{Variance of Type Parameters}
@@ -981,22 +887,19 @@ A type definition for a type \xcd`T` can appear:
 \begin{itemize}
 \item As a top-level definition in a file named \xcd`T.x10`; or
 \item As a static member in a container definition; or
-\item In a block statement. \bard{check this}
+\item In a block statement. 
 \end{itemize}
 
 
 \paragraph{Use of type definitions in constructor invocations}
 
-\bard{Vijay asks, ``what about interface and anonymous class/structs?''}
 If a type definition has no type parameters and no value
 parameters and is an alias for a container type, a \xcd"new"
 expression may be used to create an instance of the class using
 the type definition's name.
+Similarly, a parameterless alias for an interface can be used to construct an
+instance of an anonymous class.
 Given the following type definition:
-%TODO: Yoav says ``I just opened a jira on it: [1918].  I don't think you
-% should be able to have {c} on the typedef A if you want to use it in a 'new'
-% expression. If we do allow it, then we should allow: new
-% Array[Int]{rank==1}(0..2) and new Array[Int](1)(0..2).
 \begin{xtenmath}
 type A = C[T$_1$, $\dots$, T$_k$]{c};
 \end{xtenmath}
@@ -1008,6 +911,38 @@ invocation
 \xcdmath"new C[T$_1$, $\dots$, T$_k$](e$_1$, $\dots$, e$_n$)" is
 legal and if the constructor return type is a subtype of
 \xcd"A".
+
+\begin{ex}
+The names of the class \xcd`Cont[X]` and the interface \xcd`Inte[X]` can be 
+used to create an object \xcd`a` of type \xcd`Cont[Int]`, and an object
+\xcd`b` which implements \xcd`Inte[Int]`.  The two types may be given aliases
+\xcd`A` and \xcd`B`, which may then be used in more compact expressions to
+construct objects \xcd`aa` and \xcd`bb` of the same types.
+%~~gen ^^^ Types3c3g
+% package Types3c3g;
+%~~vis
+\begin{xten}
+class ConstructorExample {
+  static class Cont[X]{}
+  static interface Inte[X]{
+     def meth():X;
+   }
+  public static def example() {
+    val a = new Cont[Int]();
+    val b = new Inte[Int](){public def meth()=3;};
+    type A = Cont[Int];
+    val aa = new A();
+    type B = Inte[Int];
+    val bb = new B(){public def meth()=4;};
+  }
+}
+\end{xten}
+%~~siv
+%
+%~~neg
+
+
+\end{ex}
 
 \paragraph{Automatically imported type definitions}
 \index{import,type definitions}
@@ -1164,23 +1099,28 @@ definitions.
 and a {\bf constrained type} like \xcd`T{c}`.  That is, a constraint doesn't
 need to be {\bf attached}.
 }
-A constraint is a boolean expression \xcd`e` attached to a basic type \xcd`T`,
-written \xcd`T{e}`.  (Only a limited selection of boolean expressions is
-available.)  The values of type \xcd`T{e}` are the values of \xcd`T` for which
-\xcd`e` is true.  
+
+A constraint is a boolean expression \xcd`e` of a quite limited form. A
+constraint expression \xcd`c` may be attached to a basic type \xcd`T`, giving
+a {\em constrained type} \xcd`T{c}`. The values of type \xcd`T{c}` are the
+values of \xcd`T` for which \xcd`c` is true.
 
 \index{self}When constraining a value of type \xcd`T`, \xcd`self` refers to the object of
 type \xcd`T` which is being constrained.  For example, \xcd`Int{self == 4}` is
 the type of \xcd`Int`s which are equal to 4 -- the best possible description
 of \xcd`4`, and a very difficult type to express without using \xcd`self`.  
 
-\bard{The following section of examples got moved and recombined, and needs to
-be checked for consistency, sensibility, non-duplication, and libel.}
 
 \begin{ex}
 
 \begin{itemize}
 %~~type~~`~~`~~ ~~ ^^^ Types290
+\item \xcd`Int{self != 0}` is the type of non-zero \xcd`Int`s. 
+\item \xcd`Int{self == 0}` is the type of \xcd`Int`s which are zero.  
+\item \xcd`Int{self != 0, self != 1}` is the type of \xcd`Int`s which are
+      neither zero nor one.
+\item \xcd`Int{self == 0, self == 1}` is the type of \xcd`Int`s which are both
+      zero and one.  There are no such values, so it is an empty type. 
 \item \xcd`String{self != null}` is the type of non-null strings. 
 \item Suppose that \xcd`Matrix` is a matrix class with  properties \xcd`rows`
       and \xcd`cols`.  
@@ -3128,4 +3068,3 @@ type error.
       break X10's guarantees.
 
 \end{enumerate}
-

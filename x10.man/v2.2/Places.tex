@@ -137,9 +137,9 @@ and the copying of all data used in the operation, and must be used with care
 %##(AtStatement AtExp
 \begin{bbgrammar}
 %(FROM #(prod:AtStatement)#)
-         AtStatement \: \xcd"at" PlaceExpSingleList Statement & (\ref{prod:AtStatement}) \\
+         AtStatement \: \xcd"at" \xcd"(" PlaceExp \xcd")" Statement & (\ref{prod:AtStatement}) \\
 %(FROM #(prod:AtExp)#)
-               AtExp \: \xcd"at" PlaceExpSingleList ClosureBody & (\ref{prod:AtExp}) \\
+               AtExp \: \xcd"at" \xcd"(" PlaceExp \xcd")" ClosureBody & (\ref{prod:AtExp}) \\
 \end{bbgrammar}
 %##)
 

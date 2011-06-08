@@ -150,14 +150,14 @@ In this grammar, $X^?$ denotes an optional $X$ element.
 
 \begin{bbgrammarappendix}
 
-(\arabic{equation}) & AtExp \refstepcounter{equation}\label{prod:AtExp}  \: \xcd"at" PlaceExpSingleList ClosureBody  \\
+(\arabic{equation}) & AtExp \refstepcounter{equation}\label{prod:AtExp}  \: \xcd"at" \xcd"(" PlaceExp \xcd")" ClosureBody  \\
 
 
 \end{bbgrammarappendix}
 
 \begin{bbgrammarappendix}
 
-(\arabic{equation}) & AtStatement \refstepcounter{equation}\label{prod:AtStatement}  \: \xcd"at" PlaceExpSingleList Statement  \\
+(\arabic{equation}) & AtStatement \refstepcounter{equation}\label{prod:AtStatement}  \: \xcd"at" \xcd"(" PlaceExp \xcd")" Statement  \\
 
 
 \end{bbgrammarappendix}
@@ -219,9 +219,10 @@ In this grammar, $X^?$ denotes an optional $X$ element.
 
 \begin{bbgrammarappendix}
 
-(\arabic{equation}) & BlockStatement \refstepcounter{equation}\label{prod:BlockStatement}  \: LocVarDeclStmt  \\
+(\arabic{equation}) & BlockInteriorStatement \refstepcounter{equation}\label{prod:BlockInteriorStatement}  \: LocVarDeclStmt  \\
 
  &    \| ClassDecl \\
+ &    \| StructDecl \\
  &    \| TypeDefDecl \\
  &    \| Statement \\
 
@@ -229,9 +230,9 @@ In this grammar, $X^?$ denotes an optional $X$ element.
 
 \begin{bbgrammarappendix}
 
-(\arabic{equation}) & BlockStatements \refstepcounter{equation}\label{prod:BlockStatements}  \: BlockStatement  \\
+(\arabic{equation}) & BlockStatements \refstepcounter{equation}\label{prod:BlockStatements}  \: BlockInteriorStatement  \\
 
- &    \| BlockStatements BlockStatement \\
+ &    \| BlockStatements BlockInteriorStatement \\
 
 \end{bbgrammarappendix}
 
@@ -299,9 +300,8 @@ In this grammar, $X^?$ denotes an optional $X$ element.
 
 \begin{bbgrammarappendix}
 
-(\arabic{equation}) & ClassDecl \refstepcounter{equation}\label{prod:ClassDecl}  \: StructDecl  \\
+(\arabic{equation}) & ClassDecl \refstepcounter{equation}\label{prod:ClassDecl}  \: Mods\opt \xcd"class" Id TypeParamsI\opt Properties\opt Guard\opt Super\opt Interfaces\opt ClassBody  \\
 
- &    \| NormalClassDecl \\
 
 \end{bbgrammarappendix}
 
@@ -310,7 +310,7 @@ In this grammar, $X^?$ denotes an optional $X$ element.
 (\arabic{equation}) & ClassInstCreationExp \refstepcounter{equation}\label{prod:ClassInstCreationExp}  \: \xcd"new" TypeName TypeArgs\opt \xcd"(" ArgumentList\opt \xcd")" ClassBody\opt  \\
 
  &    \| Primary \xcd"." \xcd"new" Id TypeArgs\opt \xcd"(" ArgumentList\opt \xcd")" ClassBody\opt \\
- &    \| ValueOrTypeName \xcd"." \xcd"new" Id TypeArgs\opt \xcd"(" ArgumentList\opt \xcd")" ClassBody\opt \\
+ &    \| FullyQualifiedName \xcd"." \xcd"new" Id TypeArgs\opt \xcd"(" ArgumentList\opt \xcd")" ClassBody\opt \\
 
 \end{bbgrammarappendix}
 
@@ -320,10 +320,7 @@ In this grammar, $X^?$ denotes an optional $X$ element.
 
  &    \| MethodDecl \\
  &    \| PropertyMethodDecl \\
- &    \| TypeDefDecl \\
- &    \| ClassDecl \\
- &    \| InterfaceDecl \\
- &    \| \xcd";" \\
+ &    \| TypeDecl \\
 
 \end{bbgrammarappendix}
 
@@ -418,14 +415,6 @@ In this grammar, $X^?$ denotes an optional $X$ element.
 
 \begin{bbgrammarappendix}
 
-(\arabic{equation}) & Conjunction \refstepcounter{equation}\label{prod:Conjunction}  \: Exp  \\
-
- &    \| Conjunction \xcd"," Exp \\
-
-\end{bbgrammarappendix}
-
-\begin{bbgrammarappendix}
-
 (\arabic{equation}) & ConstantExp \refstepcounter{equation}\label{prod:ConstantExp}  \: Exp  \\
 
 
@@ -436,6 +425,14 @@ In this grammar, $X^?$ denotes an optional $X$ element.
 (\arabic{equation}) & ConstrainedType \refstepcounter{equation}\label{prod:ConstrainedType}  \: NamedType  \\
 
  &    \| AnnotatedType \\
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}
+
+(\arabic{equation}) & ConstraintConjunction \refstepcounter{equation}\label{prod:ConstraintConjunction}  \: Exp  \\
+
+ &    \| ConstraintConjunction \xcd"," Exp \\
 
 \end{bbgrammarappendix}
 
@@ -476,13 +473,6 @@ In this grammar, $X^?$ denotes an optional $X$ element.
 (\arabic{equation}) & DepNamedType \refstepcounter{equation}\label{prod:DepNamedType}  \: SimpleNamedType DepParams  \\
 
  &    \| ParamizedNamedType DepParams \\
-
-\end{bbgrammarappendix}
-
-\begin{bbgrammarappendix}
-
-(\arabic{equation}) & DepParams \refstepcounter{equation}\label{prod:DepParams}  \: \xcd"{" ExistentialList\opt Conjunction\opt \xcd"}"  \\
-
 
 \end{bbgrammarappendix}
 
@@ -530,14 +520,6 @@ In this grammar, $X^?$ denotes an optional $X$ element.
 
 \begin{bbgrammarappendix}
 
-(\arabic{equation}) & ExistentialList \refstepcounter{equation}\label{prod:ExistentialList}  \: Formal  \\
-
- &    \| ExistentialList \xcd";" Formal \\
-
-\end{bbgrammarappendix}
-
-\begin{bbgrammarappendix}
-
 (\arabic{equation}) & Exp \refstepcounter{equation}\label{prod:Exp}  \: AsstExp  \\
 
 
@@ -547,7 +529,7 @@ In this grammar, $X^?$ denotes an optional $X$ element.
 
 (\arabic{equation}) & ExpName \refstepcounter{equation}\label{prod:ExpName}  \: Id  \\
 
- &    \| ValueOrTypeName \xcd"." Id \\
+ &    \| FullyQualifiedName \xcd"." Id \\
 
 \end{bbgrammarappendix}
 
@@ -582,9 +564,6 @@ In this grammar, $X^?$ denotes an optional $X$ element.
 
  &    \| \xcd"super" \xcd"." Id \\
  &    \| ClassName \xcd"." \xcd"super"  \xcd"." Id \\
- &    \| Primary \xcd"." \xcd"class"  \\
- &    \| \xcd"super" \xcd"." \xcd"class"  \\
- &    \| ClassName \xcd"." \xcd"super"  \xcd"." \xcd"class"  \\
 
 \end{bbgrammarappendix}
 
@@ -708,6 +687,14 @@ In this grammar, $X^?$ denotes an optional $X$ element.
 
 \begin{bbgrammarappendix}
 
+(\arabic{equation}) & FullyQualifiedName \refstepcounter{equation}\label{prod:FullyQualifiedName}  \: Id  \\
+
+ &    \| FullyQualifiedName \xcd"." Id \\
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}
+
 (\arabic{equation}) & FunctionType \refstepcounter{equation}\label{prod:FunctionType}  \: TypeParams\opt \xcd"(" FormalList\opt \xcd")" Guard\opt Offers\opt \xcd"=>" Type  \\
 
 
@@ -813,7 +800,7 @@ In this grammar, $X^?$ denotes an optional $X$ element.
 
 \begin{bbgrammarappendix}
 
-(\arabic{equation}) & InterfaceDecl \refstepcounter{equation}\label{prod:InterfaceDecl}  \: NormalInterfaceDecl  \\
+(\arabic{equation}) & InterfaceDecl \refstepcounter{equation}\label{prod:InterfaceDecl}  \: Mods\opt \xcd"interface" Id TypeParamsI\opt Properties\opt Guard\opt ExtendsInterfaces\opt InterfaceBody  \\
 
 
 \end{bbgrammarappendix}
@@ -824,10 +811,7 @@ In this grammar, $X^?$ denotes an optional $X$ element.
 
  &    \| PropertyMethodDecl \\
  &    \| FieldDecl \\
- &    \| ClassDecl \\
- &    \| InterfaceDecl \\
- &    \| TypeDefDecl \\
- &    \| \xcd";" \\
+ &    \| TypeDecl \\
 
 \end{bbgrammarappendix}
 
@@ -991,17 +975,7 @@ In this grammar, $X^?$ denotes an optional $X$ element.
 
 (\arabic{equation}) & MethodName \refstepcounter{equation}\label{prod:MethodName}  \: Id  \\
 
- &    \| ValueOrTypeName \xcd"." Id \\
-
-\end{bbgrammarappendix}
-
-\begin{bbgrammarappendix}
-
-(\arabic{equation}) & MethodSelection \refstepcounter{equation}\label{prod:MethodSelection}  \: MethodName \xcd"." \xcd"(" FormalList\opt \xcd")"  \\
-
- &    \| Primary \xcd"." Id \xcd"." \xcd"(" FormalList\opt \xcd")" \\
- &    \| \xcd"super" \xcd"." Id \xcd"." \xcd"(" FormalList\opt \xcd")" \\
- &    \| ClassName \xcd"." \xcd"super"  \xcd"." Id \xcd"." \xcd"(" FormalList\opt \xcd")" \\
+ &    \| FullyQualifiedName \xcd"." Id \\
 
 \end{bbgrammarappendix}
 
@@ -1080,20 +1054,6 @@ In this grammar, $X^?$ denotes an optional $X$ element.
 
 \begin{bbgrammarappendix}
 
-(\arabic{equation}) & NormalClassDecl \refstepcounter{equation}\label{prod:NormalClassDecl}  \: Mods\opt \xcd"class" Id TypeParamsI\opt Properties\opt Guard\opt Super\opt Interfaces\opt ClassBody  \\
-
-
-\end{bbgrammarappendix}
-
-\begin{bbgrammarappendix}
-
-(\arabic{equation}) & NormalInterfaceDecl \refstepcounter{equation}\label{prod:NormalInterfaceDecl}  \: Mods\opt \xcd"interface" Id TypeParamsI\opt Properties\opt Guard\opt ExtendsInterfaces\opt InterfaceBody  \\
-
-
-\end{bbgrammarappendix}
-
-\begin{bbgrammarappendix}
-
 (\arabic{equation}) & OfferStatement \refstepcounter{equation}\label{prod:OfferStatement}  \: \xcd"offer" Exp \xcd";"  \\
 
 
@@ -1103,29 +1063,6 @@ In this grammar, $X^?$ denotes an optional $X$ element.
 
 (\arabic{equation}) & Offers \refstepcounter{equation}\label{prod:Offers}  \: \xcd"offers" Type  \\
 
-
-\end{bbgrammarappendix}
-
-\begin{bbgrammarappendix}
-
-(\arabic{equation}) & OperatorFunction \refstepcounter{equation}\label{prod:OperatorFunction}  \: TypeName \xcd"." \xcd"+"  \\
-
- &    \| TypeName \xcd"." \xcd"-" \\
- &    \| TypeName \xcd"." \xcd"*" \\
- &    \| TypeName \xcd"." \xcd"/" \\
- &    \| TypeName \xcd"." \xcd"%" \\
- &    \| TypeName \xcd"." \xcd"&" \\
- &    \| TypeName \xcd"." \xcd"|" \\
- &    \| TypeName \xcd"." \xcd"^" \\
- &    \| TypeName \xcd"." \xcd"<<" \\
- &    \| TypeName \xcd"." \xcd">>" \\
- &    \| TypeName \xcd"." \xcd">>>" \\
- &    \| TypeName \xcd"." \xcd"<" \\
- &    \| TypeName \xcd"." \xcd"<=" \\
- &    \| TypeName \xcd"." \xcd">=" \\
- &    \| TypeName \xcd"." \xcd">" \\
- &    \| TypeName \xcd"." \xcd"==" \\
- &    \| TypeName \xcd"." \xcd"!=" \\
 
 \end{bbgrammarappendix}
 
@@ -1164,13 +1101,6 @@ In this grammar, $X^?$ denotes an optional $X$ element.
 \begin{bbgrammarappendix}
 
 (\arabic{equation}) & PlaceExp \refstepcounter{equation}\label{prod:PlaceExp}  \: Exp  \\
-
-
-\end{bbgrammarappendix}
-
-\begin{bbgrammarappendix}
-
-(\arabic{equation}) & PlaceExpSingleList \refstepcounter{equation}\label{prod:PlaceExpSingleList}  \: \xcd"(" PlaceExp \xcd")"  \\
 
 
 \end{bbgrammarappendix}
@@ -1241,8 +1171,6 @@ In this grammar, $X^?$ denotes an optional $X$ element.
  &    \| ClassInstCreationExp \\
  &    \| FieldAccess \\
  &    \| MethodInvocation \\
- &    \| MethodSelection \\
- &    \| OperatorFunction \\
 
 \end{bbgrammarappendix}
 
@@ -1460,7 +1388,7 @@ In this grammar, $X^?$ denotes an optional $X$ element.
 (\arabic{equation}) & Type \refstepcounter{equation}\label{prod:Type}  \: FunctionType  \\
 
  &    \| ConstrainedType \\
- &    \| VoidType \\
+ &    \| Void \\
 
 \end{bbgrammarappendix}
 
@@ -1483,6 +1411,7 @@ In this grammar, $X^?$ denotes an optional $X$ element.
 
 (\arabic{equation}) & TypeDecl \refstepcounter{equation}\label{prod:TypeDecl}  \: ClassDecl  \\
 
+ &    \| StructDecl \\
  &    \| InterfaceDecl \\
  &    \| TypeDefDecl \\
  &    \| \xcd";" \\
@@ -1529,18 +1458,9 @@ In this grammar, $X^?$ denotes an optional $X$ element.
 
 \begin{bbgrammarappendix}
 
-(\arabic{equation}) & TypeParamI \refstepcounter{equation}\label{prod:TypeParamI}  \: Id  \\
+(\arabic{equation}) & TypeParamIList \refstepcounter{equation}\label{prod:TypeParamIList}  \: TypeParam  \\
 
- &    \| \xcd"+" Id \\
- &    \| \xcd"-" Id \\
-
-\end{bbgrammarappendix}
-
-\begin{bbgrammarappendix}
-
-(\arabic{equation}) & TypeParamIList \refstepcounter{equation}\label{prod:TypeParamIList}  \: TypeParamI  \\
-
- &    \| TypeParamIList \xcd"," TypeParamI \\
+ &    \| TypeParamIList \xcd"," TypeParam \\
 
 \end{bbgrammarappendix}
 
@@ -1602,14 +1522,6 @@ In this grammar, $X^?$ denotes an optional $X$ element.
 
 \begin{bbgrammarappendix}
 
-(\arabic{equation}) & ValueOrTypeName \refstepcounter{equation}\label{prod:ValueOrTypeName}  \: Id  \\
-
- &    \| ValueOrTypeName \xcd"." Id \\
-
-\end{bbgrammarappendix}
-
-\begin{bbgrammarappendix}
-
 (\arabic{equation}) & VarDeclWType \refstepcounter{equation}\label{prod:VarDeclWType}  \: Id HasResultType \xcd"=" VariableInitializer  \\
 
  &    \| \xcd"[" IdList \xcd"]" HasResultType \xcd"=" VariableInitializer \\
@@ -1659,7 +1571,7 @@ In this grammar, $X^?$ denotes an optional $X$ element.
 
 \begin{bbgrammarappendix}
 
-(\arabic{equation}) & VoidType \refstepcounter{equation}\label{prod:VoidType}  \: \xcd"void"  \\
+(\arabic{equation}) & Void \refstepcounter{equation}\label{prod:Void}  \: \xcd"void"  \\
 
 
 \end{bbgrammarappendix}

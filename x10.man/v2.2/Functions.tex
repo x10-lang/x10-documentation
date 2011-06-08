@@ -224,7 +224,7 @@ which is to say, \xcd`Int{self!=3}`.
 
 \Xten{} provides first-class, typed functions, often called {\em closures}.
 
-%##(ClosureExp Formals Guard DepParams ExistentialList HasResultType ClosureBody
+%##(ClosureExp Formals Guard DepParams  HasResultType ClosureBody
 \begin{bbgrammar}
 %(FROM #(prod:ClosureExp)#)
           ClosureExp \: Formals Guard\opt HasResultType\opt Offers\opt \xcd"=>" ClosureBody & (\ref{prod:ClosureExp}) \\
@@ -232,11 +232,6 @@ which is to say, \xcd`Int{self!=3}`.
              Formals \: \xcd"(" FormalList\opt \xcd")" & (\ref{prod:Formals}) \\
 %(FROM #(prod:Guard)#)
                Guard \: DepParams & (\ref{prod:Guard}) \\
-%(FROM #(prod:DepParams)#)
-           DepParams \: \xcd"{" ExistentialList\opt Conjunction\opt \xcd"}" & (\ref{prod:DepParams}) \\
-%(FROM #(prod:ExistentialList)#)
-     ExistentialList \: Formal & (\ref{prod:ExistentialList}) \\
-                     \| ExistentialList \xcd";" Formal \\
 %(FROM #(prod:HasResultType)#)
        HasResultType \: \xcd":" Type & (\ref{prod:HasResultType}) \\
                      \| \xcd"<:" Type \\
