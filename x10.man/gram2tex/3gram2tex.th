@@ -7,7 +7,7 @@
   var debugly := false;
 
   renamings = [
-     ["Declaration", "Decl"],
+     ["Declaration", "Decln"],
      ["Parameter", "Param"],
      ["Instance", "Inst"],
      ["Expression", "Exp"],
@@ -31,6 +31,16 @@
      ["SwitchBlockStatementGroups", "SwitchBlockGroups"],
      ["SwitchBlockStatementGroup", "SwitchBlockGroup"],
      ["AmbiguousName", "ValueOrTypeName"],
+     ["Operator", "Op"],
+     ["Statement", "Stmt"],
+     ["Property", "Prop"],
+     ["Declarator", "Declr"],
+     ["ClassInst", "Ob"],
+     ["Binary", "Bin"],
+     ["ExplicitConversion", "ExplConv"],
+     ["ImplicitConversion", "ImplConv"],
+     ["Invocation", "Invo"],
+     
   ];
 
   fun renamed(s) = 
@@ -68,6 +78,17 @@
     | trans("Error.*" / []) = null;
     | trans(".*OBSOLETE.*" / []) = null;
     | trans(".*FUTURE.*" / []) = null;
+    | trans("><"/_) = {println("Beware!  >< and friends are getting eliminated for 2.2.0-ness!"); null;}
+    | trans("<>"/_) = null;
+    | trans("\\.\\.="/_) = null;
+    | trans("->="/_) = null;
+    | trans("<-="/_) = null;
+    | trans("-<="/_) = null;
+    | trans(">-="/_) = null;
+    | trans("\\*\\*="/_) = null;
+    | trans("<>="/_) = null;
+    | trans("><="/_) = null;
+    | trans("~="/_) = null;
     | trans("\\\$.*" / []) = "";
     | trans("'(.*)'"/[s]) = xcd(s);
     | trans(s && "[^a-zA-Z].*" / []) = "" + xcd(s);
@@ -145,7 +166,7 @@
 
   var currentRule := null;
 
-  fun normalizeNonterm(nonterm) = nonterm.trim; 
+  fun normalizeNonterm(nonterm) = trans(nonterm.trim); 
   
   fun grabTerminal(line) {
      tline = line.trim;
@@ -161,7 +182,12 @@
   var RuleNumber := 0;
   
   fun grabStarter(lineno, lhs, rhs) {
-     name = normalizeNonterm(lhs);
+     var name := normalizeNonterm(lhs);
+     if (name == null) {
+        name := lhs; // for names like ErrorPrimaryPrefix -- these names never get used anyhow.
+        //println("Oh nose! The rule with lhs=$lhs and rhs=$rhs has no normalized lhs!");        
+     }
+     //println("name=$name");
      if (rules[name] ~ +rule) {
         currentRule := rule;
         //println("grabStarter: new rule $rule");
@@ -266,7 +292,10 @@
        if(rules(nt) ~ <v=rule>) {
          if (rule.copyInMainDoc ~ +c) dst.writeln(c);
        }
-       else {
+       else if (rules(renamed(nt)) ~ <v=rule>) {
+         if (rule.copyInMainDoc ~ +c) dst.writeln(c);
+       }
+       else {  
          println("putRulesInTexFile: Hey!  No rule for $nt! in $dst line $line");
        }
     }
