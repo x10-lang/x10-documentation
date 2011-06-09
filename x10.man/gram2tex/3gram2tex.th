@@ -1,0 +1,372 @@
+{
+
+  inputFileName = "/Users/bard/x10/x10-trunk/x10.compiler/src/x10/parser/x10.l";
+  texOutputDir = "/Users/bard/x10/manual/x10.man/v2.2";
+  productionsText = inputFileName.file.contents;
+
+  var debugly := false;
+
+  renamings = [
+     ["Declaration", "Decl"],
+     ["Parameter", "Param"],
+     ["Instance", "Inst"],
+     ["Expression", "Exp"],
+     ["Constructor", "Ctor"],
+     ["MethodModifiersopt", "MethMods"],
+     ["Modifier", "Mod"],
+     ["opt", "\\opt"],
+     ["_", ""],     
+     ["Identifier","Id"],
+     ["FormalParam", "Formal"],
+     ["WhereClause", "Guard"],
+     ["LocalVariableDeclStatement", "LocVarDeclStmt"],
+     ["LocalVariableDecl", "LocVarDecl"],
+     ["TypeParamsWithVariance", "TypeParamsI"],
+     ["TypeParamWithVariance", "TypeParamI"],
+     ["TypeArguments", "TypeArgs"],
+     ["AssignmentOperator", "AsstOp"],
+     ["AssignmentExp", "AsstExp"],
+     ["VariableDeclaratorWithType", "VarDeclWType"],
+     ["VariableDeclaratorsWithType", "VarDeclsWType"],
+     ["SwitchBlockStatementGroups", "SwitchBlockGroups"],
+     ["SwitchBlockStatementGroup", "SwitchBlockGroup"],
+     ["AmbiguousName", "ValueOrTypeName"],
+  ];
+
+  fun renamed(s) = 
+      %after(t | for [x,y] <- renamings, var t := s %then t.replace(x,y));
+
+  productionsLines = renamed(productionsText).split("\n");
+
+  bs = "\\";
+  texNL = "$bs$bs";
+
+  var inProduction := false;
+  var nextLineShouldNotBeContinue := true;
+  var scanningTerminals := false;
+  var scanningSoftKeywords := false;
+  var skipThisProduction := false;
+  
+  linesPerLaterPage = 50;
+  var linesPerPage := 15; // for first page.
+
+  charsOfRHSPerNewLine = 60;
+
+  var linesOnThisPage := 0;
+  
+  terminals = ord();
+  softKeywords = ord();
+
+
+  fun xcd(s) = '\\xcd"$s"';
+
+  fun quotify(s) = s.replace("\$", "\\\$");
+
+
+
+  fun trans(".") = xcd(".");
+    | trans("Error.*" / []) = null;
+    | trans(".*OBSOLETE.*" / []) = null;
+    | trans(".*FUTURE.*" / []) = null;
+    | trans("\\\$.*" / []) = "";
+    | trans("'(.*)'"/[s]) = xcd(s);
+    | trans(s && "[^a-zA-Z].*" / []) = "" + xcd(s);
+    | trans(s && (s in terminals.lst)? ) = xcd(s);
+    | trans(s) = (s);
+
+  fun internalize(rhs) = 
+    %[word.trim | for word <- rhs.trim.split(" +")];
+
+  rules = map();
+  
+  fun keepSym(".*OBSOLETE.*"/_) = false;
+    | keepSym(_) = true;
+
+  fun genRHS(rhs) {
+    // may return null if this line should not be genned
+    pocked = %[trans(sym) | for sym <- rhs, if keepSym(sym)]; 
+    if (null in pocked) {
+       return null;
+    }
+    return " ".join(pocked);
+  }genRHS
+
+  class Rule(number, lhs, var rhs's) {
+     new Rule(Number, Lhs, a_rhs) { 
+        lhs = Lhs.trim; 
+        number = Number;
+        this.rhs's := [internalize(a_rhs)]; 
+        // println("Making a rule..." + this.lhs + "; " + this.rhs's);
+        }
+     def add(another_rhs) { 
+        this.rhs's := [this.rhs's ..., internalize(another_rhs)]; 
+        // println("Now: " + this);
+        }
+     def str = 
+       ("(%3d)".format(number)) + lhs + " -> (" + "|".join(rhs's) + ")";
+
+     def skipThis = lhs ~ ".*opt" / [] 
+                  || lhs ~ ".*\\\$.*" / _
+                  || trans(lhs) == null;
+     def inGrammarTex = {
+         if (this.skipThis) {
+            //println("inGrammarTex: skipping " + lhs);
+            return null;
+            }
+         lbl = "\\refstepcounter{equation}\\label{prod:" + lhs.trim + "} ";
+         eqno = "(\\arabic{equation})";
+         // gennedRHS's = %[ genRHS(rhs) | for rhs <- rhs's ];
+         gennedRHS's = %[ g | for rhs <- rhs's, g = genRHS(rhs), if g != null];
+         if (gennedRHS's == []) return null;
+         rone = gennedRHS's(0);
+//         firstLine = "$lhs $lbl $bs: $rone $eqno \\\\\n";
+//         rrest = %[ "    \\| $r \\\\\n" | for r <- gennedRHS's.tail];
+         firstLine = "$eqno & $lhs $lbl $bs: $rone  \\\\\n";
+         rrest = %[ " &    \\| $r \\\\\n" | for r <- gennedRHS's.tail];
+         return firstLine + "\n" + "".join(rrest);
+     }inGrammarTex
+     
+     def copyInMainDoc {
+        if (this.skipThis) return null;
+        provline = "%(FROM #(prod:$lhs)#)\n" ;
+        gennedRHS's = %[ g | for rhs <- rhs's, g = genRHS(rhs), if g != null];
+        if (gennedRHS's == []) return null;
+        rone = gennedRHS's(0);
+        lhs20 = "%20s".format(lhs);
+        firstline = 
+          "$lhs20 \\: $rone & (\\ref{prod:$lhs}) \\\\\n";
+        rrest = 
+          %["                     \\| $r \\\\\n" | for r <- gennedRHS's.tail];
+        begin = ""; // "\\begin{bbgrammar}\n";
+        end   = ""; // "\\end{bbgrammar}\n";
+        return begin + provline + firstline + "".join(rrest) + end;
+     }copyInMainDoc
+  }
+
+  var currentRule := null;
+
+  fun normalizeNonterm(nonterm) = nonterm.trim; 
+  
+  fun grabTerminal(line) {
+     tline = line.trim;
+     if (tline != "") {
+        //println("Gotta termianl $tline");
+        terminals @= tline;
+     }
+     if (scanningSoftKeywords) {
+        softKeywords @= tline;
+     }
+  }
+
+  var RuleNumber := 0;
+  
+  fun grabStarter(lineno, lhs, rhs) {
+     name = normalizeNonterm(lhs);
+     if (rules[name] ~ +rule) {
+        currentRule := rule;
+        //println("grabStarter: new rule $rule");
+        currentRule.add(rhs);
+     }
+     else {
+        currentRule := Rule(RuleNumber, name, rhs);
+        RuleNumber += 1;
+        rules[name] := currentRule;
+        //println("grabStarter: adding rule for $name");
+     }
+  }
+
+  fun grabContinuation(lineno, cont) {
+    currentRule.add(cont);
+    //println("grabContinuation: $cont ++> $currentRule");
+  }
+
+
+  fun readProductions() {
+     var seenTerminalsYet := false;
+     for(baseline <- productionsLines) {
+       line = (baseline);
+       //println("line=$line");
+       if (line ~ "^Terminals: *"/[]) {
+          scanningTerminals := true;
+          scanningSoftKeywords := false;
+          seenTerminalsYet := true;
+          //println("Terminals コ $line -- $seenTerminalsYet");
+       }
+       else if (! seenTerminalsYet) {
+          //println("-not seen terminals! skipping on $line");
+       }
+       else if (line ~ "^Types:" / []) {
+         // This generally means we're after the rules we're parsing, 
+         // and on to other parts of x10.l
+         //println("Tyeps コ $line");
+         break;
+       }
+       else if (line ~ "^Soft Keywords: *"/[]) {
+          scanningTerminals := true;
+          scanningSoftKeywords := true;
+         //println("Soft Keyword コ $line");
+
+       }
+       else if (scanningTerminals && line ~ "^[A-Z].*"/[]) {
+         //println("End Scanning Terminals コ $line");
+          scanningTerminals := false;
+       }
+       else if (scanningTerminals) {
+          //println("SCANTERM $line");
+          grabTerminal(line);
+       }
+       else if (line ~ "([0-9]+) +([^:]*)::=(.*)" / [lineno, lhs, rhs]) {
+          //println("STARTER: $lineno $lhs $rhs");
+          grabStarter(lineno, lhs, rhs);
+       }
+       else if (line ~ "([0-9]+) +\\|(.*)" / [lineno, cont]) {
+          //println("CONTINUATION: $lineno $cont");
+          grabContinuation(lineno, cont);
+
+       }
+       else if (line ~ "([0-9]+)(.*)" / [lineno, eep]) {
+          //println("WTF-WTF-WTF: $lineno $eep");
+       }
+     }
+  }readProductions
+
+  fun writeOut(baseFileName, out:list) {
+     fileName = texOutputDir + baseFileName;
+     newFileContents = out.joined("\n");
+     f = fileName.file;
+     f.clear!;
+     f.writeln(newFileContents);
+     println("writeOut: wrote $f");
+  }writeOut
+
+  fun genGrammarTex() {
+    out = ord();
+    out @= "\\chapter{Grammar}\\label{Grammar}\n\n";
+    out @= "In this grammar, \$X^?\$ denotes an optional \$X\$ element.\n\n";
+    
+    for(rule <- %sort[ rule %< rule.lhs | for <v=rule>  <- rules]) {
+       if (rule.inGrammarTex ~ +v) {
+         //println("genGrammarTex: genning " + rule.lhs);
+         out @= "\\begin{bbgrammarappendix}\n";
+         out @= v;
+         out @= "\\end{bbgrammarappendix}\n";
+       }
+    }
+    
+    
+    writeOut("/Grammar.tex", out.lst);
+  }genGrammarTex
+  
+  
+  fun putRulesInTexFile(dst:file, nonterminals, line) {
+    dst.writeln("\\begin{bbgrammar}\n");
+    if(debugly) println("putRulesInTexFile: dst=$dst nonterminals=$nonterminals");
+    for(nonterminal <- nonterminals.split(" +")) {
+       nt = nonterminal.trim;
+       if(rules(nt) ~ <v=rule>) {
+         if (rule.copyInMainDoc ~ +c) dst.writeln(c);
+       }
+       else {
+         println("putRulesInTexFile: Hey!  No rule for $nt! in $dst line $line");
+       }
+    }
+    dst.writeln("\\end{bbgrammar}\n");
+  }putRulesInTexFile
+  
+  fun grammarSkippable(l) {
+    return 
+       l.contains?("{bbgrammar}")
+    || l.contains?("%(FROM")
+    || l.contains?("\\:")
+    || l.contains?("\\|");
+  }
+  
+  fun replaceIncludedRules(src:file, dst:file) {
+    /*
+      Look for regions of the form 
+         %##(A B C
+         any
+         thing
+         here
+         %##)
+      Replace the "any thing here" by the proper TeXualization of the grammar rules
+      for A, B, and C.
+      For safety, only lines satisfying a predicate grammmarSkippable are skipped quietly
+    */
+    // println("rir($src,$dst)");
+    srcLines = src.contents.split("\n");
+
+    if (dst.exists?) dst.clear!;
+    // println("rir" + " (srcLines.num)=" + (srcLines.num));
+    var inGram := false;
+    var n := 0;     
+    debugly := false; // (src.name ~ "Types.tex"/_);
+    // println("debuggging $src? -- $debugly");
+    for(l <- srcLines) {
+      if (debugly) println("l=$l");
+      if (l ~ "^%##\\((.*)" / [nonterminals]) {
+         if(debugly) println("Found rule for $nonterminals at line $n in $src" );
+         dst.writeln(l);
+         putRulesInTexFile(dst, nonterminals, n);
+         inGram := true;
+      }
+      else if (l ~  "^%##\\)" / _) {
+         if(debugly) println("Found end at line $n in $src");
+         dst.writeln(l);
+         inGram := false;
+      }
+      else if (l ~  "^%##" / _) {
+         println("Found anomalous %^^ line: '$l' in $src");
+      }
+      else if (inGram) {
+         if(debugly) println("inGram($src) ~ Skipping line $n, of $l");
+         if (!grammarSkippable(l)) {
+            println("ODD SKIP: $l");
+         }
+      }
+      else {
+         // Normally, transmit line
+         dst.writeln(l);
+      }
+      n += 1;
+    }
+    dst.flush();
+    // Now twiddle the files... Originals go in ./prev/FOO.tex.prev
+
+    srcParentName = src.parent.str;
+    //println("srcParentName=$srcParentName");
+    //prevsrc = src.str + ".prev";
+    srcName = src.name;
+    prevsrc = "$srcParentName/prev/$srcName.prev";
+    //println("prevsrc=$prevsrc");
+    prevscrfile = prevsrc.file;
+
+    prevscrfile.del!;
+    nSrc = src.num;
+    src.rename(prevsrc);
+    nDst = dst.num;
+    dst.rename(src.str);
+    if ((nSrc - nDst).abs > 2) {
+      println(src.name + " changed from " + nSrc + " to " + nDst  +  " bytes, a difference of " + (nDst - nSrc));
+    }
+    else {
+      println("..." + src.name + ": no change from $nSrc bytes.");
+    }
+  }
+  
+  
+  fun replaceIncludedRulesInFiles() {
+     for(f <- texOutputDir.file.asDir.files) if (f.str.endsWith?(".tex")) {
+        replaceIncludedRules(f, "$f.owt".file);
+     }
+  }replaceIncludedRulesInFiles
+
+  // MAIN
+  readProductions();
+  //for(<v=rule> <- rules) {println("RULE: " + rule.str);}  
+  writeOut("/RawRules.txt", %sort[ rule %< rule.number | for <v=rule> <- rules]);  
+  genGrammarTex();
+  
+  replaceIncludedRulesInFiles();
+
+}
