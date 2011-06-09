@@ -197,8 +197,9 @@ then
 
 A type of form {$(5)$}, \xcd`F`, such as \xcd`(x:Int)=>Int`, is a function type.
 Its values are functions, \eg, the squaring function taking integers to
-integers. They are
-described in \Sref{nuFunctionTypes}.
+integers. Function types are
+described in \Sref{FunctionTypes}, 
+and computing with functions is described in \Sref{Functions}.
 
 \begin{ex}
 \xcd`square` is the squaring function on integers.  It is used in the
@@ -1094,16 +1095,16 @@ statements, and dynamic tests.  X10 programs can do better, with {\em
   constraints} on types, and guards on class, method and type
 definitions.
 
-\bard{Vijay said we neet distinguish between a {\bf constraint expression}
-(which can appear in places like a property method definition or a guard), 
-and a {\bf constrained type} like \xcd`T{c}`.  That is, a constraint doesn't
-need to be {\bf attached}.
-}
 
-A constraint is a boolean expression \xcd`e` of a quite limited form. A
+
+A constraint expression is a Boolean expression \xcd`e` of a quite limited
+form (\Sref{PermittedConstraints}). . A
 constraint expression \xcd`c` may be attached to a basic type \xcd`T`, giving
 a {\em constrained type} \xcd`T{c}`. The values of type \xcd`T{c}` are the
 values of \xcd`T` for which \xcd`c` is true.
+Constraint expressions also serve as guards on methods (\Sref{sect:Methods})
+and functions (\Sref{FunctionLiterals}), and
+invariants on unit types (\Sref{DepType:ClassGuard}.
 
 \index{self}When constraining a value of type \xcd`T`, \xcd`self` refers to the object of
 type \xcd`T` which is being constrained.  For example, \xcd`Int{self == 4}` is
@@ -1317,7 +1318,7 @@ If you confirm this (or deny it), I'll write a JIRA about it.
 Only a few kinds of expressions can appear in constraints.  For fundamental
 reasons of mathematical logic, the more kinds of expressions that can appear
 in constraints, the harder it is to compute the essential properties of
-constrained type -- in particular, the harder it is to compute 
+constrained types -- in particular, the harder it is to compute 
 \xcd`A{c} <: B{d}` or even \xcd`E : T{c}`.  It doesn't take much to make this
 basic fact undecidable. 
 In order to make sure that it stays decidable, X10 places stringent restrictions on
@@ -1853,93 +1854,6 @@ and operate efficiently on them, in other cases it would not.
 
 
 
-\section{Default Values}
-\index{default value}
-\index{type!default value}
-\label{DefaultValues}
-
-Some types have default values, and some do not. Default values are used in
-situations where variables can legitimately be used without having been
-initialized; types without default values cannot be used in such situations.
-For example, a field of an object \xcd`var x:T` can be left uninitialized if
-\xcd`T` has a default value; it cannot be if \xcd`T` does not. Similarly, a
-transient (\Sref{TransientFields}) field \xcd`transient val x:T` is only
-allowed if \xcd`T` has a default value.
-
-Default values, or lack of them, is defined thus:
-\begin{itemize}
-\item The fundamental numeric types (\xcd`Int`, \xcd`UInt`,
-      \xcd`Long`, \xcd`ULong`, 
-  \xcd`Short`, \xcd`UShort`, \xcd`Byte`,
-   \xcd`UByte`, 
-      \xcd`Float`, \xcd`Double`) all have default value 0.
-\item \xcd`Boolean` has default value \xcd`false`.
-\item \xcd`Char` has default value \xcd`'\0'`.
-\item If every field of a struct type \xcd`T` has a default value, then
-      \xcd`T` has a default value.  If any field of \xcd`T` has no default
-      value, then \xcd`T` does not.  (\Sref{sect:DefaultValuesOfStructs})
-\item A function type has a default value of \xcd`null`.
-\item A class type has a default value of \xcd`null`.
-\item The constrained type \xcd`T{c}` has the same default value as \xcd`T` if
-      that default value satisfies \xcd`c`.  If the default value of \xcd`T`
-      doesn't satisfy \xcd`c`, then \xcd`T{c}` has no default value.
-\end{itemize}
-
-\begin{ex}
-\xcd`var x: Int{x != 4}` has default value 0, which is allowed
-because \xcd`0 != 4` satisfies the constraint on \xcd`x`. 
-\xcd`var y : Int{y==4}` has no default value, because \xcd`0` does not satisfy \xcd`y==4`.
-The fact that \xcd`Int{y==4}` has precisely one value, \viz{} 4, doesn't
-matter; the only candidate for its default value, as for any subtype of
-\xcd`Int`, is 0. \xcd`y` must be initialized before it is used.
-\end{ex}
-
-The predicate \xcd`T haszero` tells if the type \xcd`T` has a default value.
-\xcd`haszero` may be used in constraints. 
-
-\begin{ex}
-The following code defines a sort of cell holding a single value of type
-\xcd`T`. The cell is initially empty -- that is, has \xcd`T`'s zero value --
-but may be filled later. 
-%~~gen ^^^ TypesHaszero10
-% package TypesHaszero10;
-%~~vis
-\begin{xten}
-class Cell0[T]{T haszero} {
-  public var contents : T;
-  public def put(t:T) { contents = t; }
-}
-\end{xten}
-%~~siv
-%
-%~~neg
-\end{ex}
-
-The built-in type \xcd`Zero` has the method \xcd`get[T]()` which
-returns the default value of type \xcd`T`.  
-
-\begin{ex}
-As a variation on a theme of \xcd`Cell0`, we define a class \xcd`Cell1[T]` which can be initialized with a value of an arbitrary
-type
-\xcd`T`, or, if \xcd`T` has a default value, can be created with the default
-value.  Note that \xcd`T haszero` is a constraint on one of
-the constructors, not the whole type:  
-%~~gen ^^^ TypesHaszero20
-% package TypesHaszero20;
-%~~vis
-\begin{xten}
-class Cell1[T] {
-  public var contents: T;
-  def this(t:T) { contents = t; }
-  def this(){T haszero} { contents = Zero.get[T](); }
-  public def put(t:T) {contents = t;}
-}
-\end{xten}
-%~~siv
-%
-%~~neg
-
-\end{ex}
 
 \section{Function types}
 \label{FunctionTypes}
@@ -2081,6 +1995,94 @@ type or implement any interfaces, or support equality tests.
 \xcd`F` may be implemented, but not extended, by a class or function type. 
 Nor is it a struct type, for it has no predefined notion of equality.
 
+
+\section{Default Values}
+\index{default value}
+\index{type!default value}
+\label{DefaultValues}
+
+Some types have default values, and some do not. Default values are used in
+situations where variables can legitimately be used without having been
+initialized; types without default values cannot be used in such situations.
+For example, a field of an object \xcd`var x:T` can be left uninitialized if
+\xcd`T` has a default value; it cannot be if \xcd`T` does not. Similarly, a
+transient (\Sref{TransientFields}) field \xcd`transient val x:T` is only
+allowed if \xcd`T` has a default value.
+
+Default values, or lack of them, is defined thus:
+\begin{itemize}
+\item The fundamental numeric types (\xcd`Int`, \xcd`UInt`,
+      \xcd`Long`, \xcd`ULong`, 
+  \xcd`Short`, \xcd`UShort`, \xcd`Byte`,
+   \xcd`UByte`, 
+      \xcd`Float`, \xcd`Double`) all have default value 0.
+\item \xcd`Boolean` has default value \xcd`false`.
+\item \xcd`Char` has default value \xcd`'\0'`.
+\item If every field of a struct type \xcd`T` has a default value, then
+      \xcd`T` has a default value.  If any field of \xcd`T` has no default
+      value, then \xcd`T` does not.  (\Sref{sect:DefaultValuesOfStructs})
+\item A function type has a default value of \xcd`null`.
+\item A class type has a default value of \xcd`null`.
+\item The constrained type \xcd`T{c}` has the same default value as \xcd`T` if
+      that default value satisfies \xcd`c`.  If the default value of \xcd`T`
+      doesn't satisfy \xcd`c`, then \xcd`T{c}` has no default value.
+\end{itemize}
+
+\begin{ex}
+\xcd`var x: Int{x != 4}` has default value 0, which is allowed
+because \xcd`0 != 4` satisfies the constraint on \xcd`x`. 
+\xcd`var y : Int{y==4}` has no default value, because \xcd`0` does not satisfy \xcd`y==4`.
+The fact that \xcd`Int{y==4}` has precisely one value, \viz{} 4, doesn't
+matter; the only candidate for its default value, as for any subtype of
+\xcd`Int`, is 0. \xcd`y` must be initialized before it is used.
+\end{ex}
+
+The predicate \xcd`T haszero` tells if the type \xcd`T` has a default value.
+\xcd`haszero` may be used in constraints. 
+
+\begin{ex}
+The following code defines a sort of cell holding a single value of type
+\xcd`T`. The cell is initially empty -- that is, has \xcd`T`'s zero value --
+but may be filled later. 
+%~~gen ^^^ TypesHaszero10
+% package TypesHaszero10;
+%~~vis
+\begin{xten}
+class Cell0[T]{T haszero} {
+  public var contents : T;
+  public def put(t:T) { contents = t; }
+}
+\end{xten}
+%~~siv
+%
+%~~neg
+\end{ex}
+
+The built-in type \xcd`Zero` has the method \xcd`get[T]()` which
+returns the default value of type \xcd`T`.  
+
+\begin{ex}
+As a variation on a theme of \xcd`Cell0`, we define a class \xcd`Cell1[T]` which can be initialized with a value of an arbitrary
+type
+\xcd`T`, or, if \xcd`T` has a default value, can be created with the default
+value.  Note that \xcd`T haszero` is a constraint on one of
+the constructors, not the whole type:  
+%~~gen ^^^ TypesHaszero20
+% package TypesHaszero20;
+%~~vis
+\begin{xten}
+class Cell1[T] {
+  public var contents: T;
+  def this(t:T) { contents = t; }
+  def this(){T haszero} { contents = Zero.get[T](); }
+  public def put(t:T) {contents = t;}
+}
+\end{xten}
+%~~siv
+%
+%~~neg
+
+\end{ex}
 
 \section{Annotated types}
 \label{AnnotatedTypes}
@@ -2314,7 +2316,7 @@ an even better description; {$E$} can't be \xcd`3` either.  We can continue
 this process forever, adding integers which {$E$} will definitely not return
 and getting better and better approximations. (If the constraint
 sublanguage had \xcd`||`, we could give it the type 
-\xcd`Int{self == 0 || self == 1`, which would be nearly perfect.  But 
+\xcd`Int{self == 0 || self == 1} `, which would be nearly perfect.  But 
 \xcd`||` makes typechecking far more expensive, so it is excluded.)
 No X10 type is the best description of {$E$}; there is always a better one.
 
