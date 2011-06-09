@@ -144,7 +144,7 @@ with on termination (normal or abrupt).
       AsyncStatement \: \xcd"async" ClockedClause\opt Statement & (\ref{prod:AsyncStatement}) \\
                      \| \xcd"clocked" \xcd"async" Statement \\
 %(FROM #(prod:ClockedClause)#)
-       ClockedClause \: \xcd"clocked" \xcd"(" ClockList \xcd")" & (\ref{prod:ClockedClause}) \\
+       ClockedClause \: \xcd"clocked" Arguments & (\ref{prod:ClockedClause}) \\
 \end{bbgrammar}
 %##)
 

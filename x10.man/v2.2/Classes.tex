@@ -120,7 +120,9 @@ declaration introduces a class type (\Sref{ReferenceTypes}).
          TypeParamsI \: \xcd"[" TypeParamIList \xcd"]" & (\ref{prod:TypeParamsI}) \\
 %(FROM #(prod:TypeParamIList)#)
       TypeParamIList \: TypeParam & (\ref{prod:TypeParamIList}) \\
+                     \|  \\
                      \| TypeParamIList \xcd"," TypeParam \\
+                     \| TypeParamIList \xcd"," \\
 %(FROM #(prod:Properties)#)
           Properties \: \xcd"(" PropertyList \xcd")" & (\ref{prod:Properties}) \\
 %(FROM #(prod:PropertyList)#)
@@ -566,17 +568,12 @@ rights.
                      \| MethMods \xcd"property"  \\
                      \| MethMods Mod \\
 %(FROM #(prod:MethodDecl)#)
-          MethodDecl \: MethMods \xcd"def" Id TypeParams\opt Formals Guard\opt HasResultType\opt Offers\opt MethodBody & (\ref{prod:MethodDecl}) \\
-                     \| MethMods \xcd"operator" TypeParams\opt \xcd"(" Formal  \xcd")" BinOp \xcd"(" Formal  \xcd")" Guard\opt HasResultType\opt Offers\opt MethodBody \\
-                     \| MethMods \xcd"operator" TypeParams\opt PrefixOp \xcd"(" Formal  \xcd")" Guard\opt HasResultType\opt Offers\opt MethodBody \\
-                     \| MethMods \xcd"operator" TypeParams\opt \xcd"this" BinOp \xcd"(" Formal  \xcd")" Guard\opt HasResultType\opt Offers\opt MethodBody \\
-                     \| MethMods \xcd"operator" TypeParams\opt \xcd"(" Formal  \xcd")" BinOp \xcd"this" Guard\opt HasResultType\opt Offers\opt MethodBody \\
-                     \| MethMods \xcd"operator" TypeParams\opt PrefixOp \xcd"this" Guard\opt HasResultType\opt Offers\opt MethodBody \\
-                     \| MethMods \xcd"operator" \xcd"this" TypeParams\opt Formals Guard\opt HasResultType\opt Offers\opt MethodBody \\
-                     \| MethMods \xcd"operator" \xcd"this" TypeParams\opt Formals \xcd"=" \xcd"(" Formal  \xcd")" Guard\opt HasResultType\opt Offers\opt MethodBody \\
-                     \| MethMods \xcd"operator" TypeParams\opt \xcd"(" Formal  \xcd")" \xcd"as" Type Guard\opt Offers\opt MethodBody \\
-                     \| MethMods \xcd"operator" TypeParams\opt \xcd"(" Formal  \xcd")" \xcd"as" \xcd"?" Guard\opt HasResultType\opt Offers\opt MethodBody \\
-                     \| MethMods \xcd"operator" TypeParams\opt \xcd"(" Formal  \xcd")" Guard\opt HasResultType\opt Offers\opt MethodBody \\
+          MethodDecl \: MethMods \xcd"def" Id TypeParams\opt Formals Guard\opt HasResultType\opt MethodBody & (\ref{prod:MethodDecl}) \\
+                     \| BinaryOperatorDecl \\
+                     \| PrefixOperatorDecl \\
+                     \| ApplyOperatorDecl \\
+                     \| SetOperatorDecl \\
+                     \| ConversionOperatorDecl \\
 %(FROM #(prod:TypeParams)#)
           TypeParams \: \xcd"[" TypeParamList \xcd"]" & (\ref{prod:TypeParams}) \\
 %(FROM #(prod:Formals)#)
@@ -1445,17 +1442,12 @@ any place.
 %##(MethodDecl
 \begin{bbgrammar}
 %(FROM #(prod:MethodDecl)#)
-          MethodDecl \: MethMods \xcd"def" Id TypeParams\opt Formals Guard\opt HasResultType\opt Offers\opt MethodBody & (\ref{prod:MethodDecl}) \\
-                     \| MethMods \xcd"operator" TypeParams\opt \xcd"(" Formal  \xcd")" BinOp \xcd"(" Formal  \xcd")" Guard\opt HasResultType\opt Offers\opt MethodBody \\
-                     \| MethMods \xcd"operator" TypeParams\opt PrefixOp \xcd"(" Formal  \xcd")" Guard\opt HasResultType\opt Offers\opt MethodBody \\
-                     \| MethMods \xcd"operator" TypeParams\opt \xcd"this" BinOp \xcd"(" Formal  \xcd")" Guard\opt HasResultType\opt Offers\opt MethodBody \\
-                     \| MethMods \xcd"operator" TypeParams\opt \xcd"(" Formal  \xcd")" BinOp \xcd"this" Guard\opt HasResultType\opt Offers\opt MethodBody \\
-                     \| MethMods \xcd"operator" TypeParams\opt PrefixOp \xcd"this" Guard\opt HasResultType\opt Offers\opt MethodBody \\
-                     \| MethMods \xcd"operator" \xcd"this" TypeParams\opt Formals Guard\opt HasResultType\opt Offers\opt MethodBody \\
-                     \| MethMods \xcd"operator" \xcd"this" TypeParams\opt Formals \xcd"=" \xcd"(" Formal  \xcd")" Guard\opt HasResultType\opt Offers\opt MethodBody \\
-                     \| MethMods \xcd"operator" TypeParams\opt \xcd"(" Formal  \xcd")" \xcd"as" Type Guard\opt Offers\opt MethodBody \\
-                     \| MethMods \xcd"operator" TypeParams\opt \xcd"(" Formal  \xcd")" \xcd"as" \xcd"?" Guard\opt HasResultType\opt Offers\opt MethodBody \\
-                     \| MethMods \xcd"operator" TypeParams\opt \xcd"(" Formal  \xcd")" Guard\opt HasResultType\opt Offers\opt MethodBody \\
+          MethodDecl \: MethMods \xcd"def" Id TypeParams\opt Formals Guard\opt HasResultType\opt MethodBody & (\ref{prod:MethodDecl}) \\
+                     \| BinaryOperatorDecl \\
+                     \| PrefixOperatorDecl \\
+                     \| ApplyOperatorDecl \\
+                     \| SetOperatorDecl \\
+                     \| ConversionOperatorDecl \\
 \end{bbgrammar}
 %##)
 
@@ -2374,7 +2366,7 @@ the form of a constrained type (the ``return type'' of the constructor):
 %##(CtorDecl
 \begin{bbgrammar}
 %(FROM #(prod:CtorDecl)#)
-            CtorDecl \: Mods\opt \xcd"def" \xcd"this" TypeParams\opt Formals Guard\opt HasResultType\opt Offers\opt CtorBody & (\ref{prod:CtorDecl}) \\
+            CtorDecl \: Mods\opt \xcd"def" \xcd"this" TypeParams\opt Formals Guard\opt HasResultType\opt CtorBody & (\ref{prod:CtorDecl}) \\
 \end{bbgrammar}
 %##)
 

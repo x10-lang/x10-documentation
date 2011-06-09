@@ -52,6 +52,13 @@ In this grammar, $X^?$ denotes an optional $X$ element.
 
 \begin{bbgrammarappendix}
 
+(\arabic{equation}) & ApplyOperatorDecl \refstepcounter{equation}\label{prod:ApplyOperatorDecl}  \: MethMods \xcd"operator" \xcd"this" TypeParams\opt Formals Guard\opt HasResultType\opt MethodBody  \\
+
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}
+
 (\arabic{equation}) & ArgumentList \refstepcounter{equation}\label{prod:ArgumentList}  \: Exp  \\
 
  &    \| ArgumentList \xcd"," Exp \\
@@ -150,14 +157,14 @@ In this grammar, $X^?$ denotes an optional $X$ element.
 
 \begin{bbgrammarappendix}
 
-(\arabic{equation}) & AtExp \refstepcounter{equation}\label{prod:AtExp}  \: \xcd"at" \xcd"(" PlaceExp \xcd")" ClosureBody  \\
+(\arabic{equation}) & AtExp \refstepcounter{equation}\label{prod:AtExp}  \: \xcd"at" \xcd"(" Exp \xcd")" ClosureBody  \\
 
 
 \end{bbgrammarappendix}
 
 \begin{bbgrammarappendix}
 
-(\arabic{equation}) & AtStatement \refstepcounter{equation}\label{prod:AtStatement}  \: \xcd"at" \xcd"(" PlaceExp \xcd")" Statement  \\
+(\arabic{equation}) & AtStatement \refstepcounter{equation}\label{prod:AtStatement}  \: \xcd"at" \xcd"(" Exp \xcd")" Statement  \\
 
 
 \end{bbgrammarappendix}
@@ -207,6 +214,15 @@ In this grammar, $X^?$ denotes an optional $X$ element.
  &    \| \xcd"~" \\
  &    \| \xcd"!~" \\
  &    \| \xcd"!" \\
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}
+
+(\arabic{equation}) & BinaryOperatorDecl \refstepcounter{equation}\label{prod:BinaryOperatorDecl}  \: MethMods \xcd"operator" TypeParams\opt \xcd"(" Formal  \xcd")" BinOp \xcd"(" Formal  \xcd")" Guard\opt HasResultType\opt MethodBody  \\
+
+ &    \| MethMods \xcd"operator" TypeParams\opt \xcd"this" BinOp \xcd"(" Formal  \xcd")" Guard\opt HasResultType\opt MethodBody \\
+ &    \| MethMods \xcd"operator" TypeParams\opt \xcd"(" Formal  \xcd")" BinOp \xcd"this" Guard\opt HasResultType\opt MethodBody \\
 
 \end{bbgrammarappendix}
 
@@ -340,22 +356,7 @@ In this grammar, $X^?$ denotes an optional $X$ element.
 
 \begin{bbgrammarappendix}
 
-(\arabic{equation}) & Clock \refstepcounter{equation}\label{prod:Clock}  \: Exp  \\
-
-
-\end{bbgrammarappendix}
-
-\begin{bbgrammarappendix}
-
-(\arabic{equation}) & ClockList \refstepcounter{equation}\label{prod:ClockList}  \: Clock  \\
-
- &    \| ClockList \xcd"," Clock \\
-
-\end{bbgrammarappendix}
-
-\begin{bbgrammarappendix}
-
-(\arabic{equation}) & ClockedClause \refstepcounter{equation}\label{prod:ClockedClause}  \: \xcd"clocked" \xcd"(" ClockList \xcd")"  \\
+(\arabic{equation}) & ClockedClause \refstepcounter{equation}\label{prod:ClockedClause}  \: \xcd"clocked" Arguments  \\
 
 
 \end{bbgrammarappendix}
@@ -371,7 +372,7 @@ In this grammar, $X^?$ denotes an optional $X$ element.
 
 \begin{bbgrammarappendix}
 
-(\arabic{equation}) & ClosureExp \refstepcounter{equation}\label{prod:ClosureExp}  \: Formals Guard\opt HasResultType\opt Offers\opt \xcd"=>" ClosureBody  \\
+(\arabic{equation}) & ClosureExp \refstepcounter{equation}\label{prod:ClosureExp}  \: Formals Guard\opt HasResultType\opt \xcd"=>" ClosureBody  \\
 
 
 \end{bbgrammarappendix}
@@ -400,7 +401,7 @@ In this grammar, $X^?$ denotes an optional $X$ element.
 
  &    \| ClosureExp \\
  &    \| AtExp \\
- &    \| FinishExp \\
+ &    \|  \\
  &    \| ConditionalOrExp \xcd"?" Exp \xcd":" ConditionalExp \\
 
 \end{bbgrammarappendix}
@@ -445,6 +446,14 @@ In this grammar, $X^?$ denotes an optional $X$ element.
 
 \begin{bbgrammarappendix}
 
+(\arabic{equation}) & ConversionOperatorDecl \refstepcounter{equation}\label{prod:ConversionOperatorDecl}  \: ExplicitConversionOperatorDecl  \\
+
+ &    \| ImplicitConversionOperatorDecl \\
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}
+
 (\arabic{equation}) & CtorBlock \refstepcounter{equation}\label{prod:CtorBlock}  \: \xcd"{" ExplicitCtorInvocation\opt BlockStatements\opt \xcd"}"  \\
 
 
@@ -463,7 +472,7 @@ In this grammar, $X^?$ denotes an optional $X$ element.
 
 \begin{bbgrammarappendix}
 
-(\arabic{equation}) & CtorDecl \refstepcounter{equation}\label{prod:CtorDecl}  \: Mods\opt \xcd"def" \xcd"this" TypeParams\opt Formals Guard\opt HasResultType\opt Offers\opt CtorBody  \\
+(\arabic{equation}) & CtorDecl \refstepcounter{equation}\label{prod:CtorDecl}  \: Mods\opt \xcd"def" \xcd"this" TypeParams\opt Formals Guard\opt HasResultType\opt CtorBody  \\
 
 
 \end{bbgrammarappendix}
@@ -542,6 +551,14 @@ In this grammar, $X^?$ denotes an optional $X$ element.
 
 \begin{bbgrammarappendix}
 
+(\arabic{equation}) & ExplicitConversionOperatorDecl \refstepcounter{equation}\label{prod:ExplicitConversionOperatorDecl}  \: MethMods \xcd"operator" TypeParams\opt \xcd"(" Formal  \xcd")" \xcd"as" Type Guard\opt MethodBody  \\
+
+ &    \| MethMods \xcd"operator" TypeParams\opt \xcd"(" Formal  \xcd")" \xcd"as" \xcd"?" Guard\opt HasResultType\opt MethodBody \\
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}
+
 (\arabic{equation}) & ExplicitCtorInvocation \refstepcounter{equation}\label{prod:ExplicitCtorInvocation}  \: \xcd"this" TypeArgs\opt \xcd"(" ArgumentList\opt \xcd")" \xcd";"  \\
 
  &    \| \xcd"super" TypeArgs\opt \xcd"(" ArgumentList\opt \xcd")" \xcd";" \\
@@ -602,13 +619,6 @@ In this grammar, $X^?$ denotes an optional $X$ element.
 \begin{bbgrammarappendix}
 
 (\arabic{equation}) & Finally \refstepcounter{equation}\label{prod:Finally}  \: \xcd"finally" Block  \\
-
-
-\end{bbgrammarappendix}
-
-\begin{bbgrammarappendix}
-
-(\arabic{equation}) & FinishExp \refstepcounter{equation}\label{prod:FinishExp}  \: \xcd"finish" \xcd"(" Exp \xcd")" Block  \\
 
 
 \end{bbgrammarappendix}
@@ -695,7 +705,7 @@ In this grammar, $X^?$ denotes an optional $X$ element.
 
 \begin{bbgrammarappendix}
 
-(\arabic{equation}) & FunctionType \refstepcounter{equation}\label{prod:FunctionType}  \: TypeParams\opt \xcd"(" FormalList\opt \xcd")" Guard\opt Offers\opt \xcd"=>" Type  \\
+(\arabic{equation}) & FunctionType \refstepcounter{equation}\label{prod:FunctionType}  \: TypeParams\opt \xcd"(" FormalList\opt \xcd")" Guard\opt \xcd"=>" Type  \\
 
 
 \end{bbgrammarappendix}
@@ -763,6 +773,13 @@ In this grammar, $X^?$ denotes an optional $X$ element.
 \begin{bbgrammarappendix}
 
 (\arabic{equation}) & IfThenStatement \refstepcounter{equation}\label{prod:IfThenStatement}  \: \xcd"if" \xcd"(" Exp \xcd")" Statement  \\
+
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}
+
+(\arabic{equation}) & ImplicitConversionOperatorDecl \refstepcounter{equation}\label{prod:ImplicitConversionOperatorDecl}  \: MethMods \xcd"operator" TypeParams\opt \xcd"(" Formal  \xcd")" Guard\opt HasResultType\opt MethodBody  \\
 
 
 \end{bbgrammarappendix}
@@ -945,18 +962,13 @@ In this grammar, $X^?$ denotes an optional $X$ element.
 
 \begin{bbgrammarappendix}
 
-(\arabic{equation}) & MethodDecl \refstepcounter{equation}\label{prod:MethodDecl}  \: MethMods \xcd"def" Id TypeParams\opt Formals Guard\opt HasResultType\opt Offers\opt MethodBody  \\
+(\arabic{equation}) & MethodDecl \refstepcounter{equation}\label{prod:MethodDecl}  \: MethMods \xcd"def" Id TypeParams\opt Formals Guard\opt HasResultType\opt MethodBody  \\
 
- &    \| MethMods \xcd"operator" TypeParams\opt \xcd"(" Formal  \xcd")" BinOp \xcd"(" Formal  \xcd")" Guard\opt HasResultType\opt Offers\opt MethodBody \\
- &    \| MethMods \xcd"operator" TypeParams\opt PrefixOp \xcd"(" Formal  \xcd")" Guard\opt HasResultType\opt Offers\opt MethodBody \\
- &    \| MethMods \xcd"operator" TypeParams\opt \xcd"this" BinOp \xcd"(" Formal  \xcd")" Guard\opt HasResultType\opt Offers\opt MethodBody \\
- &    \| MethMods \xcd"operator" TypeParams\opt \xcd"(" Formal  \xcd")" BinOp \xcd"this" Guard\opt HasResultType\opt Offers\opt MethodBody \\
- &    \| MethMods \xcd"operator" TypeParams\opt PrefixOp \xcd"this" Guard\opt HasResultType\opt Offers\opt MethodBody \\
- &    \| MethMods \xcd"operator" \xcd"this" TypeParams\opt Formals Guard\opt HasResultType\opt Offers\opt MethodBody \\
- &    \| MethMods \xcd"operator" \xcd"this" TypeParams\opt Formals \xcd"=" \xcd"(" Formal  \xcd")" Guard\opt HasResultType\opt Offers\opt MethodBody \\
- &    \| MethMods \xcd"operator" TypeParams\opt \xcd"(" Formal  \xcd")" \xcd"as" Type Guard\opt Offers\opt MethodBody \\
- &    \| MethMods \xcd"operator" TypeParams\opt \xcd"(" Formal  \xcd")" \xcd"as" \xcd"?" Guard\opt HasResultType\opt Offers\opt MethodBody \\
- &    \| MethMods \xcd"operator" TypeParams\opt \xcd"(" Formal  \xcd")" Guard\opt HasResultType\opt Offers\opt MethodBody \\
+ &    \| BinaryOperatorDecl \\
+ &    \| PrefixOperatorDecl \\
+ &    \| ApplyOperatorDecl \\
+ &    \| SetOperatorDecl \\
+ &    \| ConversionOperatorDecl \\
 
 \end{bbgrammarappendix}
 
@@ -1048,21 +1060,7 @@ In this grammar, $X^?$ denotes an optional $X$ element.
  &    \| AtEachStatement \\
  &    \| FinishStatement \\
  &    \| AssignPropertyCall \\
- &    \| OfferStatement \\
-
-\end{bbgrammarappendix}
-
-\begin{bbgrammarappendix}
-
-(\arabic{equation}) & OfferStatement \refstepcounter{equation}\label{prod:OfferStatement}  \: \xcd"offer" Exp \xcd";"  \\
-
-
-\end{bbgrammarappendix}
-
-\begin{bbgrammarappendix}
-
-(\arabic{equation}) & Offers \refstepcounter{equation}\label{prod:Offers}  \: \xcd"offers" Type  \\
-
+ &    \|  \\
 
 \end{bbgrammarappendix}
 
@@ -1095,13 +1093,6 @@ In this grammar, $X^?$ denotes an optional $X$ element.
 
  &    \| SimpleNamedType TypeArgs \\
  &    \| SimpleNamedType TypeArgs Arguments \\
-
-\end{bbgrammarappendix}
-
-\begin{bbgrammarappendix}
-
-(\arabic{equation}) & PlaceExp \refstepcounter{equation}\label{prod:PlaceExp}  \: Exp  \\
-
 
 \end{bbgrammarappendix}
 
@@ -1160,6 +1151,14 @@ In this grammar, $X^?$ denotes an optional $X$ element.
 
 \begin{bbgrammarappendix}
 
+(\arabic{equation}) & PrefixOperatorDecl \refstepcounter{equation}\label{prod:PrefixOperatorDecl}  \: MethMods \xcd"operator" TypeParams\opt PrefixOp \xcd"(" Formal  \xcd")" Guard\opt HasResultType\opt MethodBody  \\
+
+ &    \| MethMods \xcd"operator" TypeParams\opt PrefixOp \xcd"this" Guard\opt HasResultType\opt MethodBody \\
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}
+
 (\arabic{equation}) & Primary \refstepcounter{equation}\label{prod:Primary}  \: \xcd"here"  \\
 
  &    \| \xcd"[" ArgumentList\opt \xcd"]" \\
@@ -1171,6 +1170,8 @@ In this grammar, $X^?$ denotes an optional $X$ element.
  &    \| ClassInstCreationExp \\
  &    \| FieldAccess \\
  &    \| MethodInvocation \\
+ &    \|  \\
+ &    \|  \\
 
 \end{bbgrammarappendix}
 
@@ -1236,6 +1237,13 @@ In this grammar, $X^?$ denotes an optional $X$ element.
 \begin{bbgrammarappendix}
 
 (\arabic{equation}) & ReturnStatement \refstepcounter{equation}\label{prod:ReturnStatement}  \: \xcd"return" Exp\opt \xcd";"  \\
+
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}
+
+(\arabic{equation}) & SetOperatorDecl \refstepcounter{equation}\label{prod:SetOperatorDecl}  \: MethMods \xcd"operator" \xcd"this" TypeParams\opt Formals \xcd"=" \xcd"(" Formal  \xcd")" Guard\opt HasResultType\opt MethodBody  \\
 
 
 \end{bbgrammarappendix}
@@ -1460,7 +1468,9 @@ In this grammar, $X^?$ denotes an optional $X$ element.
 
 (\arabic{equation}) & TypeParamIList \refstepcounter{equation}\label{prod:TypeParamIList}  \: TypeParam  \\
 
+ &    \|  \\
  &    \| TypeParamIList \xcd"," TypeParam \\
+ &    \| TypeParamIList \xcd"," \\
 
 \end{bbgrammarappendix}
 
