@@ -132,9 +132,9 @@ An activity is created by executing the \xcd`async` statement:
 
 %##(AsyncStatement ClockedClause
 \begin{bbgrammar}
-%(FROM #(prod:AsyncStatement)#)
-      AsyncStatement \: \xcd"async" ClockedClause\opt Statement & (\ref{prod:AsyncStatement}) \\
-                     \| \xcd"clocked" \xcd"async" Statement \\
+%(FROM #(prod:AsyncStmt)#)
+           AsyncStmt \: \xcd"async" ClockedClause\opt Stmt & (\ref{prod:AsyncStmt}) \\
+                     \| \xcd"clocked" \xcd"async" Stmt \\
 %(FROM #(prod:ClockedClause)#)
        ClockedClause \: \xcd"clocked" Arguments & (\ref{prod:ClockedClause}) \\
 \end{bbgrammar}
@@ -169,9 +169,9 @@ termination.
 
 %##(FinishStatement
 \begin{bbgrammar}
-%(FROM #(prod:FinishStatement)#)
-     FinishStatement \: \xcd"finish" Statement & (\ref{prod:FinishStatement}) \\
-                     \| \xcd"clocked" \xcd"finish" Statement \\
+%(FROM #(prod:FinishStmt)#)
+          FinishStmt \: \xcd"finish" Stmt & (\ref{prod:FinishStmt}) \\
+                     \| \xcd"clocked" \xcd"finish" Stmt \\
 \end{bbgrammar}
 %##)
 
@@ -239,16 +239,16 @@ places.)
 
 %##(AtEachStatement LoopIndexDeclarator LoopIndex 
 \begin{bbgrammar}
-%(FROM #(prod:AtEachStatement)#)
-     AtEachStatement \: \xcd"ateach" \xcd"(" LoopIndex \xcd"in" Exp \xcd")" ClockedClause\opt Statement & (\ref{prod:AtEachStatement}) \\
-                     \| \xcd"ateach" \xcd"(" Exp \xcd")" Statement \\
-%(FROM #(prod:LoopIndexDeclarator)#)
- LoopIndexDeclarator \: Id HasResultType\opt & (\ref{prod:LoopIndexDeclarator}) \\
+%(FROM #(prod:AtEachStmt)#)
+          AtEachStmt \: \xcd"ateach" \xcd"(" LoopIndex \xcd"in" Exp \xcd")" ClockedClause\opt Stmt & (\ref{prod:AtEachStmt}) \\
+                     \| \xcd"ateach" \xcd"(" Exp \xcd")" Stmt \\
+%(FROM #(prod:LoopIndexDeclr)#)
+      LoopIndexDeclr \: Id HasResultType\opt & (\ref{prod:LoopIndexDeclr}) \\
                      \| \xcd"[" IdList \xcd"]" HasResultType\opt \\
                      \| Id \xcd"[" IdList \xcd"]" HasResultType\opt \\
 %(FROM #(prod:LoopIndex)#)
-           LoopIndex \: Mods\opt LoopIndexDeclarator & (\ref{prod:LoopIndex}) \\
-                     \| Mods\opt VarKeyword LoopIndexDeclarator \\
+           LoopIndex \: Mods\opt LoopIndexDeclr & (\ref{prod:LoopIndex}) \\
+                     \| Mods\opt VarKeyword LoopIndexDeclr \\
 \end{bbgrammar}
 %##)
 In \xcd`ateach(p in D) S`, \xcd`D` must be either of type \xcd"Dist"
@@ -380,10 +380,10 @@ command, it will be blocked until $A$ finishes executing its atomic section.
 
 %##(AtomicStatement WhenStatement
 \begin{bbgrammar}
-%(FROM #(prod:AtomicStatement)#)
-     AtomicStatement \: \xcd"atomic" Statement & (\ref{prod:AtomicStatement}) \\
-%(FROM #(prod:WhenStatement)#)
-       WhenStatement \: \xcd"when" \xcd"(" Exp \xcd")" Statement & (\ref{prod:WhenStatement}) \\
+%(FROM #(prod:AtomicStmt)#)
+          AtomicStmt \: \xcd"atomic" Stmt & (\ref{prod:AtomicStmt}) \\
+%(FROM #(prod:WhenStmt)#)
+            WhenStmt \: \xcd"when" \xcd"(" Exp \xcd")" Stmt & (\ref{prod:WhenStmt}) \\
 \end{bbgrammar}
 %##)
 

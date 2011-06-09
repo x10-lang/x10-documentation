@@ -136,8 +136,8 @@ and the copying of all data used in the operation, and must be used with care
 
 %##(AtStatement AtExp
 \begin{bbgrammar}
-%(FROM #(prod:AtStatement)#)
-         AtStatement \: \xcd"at" \xcd"(" Exp \xcd")" Statement & (\ref{prod:AtStatement}) \\
+%(FROM #(prod:AtStmt)#)
+              AtStmt \: \xcd"at" \xcd"(" Exp \xcd")" Stmt & (\ref{prod:AtStmt}) \\
 %(FROM #(prod:AtExp)#)
                AtExp \: \xcd"at" \xcd"(" Exp \xcd")" ClosureBody & (\ref{prod:AtExp}) \\
 \end{bbgrammar}

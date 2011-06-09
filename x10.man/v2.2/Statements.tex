@@ -34,39 +34,35 @@ static def search[T](a: Array[T](1), v: T):Int {
 \end{ex}
 
 \section{Local variable declaration}
-\label{sect:LocalVarDecl}
+\label{sect:LocalVarDecln}
 \index{variable!declaration}
 \index{var}
 \index{val}
 
-%##(LocVarDecl LocVarDeclStmt VarDeclWType VarDeclsWType VariableDeclarators VariableInitializer FormalDeclarators
+%##(LocVarDecln LocVarDeclnStmt VariableDeclaratorsWithType  VariableDeclarators VariableInitializer FormalDeclarators
 \begin{bbgrammar}
-%(FROM #(prod:LocVarDecl)#)
-          LocVarDecl \: Mods\opt VarKeyword VariableDeclarators & (\ref{prod:LocVarDecl}) \\
+%(FROM #(prod:LocVarDecln)#)
+         LocVarDecln \: Mods\opt VarKeyword VariableDeclrs & (\ref{prod:LocVarDecln}) \\
                      \| Mods\opt VarDeclsWType \\
-                     \| Mods\opt VarKeyword FormalDeclarators \\
-%(FROM #(prod:LocVarDeclStmt)#)
-      LocVarDeclStmt \: LocVarDecl \xcd";" & (\ref{prod:LocVarDeclStmt}) \\
-%(FROM #(prod:VarDeclWType)#)
-        VarDeclWType \: Id HasResultType \xcd"=" VariableInitializer & (\ref{prod:VarDeclWType}) \\
-                     \| \xcd"[" IdList \xcd"]" HasResultType \xcd"=" VariableInitializer \\
-                     \| Id \xcd"[" IdList \xcd"]" HasResultType \xcd"=" VariableInitializer \\
+                     \| Mods\opt VarKeyword FormalDeclrs \\
+%(FROM #(prod:LocVarDeclnStmt)#)
+     LocVarDeclnStmt \: LocVarDecln \xcd";" & (\ref{prod:LocVarDeclnStmt}) \\
 %(FROM #(prod:VarDeclsWType)#)
        VarDeclsWType \: VarDeclWType & (\ref{prod:VarDeclsWType}) \\
                      \| VarDeclsWType \xcd"," VarDeclWType \\
-%(FROM #(prod:VariableDeclarators)#)
- VariableDeclarators \: VariableDeclarator & (\ref{prod:VariableDeclarators}) \\
-                     \| VariableDeclarators \xcd"," VariableDeclarator \\
+%(FROM #(prod:VariableDeclrs)#)
+      VariableDeclrs \: VariableDeclr & (\ref{prod:VariableDeclrs}) \\
+                     \| VariableDeclrs \xcd"," VariableDeclr \\
 %(FROM #(prod:VariableInitializer)#)
  VariableInitializer \: Exp & (\ref{prod:VariableInitializer}) \\
-%(FROM #(prod:FormalDeclarators)#)
-   FormalDeclarators \: FormalDeclarator & (\ref{prod:FormalDeclarators}) \\
-                     \| FormalDeclarators \xcd"," FormalDeclarator \\
+%(FROM #(prod:FormalDeclrs)#)
+        FormalDeclrs \: FormalDeclr & (\ref{prod:FormalDeclrs}) \\
+                     \| FormalDeclrs \xcd"," FormalDeclr \\
 \end{bbgrammar}
 %##)
 
 Short-lived variables are introduced by local variables declarations, as
-described in \Sref{VariableDeclarations}. Local variables may be declared only
+described in \Sref{VariableDeclarationarations}. Local variables may be declared only
 within a block statement (\Sref{Blocks}). The scope of a local variable
 declaration is the subsequent statements in the
 block.   
@@ -202,16 +198,16 @@ val f : (Int)=>Int
 %##(Block BlockStatements BlockInteriorStatement
 \begin{bbgrammar}
 %(FROM #(prod:Block)#)
-               Block \: \xcd"{" BlockStatements\opt \xcd"}" & (\ref{prod:Block}) \\
-%(FROM #(prod:BlockStatements)#)
-     BlockStatements \: BlockInteriorStatement & (\ref{prod:BlockStatements}) \\
-                     \| BlockStatements BlockInteriorStatement \\
-%(FROM #(prod:BlockInteriorStatement)#)
-BlockInteriorStatement \: LocVarDeclStmt & (\ref{prod:BlockInteriorStatement}) \\
-                     \| ClassDecl \\
-                     \| StructDecl \\
-                     \| TypeDefDecl \\
-                     \| Statement \\
+               Block \: \xcd"{" BlockStmts\opt \xcd"}" & (\ref{prod:Block}) \\
+%(FROM #(prod:BlockStmts)#)
+          BlockStmts \: BlockInteriorStmt & (\ref{prod:BlockStmts}) \\
+                     \| BlockStmts BlockInteriorStmt \\
+%(FROM #(prod:BlockInteriorStmt)#)
+   BlockInteriorStmt \: LocVarDeclnStmt & (\ref{prod:BlockInteriorStmt}) \\
+                     \| ClassDecln \\
+                     \| StructDecln \\
+                     \| TypeDefDecln \\
+                     \| Stmt \\
 \end{bbgrammar}
 %##)
 
@@ -246,16 +242,16 @@ Any expression may be used as a statement.
 
 %##(ExpStatement StatementExp
 \begin{bbgrammar}
-%(FROM #(prod:ExpStatement)#)
-        ExpStatement \: StatementExp \xcd";" & (\ref{prod:ExpStatement}) \\
-%(FROM #(prod:StatementExp)#)
-        StatementExp \: Assignment & (\ref{prod:StatementExp}) \\
+%(FROM #(prod:ExpStmt)#)
+             ExpStmt \: StmtExp \xcd";" & (\ref{prod:ExpStmt}) \\
+%(FROM #(prod:StmtExp)#)
+             StmtExp \: Assignment & (\ref{prod:StmtExp}) \\
                      \| PreIncrementExp \\
                      \| PreDecrementExp \\
                      \| PostIncrementExp \\
                      \| PostDecrementExp \\
                      \| MethodInvocation \\
-                     \| ClassInstCreationExp \\
+                     \| ObCreationExp \\
 \end{bbgrammar}
 %##)
 
@@ -371,8 +367,8 @@ multiphase: {
 
 %##(BreakStatement
 \begin{bbgrammar}
-%(FROM #(prod:BreakStatement)#)
-      BreakStatement \: \xcd"break" Id\opt \xcd";" & (\ref{prod:BreakStatement}) \\
+%(FROM #(prod:BreakStmt)#)
+           BreakStmt \: \xcd"break" Id\opt \xcd";" & (\ref{prod:BreakStmt}) \\
 \end{bbgrammar}
 %##)
 
@@ -412,8 +408,8 @@ outer: for (var i: Int = 0; i < a.size; i++)
 
 %##(ContinueStatement
 \begin{bbgrammar}
-%(FROM #(prod:ContinueStatement)#)
-   ContinueStatement \: \xcd"continue" Id\opt \xcd";" & (\ref{prod:ContinueStatement}) \\
+%(FROM #(prod:ContinueStmt)#)
+        ContinueStmt \: \xcd"continue" Id\opt \xcd";" & (\ref{prod:ContinueStmt}) \\
 \end{bbgrammar}
 %##)
 An unlabeled \xcd`continue` skips the rest of the current iteration of the
@@ -430,10 +426,10 @@ method, constructor, initializer, or closure.
 
 %##(IfThenStatement IfThenElseStatement
 \begin{bbgrammar}
-%(FROM #(prod:IfThenStatement)#)
-     IfThenStatement \: \xcd"if" \xcd"(" Exp \xcd")" Statement & (\ref{prod:IfThenStatement}) \\
-%(FROM #(prod:IfThenElseStatement)#)
- IfThenElseStatement \: \xcd"if" \xcd"(" Exp \xcd")" Statement  \xcd"else" Statement  & (\ref{prod:IfThenElseStatement}) \\
+%(FROM #(prod:IfThenStmt)#)
+          IfThenStmt \: \xcd"if" \xcd"(" Exp \xcd")" Stmt & (\ref{prod:IfThenStmt}) \\
+%(FROM #(prod:IfThenElseStmt)#)
+      IfThenElseStmt \: \xcd"if" \xcd"(" Exp \xcd")" Stmt  \xcd"else" Stmt  & (\ref{prod:IfThenElseStmt}) \\
 \end{bbgrammar}
 %##)
 
@@ -473,15 +469,15 @@ This example is interpreted as
 
 %##(SwitchStatement SwitchBlock SwitchBlockGroups SwitchBlockGroup SwitchLabels SwitchLabel
 \begin{bbgrammar}
-%(FROM #(prod:SwitchStatement)#)
-     SwitchStatement \: \xcd"switch" \xcd"(" Exp \xcd")" SwitchBlock & (\ref{prod:SwitchStatement}) \\
+%(FROM #(prod:SwitchStmt)#)
+          SwitchStmt \: \xcd"switch" \xcd"(" Exp \xcd")" SwitchBlock & (\ref{prod:SwitchStmt}) \\
 %(FROM #(prod:SwitchBlock)#)
          SwitchBlock \: \xcd"{" SwitchBlockGroups\opt SwitchLabels\opt \xcd"}" & (\ref{prod:SwitchBlock}) \\
 %(FROM #(prod:SwitchBlockGroups)#)
    SwitchBlockGroups \: SwitchBlockGroup & (\ref{prod:SwitchBlockGroups}) \\
                      \| SwitchBlockGroups SwitchBlockGroup \\
 %(FROM #(prod:SwitchBlockGroup)#)
-    SwitchBlockGroup \: SwitchLabels BlockStatements & (\ref{prod:SwitchBlockGroup}) \\
+    SwitchBlockGroup \: SwitchLabels BlockStmts & (\ref{prod:SwitchBlockGroup}) \\
 %(FROM #(prod:SwitchLabels)#)
         SwitchLabels \: SwitchLabel & (\ref{prod:SwitchLabels}) \\
                      \| SwitchLabels SwitchLabel \\
@@ -536,8 +532,8 @@ switch (i) {
 
 %##(WhileStatement
 \begin{bbgrammar}
-%(FROM #(prod:WhileStatement)#)
-      WhileStatement \: \xcd"while" \xcd"(" Exp \xcd")" Statement & (\ref{prod:WhileStatement}) \\
+%(FROM #(prod:WhileStmt)#)
+           WhileStmt \: \xcd"while" \xcd"(" Exp \xcd")" Stmt & (\ref{prod:WhileStmt}) \\
 \end{bbgrammar}
 %##)
 
@@ -570,8 +566,8 @@ and Syracuse problem) can be written as follows:
 
 %##(DoStatement
 \begin{bbgrammar}
-%(FROM #(prod:DoStatement)#)
-         DoStatement \: \xcd"do" Statement \xcd"while" \xcd"(" Exp \xcd")" \xcd";" & (\ref{prod:DoStatement}) \\
+%(FROM #(prod:DoStmt)#)
+              DoStmt \: \xcd"do" Stmt \xcd"while" \xcd"(" Exp \xcd")" \xcd";" & (\ref{prod:DoStmt}) \\
 \end{bbgrammar}
 %##)
 
@@ -586,22 +582,22 @@ Otherwise, the loop exits.
 
 %##(ForStatement BasicForStatement ForInit ForUpdate StatementExpList EnhancedForStatement
 \begin{bbgrammar}
-%(FROM #(prod:ForStatement)#)
-        ForStatement \: BasicForStatement & (\ref{prod:ForStatement}) \\
-                     \| EnhancedForStatement \\
-%(FROM #(prod:BasicForStatement)#)
-   BasicForStatement \: \xcd"for" \xcd"(" ForInit\opt \xcd";" Exp\opt \xcd";" ForUpdate\opt \xcd")" Statement & (\ref{prod:BasicForStatement}) \\
+%(FROM #(prod:ForStmt)#)
+             ForStmt \: BasicForStmt & (\ref{prod:ForStmt}) \\
+                     \| EnhancedForStmt \\
+%(FROM #(prod:BasicForStmt)#)
+        BasicForStmt \: \xcd"for" \xcd"(" ForInit\opt \xcd";" Exp\opt \xcd";" ForUpdate\opt \xcd")" Stmt & (\ref{prod:BasicForStmt}) \\
 %(FROM #(prod:ForInit)#)
-             ForInit \: StatementExpList & (\ref{prod:ForInit}) \\
-                     \| LocVarDecl \\
+             ForInit \: StmtExpList & (\ref{prod:ForInit}) \\
+                     \| LocVarDecln \\
 %(FROM #(prod:ForUpdate)#)
-           ForUpdate \: StatementExpList & (\ref{prod:ForUpdate}) \\
-%(FROM #(prod:StatementExpList)#)
-    StatementExpList \: StatementExp & (\ref{prod:StatementExpList}) \\
-                     \| StatementExpList \xcd"," StatementExp \\
-%(FROM #(prod:EnhancedForStatement)#)
-EnhancedForStatement \: \xcd"for" \xcd"(" LoopIndex \xcd"in" Exp \xcd")" Statement & (\ref{prod:EnhancedForStatement}) \\
-                     \| \xcd"for" \xcd"(" Exp \xcd")" Statement \\
+           ForUpdate \: StmtExpList & (\ref{prod:ForUpdate}) \\
+%(FROM #(prod:StmtExpList)#)
+         StmtExpList \: StmtExp & (\ref{prod:StmtExpList}) \\
+                     \| StmtExpList \xcd"," StmtExp \\
+%(FROM #(prod:EnhancedForStmt)#)
+     EnhancedForStmt \: \xcd"for" \xcd"(" LoopIndex \xcd"in" Exp \xcd")" Stmt & (\ref{prod:EnhancedForStmt}) \\
+                     \| \xcd"for" \xcd"(" Exp \xcd")" Stmt \\
 \end{bbgrammar}
 %##)
 
@@ -753,8 +749,8 @@ variables of the same names.
 
 %##(ReturnStatement
 \begin{bbgrammar}
-%(FROM #(prod:ReturnStatement)#)
-     ReturnStatement \: \xcd"return" Exp\opt \xcd";" & (\ref{prod:ReturnStatement}) \\
+%(FROM #(prod:ReturnStmt)#)
+          ReturnStmt \: \xcd"return" Exp\opt \xcd";" & (\ref{prod:ReturnStmt}) \\
 \end{bbgrammar}
 %##)
 
@@ -792,8 +788,8 @@ def method(x:Int) {
 
 %##(AssertStatement
 \begin{bbgrammar}
-%(FROM #(prod:AssertStatement)#)
-     AssertStatement \: \xcd"assert" Exp \xcd";" & (\ref{prod:AssertStatement}) \\
+%(FROM #(prod:AssertStmt)#)
+          AssertStmt \: \xcd"assert" Exp \xcd";" & (\ref{prod:AssertStmt}) \\
                      \| \xcd"assert" Exp  \xcd":" Exp  \xcd";" \\
 \end{bbgrammar}
 %##)
@@ -866,8 +862,8 @@ any method can, potentially, throw any exception.
 
 %##(ThrowStatement
 \begin{bbgrammar}
-%(FROM #(prod:ThrowStatement)#)
-      ThrowStatement \: \xcd"throw" Exp \xcd";" & (\ref{prod:ThrowStatement}) \\
+%(FROM #(prod:ThrowStmt)#)
+           ThrowStmt \: \xcd"throw" Exp \xcd";" & (\ref{prod:ThrowStmt}) \\
 \end{bbgrammar}
 %##)
 
@@ -902,8 +898,8 @@ if (i < 0 || i >= x.size)
 
 %##(TryStatement Catches CatchClause Finally
 \begin{bbgrammar}
-%(FROM #(prod:TryStatement)#)
-        TryStatement \: \xcd"try" Block Catches & (\ref{prod:TryStatement}) \\
+%(FROM #(prod:TryStmt)#)
+             TryStmt \: \xcd"try" Block Catches & (\ref{prod:TryStmt}) \\
                      \| \xcd"try" Block Catches\opt Finally \\
 %(FROM #(prod:Catches)#)
              Catches \: CatchClause & (\ref{prod:Catches}) \\

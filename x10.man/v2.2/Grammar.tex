@@ -37,7 +37,7 @@ In this grammar, $X^?$ denotes an optional $X$ element.
 
 \begin{bbgrammarappendix}
 
-(\arabic{equation}) & AnnotationStatement \refstepcounter{equation}\label{prod:AnnotationStatement}  \: Annotations\opt NonExpStatement  \\
+(\arabic{equation}) & AnnotationStmt \refstepcounter{equation}\label{prod:AnnotationStmt}  \: Annotations\opt NonExpStmt  \\
 
 
 \end{bbgrammarappendix}
@@ -52,7 +52,7 @@ In this grammar, $X^?$ denotes an optional $X$ element.
 
 \begin{bbgrammarappendix}
 
-(\arabic{equation}) & ApplyOperatorDecl \refstepcounter{equation}\label{prod:ApplyOperatorDecl}  \: MethMods \xcd"operator" \xcd"this" TypeParams\opt Formals Guard\opt HasResultType\opt MethodBody  \\
+(\arabic{equation}) & ApplyOpDecln \refstepcounter{equation}\label{prod:ApplyOpDecln}  \: MethMods \xcd"operator" \xcd"this" TypeParams\opt Formals Guard\opt HasResultType\opt MethodBody  \\
 
 
 \end{bbgrammarappendix}
@@ -74,7 +74,7 @@ In this grammar, $X^?$ denotes an optional $X$ element.
 
 \begin{bbgrammarappendix}
 
-(\arabic{equation}) & AssertStatement \refstepcounter{equation}\label{prod:AssertStatement}  \: \xcd"assert" Exp \xcd";"  \\
+(\arabic{equation}) & AssertStmt \refstepcounter{equation}\label{prod:AssertStmt}  \: \xcd"assert" Exp \xcd";"  \\
 
  &    \| \xcd"assert" Exp  \xcd":" Exp  \xcd";" \\
 
@@ -82,7 +82,7 @@ In this grammar, $X^?$ denotes an optional $X$ element.
 
 \begin{bbgrammarappendix}
 
-(\arabic{equation}) & AssignPropertyCall \refstepcounter{equation}\label{prod:AssignPropertyCall}  \: \xcd"property" TypeArgs\opt \xcd"(" ArgumentList\opt \xcd")" \xcd";"  \\
+(\arabic{equation}) & AssignPropCall \refstepcounter{equation}\label{prod:AssignPropCall}  \: \xcd"property" TypeArgs\opt \xcd"(" ArgumentList\opt \xcd")" \xcd";"  \\
 
 
 \end{bbgrammarappendix}
@@ -124,15 +124,15 @@ In this grammar, $X^?$ denotes an optional $X$ element.
 
 \begin{bbgrammarappendix}
 
-(\arabic{equation}) & AsyncStatement \refstepcounter{equation}\label{prod:AsyncStatement}  \: \xcd"async" ClockedClause\opt Statement  \\
+(\arabic{equation}) & AsyncStmt \refstepcounter{equation}\label{prod:AsyncStmt}  \: \xcd"async" ClockedClause\opt Stmt  \\
 
- &    \| \xcd"clocked" \xcd"async" Statement \\
+ &    \| \xcd"clocked" \xcd"async" Stmt \\
 
 \end{bbgrammarappendix}
 
 \begin{bbgrammarappendix}
 
-(\arabic{equation}) & AtCaptureDeclarator \refstepcounter{equation}\label{prod:AtCaptureDeclarator}  \: Mods\opt VarKeyword\opt VariableDeclarator  \\
+(\arabic{equation}) & AtCaptureDeclr \refstepcounter{equation}\label{prod:AtCaptureDeclr}  \: Mods\opt VarKeyword\opt VariableDeclr  \\
 
  &    \| Id \\
  &    \| \xcd"this" \\
@@ -141,17 +141,17 @@ In this grammar, $X^?$ denotes an optional $X$ element.
 
 \begin{bbgrammarappendix}
 
-(\arabic{equation}) & AtCaptureDeclarators \refstepcounter{equation}\label{prod:AtCaptureDeclarators}  \: AtCaptureDeclarator  \\
+(\arabic{equation}) & AtCaptureDeclrs \refstepcounter{equation}\label{prod:AtCaptureDeclrs}  \: AtCaptureDeclr  \\
 
- &    \| AtCaptureDeclarators \xcd"," AtCaptureDeclarator \\
+ &    \| AtCaptureDeclrs \xcd"," AtCaptureDeclr \\
 
 \end{bbgrammarappendix}
 
 \begin{bbgrammarappendix}
 
-(\arabic{equation}) & AtEachStatement \refstepcounter{equation}\label{prod:AtEachStatement}  \: \xcd"ateach" \xcd"(" LoopIndex \xcd"in" Exp \xcd")" ClockedClause\opt Statement  \\
+(\arabic{equation}) & AtEachStmt \refstepcounter{equation}\label{prod:AtEachStmt}  \: \xcd"ateach" \xcd"(" LoopIndex \xcd"in" Exp \xcd")" ClockedClause\opt Stmt  \\
 
- &    \| \xcd"ateach" \xcd"(" Exp \xcd")" Statement \\
+ &    \| \xcd"ateach" \xcd"(" Exp \xcd")" Stmt \\
 
 \end{bbgrammarappendix}
 
@@ -164,21 +164,21 @@ In this grammar, $X^?$ denotes an optional $X$ element.
 
 \begin{bbgrammarappendix}
 
-(\arabic{equation}) & AtStatement \refstepcounter{equation}\label{prod:AtStatement}  \: \xcd"at" \xcd"(" Exp \xcd")" Statement  \\
+(\arabic{equation}) & AtStmt \refstepcounter{equation}\label{prod:AtStmt}  \: \xcd"at" \xcd"(" Exp \xcd")" Stmt  \\
 
 
 \end{bbgrammarappendix}
 
 \begin{bbgrammarappendix}
 
-(\arabic{equation}) & AtomicStatement \refstepcounter{equation}\label{prod:AtomicStatement}  \: \xcd"atomic" Statement  \\
+(\arabic{equation}) & AtomicStmt \refstepcounter{equation}\label{prod:AtomicStmt}  \: \xcd"atomic" Stmt  \\
 
 
 \end{bbgrammarappendix}
 
 \begin{bbgrammarappendix}
 
-(\arabic{equation}) & BasicForStatement \refstepcounter{equation}\label{prod:BasicForStatement}  \: \xcd"for" \xcd"(" ForInit\opt \xcd";" Exp\opt \xcd";" ForUpdate\opt \xcd")" Statement  \\
+(\arabic{equation}) & BasicForStmt \refstepcounter{equation}\label{prod:BasicForStmt}  \: \xcd"for" \xcd"(" ForInit\opt \xcd";" Exp\opt \xcd";" ForUpdate\opt \xcd")" Stmt  \\
 
 
 \end{bbgrammarappendix}
@@ -219,7 +219,7 @@ In this grammar, $X^?$ denotes an optional $X$ element.
 
 \begin{bbgrammarappendix}
 
-(\arabic{equation}) & BinaryOperatorDecl \refstepcounter{equation}\label{prod:BinaryOperatorDecl}  \: MethMods \xcd"operator" TypeParams\opt \xcd"(" Formal  \xcd")" BinOp \xcd"(" Formal  \xcd")" Guard\opt HasResultType\opt MethodBody  \\
+(\arabic{equation}) & BinaryOpDecln \refstepcounter{equation}\label{prod:BinaryOpDecln}  \: MethMods \xcd"operator" TypeParams\opt \xcd"(" Formal  \xcd")" BinOp \xcd"(" Formal  \xcd")" Guard\opt HasResultType\opt MethodBody  \\
 
  &    \| MethMods \xcd"operator" TypeParams\opt \xcd"this" BinOp \xcd"(" Formal  \xcd")" Guard\opt HasResultType\opt MethodBody \\
  &    \| MethMods \xcd"operator" TypeParams\opt \xcd"(" Formal  \xcd")" BinOp \xcd"this" Guard\opt HasResultType\opt MethodBody \\
@@ -228,27 +228,27 @@ In this grammar, $X^?$ denotes an optional $X$ element.
 
 \begin{bbgrammarappendix}
 
-(\arabic{equation}) & Block \refstepcounter{equation}\label{prod:Block}  \: \xcd"{" BlockStatements\opt \xcd"}"  \\
+(\arabic{equation}) & Block \refstepcounter{equation}\label{prod:Block}  \: \xcd"{" BlockStmts\opt \xcd"}"  \\
 
 
 \end{bbgrammarappendix}
 
 \begin{bbgrammarappendix}
 
-(\arabic{equation}) & BlockInteriorStatement \refstepcounter{equation}\label{prod:BlockInteriorStatement}  \: LocVarDeclStmt  \\
+(\arabic{equation}) & BlockInteriorStmt \refstepcounter{equation}\label{prod:BlockInteriorStmt}  \: LocVarDeclnStmt  \\
 
- &    \| ClassDecl \\
- &    \| StructDecl \\
- &    \| TypeDefDecl \\
- &    \| Statement \\
+ &    \| ClassDecln \\
+ &    \| StructDecln \\
+ &    \| TypeDefDecln \\
+ &    \| Stmt \\
 
 \end{bbgrammarappendix}
 
 \begin{bbgrammarappendix}
 
-(\arabic{equation}) & BlockStatements \refstepcounter{equation}\label{prod:BlockStatements}  \: BlockInteriorStatement  \\
+(\arabic{equation}) & BlockStmts \refstepcounter{equation}\label{prod:BlockStmts}  \: BlockInteriorStmt  \\
 
- &    \| BlockStatements BlockInteriorStatement \\
+ &    \| BlockStmts BlockInteriorStmt \\
 
 \end{bbgrammarappendix}
 
@@ -262,7 +262,7 @@ In this grammar, $X^?$ denotes an optional $X$ element.
 
 \begin{bbgrammarappendix}
 
-(\arabic{equation}) & BreakStatement \refstepcounter{equation}\label{prod:BreakStatement}  \: \xcd"break" Id\opt \xcd";"  \\
+(\arabic{equation}) & BreakStmt \refstepcounter{equation}\label{prod:BreakStmt}  \: \xcd"break" Id\opt \xcd";"  \\
 
 
 \end{bbgrammarappendix}
@@ -293,50 +293,41 @@ In this grammar, $X^?$ denotes an optional $X$ element.
 
 \begin{bbgrammarappendix}
 
-(\arabic{equation}) & ClassBody \refstepcounter{equation}\label{prod:ClassBody}  \: \xcd"{" ClassBodyDecls\opt \xcd"}"  \\
+(\arabic{equation}) & ClassBody \refstepcounter{equation}\label{prod:ClassBody}  \: \xcd"{" ClassBodyDeclns\opt \xcd"}"  \\
 
 
 \end{bbgrammarappendix}
 
 \begin{bbgrammarappendix}
 
-(\arabic{equation}) & ClassBodyDecl \refstepcounter{equation}\label{prod:ClassBodyDecl}  \: ClassMemberDecl  \\
+(\arabic{equation}) & ClassBodyDecln \refstepcounter{equation}\label{prod:ClassBodyDecln}  \: ClassMemberDecln  \\
 
- &    \| CtorDecl \\
-
-\end{bbgrammarappendix}
-
-\begin{bbgrammarappendix}
-
-(\arabic{equation}) & ClassBodyDecls \refstepcounter{equation}\label{prod:ClassBodyDecls}  \: ClassBodyDecl  \\
-
- &    \| ClassBodyDecls ClassBodyDecl \\
+ &    \| CtorDecln \\
 
 \end{bbgrammarappendix}
 
 \begin{bbgrammarappendix}
 
-(\arabic{equation}) & ClassDecl \refstepcounter{equation}\label{prod:ClassDecl}  \: Mods\opt \xcd"class" Id TypeParamsI\opt Properties\opt Guard\opt Super\opt Interfaces\opt ClassBody  \\
+(\arabic{equation}) & ClassBodyDeclns \refstepcounter{equation}\label{prod:ClassBodyDeclns}  \: ClassBodyDecln  \\
+
+ &    \| ClassBodyDeclns ClassBodyDecln \\
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}
+
+(\arabic{equation}) & ClassDecln \refstepcounter{equation}\label{prod:ClassDecln}  \: Mods\opt \xcd"class" Id TypeParamsI\opt Properties\opt Guard\opt Super\opt Interfaces\opt ClassBody  \\
 
 
 \end{bbgrammarappendix}
 
 \begin{bbgrammarappendix}
 
-(\arabic{equation}) & ClassInstCreationExp \refstepcounter{equation}\label{prod:ClassInstCreationExp}  \: \xcd"new" TypeName TypeArgs\opt \xcd"(" ArgumentList\opt \xcd")" ClassBody\opt  \\
+(\arabic{equation}) & ClassMemberDecln \refstepcounter{equation}\label{prod:ClassMemberDecln}  \: FieldDecln  \\
 
- &    \| Primary \xcd"." \xcd"new" Id TypeArgs\opt \xcd"(" ArgumentList\opt \xcd")" ClassBody\opt \\
- &    \| FullyQualifiedName \xcd"." \xcd"new" Id TypeArgs\opt \xcd"(" ArgumentList\opt \xcd")" ClassBody\opt \\
-
-\end{bbgrammarappendix}
-
-\begin{bbgrammarappendix}
-
-(\arabic{equation}) & ClassMemberDecl \refstepcounter{equation}\label{prod:ClassMemberDecl}  \: FieldDecl  \\
-
- &    \| MethodDecl \\
- &    \| PropertyMethodDecl \\
- &    \| TypeDecl \\
+ &    \| MethodDecln \\
+ &    \| PropMethodDecln \\
+ &    \| TypeDecln \\
 
 \end{bbgrammarappendix}
 
@@ -365,7 +356,7 @@ In this grammar, $X^?$ denotes an optional $X$ element.
 
 (\arabic{equation}) & ClosureBody \refstepcounter{equation}\label{prod:ClosureBody}  \: Exp  \\
 
- &    \| Annotations\opt \xcd"{" BlockStatements\opt LastExp \xcd"}" \\
+ &    \| Annotations\opt \xcd"{" BlockStmts\opt LastExp \xcd"}" \\
  &    \| Annotations\opt Block \\
 
 \end{bbgrammarappendix}
@@ -379,11 +370,11 @@ In this grammar, $X^?$ denotes an optional $X$ element.
 
 \begin{bbgrammarappendix}
 
-(\arabic{equation}) & CompilationUnit \refstepcounter{equation}\label{prod:CompilationUnit}  \: PackageDecl\opt TypeDecls\opt  \\
+(\arabic{equation}) & CompilationUnit \refstepcounter{equation}\label{prod:CompilationUnit}  \: PackageDecln\opt TypeDeclns\opt  \\
 
- &    \| PackageDecl\opt ImportDecls TypeDecls\opt \\
- &    \| ImportDecls PackageDecl  ImportDecls\opt  TypeDecls\opt \\
- &    \| PackageDecl ImportDecls PackageDecl  ImportDecls\opt  TypeDecls\opt \\
+ &    \| PackageDecln\opt ImportDeclns TypeDeclns\opt \\
+ &    \| ImportDeclns PackageDecln  ImportDeclns\opt  TypeDeclns\opt \\
+ &    \| PackageDecln ImportDeclns PackageDecln  ImportDeclns\opt  TypeDeclns\opt \\
 
 \end{bbgrammarappendix}
 
@@ -439,22 +430,22 @@ In this grammar, $X^?$ denotes an optional $X$ element.
 
 \begin{bbgrammarappendix}
 
-(\arabic{equation}) & ContinueStatement \refstepcounter{equation}\label{prod:ContinueStatement}  \: \xcd"continue" Id\opt \xcd";"  \\
+(\arabic{equation}) & ContinueStmt \refstepcounter{equation}\label{prod:ContinueStmt}  \: \xcd"continue" Id\opt \xcd";"  \\
 
 
 \end{bbgrammarappendix}
 
 \begin{bbgrammarappendix}
 
-(\arabic{equation}) & ConversionOperatorDecl \refstepcounter{equation}\label{prod:ConversionOperatorDecl}  \: ExplicitConversionOperatorDecl  \\
+(\arabic{equation}) & ConversionOpDecln \refstepcounter{equation}\label{prod:ConversionOpDecln}  \: ExplicitConversionOpDecln  \\
 
- &    \| ImplicitConversionOperatorDecl \\
+ &    \| ImplicitConversionOpDecln \\
 
 \end{bbgrammarappendix}
 
 \begin{bbgrammarappendix}
 
-(\arabic{equation}) & CtorBlock \refstepcounter{equation}\label{prod:CtorBlock}  \: \xcd"{" ExplicitCtorInvocation\opt BlockStatements\opt \xcd"}"  \\
+(\arabic{equation}) & CtorBlock \refstepcounter{equation}\label{prod:CtorBlock}  \: \xcd"{" ExplicitCtorInvocation\opt BlockStmts\opt \xcd"}"  \\
 
 
 \end{bbgrammarappendix}
@@ -465,14 +456,14 @@ In this grammar, $X^?$ denotes an optional $X$ element.
 
  &    \| CtorBlock \\
  &    \| \xcd"=" ExplicitCtorInvocation \\
- &    \| \xcd"=" AssignPropertyCall \\
+ &    \| \xcd"=" AssignPropCall \\
  &    \| \xcd";" \\
 
 \end{bbgrammarappendix}
 
 \begin{bbgrammarappendix}
 
-(\arabic{equation}) & CtorDecl \refstepcounter{equation}\label{prod:CtorDecl}  \: Mods\opt \xcd"def" \xcd"this" TypeParams\opt Formals Guard\opt HasResultType\opt CtorBody  \\
+(\arabic{equation}) & CtorDecln \refstepcounter{equation}\label{prod:CtorDecln}  \: Mods\opt \xcd"def" \xcd"this" TypeParams\opt Formals Guard\opt HasResultType\opt CtorBody  \\
 
 
 \end{bbgrammarappendix}
@@ -487,23 +478,23 @@ In this grammar, $X^?$ denotes an optional $X$ element.
 
 \begin{bbgrammarappendix}
 
-(\arabic{equation}) & DoStatement \refstepcounter{equation}\label{prod:DoStatement}  \: \xcd"do" Statement \xcd"while" \xcd"(" Exp \xcd")" \xcd";"  \\
+(\arabic{equation}) & DoStmt \refstepcounter{equation}\label{prod:DoStmt}  \: \xcd"do" Stmt \xcd"while" \xcd"(" Exp \xcd")" \xcd";"  \\
 
 
 \end{bbgrammarappendix}
 
 \begin{bbgrammarappendix}
 
-(\arabic{equation}) & EmptyStatement \refstepcounter{equation}\label{prod:EmptyStatement}  \: \xcd";"  \\
+(\arabic{equation}) & EmptyStmt \refstepcounter{equation}\label{prod:EmptyStmt}  \: \xcd";"  \\
 
 
 \end{bbgrammarappendix}
 
 \begin{bbgrammarappendix}
 
-(\arabic{equation}) & EnhancedForStatement \refstepcounter{equation}\label{prod:EnhancedForStatement}  \: \xcd"for" \xcd"(" LoopIndex \xcd"in" Exp \xcd")" Statement  \\
+(\arabic{equation}) & EnhancedForStmt \refstepcounter{equation}\label{prod:EnhancedForStmt}  \: \xcd"for" \xcd"(" LoopIndex \xcd"in" Exp \xcd")" Stmt  \\
 
- &    \| \xcd"for" \xcd"(" Exp \xcd")" Statement \\
+ &    \| \xcd"for" \xcd"(" Exp \xcd")" Stmt \\
 
 \end{bbgrammarappendix}
 
@@ -544,14 +535,14 @@ In this grammar, $X^?$ denotes an optional $X$ element.
 
 \begin{bbgrammarappendix}
 
-(\arabic{equation}) & ExpStatement \refstepcounter{equation}\label{prod:ExpStatement}  \: StatementExp \xcd";"  \\
+(\arabic{equation}) & ExpStmt \refstepcounter{equation}\label{prod:ExpStmt}  \: StmtExp \xcd";"  \\
 
 
 \end{bbgrammarappendix}
 
 \begin{bbgrammarappendix}
 
-(\arabic{equation}) & ExplicitConversionOperatorDecl \refstepcounter{equation}\label{prod:ExplicitConversionOperatorDecl}  \: MethMods \xcd"operator" TypeParams\opt \xcd"(" Formal  \xcd")" \xcd"as" Type Guard\opt MethodBody  \\
+(\arabic{equation}) & ExplicitConversionOpDecln \refstepcounter{equation}\label{prod:ExplicitConversionOpDecln}  \: MethMods \xcd"operator" TypeParams\opt \xcd"(" Formal  \xcd")" \xcd"as" Type Guard\opt MethodBody  \\
 
  &    \| MethMods \xcd"operator" TypeParams\opt \xcd"(" Formal  \xcd")" \xcd"as" \xcd"?" Guard\opt HasResultType\opt MethodBody \\
 
@@ -586,15 +577,15 @@ In this grammar, $X^?$ denotes an optional $X$ element.
 
 \begin{bbgrammarappendix}
 
-(\arabic{equation}) & FieldDecl \refstepcounter{equation}\label{prod:FieldDecl}  \: Mods\opt FieldKeyword FieldDeclarators \xcd";"  \\
+(\arabic{equation}) & FieldDecln \refstepcounter{equation}\label{prod:FieldDecln}  \: Mods\opt FieldKeyword FieldDeclrs \xcd";"  \\
 
- &    \| Mods\opt FieldDeclarators \xcd";" \\
+ &    \| Mods\opt FieldDeclrs \xcd";" \\
 
 \end{bbgrammarappendix}
 
 \begin{bbgrammarappendix}
 
-(\arabic{equation}) & FieldDeclarator \refstepcounter{equation}\label{prod:FieldDeclarator}  \: Id HasResultType  \\
+(\arabic{equation}) & FieldDeclr \refstepcounter{equation}\label{prod:FieldDeclr}  \: Id HasResultType  \\
 
  &    \| Id HasResultType\opt \xcd"=" VariableInitializer \\
 
@@ -602,9 +593,9 @@ In this grammar, $X^?$ denotes an optional $X$ element.
 
 \begin{bbgrammarappendix}
 
-(\arabic{equation}) & FieldDeclarators \refstepcounter{equation}\label{prod:FieldDeclarators}  \: FieldDeclarator  \\
+(\arabic{equation}) & FieldDeclrs \refstepcounter{equation}\label{prod:FieldDeclrs}  \: FieldDeclr  \\
 
- &    \| FieldDeclarators \xcd"," FieldDeclarator \\
+ &    \| FieldDeclrs \xcd"," FieldDeclr \\
 
 \end{bbgrammarappendix}
 
@@ -625,47 +616,47 @@ In this grammar, $X^?$ denotes an optional $X$ element.
 
 \begin{bbgrammarappendix}
 
-(\arabic{equation}) & FinishStatement \refstepcounter{equation}\label{prod:FinishStatement}  \: \xcd"finish" Statement  \\
+(\arabic{equation}) & FinishStmt \refstepcounter{equation}\label{prod:FinishStmt}  \: \xcd"finish" Stmt  \\
 
- &    \| \xcd"clocked" \xcd"finish" Statement \\
-
-\end{bbgrammarappendix}
-
-\begin{bbgrammarappendix}
-
-(\arabic{equation}) & ForInit \refstepcounter{equation}\label{prod:ForInit}  \: StatementExpList  \\
-
- &    \| LocVarDecl \\
+ &    \| \xcd"clocked" \xcd"finish" Stmt \\
 
 \end{bbgrammarappendix}
 
 \begin{bbgrammarappendix}
 
-(\arabic{equation}) & ForStatement \refstepcounter{equation}\label{prod:ForStatement}  \: BasicForStatement  \\
+(\arabic{equation}) & ForInit \refstepcounter{equation}\label{prod:ForInit}  \: StmtExpList  \\
 
- &    \| EnhancedForStatement \\
-
-\end{bbgrammarappendix}
-
-\begin{bbgrammarappendix}
-
-(\arabic{equation}) & ForUpdate \refstepcounter{equation}\label{prod:ForUpdate}  \: StatementExpList  \\
-
+ &    \| LocVarDecln \\
 
 \end{bbgrammarappendix}
 
 \begin{bbgrammarappendix}
 
-(\arabic{equation}) & Formal \refstepcounter{equation}\label{prod:Formal}  \: Mods\opt FormalDeclarator  \\
+(\arabic{equation}) & ForStmt \refstepcounter{equation}\label{prod:ForStmt}  \: BasicForStmt  \\
 
- &    \| Mods\opt VarKeyword FormalDeclarator \\
+ &    \| EnhancedForStmt \\
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}
+
+(\arabic{equation}) & ForUpdate \refstepcounter{equation}\label{prod:ForUpdate}  \: StmtExpList  \\
+
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}
+
+(\arabic{equation}) & Formal \refstepcounter{equation}\label{prod:Formal}  \: Mods\opt FormalDeclr  \\
+
+ &    \| Mods\opt VarKeyword FormalDeclr \\
  &    \| Type \\
 
 \end{bbgrammarappendix}
 
 \begin{bbgrammarappendix}
 
-(\arabic{equation}) & FormalDeclarator \refstepcounter{equation}\label{prod:FormalDeclarator}  \: Id ResultType  \\
+(\arabic{equation}) & FormalDeclr \refstepcounter{equation}\label{prod:FormalDeclr}  \: Id ResultType  \\
 
  &    \| \xcd"[" IdList \xcd"]" ResultType \\
  &    \| Id \xcd"[" IdList \xcd"]" ResultType \\
@@ -674,9 +665,9 @@ In this grammar, $X^?$ denotes an optional $X$ element.
 
 \begin{bbgrammarappendix}
 
-(\arabic{equation}) & FormalDeclarators \refstepcounter{equation}\label{prod:FormalDeclarators}  \: FormalDeclarator  \\
+(\arabic{equation}) & FormalDeclrs \refstepcounter{equation}\label{prod:FormalDeclrs}  \: FormalDeclr  \\
 
- &    \| FormalDeclarators \xcd"," FormalDeclarator \\
+ &    \| FormalDeclrs \xcd"," FormalDeclr \\
 
 \end{bbgrammarappendix}
 
@@ -765,38 +756,38 @@ In this grammar, $X^?$ denotes an optional $X$ element.
 
 \begin{bbgrammarappendix}
 
-(\arabic{equation}) & IfThenElseStatement \refstepcounter{equation}\label{prod:IfThenElseStatement}  \: \xcd"if" \xcd"(" Exp \xcd")" Statement  \xcd"else" Statement   \\
+(\arabic{equation}) & IfThenElseStmt \refstepcounter{equation}\label{prod:IfThenElseStmt}  \: \xcd"if" \xcd"(" Exp \xcd")" Stmt  \xcd"else" Stmt   \\
 
 
 \end{bbgrammarappendix}
 
 \begin{bbgrammarappendix}
 
-(\arabic{equation}) & IfThenStatement \refstepcounter{equation}\label{prod:IfThenStatement}  \: \xcd"if" \xcd"(" Exp \xcd")" Statement  \\
+(\arabic{equation}) & IfThenStmt \refstepcounter{equation}\label{prod:IfThenStmt}  \: \xcd"if" \xcd"(" Exp \xcd")" Stmt  \\
 
 
 \end{bbgrammarappendix}
 
 \begin{bbgrammarappendix}
 
-(\arabic{equation}) & ImplicitConversionOperatorDecl \refstepcounter{equation}\label{prod:ImplicitConversionOperatorDecl}  \: MethMods \xcd"operator" TypeParams\opt \xcd"(" Formal  \xcd")" Guard\opt HasResultType\opt MethodBody  \\
+(\arabic{equation}) & ImplicitConversionOpDecln \refstepcounter{equation}\label{prod:ImplicitConversionOpDecln}  \: MethMods \xcd"operator" TypeParams\opt \xcd"(" Formal  \xcd")" Guard\opt HasResultType\opt MethodBody  \\
 
 
 \end{bbgrammarappendix}
 
 \begin{bbgrammarappendix}
 
-(\arabic{equation}) & ImportDecl \refstepcounter{equation}\label{prod:ImportDecl}  \: SingleTypeImportDecl  \\
+(\arabic{equation}) & ImportDecln \refstepcounter{equation}\label{prod:ImportDecln}  \: SingleTypeImportDecln  \\
 
- &    \| TypeImportOnDemandDecl \\
+ &    \| TypeImportOnDemandDecln \\
 
 \end{bbgrammarappendix}
 
 \begin{bbgrammarappendix}
 
-(\arabic{equation}) & ImportDecls \refstepcounter{equation}\label{prod:ImportDecls}  \: ImportDecl  \\
+(\arabic{equation}) & ImportDeclns \refstepcounter{equation}\label{prod:ImportDeclns}  \: ImportDecln  \\
 
- &    \| ImportDecls ImportDecl \\
+ &    \| ImportDeclns ImportDecln \\
 
 \end{bbgrammarappendix}
 
@@ -810,33 +801,33 @@ In this grammar, $X^?$ denotes an optional $X$ element.
 
 \begin{bbgrammarappendix}
 
-(\arabic{equation}) & InterfaceBody \refstepcounter{equation}\label{prod:InterfaceBody}  \: \xcd"{" InterfaceMemberDecls\opt \xcd"}"  \\
+(\arabic{equation}) & InterfaceBody \refstepcounter{equation}\label{prod:InterfaceBody}  \: \xcd"{" InterfaceMemberDeclns\opt \xcd"}"  \\
 
 
 \end{bbgrammarappendix}
 
 \begin{bbgrammarappendix}
 
-(\arabic{equation}) & InterfaceDecl \refstepcounter{equation}\label{prod:InterfaceDecl}  \: Mods\opt \xcd"interface" Id TypeParamsI\opt Properties\opt Guard\opt ExtendsInterfaces\opt InterfaceBody  \\
+(\arabic{equation}) & InterfaceDecln \refstepcounter{equation}\label{prod:InterfaceDecln}  \: Mods\opt \xcd"interface" Id TypeParamsI\opt Properties\opt Guard\opt ExtendsInterfaces\opt InterfaceBody  \\
 
 
 \end{bbgrammarappendix}
 
 \begin{bbgrammarappendix}
 
-(\arabic{equation}) & InterfaceMemberDecl \refstepcounter{equation}\label{prod:InterfaceMemberDecl}  \: MethodDecl  \\
+(\arabic{equation}) & InterfaceMemberDecln \refstepcounter{equation}\label{prod:InterfaceMemberDecln}  \: MethodDecln  \\
 
- &    \| PropertyMethodDecl \\
- &    \| FieldDecl \\
- &    \| TypeDecl \\
+ &    \| PropMethodDecln \\
+ &    \| FieldDecln \\
+ &    \| TypeDecln \\
 
 \end{bbgrammarappendix}
 
 \begin{bbgrammarappendix}
 
-(\arabic{equation}) & InterfaceMemberDecls \refstepcounter{equation}\label{prod:InterfaceMemberDecls}  \: InterfaceMemberDecl  \\
+(\arabic{equation}) & InterfaceMemberDeclns \refstepcounter{equation}\label{prod:InterfaceMemberDeclns}  \: InterfaceMemberDecln  \\
 
- &    \| InterfaceMemberDecls InterfaceMemberDecl \\
+ &    \| InterfaceMemberDeclns InterfaceMemberDecln \\
 
 \end{bbgrammarappendix}
 
@@ -857,7 +848,7 @@ In this grammar, $X^?$ denotes an optional $X$ element.
 
 \begin{bbgrammarappendix}
 
-(\arabic{equation}) & LabeledStatement \refstepcounter{equation}\label{prod:LabeledStatement}  \: Id \xcd":" LoopStatement  \\
+(\arabic{equation}) & LabeledStmt \refstepcounter{equation}\label{prod:LabeledStmt}  \: Id \xcd":" LoopStmt  \\
 
 
 \end{bbgrammarappendix}
@@ -899,31 +890,31 @@ In this grammar, $X^?$ denotes an optional $X$ element.
 
 \begin{bbgrammarappendix}
 
-(\arabic{equation}) & LocVarDecl \refstepcounter{equation}\label{prod:LocVarDecl}  \: Mods\opt VarKeyword VariableDeclarators  \\
+(\arabic{equation}) & LocVarDecln \refstepcounter{equation}\label{prod:LocVarDecln}  \: Mods\opt VarKeyword VariableDeclrs  \\
 
  &    \| Mods\opt VarDeclsWType \\
- &    \| Mods\opt VarKeyword FormalDeclarators \\
+ &    \| Mods\opt VarKeyword FormalDeclrs \\
 
 \end{bbgrammarappendix}
 
 \begin{bbgrammarappendix}
 
-(\arabic{equation}) & LocVarDeclStmt \refstepcounter{equation}\label{prod:LocVarDeclStmt}  \: LocVarDecl \xcd";"  \\
+(\arabic{equation}) & LocVarDeclnStmt \refstepcounter{equation}\label{prod:LocVarDeclnStmt}  \: LocVarDecln \xcd";"  \\
 
 
 \end{bbgrammarappendix}
 
 \begin{bbgrammarappendix}
 
-(\arabic{equation}) & LoopIndex \refstepcounter{equation}\label{prod:LoopIndex}  \: Mods\opt LoopIndexDeclarator  \\
+(\arabic{equation}) & LoopIndex \refstepcounter{equation}\label{prod:LoopIndex}  \: Mods\opt LoopIndexDeclr  \\
 
- &    \| Mods\opt VarKeyword LoopIndexDeclarator \\
+ &    \| Mods\opt VarKeyword LoopIndexDeclr \\
 
 \end{bbgrammarappendix}
 
 \begin{bbgrammarappendix}
 
-(\arabic{equation}) & LoopIndexDeclarator \refstepcounter{equation}\label{prod:LoopIndexDeclarator}  \: Id HasResultType\opt  \\
+(\arabic{equation}) & LoopIndexDeclr \refstepcounter{equation}\label{prod:LoopIndexDeclr}  \: Id HasResultType\opt  \\
 
  &    \| \xcd"[" IdList \xcd"]" HasResultType\opt \\
  &    \| Id \xcd"[" IdList \xcd"]" HasResultType\opt \\
@@ -932,11 +923,11 @@ In this grammar, $X^?$ denotes an optional $X$ element.
 
 \begin{bbgrammarappendix}
 
-(\arabic{equation}) & LoopStatement \refstepcounter{equation}\label{prod:LoopStatement}  \: ForStatement  \\
+(\arabic{equation}) & LoopStmt \refstepcounter{equation}\label{prod:LoopStmt}  \: ForStmt  \\
 
- &    \| WhileStatement \\
- &    \| DoStatement \\
- &    \| AtEachStatement \\
+ &    \| WhileStmt \\
+ &    \| DoStmt \\
+ &    \| AtEachStmt \\
 
 \end{bbgrammarappendix}
 
@@ -953,7 +944,7 @@ In this grammar, $X^?$ denotes an optional $X$ element.
 
 (\arabic{equation}) & MethodBody \refstepcounter{equation}\label{prod:MethodBody}  \: \xcd"=" LastExp \xcd";"  \\
 
- &    \| \xcd"=" Annotations\opt \xcd"{" BlockStatements\opt LastExp \xcd"}" \\
+ &    \| \xcd"=" Annotations\opt \xcd"{" BlockStmts\opt LastExp \xcd"}" \\
  &    \| \xcd"=" Annotations\opt Block \\
  &    \| Annotations\opt Block \\
  &    \| \xcd";" \\
@@ -962,13 +953,13 @@ In this grammar, $X^?$ denotes an optional $X$ element.
 
 \begin{bbgrammarappendix}
 
-(\arabic{equation}) & MethodDecl \refstepcounter{equation}\label{prod:MethodDecl}  \: MethMods \xcd"def" Id TypeParams\opt Formals Guard\opt HasResultType\opt MethodBody  \\
+(\arabic{equation}) & MethodDecln \refstepcounter{equation}\label{prod:MethodDecln}  \: MethMods \xcd"def" Id TypeParams\opt Formals Guard\opt HasResultType\opt MethodBody  \\
 
- &    \| BinaryOperatorDecl \\
- &    \| PrefixOperatorDecl \\
- &    \| ApplyOperatorDecl \\
- &    \| SetOperatorDecl \\
- &    \| ConversionOperatorDecl \\
+ &    \| BinaryOpDecln \\
+ &    \| PrefixOpDecln \\
+ &    \| ApplyOpDecln \\
+ &    \| SetOpDecln \\
+ &    \| ConversionOpDecln \\
 
 \end{bbgrammarappendix}
 
@@ -1037,36 +1028,45 @@ In this grammar, $X^?$ denotes an optional $X$ element.
 
 \begin{bbgrammarappendix}
 
-(\arabic{equation}) & NonExpStatement \refstepcounter{equation}\label{prod:NonExpStatement}  \: Block  \\
+(\arabic{equation}) & NonExpStmt \refstepcounter{equation}\label{prod:NonExpStmt}  \: Block  \\
 
- &    \| EmptyStatement \\
- &    \| AssertStatement \\
- &    \| SwitchStatement \\
- &    \| DoStatement \\
- &    \| BreakStatement \\
- &    \| ContinueStatement \\
- &    \| ReturnStatement \\
- &    \| ThrowStatement \\
- &    \| TryStatement \\
- &    \| LabeledStatement \\
- &    \| IfThenStatement \\
- &    \| IfThenElseStatement \\
- &    \| WhileStatement \\
- &    \| ForStatement \\
- &    \| AsyncStatement \\
- &    \| AtStatement \\
- &    \| AtomicStatement \\
- &    \| WhenStatement \\
- &    \| AtEachStatement \\
- &    \| FinishStatement \\
- &    \| AssignPropertyCall \\
+ &    \| EmptyStmt \\
+ &    \| AssertStmt \\
+ &    \| SwitchStmt \\
+ &    \| DoStmt \\
+ &    \| BreakStmt \\
+ &    \| ContinueStmt \\
+ &    \| ReturnStmt \\
+ &    \| ThrowStmt \\
+ &    \| TryStmt \\
+ &    \| LabeledStmt \\
+ &    \| IfThenStmt \\
+ &    \| IfThenElseStmt \\
+ &    \| WhileStmt \\
+ &    \| ForStmt \\
+ &    \| AsyncStmt \\
+ &    \| AtStmt \\
+ &    \| AtomicStmt \\
+ &    \| WhenStmt \\
+ &    \| AtEachStmt \\
+ &    \| FinishStmt \\
+ &    \| AssignPropCall \\
  &    \|  \\
 
 \end{bbgrammarappendix}
 
 \begin{bbgrammarappendix}
 
-(\arabic{equation}) & PackageDecl \refstepcounter{equation}\label{prod:PackageDecl}  \: Annotations\opt \xcd"package" PackageName \xcd";"  \\
+(\arabic{equation}) & ObCreationExp \refstepcounter{equation}\label{prod:ObCreationExp}  \: \xcd"new" TypeName TypeArgs\opt \xcd"(" ArgumentList\opt \xcd")" ClassBody\opt  \\
+
+ &    \| Primary \xcd"." \xcd"new" Id TypeArgs\opt \xcd"(" ArgumentList\opt \xcd")" ClassBody\opt \\
+ &    \| FullyQualifiedName \xcd"." \xcd"new" Id TypeArgs\opt \xcd"(" ArgumentList\opt \xcd")" ClassBody\opt \\
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}
+
+(\arabic{equation}) & PackageDecln \refstepcounter{equation}\label{prod:PackageDecln}  \: Annotations\opt \xcd"package" PackageName \xcd";"  \\
 
 
 \end{bbgrammarappendix}
@@ -1151,7 +1151,7 @@ In this grammar, $X^?$ denotes an optional $X$ element.
 
 \begin{bbgrammarappendix}
 
-(\arabic{equation}) & PrefixOperatorDecl \refstepcounter{equation}\label{prod:PrefixOperatorDecl}  \: MethMods \xcd"operator" TypeParams\opt PrefixOp \xcd"(" Formal  \xcd")" Guard\opt HasResultType\opt MethodBody  \\
+(\arabic{equation}) & PrefixOpDecln \refstepcounter{equation}\label{prod:PrefixOpDecln}  \: MethMods \xcd"operator" TypeParams\opt PrefixOp \xcd"(" Formal  \xcd")" Guard\opt HasResultType\opt MethodBody  \\
 
  &    \| MethMods \xcd"operator" TypeParams\opt PrefixOp \xcd"this" Guard\opt HasResultType\opt MethodBody \\
 
@@ -1167,7 +1167,7 @@ In this grammar, $X^?$ denotes an optional $X$ element.
  &    \| \xcd"this" \\
  &    \| ClassName \xcd"." \xcd"this" \\
  &    \| \xcd"(" Exp \xcd")" \\
- &    \| ClassInstCreationExp \\
+ &    \| ObCreationExp \\
  &    \| FieldAccess \\
  &    \| MethodInvocation \\
  &    \|  \\
@@ -1177,31 +1177,31 @@ In this grammar, $X^?$ denotes an optional $X$ element.
 
 \begin{bbgrammarappendix}
 
-(\arabic{equation}) & Properties \refstepcounter{equation}\label{prod:Properties}  \: \xcd"(" PropertyList \xcd")"  \\
+(\arabic{equation}) & Prop \refstepcounter{equation}\label{prod:Prop}  \: Annotations\opt Id ResultType  \\
 
 
 \end{bbgrammarappendix}
 
 \begin{bbgrammarappendix}
 
-(\arabic{equation}) & Property \refstepcounter{equation}\label{prod:Property}  \: Annotations\opt Id ResultType  \\
+(\arabic{equation}) & PropList \refstepcounter{equation}\label{prod:PropList}  \: Prop  \\
 
-
-\end{bbgrammarappendix}
-
-\begin{bbgrammarappendix}
-
-(\arabic{equation}) & PropertyList \refstepcounter{equation}\label{prod:PropertyList}  \: Property  \\
-
- &    \| PropertyList \xcd"," Property \\
+ &    \| PropList \xcd"," Prop \\
 
 \end{bbgrammarappendix}
 
 \begin{bbgrammarappendix}
 
-(\arabic{equation}) & PropertyMethodDecl \refstepcounter{equation}\label{prod:PropertyMethodDecl}  \: MethMods Id TypeParams\opt Formals Guard\opt HasResultType\opt MethodBody  \\
+(\arabic{equation}) & PropMethodDecln \refstepcounter{equation}\label{prod:PropMethodDecln}  \: MethMods Id TypeParams\opt Formals Guard\opt HasResultType\opt MethodBody  \\
 
  &    \| MethMods Id Guard\opt HasResultType\opt MethodBody \\
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}
+
+(\arabic{equation}) & Properties \refstepcounter{equation}\label{prod:Properties}  \: \xcd"(" PropList \xcd")"  \\
+
 
 \end{bbgrammarappendix}
 
@@ -1236,14 +1236,14 @@ In this grammar, $X^?$ denotes an optional $X$ element.
 
 \begin{bbgrammarappendix}
 
-(\arabic{equation}) & ReturnStatement \refstepcounter{equation}\label{prod:ReturnStatement}  \: \xcd"return" Exp\opt \xcd";"  \\
+(\arabic{equation}) & ReturnStmt \refstepcounter{equation}\label{prod:ReturnStmt}  \: \xcd"return" Exp\opt \xcd";"  \\
 
 
 \end{bbgrammarappendix}
 
 \begin{bbgrammarappendix}
 
-(\arabic{equation}) & SetOperatorDecl \refstepcounter{equation}\label{prod:SetOperatorDecl}  \: MethMods \xcd"operator" \xcd"this" TypeParams\opt Formals \xcd"=" \xcd"(" Formal  \xcd")" Guard\opt HasResultType\opt MethodBody  \\
+(\arabic{equation}) & SetOpDecln \refstepcounter{equation}\label{prod:SetOpDecln}  \: MethMods \xcd"operator" \xcd"this" TypeParams\opt Formals \xcd"=" \xcd"(" Formal  \xcd")" Guard\opt HasResultType\opt MethodBody  \\
 
 
 \end{bbgrammarappendix}
@@ -1275,43 +1275,43 @@ In this grammar, $X^?$ denotes an optional $X$ element.
 
 \begin{bbgrammarappendix}
 
-(\arabic{equation}) & SingleTypeImportDecl \refstepcounter{equation}\label{prod:SingleTypeImportDecl}  \: \xcd"import" TypeName \xcd";"  \\
+(\arabic{equation}) & SingleTypeImportDecln \refstepcounter{equation}\label{prod:SingleTypeImportDecln}  \: \xcd"import" TypeName \xcd";"  \\
 
 
 \end{bbgrammarappendix}
 
 \begin{bbgrammarappendix}
 
-(\arabic{equation}) & Statement \refstepcounter{equation}\label{prod:Statement}  \: AnnotationStatement  \\
+(\arabic{equation}) & Stmt \refstepcounter{equation}\label{prod:Stmt}  \: AnnotationStmt  \\
 
- &    \| ExpStatement \\
+ &    \| ExpStmt \\
 
 \end{bbgrammarappendix}
 
 \begin{bbgrammarappendix}
 
-(\arabic{equation}) & StatementExp \refstepcounter{equation}\label{prod:StatementExp}  \: Assignment  \\
+(\arabic{equation}) & StmtExp \refstepcounter{equation}\label{prod:StmtExp}  \: Assignment  \\
 
  &    \| PreIncrementExp \\
  &    \| PreDecrementExp \\
  &    \| PostIncrementExp \\
  &    \| PostDecrementExp \\
  &    \| MethodInvocation \\
- &    \| ClassInstCreationExp \\
+ &    \| ObCreationExp \\
 
 \end{bbgrammarappendix}
 
 \begin{bbgrammarappendix}
 
-(\arabic{equation}) & StatementExpList \refstepcounter{equation}\label{prod:StatementExpList}  \: StatementExp  \\
+(\arabic{equation}) & StmtExpList \refstepcounter{equation}\label{prod:StmtExpList}  \: StmtExp  \\
 
- &    \| StatementExpList \xcd"," StatementExp \\
+ &    \| StmtExpList \xcd"," StmtExp \\
 
 \end{bbgrammarappendix}
 
 \begin{bbgrammarappendix}
 
-(\arabic{equation}) & StructDecl \refstepcounter{equation}\label{prod:StructDecl}  \: Mods\opt \xcd"struct" Id TypeParamsI\opt Properties\opt Guard\opt Interfaces\opt ClassBody  \\
+(\arabic{equation}) & StructDecln \refstepcounter{equation}\label{prod:StructDecln}  \: Mods\opt \xcd"struct" Id TypeParamsI\opt Properties\opt Guard\opt Interfaces\opt ClassBody  \\
 
 
 \end{bbgrammarappendix}
@@ -1340,7 +1340,7 @@ In this grammar, $X^?$ denotes an optional $X$ element.
 
 \begin{bbgrammarappendix}
 
-(\arabic{equation}) & SwitchBlockGroup \refstepcounter{equation}\label{prod:SwitchBlockGroup}  \: SwitchLabels BlockStatements  \\
+(\arabic{equation}) & SwitchBlockGroup \refstepcounter{equation}\label{prod:SwitchBlockGroup}  \: SwitchLabels BlockStmts  \\
 
 
 \end{bbgrammarappendix}
@@ -1371,21 +1371,21 @@ In this grammar, $X^?$ denotes an optional $X$ element.
 
 \begin{bbgrammarappendix}
 
-(\arabic{equation}) & SwitchStatement \refstepcounter{equation}\label{prod:SwitchStatement}  \: \xcd"switch" \xcd"(" Exp \xcd")" SwitchBlock  \\
+(\arabic{equation}) & SwitchStmt \refstepcounter{equation}\label{prod:SwitchStmt}  \: \xcd"switch" \xcd"(" Exp \xcd")" SwitchBlock  \\
 
 
 \end{bbgrammarappendix}
 
 \begin{bbgrammarappendix}
 
-(\arabic{equation}) & ThrowStatement \refstepcounter{equation}\label{prod:ThrowStatement}  \: \xcd"throw" Exp \xcd";"  \\
+(\arabic{equation}) & ThrowStmt \refstepcounter{equation}\label{prod:ThrowStmt}  \: \xcd"throw" Exp \xcd";"  \\
 
 
 \end{bbgrammarappendix}
 
 \begin{bbgrammarappendix}
 
-(\arabic{equation}) & TryStatement \refstepcounter{equation}\label{prod:TryStatement}  \: \xcd"try" Block Catches  \\
+(\arabic{equation}) & TryStmt \refstepcounter{equation}\label{prod:TryStmt}  \: \xcd"try" Block Catches  \\
 
  &    \| \xcd"try" Block Catches\opt Finally \\
 
@@ -1417,26 +1417,26 @@ In this grammar, $X^?$ denotes an optional $X$ element.
 
 \begin{bbgrammarappendix}
 
-(\arabic{equation}) & TypeDecl \refstepcounter{equation}\label{prod:TypeDecl}  \: ClassDecl  \\
+(\arabic{equation}) & TypeDecln \refstepcounter{equation}\label{prod:TypeDecln}  \: ClassDecln  \\
 
- &    \| StructDecl \\
- &    \| InterfaceDecl \\
- &    \| TypeDefDecl \\
+ &    \| StructDecln \\
+ &    \| InterfaceDecln \\
+ &    \| TypeDefDecln \\
  &    \| \xcd";" \\
 
 \end{bbgrammarappendix}
 
 \begin{bbgrammarappendix}
 
-(\arabic{equation}) & TypeDecls \refstepcounter{equation}\label{prod:TypeDecls}  \: TypeDecl  \\
+(\arabic{equation}) & TypeDeclns \refstepcounter{equation}\label{prod:TypeDeclns}  \: TypeDecln  \\
 
- &    \| TypeDecls TypeDecl \\
+ &    \| TypeDeclns TypeDecln \\
 
 \end{bbgrammarappendix}
 
 \begin{bbgrammarappendix}
 
-(\arabic{equation}) & TypeDefDecl \refstepcounter{equation}\label{prod:TypeDefDecl}  \: Mods\opt \xcd"type" Id TypeParams\opt Guard\opt \xcd"=" Type \xcd";"  \\
+(\arabic{equation}) & TypeDefDecln \refstepcounter{equation}\label{prod:TypeDefDecln}  \: Mods\opt \xcd"type" Id TypeParams\opt Guard\opt \xcd"=" Type \xcd";"  \\
 
  &    \| Mods\opt \xcd"type" Id TypeParams\opt \xcd"(" FormalList \xcd")" Guard\opt \xcd"=" Type \xcd";" \\
 
@@ -1444,7 +1444,7 @@ In this grammar, $X^?$ denotes an optional $X$ element.
 
 \begin{bbgrammarappendix}
 
-(\arabic{equation}) & TypeImportOnDemandDecl \refstepcounter{equation}\label{prod:TypeImportOnDemandDecl}  \: \xcd"import" PackageOrTypeName \xcd"." \xcd"*" \xcd";"  \\
+(\arabic{equation}) & TypeImportOnDemandDecln \refstepcounter{equation}\label{prod:TypeImportOnDemandDecln}  \: \xcd"import" PackageOrTypeName \xcd"." \xcd"*" \xcd";"  \\
 
 
 \end{bbgrammarappendix}
@@ -1557,7 +1557,7 @@ In this grammar, $X^?$ denotes an optional $X$ element.
 
 \begin{bbgrammarappendix}
 
-(\arabic{equation}) & VariableDeclarator \refstepcounter{equation}\label{prod:VariableDeclarator}  \: Id HasResultType\opt \xcd"=" VariableInitializer  \\
+(\arabic{equation}) & VariableDeclr \refstepcounter{equation}\label{prod:VariableDeclr}  \: Id HasResultType\opt \xcd"=" VariableInitializer  \\
 
  &    \| \xcd"[" IdList \xcd"]" HasResultType\opt \xcd"=" VariableInitializer \\
  &    \| Id \xcd"[" IdList \xcd"]" HasResultType\opt \xcd"=" VariableInitializer \\
@@ -1566,9 +1566,9 @@ In this grammar, $X^?$ denotes an optional $X$ element.
 
 \begin{bbgrammarappendix}
 
-(\arabic{equation}) & VariableDeclarators \refstepcounter{equation}\label{prod:VariableDeclarators}  \: VariableDeclarator  \\
+(\arabic{equation}) & VariableDeclrs \refstepcounter{equation}\label{prod:VariableDeclrs}  \: VariableDeclr  \\
 
- &    \| VariableDeclarators \xcd"," VariableDeclarator \\
+ &    \| VariableDeclrs \xcd"," VariableDeclr \\
 
 \end{bbgrammarappendix}
 
@@ -1588,14 +1588,14 @@ In this grammar, $X^?$ denotes an optional $X$ element.
 
 \begin{bbgrammarappendix}
 
-(\arabic{equation}) & WhenStatement \refstepcounter{equation}\label{prod:WhenStatement}  \: \xcd"when" \xcd"(" Exp \xcd")" Statement  \\
+(\arabic{equation}) & WhenStmt \refstepcounter{equation}\label{prod:WhenStmt}  \: \xcd"when" \xcd"(" Exp \xcd")" Stmt  \\
 
 
 \end{bbgrammarappendix}
 
 \begin{bbgrammarappendix}
 
-(\arabic{equation}) & WhileStatement \refstepcounter{equation}\label{prod:WhileStatement}  \: \xcd"while" \xcd"(" Exp \xcd")" Statement  \\
+(\arabic{equation}) & WhileStmt \refstepcounter{equation}\label{prod:WhileStmt}  \: \xcd"while" \xcd"(" Exp \xcd")" Stmt  \\
 
 
 \end{bbgrammarappendix}

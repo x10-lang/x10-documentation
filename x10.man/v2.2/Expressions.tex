@@ -1079,8 +1079,8 @@ def m(a:Int{self==1}, b:Int{self==2}) = (a==b);
 
 %##(ClassInstCreationExp
 \begin{bbgrammar}
-%(FROM #(prod:ClassInstCreationExp)#)
-ClassInstCreationExp \: \xcd"new" TypeName TypeArgs\opt \xcd"(" ArgumentList\opt \xcd")" ClassBody\opt & (\ref{prod:ClassInstCreationExp}) \\
+%(FROM #(prod:ObCreationExp)#)
+       ObCreationExp \: \xcd"new" TypeName TypeArgs\opt \xcd"(" ArgumentList\opt \xcd")" ClassBody\opt & (\ref{prod:ObCreationExp}) \\
                      \| Primary \xcd"." \xcd"new" Id TypeArgs\opt \xcd"(" ArgumentList\opt \xcd")" ClassBody\opt \\
                      \| FullyQualifiedName \xcd"." \xcd"new" Id TypeArgs\opt \xcd"(" ArgumentList\opt \xcd")" ClassBody\opt \\
 \end{bbgrammar}

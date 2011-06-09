@@ -131,14 +131,14 @@ if (a > b) g = 1; else g = 2;  // Init. done here.
 \index{variable!val}
 \index{val}
 
-%##(LocVarDeclStmt LocVarDecl
+%##(LocalVariableDeclarationStatement LocalVariableDeclaration
 \begin{bbgrammar}
-%(FROM #(prod:LocVarDeclStmt)#)
-      LocVarDeclStmt \: LocVarDecl \xcd";" & (\ref{prod:LocVarDeclStmt}) \\
-%(FROM #(prod:LocVarDecl)#)
-          LocVarDecl \: Mods\opt VarKeyword VariableDeclarators & (\ref{prod:LocVarDecl}) \\
+%(FROM #(prod:LocVarDeclnStmt)#)
+     LocVarDeclnStmt \: LocVarDecln \xcd";" & (\ref{prod:LocVarDeclnStmt}) \\
+%(FROM #(prod:LocVarDecln)#)
+         LocVarDecln \: Mods\opt VarKeyword VariableDeclrs & (\ref{prod:LocVarDecln}) \\
                      \| Mods\opt VarDeclsWType \\
-                     \| Mods\opt VarKeyword FormalDeclarators \\
+                     \| Mods\opt VarKeyword FormalDeclrs \\
 \end{bbgrammar}
 %##)
 
@@ -330,8 +330,8 @@ variables.
 
 %##(VariableDeclarator
 \begin{bbgrammar}
-%(FROM #(prod:VariableDeclarator)#)
-  VariableDeclarator \: Id HasResultType\opt \xcd"=" VariableInitializer & (\ref{prod:VariableDeclarator}) \\
+%(FROM #(prod:VariableDeclr)#)
+       VariableDeclr \: Id HasResultType\opt \xcd"=" VariableInitializer & (\ref{prod:VariableDeclr}) \\
                      \| \xcd"[" IdList \xcd"]" HasResultType\opt \xcd"=" VariableInitializer \\
                      \| Id \xcd"[" IdList \xcd"]" HasResultType\opt \xcd"=" VariableInitializer \\
 \end{bbgrammar}
@@ -529,16 +529,16 @@ to compile.
 \index{struct!field}
 \index{class!field}
 
-%##(FieldDeclarators FieldDecl FieldDeclarator HasResultType FieldKeyword Mod
+%##(FieldDeclarators FieldDecln FieldDeclarator HasResultType FieldKeyword Mod
 \begin{bbgrammar}
-%(FROM #(prod:FieldDeclarators)#)
-    FieldDeclarators \: FieldDeclarator & (\ref{prod:FieldDeclarators}) \\
-                     \| FieldDeclarators \xcd"," FieldDeclarator \\
-%(FROM #(prod:FieldDecl)#)
-           FieldDecl \: Mods\opt FieldKeyword FieldDeclarators \xcd";" & (\ref{prod:FieldDecl}) \\
-                     \| Mods\opt FieldDeclarators \xcd";" \\
-%(FROM #(prod:FieldDeclarator)#)
-     FieldDeclarator \: Id HasResultType & (\ref{prod:FieldDeclarator}) \\
+%(FROM #(prod:FieldDeclrs)#)
+         FieldDeclrs \: FieldDeclr & (\ref{prod:FieldDeclrs}) \\
+                     \| FieldDeclrs \xcd"," FieldDeclr \\
+%(FROM #(prod:FieldDecln)#)
+          FieldDecln \: Mods\opt FieldKeyword FieldDeclrs \xcd";" & (\ref{prod:FieldDecln}) \\
+                     \| Mods\opt FieldDeclrs \xcd";" \\
+%(FROM #(prod:FieldDeclr)#)
+          FieldDeclr \: Id HasResultType & (\ref{prod:FieldDeclr}) \\
                      \| Id HasResultType\opt \xcd"=" VariableInitializer \\
 %(FROM #(prod:HasResultType)#)
        HasResultType \: \xcd":" Type & (\ref{prod:HasResultType}) \\

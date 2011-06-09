@@ -112,10 +112,10 @@ zero or more interfaces that it implements, and a class body containing the
 the definition of fields, properties, methods, and member types. Each such
 declaration introduces a class type (\Sref{ReferenceTypes}).
 
-%##(ClassDecl TypeParamsI TypeParamIList Properties PropertyList Property Guard Super Interfaces InterfaceTypeList ClassBody ClassBodyDecls ClassMemberDecl
+%##(ClassDecln TypeParamsI TypeParamIList Properties PropertyList Property Guard Super Interfaces InterfaceTypeList ClassBody ClassBodyDeclns ClassMemberDecln
 \begin{bbgrammar}
-%(FROM #(prod:ClassDecl)#)
-           ClassDecl \: Mods\opt \xcd"class" Id TypeParamsI\opt Properties\opt Guard\opt Super\opt Interfaces\opt ClassBody & (\ref{prod:ClassDecl}) \\
+%(FROM #(prod:ClassDecln)#)
+          ClassDecln \: Mods\opt \xcd"class" Id TypeParamsI\opt Properties\opt Guard\opt Super\opt Interfaces\opt ClassBody & (\ref{prod:ClassDecln}) \\
 %(FROM #(prod:TypeParamsI)#)
          TypeParamsI \: \xcd"[" TypeParamIList \xcd"]" & (\ref{prod:TypeParamsI}) \\
 %(FROM #(prod:TypeParamIList)#)
@@ -124,12 +124,12 @@ declaration introduces a class type (\Sref{ReferenceTypes}).
                      \| TypeParamIList \xcd"," TypeParam \\
                      \| TypeParamIList \xcd"," \\
 %(FROM #(prod:Properties)#)
-          Properties \: \xcd"(" PropertyList \xcd")" & (\ref{prod:Properties}) \\
-%(FROM #(prod:PropertyList)#)
-        PropertyList \: Property & (\ref{prod:PropertyList}) \\
-                     \| PropertyList \xcd"," Property \\
-%(FROM #(prod:Property)#)
-            Property \: Annotations\opt Id ResultType & (\ref{prod:Property}) \\
+          Properties \: \xcd"(" PropList \xcd")" & (\ref{prod:Properties}) \\
+%(FROM #(prod:PropList)#)
+            PropList \: Prop & (\ref{prod:PropList}) \\
+                     \| PropList \xcd"," Prop \\
+%(FROM #(prod:Prop)#)
+                Prop \: Annotations\opt Id ResultType & (\ref{prod:Prop}) \\
 %(FROM #(prod:Guard)#)
                Guard \: DepParams & (\ref{prod:Guard}) \\
 %(FROM #(prod:Super)#)
@@ -140,15 +140,15 @@ declaration introduces a class type (\Sref{ReferenceTypes}).
    InterfaceTypeList \: Type & (\ref{prod:InterfaceTypeList}) \\
                      \| InterfaceTypeList \xcd"," Type \\
 %(FROM #(prod:ClassBody)#)
-           ClassBody \: \xcd"{" ClassBodyDecls\opt \xcd"}" & (\ref{prod:ClassBody}) \\
-%(FROM #(prod:ClassBodyDecls)#)
-      ClassBodyDecls \: ClassBodyDecl & (\ref{prod:ClassBodyDecls}) \\
-                     \| ClassBodyDecls ClassBodyDecl \\
-%(FROM #(prod:ClassMemberDecl)#)
-     ClassMemberDecl \: FieldDecl & (\ref{prod:ClassMemberDecl}) \\
-                     \| MethodDecl \\
-                     \| PropertyMethodDecl \\
-                     \| TypeDecl \\
+           ClassBody \: \xcd"{" ClassBodyDeclns\opt \xcd"}" & (\ref{prod:ClassBody}) \\
+%(FROM #(prod:ClassBodyDeclns)#)
+     ClassBodyDeclns \: ClassBodyDecln & (\ref{prod:ClassBodyDeclns}) \\
+                     \| ClassBodyDeclns ClassBodyDecln \\
+%(FROM #(prod:ClassMemberDecln)#)
+    ClassMemberDecln \: FieldDecln & (\ref{prod:ClassMemberDecln}) \\
+                     \| MethodDecln \\
+                     \| PropMethodDecln \\
+                     \| TypeDecln \\
 \end{bbgrammar}
 %##)
 
@@ -561,19 +561,19 @@ on a class (called ``overloading'' or ``ad hoc polymorphism''). Methods may be
 declared \Xcd{public}, \Xcd{private}, \Xcd{protected}, or given default package-level access
 rights.
 
-%##(MethMods MethodDecl TypeParams Formals FormalList HasResultType MethodBody
+%##(MethMods MethodDeclaration TypeParams Formals FormalList HasResultType MethodBody
 \begin{bbgrammar}
 %(FROM #(prod:MethMods)#)
             MethMods \: Mods\opt & (\ref{prod:MethMods}) \\
                      \| MethMods \xcd"property"  \\
                      \| MethMods Mod \\
-%(FROM #(prod:MethodDecl)#)
-          MethodDecl \: MethMods \xcd"def" Id TypeParams\opt Formals Guard\opt HasResultType\opt MethodBody & (\ref{prod:MethodDecl}) \\
-                     \| BinaryOperatorDecl \\
-                     \| PrefixOperatorDecl \\
-                     \| ApplyOperatorDecl \\
-                     \| SetOperatorDecl \\
-                     \| ConversionOperatorDecl \\
+%(FROM #(prod:MethodDecln)#)
+         MethodDecln \: MethMods \xcd"def" Id TypeParams\opt Formals Guard\opt HasResultType\opt MethodBody & (\ref{prod:MethodDecln}) \\
+                     \| BinaryOpDecln \\
+                     \| PrefixOpDecln \\
+                     \| ApplyOpDecln \\
+                     \| SetOpDecln \\
+                     \| ConversionOpDecln \\
 %(FROM #(prod:TypeParams)#)
           TypeParams \: \xcd"[" TypeParamList \xcd"]" & (\ref{prod:TypeParams}) \\
 %(FROM #(prod:Formals)#)
@@ -586,7 +586,7 @@ rights.
                      \| \xcd"<:" Type \\
 %(FROM #(prod:MethodBody)#)
           MethodBody \: \xcd"=" LastExp \xcd";" & (\ref{prod:MethodBody}) \\
-                     \| \xcd"=" Annotations\opt \xcd"{" BlockStatements\opt LastExp \xcd"}" \\
+                     \| \xcd"=" Annotations\opt \xcd"{" BlockStmts\opt LastExp \xcd"}" \\
                      \| \xcd"=" Annotations\opt Block \\
                      \| Annotations\opt Block \\
                      \| \xcd";" \\
@@ -812,10 +812,10 @@ Using a reference to an outer class, \xcd`Outer.this`, in a constraint, is not s
 \index{method!property}
 \index{property method}
 
-%##(PropertyMethodDecl
+%##(PropertyMethodDeclaration
 \begin{bbgrammar}
-%(FROM #(prod:PropertyMethodDecl)#)
-  PropertyMethodDecl \: MethMods Id TypeParams\opt Formals Guard\opt HasResultType\opt MethodBody & (\ref{prod:PropertyMethodDecl}) \\
+%(FROM #(prod:PropMethodDecln)#)
+     PropMethodDecln \: MethMods Id TypeParams\opt Formals Guard\opt HasResultType\opt MethodBody & (\ref{prod:PropMethodDecln}) \\
                      \| MethMods Id Guard\opt HasResultType\opt MethodBody \\
 \end{bbgrammar}
 %##)
@@ -1191,8 +1191,8 @@ overriding, and hence totally different.)
 Instances of classes are created by the \xcd`new` expression: \\
 %##(ClassInstCreationExp
 \begin{bbgrammar}
-%(FROM #(prod:ClassInstCreationExp)#)
-ClassInstCreationExp \: \xcd"new" TypeName TypeArgs\opt \xcd"(" ArgumentList\opt \xcd")" ClassBody\opt & (\ref{prod:ClassInstCreationExp}) \\
+%(FROM #(prod:ObCreationExp)#)
+       ObCreationExp \: \xcd"new" TypeName TypeArgs\opt \xcd"(" ArgumentList\opt \xcd")" ClassBody\opt & (\ref{prod:ObCreationExp}) \\
                      \| Primary \xcd"." \xcd"new" Id TypeArgs\opt \xcd"(" ArgumentList\opt \xcd")" ClassBody\opt \\
                      \| FullyQualifiedName \xcd"." \xcd"new" Id TypeArgs\opt \xcd"(" ArgumentList\opt \xcd")" ClassBody\opt \\
 \end{bbgrammar}
@@ -1439,15 +1439,15 @@ any place.
 \index{operator}
 \index{operator!user-defined}
 
-%##(MethodDecl
+%##(MethodDeclaration
 \begin{bbgrammar}
-%(FROM #(prod:MethodDecl)#)
-          MethodDecl \: MethMods \xcd"def" Id TypeParams\opt Formals Guard\opt HasResultType\opt MethodBody & (\ref{prod:MethodDecl}) \\
-                     \| BinaryOperatorDecl \\
-                     \| PrefixOperatorDecl \\
-                     \| ApplyOperatorDecl \\
-                     \| SetOperatorDecl \\
-                     \| ConversionOperatorDecl \\
+%(FROM #(prod:MethodDecln)#)
+         MethodDecln \: MethMods \xcd"def" Id TypeParams\opt Formals Guard\opt HasResultType\opt MethodBody & (\ref{prod:MethodDecln}) \\
+                     \| BinaryOpDecln \\
+                     \| PrefixOpDecln \\
+                     \| ApplyOpDecln \\
+                     \| SetOpDecln \\
+                     \| ConversionOpDecln \\
 \end{bbgrammar}
 %##)
 
@@ -2363,10 +2363,10 @@ properties than the class invariant. \Xten{}'s dependent type system
 permits these extra properties to be asserted with the constructor in
 the form of a constrained type (the ``return type'' of the constructor):
 
-%##(CtorDecl
+%##(CtorDeclaration
 \begin{bbgrammar}
-%(FROM #(prod:CtorDecl)#)
-            CtorDecl \: Mods\opt \xcd"def" \xcd"this" TypeParams\opt Formals Guard\opt HasResultType\opt CtorBody & (\ref{prod:CtorDecl}) \\
+%(FROM #(prod:CtorDecln)#)
+           CtorDecln \: Mods\opt \xcd"def" \xcd"this" TypeParams\opt Formals Guard\opt HasResultType\opt CtorBody & (\ref{prod:CtorDecln}) \\
 \end{bbgrammar}
 %##)
 

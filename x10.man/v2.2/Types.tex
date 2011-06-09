@@ -845,10 +845,10 @@ static or final; the Java back end can accomodate generic instance methods as we
 A type definition can be thought of as a type-valued function,
 mapping type parameters and value parameters to a concrete type.
 
-%##(TypeDefDecl TypeParams Formals Guard
+%##(TypeDefDecln TypeParams Formals Guard
 \begin{bbgrammar}
-%(FROM #(prod:TypeDefDecl)#)
-         TypeDefDecl \: Mods\opt \xcd"type" Id TypeParams\opt Guard\opt \xcd"=" Type \xcd";" & (\ref{prod:TypeDefDecl}) \\
+%(FROM #(prod:TypeDefDecln)#)
+        TypeDefDecln \: Mods\opt \xcd"type" Id TypeParams\opt Guard\opt \xcd"=" Type \xcd";" & (\ref{prod:TypeDefDecln}) \\
                      \| Mods\opt \xcd"type" Id TypeParams\opt \xcd"(" FormalList \xcd")" Guard\opt \xcd"=" Type \xcd";" \\
 %(FROM #(prod:TypeParams)#)
           TypeParams \: \xcd"[" TypeParamList \xcd"]" & (\ref{prod:TypeParams}) \\

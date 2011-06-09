@@ -140,9 +140,9 @@ with on termination (normal or abrupt).
 
 %##(AsyncStatement ClockedClause
 \begin{bbgrammar}
-%(FROM #(prod:AsyncStatement)#)
-      AsyncStatement \: \xcd"async" ClockedClause\opt Statement & (\ref{prod:AsyncStatement}) \\
-                     \| \xcd"clocked" \xcd"async" Statement \\
+%(FROM #(prod:AsyncStmt)#)
+           AsyncStmt \: \xcd"async" ClockedClause\opt Stmt & (\ref{prod:AsyncStmt}) \\
+                     \| \xcd"clocked" \xcd"async" Stmt \\
 %(FROM #(prod:ClockedClause)#)
        ClockedClause \: \xcd"clocked" Arguments & (\ref{prod:ClockedClause}) \\
 \end{bbgrammar}

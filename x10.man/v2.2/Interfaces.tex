@@ -148,10 +148,10 @@ class Lassie implements Dog, Star{}
 
 \label{DepType:Interface}
 
-%##(InterfaceDecl TypeParamsI Guard ExtendsInterfaces InterfaceBody InterfaceMemberDecl
+%##(InterfaceDeclaration TypeParamsI Guard ExtendsInterfaces InterfaceBody InterfaceMemberDeclaration
 \begin{bbgrammar}
-%(FROM #(prod:InterfaceDecl)#)
-       InterfaceDecl \: Mods\opt \xcd"interface" Id TypeParamsI\opt Properties\opt Guard\opt ExtendsInterfaces\opt InterfaceBody & (\ref{prod:InterfaceDecl}) \\
+%(FROM #(prod:InterfaceDecln)#)
+      InterfaceDecln \: Mods\opt \xcd"interface" Id TypeParamsI\opt Properties\opt Guard\opt ExtendsInterfaces\opt InterfaceBody & (\ref{prod:InterfaceDecln}) \\
 %(FROM #(prod:TypeParamsI)#)
          TypeParamsI \: \xcd"[" TypeParamIList \xcd"]" & (\ref{prod:TypeParamsI}) \\
 %(FROM #(prod:Guard)#)
@@ -160,12 +160,12 @@ class Lassie implements Dog, Star{}
    ExtendsInterfaces \: \xcd"extends" Type & (\ref{prod:ExtendsInterfaces}) \\
                      \| ExtendsInterfaces \xcd"," Type \\
 %(FROM #(prod:InterfaceBody)#)
-       InterfaceBody \: \xcd"{" InterfaceMemberDecls\opt \xcd"}" & (\ref{prod:InterfaceBody}) \\
-%(FROM #(prod:InterfaceMemberDecl)#)
- InterfaceMemberDecl \: MethodDecl & (\ref{prod:InterfaceMemberDecl}) \\
-                     \| PropertyMethodDecl \\
-                     \| FieldDecl \\
-                     \| TypeDecl \\
+       InterfaceBody \: \xcd"{" InterfaceMemberDeclns\opt \xcd"}" & (\ref{prod:InterfaceBody}) \\
+%(FROM #(prod:InterfaceMemberDecln)#)
+InterfaceMemberDecln \: MethodDecln & (\ref{prod:InterfaceMemberDecln}) \\
+                     \| PropMethodDecln \\
+                     \| FieldDecln \\
+                     \| TypeDecln \\
 \end{bbgrammar}
 %##)
 

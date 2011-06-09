@@ -76,20 +76,20 @@ structs (unlike classes) cannot be \xcd`null`.
 \section{Struct declaration}
 \index{struct!declaration}
 
-%##(StructDecl TypeParamsI Properties Guard Interfaces ClassBody
+%##(StructDecln TypeParamsI Properties Guard Interfaces ClassBody
 \begin{bbgrammar}
-%(FROM #(prod:StructDecl)#)
-          StructDecl \: Mods\opt \xcd"struct" Id TypeParamsI\opt Properties\opt Guard\opt Interfaces\opt ClassBody & (\ref{prod:StructDecl}) \\
+%(FROM #(prod:StructDecln)#)
+         StructDecln \: Mods\opt \xcd"struct" Id TypeParamsI\opt Properties\opt Guard\opt Interfaces\opt ClassBody & (\ref{prod:StructDecln}) \\
 %(FROM #(prod:TypeParamsI)#)
          TypeParamsI \: \xcd"[" TypeParamIList \xcd"]" & (\ref{prod:TypeParamsI}) \\
 %(FROM #(prod:Properties)#)
-          Properties \: \xcd"(" PropertyList \xcd")" & (\ref{prod:Properties}) \\
+          Properties \: \xcd"(" PropList \xcd")" & (\ref{prod:Properties}) \\
 %(FROM #(prod:Guard)#)
                Guard \: DepParams & (\ref{prod:Guard}) \\
 %(FROM #(prod:Interfaces)#)
           Interfaces \: \xcd"implements" InterfaceTypeList & (\ref{prod:Interfaces}) \\
 %(FROM #(prod:ClassBody)#)
-           ClassBody \: \xcd"{" ClassBodyDecls\opt \xcd"}" & (\ref{prod:ClassBody}) \\
+           ClassBody \: \xcd"{" ClassBodyDeclns\opt \xcd"}" & (\ref{prod:ClassBody}) \\
 \end{bbgrammar}
 %##)
 
