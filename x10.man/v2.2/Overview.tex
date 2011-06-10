@@ -44,7 +44,7 @@ class Slider implements Normed {
   public def move(dx:Double) { x += dx; }
 }
 struct PlanePoint implements Normed {
-  val x : Double, y:Double;
+  val x : Double; val y:Double;
   public def this(x:Double, y:Double) {
     this.x = x; this.y = y;
   }

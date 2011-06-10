@@ -557,7 +557,7 @@ an immutable position in 3-space.  It is used as a type in \xcd`example()`:
 %~~vis
 \begin{xten}
 struct Position {
-  public val x:Double, y:Double, z:Double; 
+  public val x:Double; public val y:Double; public val z:Double; 
   def this(x:Double, y:Double, z:Double) {
      this.x = x; this.y = y; this.z = z;
   }
@@ -1672,67 +1672,6 @@ currently impractical.
 
 
 
-%%OLD%% In many cases, it does not need to.
-%%OLD%% If X10 has an object \xcd`x` of some type \xcd`T` around, it can check at
-%%OLD%% runtime whether or not \xcd`x` satisfies some constraint \xcd`c`, and hence
-%%OLD%% tell if \xcd`x` is a member of \xcd`T{c}`. 
-%%OLD%% 
-%%OLD%% \begin{ex}
-%%OLD%% Although there is no runtime representation of the constrained type 
-%%OLD%% \xcd`Int{self==1}`, X10 can generate a (correct) test for membership in it,
-%%OLD%% anyhow: 
-%%OLD%% %~~gen ^^^ Types3u5w
-%%OLD%% % package Types3u5w;
-%%OLD%% % class Example {
-%%OLD%% %~~vis
-%%OLD%% \begin{xten}
-%%OLD%% static def example(n:Int) {
-%%OLD%%   val b = (n instanceof Int{self == 1});
-%%OLD%%   assert b == (n == 1); 
-%%OLD%% }
-%%OLD%% \end{xten}
-%%OLD%% %~~siv
-%%OLD%% % }
-%%OLD%% % class Hook{ def run() {Example.example(0); Example.example(1);
-%%OLD%% % Example.example(2); return true; } }
-%%OLD%% %~~neg
-%%OLD%% \end{ex}
-%%OLD%% 
-%%OLD%% However, in cases where there is no object of type \xcd`T` around, there's
-%%OLD%% nothing that can be checked. For example, X10 cannot tell -- and in fact no
-%%OLD%% computer program can tell --  whether an
-%%OLD%% instance of a function type 
-%%OLD%% \begin{xtenmath}
-%%OLD%% (Int)=>Int
-%%OLD%% \end{xtenmath}
-%%OLD%% (unary functions returning
-%%OLD%% integers) is actually an instance of a more specific type
-%%OLD%% \begin{xtenmath}
-%%OLD%% (Int)=>Int{self!=0}
-%%OLD%% \end{xtenmath}
-%%OLD%% (unary functions returning non-zero integers).
-%%OLD%% 
-%%OLD%% In other cases, there might or might not be an object of type \xcd`T`, and X10
-%%OLD%% cannot tell until runtime.  Consider an array \xcd`a:Array[T]`.  If \xcd`a` is
-%%OLD%% nonempty, there is an instance of \xcd`T` at hand, and testing it for
-%%OLD%% constraints would be possible though potentially quite expensive. 
-%%OLD%% But \xcd`a` might be an
-%%OLD%% empty array, and testing its element type would be impossible. 
-%%OLD%% 
-%%OLD%% \bard{
-%%OLD%% If you had an Array[Any] and asked if it instanceof Array[Int] -- even if it
-%%OLD%% was currently full of integers -- you'd get a wrong answer.  You'd expect in
-%%OLD%% general: 
-%%OLD%% if (x instanceof T) 
-%%OLD%%   val xt :T = x as T
-%%OLD%%   ...
-%%OLD%% to work. But it won't, if you cast an x:Array[Any] into an xt:Array[Int],
-%%OLD%% store Booleans into it through x, and take them out via xt and expect them to
-%%OLD%% be Ints.  
-%%OLD%% Ultimately, being a value of a parameterized type is a definitional matter,
-%%OLD%% not a computational one.  
-%%OLD%% }
-%%OLD%% 
 
 Rather than pay the runtime costs for keeping and manipulating constraints
 (which can be considerable), X10 omits them.
@@ -1933,17 +1872,36 @@ function as a whole; a return type \xcd"T".
 (x$_1$: T$_1$, $\dots$, x$_n$: T$_n$){c} => T
 \end{xtenmath}
 
-\bard{Rewrite}
-The names \xcdmath"x$_i$" of the formal parameters are not relevant.  Types
-which differ only in the names of formals (following the usual rules for
-renaming of variables, as in {$\alpha$}-renaming in the {$\lambda$} calculus
-\bard{cite something}) are considered equal.  \Eg, the two function types
-%~~type~~`~~`~~ ~~ ^^^ Types370
-\xcd`(a:Int, b:Array[String](1){b.size==a}) => Boolean`
-and \\
-%~~type~~`~~`~~ ~~ ^^^ Types380
-\xcd`(b:Int, a:Array[String](1){a.size==b}) => Boolean`
-are equivalent.
+
+The names of the formal parameters, \xcdmath"x$_i$", are bound in the type.  
+As usual with bound variables, they can be given new names without changing the
+meaning of the type.  In particular, the names of formals in a function type
+do not need to be the same as the names in the function in a value of that type.
+
+\begin{ex}
+The type of \xcd`id` uses the bound variable \xcd`x`.  
+The type of \xcd`ie`
+uses the bound variable \xcd`z`, but is otherwise identical to that of
+\xcd`id`.  The two types are the same, as shown by the assignment of \xcd`id`
+to  \xcd`ie`.  Also, \xcd`id`'s type uses \xcd`x`, and \xcd`id`'s value uses \xcd`y`.
+%~~gen ^^^ Types3i2f
+% package Types3i2f;
+% class Example{
+% static def example() {
+%~~vis
+\begin{xten}
+val id : (x:Int) => Int{self==x} 
+       = (y:Int) => y;
+val ie : (z:Int) => Int{self==z}
+       = id;
+\end{xten}
+%~~siv
+%} } 
+%~~neg
+
+
+\end{ex}
+
 
 \limitation{
 Function types differing only in the names of bound variables may wind up being
