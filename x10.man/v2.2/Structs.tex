@@ -4,41 +4,6 @@
 \label{Structs}
 \index{struct}
 
-\bard{This para gacked from Classes.tex}
-An object is represented by some (contiguous) memory chunk on the
-heap. Entities (such as variables and fields) contain a {\em
-  reference} to this chunk. That is, objects are represented through
-an extra level of indirection.  A consequence of this flexibility is
-that an entity containing a reference to an object \xcd{o} needs only
-one word of memory to represent that reference, regardess of the
-number of fields in \xcd{o}. An assignment to this entity simply
-overwrites the reference with another reference (thus taking constant
-time). Another consequence is that every class type contains the value
-\Xcd{null} corresponding to the invalid reference. \Xcd{null} is often
-useful as a default value. Further, two objects may be compared for
-identity (\Xcd{==}) in constant time by simply comparing references to
-the memory used to represent the objects. The default hash code for an
-object is based on the value of this reference. A downside of this
-flexibility is that the operations of accessing a field and invoking a
-method are more expensive than simply reading a register and
-invoking a static function.
-
-Structs are instances of {\em struct types} (\Sref{StructClasses}).  A
-struct is represented without the extra level of indirection, with a
-memory chunk of size $N$ words precisely big enough to store the value
-of every field of the struct (modulo alignment), plus whatever padding is needed. Thus structs cannot
-be shared. Entities (such as variables and fields) refering to the
-struct must allocate $N$ words to directly contain the chunk.  An
-assignment to this entity must copy the $N$ words representing the
-right hand side into the left hand side. Since there are no references
-to structs, \Xcd{null} is not a legal value for a struct
-type. Comparison for identity (\Xcd{==}) involves examining $N$
-words. Additionally, structs do not have any mutable fields, hence
-they can be freely copied. The payoff for these restrictions lies in
-that fields can be stored in registers or local variables, and 
-and method invocation is implemented by invoking a static function.
-
-\bard{Back to the original}
 
 X10 objects are a powerful general-purpose programming tool. However, the
 power must be paid for in space and time. In space, a typical object
@@ -56,11 +21,15 @@ cheaply than objects, potentially avoiding the space and time overhead.
 (Currently, the C++ back end avoids the overhead, but the Java back end
 implements structs as Java objects and does not avoid it.)
 
+
+
 Structs and classes are interoperable. Both can implement interfaces; in
 particular, like all X10 values they implement \xcd`Any`.  Subroutines 
 whose arguments are defined by interfaces can take both structs and classes.
 (Some caution is necessary here: referring to a struct through an interface
 requires overhead similar to that required for an object.)
+
+
 
 In many cases structs can be converted to classes or classes to structs,
 within the constraints of structs. If you start off defining a struct and
@@ -69,7 +38,9 @@ the keyword \xcd`struct` to \xcd`class`. If you have a class that does not use
 inheritance or mutable fields, it can be converted to a struct by changing its
 keyword. Client code using the struct that was a class will need certain
 changes: \eg, the \xcd`new` keyword must be added in constructor calls, and
-structs (unlike classes) cannot be \xcd`null`.  
+structs (unlike classes) cannot be \xcd`null`.    
+
+
 
 
 

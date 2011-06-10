@@ -41,11 +41,18 @@ variables of class type -- except for types which have a constraint
 (\Sref{ConstrainedTypes}) which specifically excludes \xcd`null`.
 
 These runtime values are classified by {\em types}. Types are used in
-variable declarations (\Sref{sect:LocalVarDecl}), coercions and  explicit
-conversions (\Sref{sect:ConvAndCoerc}), object creation (\Sref{ClassCreation}),
-static state and method accessors (\Sref{FieldAccess}), and
+variable declarations (\Sref{sect:LocalVarDecl}), 
+coercions and  explicit conversions (\Sref{sect:ConvAndCoerc}),
+object creation (\Sref{ClassCreation}),
+static state and method accessors (\Sref{FieldAccess}),
+generic classes, structs, interfaces, and methods (\Sref{TypeParameters}),
+type definitions   (\Sref{TypeDefs}),
+closures  (\Sref{Functions}),
+class, struct, and interface declarations  (\Sref{sect:ClassDeclSyntax}),
+subtyping expressions  (\Sref{sect:SubtypingExpression}),
+and
 \xcd"instanceof" and \xcd`as` expressions (\Sref{instanceOf}).
-\bard{check for completeness}
+
 
 The basic relationship between values and types is the {\em is a value in}
 relation: \xcd`e` is a value in \xcd`T`.  

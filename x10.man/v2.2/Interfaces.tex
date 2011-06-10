@@ -1,40 +1,7 @@
 \chapter{Interfaces}
 
 
-\bard{The following stuff needs a home (maybe):}
 
-Classes and structs may be declared to implement multiple interfaces. Semantically, the
-interface type is the set of all objects that are instances of classes
-or structs that
-implement the interface. A class or struct implements an interface if it is declared to
-and if it concretely or abstractly implements all the methods and properties
-defined in the interface. For example, \xcd`Kim` implements
-\xcd`Person`, and hence \xcd`Named` and \xcd`Mobile`. It would be a static
-error if \xcd`Kim` had no \xcd`name` method, unless \xcd`Kim` were also
-declared \xcd`abstract`.
-
-%~~gen ^^^ Types140
-%interface Named {
-%   def name():String;
-% }
-% interface Mobile {
-%   def move(howFar:Int):void;
-% }
-% interface Person extends Named, Mobile {}
-% interface NamedPoint extends Named, Mobile{} 
-%~~vis
-\begin{xten}
-class Kim implements Person {
-   var pos : Int = 0;
-   public def name() = "Kim (" + pos + ")";
-   public def move(dPos:Int) { pos += dPos; }
-}
-\end{xten}
-%~~siv
-%
-%~~neg
-
-\bard{OK, back to the real chapter now}
 
 \label{XtenInterfaces}\index{interface}
 
@@ -202,7 +169,7 @@ would specify that implementing classes and structs have methods that cannot
 be seen.
 
 \section{Member Specification}
-\bard{Revised -- check!} 
+
 
 An interface can specify that all containers implementing it must have certain
 instance methods.  It cannot require constructors or static methods, though.
@@ -381,6 +348,38 @@ interfaces.
 \xcd`I` inherits the members of all of its superinterfaces. Any class or
 struct that has \xcd`I` in its \xcd`implements` clause also implements all of
 \xcd`I`'s superinterfaces. 
+
+
+Classes and structs may be declared to implement multiple interfaces. Semantically, the
+interface type is the set of all objects that are instances of classes
+or structs that
+implement the interface. A class or struct implements an interface if it is declared to
+and if it concretely or abstractly implements all the methods and properties
+defined in the interface. For example, \xcd`Kim` implements
+\xcd`Person`, and hence \xcd`Named` and \xcd`Mobile`. It would be a static
+error if \xcd`Kim` had no \xcd`name` method, unless \xcd`Kim` were also
+declared \xcd`abstract`.
+
+%~~gen ^^^ Types140
+%interface Named {
+%   def name():String;
+% }
+% interface Mobile {
+%   def move(howFar:Int):void;
+% }
+% interface Person extends Named, Mobile {}
+% interface NamedPoint extends Named, Mobile{} 
+%~~vis
+\begin{xten}
+class Kim implements Person {
+   var pos : Int = 0;
+   public def name() = "Kim (" + pos + ")";
+   public def move(dPos:Int) { pos += dPos; }
+}
+\end{xten}
+%~~siv
+%
+%~~neg
 
 
 
