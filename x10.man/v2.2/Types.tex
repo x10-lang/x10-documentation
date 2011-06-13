@@ -2526,6 +2526,33 @@ write a generic function which works with both functions which return a value
 and functions which do not.  In most cases, functions which have no sensible
 return value can be provided with a dummy return value.
 
+X10 preserves known information when computing return types.  
+A constraint on a method induces a corresponding constraint on its return
+type.  
+
+\begin{ex}
+In the following code, the type inferred for \xcd`x`
+is \xcd`Numb{self.p==n, n!=0, self!=null}`.  In particular, 
+the conjunct \xcd`n != 0` is preserved from the cast of 
+    \xcd`n` to \xcd`Int{self != 0}`.
+%~~gen ^^^ Types7e6v
+% package Types7e6v;
+%~~vis
+\begin{xten}
+class Numb(p:Int){
+  static def dup(n:Int){n != 0} = new Numb(n);
+  public static def example(n:Int) {
+    val x = dup(n as Int{self != 0});
+    val y : Numb{self.p==n, n!=0, self!=null} = x;
+  }
+}
+\end{xten}
+%~~siv
+%
+%~~neg
+
+\end{ex}
+
 \subsection{Inferring Type Arguments}
 \label{TypeParamInfer}
 
