@@ -106,7 +106,7 @@
   fun genRHS(rhs) {
     // may return null if this line should not be genned
     pocked = %[trans(sym) | for sym <- rhs, if keepSym(sym)]; 
-    if (null in pocked) {
+    if (null in pocked || (rhs != [] && pocked == [])) {
        return null;
     }
     return " ".join(pocked);
