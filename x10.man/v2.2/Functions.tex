@@ -233,7 +233,7 @@ which is to say, \xcd`Int{self!=3}`.
 %(FROM #(prod:Guard)#)
                Guard \: DepParams & (\ref{prod:Guard}) \\
 %(FROM #(prod:HasResultType)#)
-       HasResultType \: \xcd":" Type & (\ref{prod:HasResultType}) \\
+       HasResultType \: ResultType & (\ref{prod:HasResultType}) \\
                      \| \xcd"<:" Type \\
 %(FROM #(prod:ClosureBody)#)
          ClosureBody \: Exp & (\ref{prod:ClosureBody}) \\

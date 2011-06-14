@@ -529,23 +529,20 @@ to compile.
 \index{struct!field}
 \index{class!field}
 
-%##(FieldDeclarators FieldDecln FieldDeclarator HasResultType FieldKeyword Mod
+%##(FieldDeclarators FieldDecln FieldDeclarator HasResultType  Mod
 \begin{bbgrammar}
 %(FROM #(prod:FieldDeclrs)#)
          FieldDeclrs \: FieldDeclr & (\ref{prod:FieldDeclrs}) \\
                      \| FieldDeclrs \xcd"," FieldDeclr \\
 %(FROM #(prod:FieldDecln)#)
-          FieldDecln \: Mods\opt FieldKeyword FieldDeclrs \xcd";" & (\ref{prod:FieldDecln}) \\
+          FieldDecln \: Mods\opt VarKeyword FieldDeclrs \xcd";" & (\ref{prod:FieldDecln}) \\
                      \| Mods\opt FieldDeclrs \xcd";" \\
 %(FROM #(prod:FieldDeclr)#)
           FieldDeclr \: Id HasResultType & (\ref{prod:FieldDeclr}) \\
                      \| Id HasResultType\opt \xcd"=" VariableInitializer \\
 %(FROM #(prod:HasResultType)#)
-       HasResultType \: \xcd":" Type & (\ref{prod:HasResultType}) \\
+       HasResultType \: ResultType & (\ref{prod:HasResultType}) \\
                      \| \xcd"<:" Type \\
-%(FROM #(prod:FieldKeyword)#)
-        FieldKeyword \: \xcd"val" & (\ref{prod:FieldKeyword}) \\
-                     \| \xcd"var" \\
 %(FROM #(prod:Mod)#)
                  Mod \: \xcd"abstract" & (\ref{prod:Mod}) \\
                      \| Annotation \\

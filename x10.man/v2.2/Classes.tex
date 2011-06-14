@@ -77,7 +77,7 @@ zero or more interfaces that it implements, and a class body containing the
 the definition of fields, properties, methods, and member types. Each such
 declaration introduces a class type (\Sref{ReferenceTypes}).
 
-%##(ClassDecln TypeParamsI TypeParamIList Properties PropertyList Property Guard Super Interfaces InterfaceTypeList ClassBody ClassBodyDeclns ClassMemberDecln
+%##(ClassDecln TypeParamsI TypeParamIList Properties PropertyList Property Guard Super Interfaces InterfaceTypeList ClassBody ClassMemberDeclns ClassMemberDecln
 \begin{bbgrammar}
 %(FROM #(prod:ClassDecln)#)
           ClassDecln \: Mods\opt \xcd"class" Id TypeParamsI\opt Properties\opt Guard\opt Super\opt Interfaces\opt ClassBody & (\ref{prod:ClassDecln}) \\
@@ -85,7 +85,6 @@ declaration introduces a class type (\Sref{ReferenceTypes}).
          TypeParamsI \: \xcd"[" TypeParamIList \xcd"]" & (\ref{prod:TypeParamsI}) \\
 %(FROM #(prod:TypeParamIList)#)
       TypeParamIList \: TypeParam & (\ref{prod:TypeParamIList}) \\
-                     \|  \\
                      \| TypeParamIList \xcd"," TypeParam \\
                      \| TypeParamIList \xcd"," \\
 %(FROM #(prod:Properties)#)
@@ -105,15 +104,13 @@ declaration introduces a class type (\Sref{ReferenceTypes}).
    InterfaceTypeList \: Type & (\ref{prod:InterfaceTypeList}) \\
                      \| InterfaceTypeList \xcd"," Type \\
 %(FROM #(prod:ClassBody)#)
-           ClassBody \: \xcd"{" ClassBodyDeclns\opt \xcd"}" & (\ref{prod:ClassBody}) \\
-%(FROM #(prod:ClassBodyDeclns)#)
-     ClassBodyDeclns \: ClassBodyDecln & (\ref{prod:ClassBodyDeclns}) \\
-                     \| ClassBodyDeclns ClassBodyDecln \\
+           ClassBody \: \xcd"{" ClassMemberDeclns\opt \xcd"}" & (\ref{prod:ClassBody}) \\
+%(FROM #(prod:ClassMemberDeclns)#)
+   ClassMemberDeclns \: ClassMemberDecln & (\ref{prod:ClassMemberDeclns}) \\
+                     \| ClassMemberDeclns ClassMemberDecln \\
 %(FROM #(prod:ClassMemberDecln)#)
-    ClassMemberDecln \: FieldDecln & (\ref{prod:ClassMemberDecln}) \\
-                     \| MethodDecln \\
-                     \| PropMethodDecln \\
-                     \| TypeDecln \\
+    ClassMemberDecln \: InterfaceMemberDecln & (\ref{prod:ClassMemberDecln}) \\
+                     \| CtorDecln \\
 \end{bbgrammar}
 %##)
 
@@ -526,7 +523,7 @@ on a class (called ``overloading'' or ``ad hoc polymorphism''). Methods may be
 declared \Xcd{public}, \Xcd{private}, \Xcd{protected}, or given default package-level access
 rights.
 
-%##(MethMods MethodDeclaration TypeParams Formals FormalList HasResultType MethodBody
+%##(MethMods MethodDeclaration TypeParams Formals FormalList HasResultType MethodBody BinOpDecln PrefixOpDecln ApplyOpDecln ConversionOpDecln
 \begin{bbgrammar}
 %(FROM #(prod:MethMods)#)
             MethMods \: Mods\opt & (\ref{prod:MethMods}) \\
@@ -534,7 +531,7 @@ rights.
                      \| MethMods Mod \\
 %(FROM #(prod:MethodDecln)#)
          MethodDecln \: MethMods \xcd"def" Id TypeParams\opt Formals Guard\opt HasResultType\opt MethodBody & (\ref{prod:MethodDecln}) \\
-                     \| BinaryOpDecln \\
+                     \| BinOpDecln \\
                      \| PrefixOpDecln \\
                      \| ApplyOpDecln \\
                      \| SetOpDecln \\
@@ -547,7 +544,7 @@ rights.
           FormalList \: Formal & (\ref{prod:FormalList}) \\
                      \| FormalList \xcd"," Formal \\
 %(FROM #(prod:HasResultType)#)
-       HasResultType \: \xcd":" Type & (\ref{prod:HasResultType}) \\
+       HasResultType \: ResultType & (\ref{prod:HasResultType}) \\
                      \| \xcd"<:" Type \\
 %(FROM #(prod:MethodBody)#)
           MethodBody \: \xcd"=" LastExp \xcd";" & (\ref{prod:MethodBody}) \\
@@ -555,6 +552,18 @@ rights.
                      \| \xcd"=" Annotations\opt Block \\
                      \| Annotations\opt Block \\
                      \| \xcd";" \\
+%(FROM #(prod:BinOpDecln)#)
+          BinOpDecln \: MethMods \xcd"operator" TypeParams\opt \xcd"(" Formal  \xcd")" BinOp \xcd"(" Formal  \xcd")" Guard\opt HasResultType\opt MethodBody & (\ref{prod:BinOpDecln}) \\
+                     \| MethMods \xcd"operator" TypeParams\opt \xcd"this" BinOp \xcd"(" Formal  \xcd")" Guard\opt HasResultType\opt MethodBody \\
+                     \| MethMods \xcd"operator" TypeParams\opt \xcd"(" Formal  \xcd")" BinOp \xcd"this" Guard\opt HasResultType\opt MethodBody \\
+%(FROM #(prod:PrefixOpDecln)#)
+       PrefixOpDecln \: MethMods \xcd"operator" TypeParams\opt PrefixOp \xcd"(" Formal  \xcd")" Guard\opt HasResultType\opt MethodBody & (\ref{prod:PrefixOpDecln}) \\
+                     \| MethMods \xcd"operator" TypeParams\opt PrefixOp \xcd"this" Guard\opt HasResultType\opt MethodBody \\
+%(FROM #(prod:ApplyOpDecln)#)
+        ApplyOpDecln \: MethMods \xcd"operator" \xcd"this" TypeParams\opt Formals Guard\opt HasResultType\opt MethodBody & (\ref{prod:ApplyOpDecln}) \\
+%(FROM #(prod:ConversionOpDecln)#)
+   ConversionOpDecln \: ExplConvOpDecln & (\ref{prod:ConversionOpDecln}) \\
+                     \| ImplConvOpDecln \\
 \end{bbgrammar}
 %##)
 
@@ -1408,7 +1417,7 @@ any place.
 \begin{bbgrammar}
 %(FROM #(prod:MethodDecln)#)
          MethodDecln \: MethMods \xcd"def" Id TypeParams\opt Formals Guard\opt HasResultType\opt MethodBody & (\ref{prod:MethodDecln}) \\
-                     \| BinaryOpDecln \\
+                     \| BinOpDecln \\
                      \| PrefixOpDecln \\
                      \| ApplyOpDecln \\
                      \| SetOpDecln \\
@@ -2314,6 +2323,25 @@ The type invariant \xcdmath"$\mathit{inv}$(C)" of \xcd"C" must entail
 \item The return type \xcd"c" of each constructor in a class \xcd`C`
 must entail the invariant \xcdmath"$\mathit{inv}$(C)".
 \end{itemize}
+
+\subsection{Timing of Invariant Checks}
+
+\index{invariant!checked}
+
+The invariants for a container are checked immediately after the
+\xcd`property` statement in the container's constructor. 
+This is the earliest that the invariant could possibly be checked. 
+Recall that an invariant 
+can mention the properties of the container (which are set, forever, at that
+point in the code), but cannot mention the \xcd`val`
+or \xcd`var` fields (which might not be set at that point), or \xcd`this`
+(which might not have been fully initialized).  
+
+If X10 can prove that the invariant always holds given the \xcd`property`
+statement and other known information, it may omit the actual check.
+
+
+
 
 \subsection{Invariants and constructor definitions}
 \index{invariant!and constructor}

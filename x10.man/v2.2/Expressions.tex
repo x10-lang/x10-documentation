@@ -241,8 +241,8 @@ Function literals are described in \Sref{Functions}.
 
 %##(MethodInvocation ArgumentList  MethodName
 \begin{bbgrammar}
-%(FROM #(prod:MethodInvocation)#)
-    MethodInvocation \: MethodName TypeArgs\opt \xcd"(" ArgumentList\opt \xcd")" & (\ref{prod:MethodInvocation}) \\
+%(FROM #(prod:MethodInvo)#)
+          MethodInvo \: MethodName TypeArgs\opt \xcd"(" ArgumentList\opt \xcd")" & (\ref{prod:MethodInvo}) \\
                      \| Primary \xcd"." Id TypeArgs\opt \xcd"(" ArgumentList\opt \xcd")" \\
                      \| \xcd"super" \xcd"." Id TypeArgs\opt \xcd"(" ArgumentList\opt \xcd")" \\
                      \| ClassName \xcd"." \xcd"super"  \xcd"." Id TypeArgs\opt \xcd"(" ArgumentList\opt \xcd")" \\

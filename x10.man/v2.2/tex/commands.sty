@@ -208,14 +208,14 @@
   }{\unskip\end{tabular}}
 
 
-\newenvironment{bbgrammarappendix}{
+\newenvironment{bbgrammarappendix}[1]{
   \def\:{& \goesto{} &}
   \def\|{& $\vert$& }
   \def\opt{$^?$\ }
   \def\star{$^*$\ }
   \def\plus{$^+$\ }
   \em
-  \begin{tabular}{llcp{4.0in}}
+  \begin{tabular}{llcp{#1}}
   }{\unskip\end{tabular}}
 
 %\newcommand{\unsection}{\unskip}
