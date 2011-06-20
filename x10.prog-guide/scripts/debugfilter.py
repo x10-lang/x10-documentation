@@ -39,6 +39,8 @@ CMDFLAGS = {'-l': 'dirs.latex',
             '-v': 'verbose'}
 
 if __name__ == '__main__':
+    print("Please use bimport!");
+    raise Error("This is the old version")
     ini = './pguide.ini'
     if '-i' in sys.argv: # use the next argument as the ini file path?
         ini = sys.argv[1 + sys.argv.index('-i')]

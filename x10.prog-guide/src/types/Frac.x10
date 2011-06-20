@@ -14,6 +14,7 @@ class Frac implements Arithmetic[Frac],
   private val n:Int;
   private val d:Int;
   public def toString() = n + "/" + d; 
+//START TeX: fracctor
   public def this(var n:Int, var d:Int) {
     if (d < 0) { n = -n; d = -d; }
     if (d == 0) throw new Exception("Division by zero!");
@@ -21,8 +22,9 @@ class Frac implements Arithmetic[Frac],
     this.n = n / gcd;
     this.d = d / gcd;
   }
-  
+//END TeX: fracctor
 
+//START TeX: fraconfrac
   // Fraction arithmetic.
   public def add(f:Frac) = new Frac(n * f.d + f.n * d, d * f.d);
   public def negate() = new Frac(-n, d);
@@ -30,15 +32,16 @@ class Frac implements Arithmetic[Frac],
   public def multiply(f:Frac) = new Frac(n * f.n, d * f.d);
   public def divide(f:Frac) = new Frac(n * f.d, d * f.n);  
   
+//END TeX: fraconfrac
   // Fraction and Double -> Double
   
+//START TeX: fracondouble
   public def asDouble():Double = (n as Double) /(d as Double);
-  
   public def add(dbl: Double) = this.asDouble() + dbl;
   public def subtract(dbl: Double) = this.asDouble() - dbl;
   public def multiply(dbl: Double) = this.asDouble() * dbl;
   public def divide(  dbl: Double) = this.asDouble() / dbl;
-  
+//END TeX: fracondouble
   
   public static def gcd(a:Int, b:Int):Int {
     // Euclid's Algorithm
@@ -57,6 +60,10 @@ class Frac implements Arithmetic[Frac],
     Console.OUT.println("a="+a+"; b=" + b + "; gcd=" + gcd(a,b) );
   }
     
+  public static def doIt(x:Arithmetic[Frac])  {
+    
+  }
+
   public static def main(argv:Array[String](1)) {
     val half = new Frac(10, 20);
     Console.OUT.println("half=" + half);
@@ -76,7 +83,11 @@ class Frac implements Arithmetic[Frac],
     val x = .25;
     val y = half.multiply(x);
     Console.OUT.println("y ought to be about 0.125 and is " + y);
-
+    
+    // And the doIt method from the book
+//START TeX: fracdoit
+    doIt(new Frac(1,3));
+//END TeX: fracdoit
   }  
   
 }

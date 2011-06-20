@@ -4,6 +4,7 @@ public interface Arithmetic[T] { // \xlref{arith-decl}
    def subtract(t: T): T;
    def multiply(t: T): T;
    def divide(t: T): T;
-   public static VERSION = "1.1";// \xlref{arith-const}
+   public static VERSION = "1.1";   // \xlref{arith-enddefs}
+
 }
 //END TeX: arith

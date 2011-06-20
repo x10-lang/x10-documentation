@@ -512,7 +512,8 @@ class TexRewriter:
         for matcho in xlrefMatches:
             key = matcho.group(1)
             if not(key in xlref2lineNumber):
-                doom("There is no fragment+line combo named '{0}'\nthough it is mentioned in file {1}\nat line {2}".format(
+                print("xlref2lineNumber = " + str(xlref2lineNumber))
+                doom("There is no fragment+line combo named '{0}'\nthough it is mentioned in file {1} at line {2}".format(
                     key, os.path.relpath(texpath, latexdir), absLineNo))
             itsLineNumber = xlref2lineNumber[key]
             openbr = matcho.start(2)

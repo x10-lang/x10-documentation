@@ -358,10 +358,10 @@ is more than enough to get you going.
 
 \subsection{Inheritance And More}\label{sec:inh}
 
-\Xten{} supports simple (single) inheritance: all \Xten{} classes constitute a tree, in
-which the root is the class {\tt x10.lang.Object}, and a class {\tt Parent} is the
-parent of a class {\tt Child} when {\tt Child}'s declaration says  that it
-extends {\tt Parent}:
+\Xten{} supports simple (single) inheritance: all \Xten{} classes constitute a
+tree, in which the root is the class {\tt x10.lang.Object}, and a class {\tt
+  Parent} is the parent of a class {\tt Child} when {\tt Child}'s declaration
+says that it extends {\tt Parent}:
 \begin{quote}{\tt class Child extends Parent \{ ... \}}\end{quote}
 For example:
 
@@ -515,7 +515,7 @@ are not themselves abstract {\em must} implement.  Here is an example.
 Notice that there is no function body: there is just a trailing semicolon.
 %%START X10: AbstractShip.x10 absshipabs
 \begin{verbatim}
-1      public abstract def costPerPassengerMile(): Double;
+1    public abstract def costPerPassengerMile(): Double;
 \end{verbatim}
 %%END X10: AbstractShip.x10 absshipabs
 
@@ -563,8 +563,8 @@ how to do this.}
 3     def subtract(t: T): T;
 4     def multiply(t: T): T;
 5     def divide(t: T): T;
-6     def negate(): T;
-7     public static VERSION = "1.1";
+6     public static VERSION = "1.1";   
+7  
 8  }
 \end{verbatim}
 %%END X10: Arithmetic.x10 arith
@@ -618,7 +618,7 @@ Another important point is that the methods declared by an interface are always
 {\tt public}.  So even though the keyword {\tt public} does not appear here, it
 is implied.  We'll say more about this when we discuss how you use interfaces.
 
-\item {\bf line \xlref{arith-const}{7}:} Interfaces may also declare static
+\item {\bf line \xlref{arith-enddefs}{6}:} Interfaces may also declare static
       constants.  That's the only kind of constant they can declare --
       \xcd`val` means \xcd`public static val` in an interface, just the way
       that \xcd`def` means \xcd`public def`.  
@@ -690,15 +690,28 @@ would ruin code reuse.
 
 \end{description}
 
-Finally, just as one class can extend another, one interface can extend another--in fact, it may
-extend several:
+Finally, one interface can extend another. They can do so better than classes
+can, even: one interface can extend several other interfaces, but a class can
+only extend a single other class. 
+
+%%START X10: ExtendingInterfaces.x10 extendinginterfaces
 \begin{verbatim}
-interface IA extends IB, IC { ... }
+1  interface Colored {
+2    def color(): Int;
+3  }
+4  interface Shape{}
+5  interface Shaped {
+6    def shape():Shape;
+7  }
+8  interface ColorForm extends Colored, Shaped {}
 \end{verbatim}
+%%END X10: ExtendingInterfaces.x10 extendinginterfaces
+
+
 One could
-say ``{\tt IA} is a sub-interface of {\tt IB} and {\tt IC}'', though some
+say ``{\tt ColorForm} is a sub-interface of {\tt Colored} and {\tt Shaped}'', though some
 people think that 
-``{\tt IA} {\em refines} {\tt IB} and {\tt IC}'' sounds better. 
+``{\tt ColorForm} {\em refines} {\tt Colored} and {\tt Shaped}'' sounds better. 
 
 \subsection{How interfaces get used}
 
@@ -725,19 +738,70 @@ In plain English, this is saying that you can add, subtract, multiple and divide
 
 While {\tt Frac} is one candidate for the class that
 appears as the {\tt T} in the {\tt Arithmetic[T]}, we'd probably also like to
-add {\tt Int32}s to {\tt T}'s like {\tt Float64} and {\tt Complex}.  No
-problem:
-\begin{verbatim}
-class Int32 implements Arithmetic[Int32], Arithmetic[Float64], 
-                       Arithmetic[Complex] {
-    public def add(i: Int32): Int32 { ... } 
-    ... 
-}
-\end{verbatim}
+add {\tt Frac}s to other kinds of numbers -- at least \xcd`Double`s, and if we
+were doing a full-strength version we'd have \xcd`Long`s, \xcd`Int`s, and
+perhaps other types as well.  
 
-At first blush, this is a daunting declaration: think how many methods must be implemented!
+
+%%START X10: Frac.x10 fracdef
+\begin{verbatim}
+1  class Frac implements Arithmetic[Frac], 
+2                        Arithmetic[Double] 
+3  {
+\end{verbatim}
+%%END X10: Frac.x10 fracdef
+
+
+
+At first blush, this is a daunting declaration: think how many methods must be
+implemented, especially for the library version!
 But the truth is that none of these methods is all that involved, so it is just a matter of
 some (necessary!) drudgery.  Here the end more than justifies the means.
+
+The implementation is straightforward.  The constructor for
+\xcd`Frac`s always puts fractions in lowest terms, so that 
+\xcd`new Frac(10,20)` is the same as  \xcd`new Frac(1,2)`: 
+
+%%START X10: Frac.x10 fracctor
+\begin{verbatim}
+1    public def this(var n:Int, var d:Int) {
+2      if (d < 0) { n = -n; d = -d; }
+3      if (d == 0) throw new Exception("Division by zero!");
+4      var gcd : Int = gcd(n,d);
+5      this.n = n / gcd;
+6      this.d = d / gcd;
+7    }
+\end{verbatim}
+%%END X10: Frac.x10 fracctor
+
+Fraction arithmetic uses the familiar rules.  Since the constructor reduces
+everything to lowest terms, we don't need to do any extra work to do so: 
+
+%%START X10: Frac.x10 fraconfrac
+\begin{verbatim}
+1    
+2    public def add(f:Frac) = new Frac(n * f.d + f.n * d, d * f.d);
+3    public def negate() = new Frac(-n, d);
+4    public def subtract(f:Frac) = this.add(f.negate());
+5    public def multiply(f:Frac) = new Frac(n * f.n, d * f.d);
+6    public def divide(f:Frac) = new Frac(n * f.d, d * f.n);  
+7    
+\end{verbatim}
+%%END X10: Frac.x10 fraconfrac
+
+The \xcd`Frac`-to-\xcd`Double` versions are easily implemented using 
+a method to convert a fraction to a \xcd`Double`: 
+
+%%START X10: Frac.x10 fracondouble
+\begin{verbatim}
+1    public def asDouble():Double = (n as Double) /(d as Double);
+2    public def add(dbl: Double) = this.asDouble() + dbl;
+3    public def subtract(dbl: Double) = this.asDouble() - dbl;
+4    public def multiply(dbl: Double) = this.asDouble() * dbl;
+5    public def divide(  dbl: Double) = this.asDouble() / dbl;
+\end{verbatim}
+%%END X10: Frac.x10 fracondouble
+
 
 Notice that in this class, the method {\tt add} is explicitly declared to be
 {\tt public}.  While {\tt public} is all there is in an interface declaration,
@@ -745,16 +809,15 @@ it is {\em not} all there is in a class declaration, so you must be specific
 here.  The compiler will complain if you do not.
 
 Now suppose that somewhere there is a class that has a method ``{\tt doIt(x:
-Arith\-me\-tic[Int32])}''. Since {\tt Int32} implements {\tt Arithmetic[Int32]},
-we can use an {\tt Int32} as the argument to {\tt doIt}, \eg:
-\begin{quote}
+Arith\-me\-tic[Frac])}''. Since {\tt Frac} implements {\tt Arithmetic[Frac]},
+we can use a {\tt Frac} as the argument to {\tt doIt}, \eg:
+
+%%START X10: Frac.x10 fracdoit
 \begin{verbatim}
-	val sqFt: Int32 = livingRoom.area();
-	doIt(sqFt);
+1      doIt(new Frac(1,3));
 \end{verbatim}
-\end{quote}
-In the same way, {\tt returnIt():Arithmetic[Int32]} can return an instance of
-any class that implements {\tt Arithmetic[Int32]}.
+%%END X10: Frac.x10 fracdoit
+
 
 
 We end this section with some ``side bars'' that somehow didn't quite fit in 
@@ -769,6 +832,8 @@ expression {\tt T<:U} is a boolean that, if true, means that a value of type
 {\tt T} may be used anywhere a value of type {\tt U} may be, or in other words,
 that {\tt T} is either {\tt U} itself or a {\em subtype} of {\tt U}. 
 
+\bard{This isn't a good explanation of \xcd`<:`, and I think that the
+explanation goes elsewhere and should be used a lot more.}
 One use of the ``operator'' {\tt <:} is in {\tt val} declarations. 
 Saying ``{\tt val t <: T}'' declares {\tt t}'s type to be a subtype of {\tt T}. 
 That way, if {\tt t} is initialized in one of several arms of an {\tt if}
@@ -776,14 +841,70 @@ statement, differing types may appear in the various assignments, so long as all
 are subtypes of {\tt T}.  Also users of {\tt t} should only count on getting a
 {\tt T}.
 
-Another place it is handy is when you want to declare a class or struct {\tt T}
-that is parameterized by another type {\tt U} and you want to say that 
-{\tt U} {\em must implement some interface} {\tt I}:
+For example, if we have an interface like \xcd`Caloried`, which tells how many
+calories something has: 
+%%START X10: NeedsNutrients.x10 needsnutrCaloried
 \begin{verbatim}
-   public class T[U]{ U <: I } { 
-      // the body of T goes here
-   }
+1  interface Caloried {
+2    def calories():Int;
+3  }
 \end{verbatim}
+%%END X10: NeedsNutrients.x10 needsnutrCaloried
+
+We can write a class which manages a list of ingredients, and can count their
+calories.  Note that this wouldn't even compile without the constraint 
+on \xcd`T`.  It is only that constraint that gives us permission to 
+call the \xcd`calories()` method in line
+\xlref{needsnutrRecipe-usecalories}{7}.  
+%%START X10: NeedsNutrients.x10 needsnutrRecipe
+\begin{verbatim}
+1  class Recipe[T]{T <: Caloried} {
+2     val ingredients: List[T] = new ArrayList[T]();
+3     public def add(t:T) { ingredients.add(t); }
+4     public def totalCals() {
+5        var s : Int = 0;
+6        for(ingredient in ingredients) 
+7            s += ingredient.calories(); 
+8        return s;
+9     }
+10  }
+\end{verbatim}
+%%END X10: NeedsNutrients.x10 needsnutrRecipe
+
+A class, like \xcd`Flour`, can implement \xcd`Caloried` in the ordinary way: 
+%%START X10: NeedsNutrients.x10 needsnutrFlour
+\begin{verbatim}
+1  class Flour implements Caloried {
+2    private val name: String, cal:Int ;
+3    public def this(name:String, cal:Int) 
+4      { this.name = name; this.cal = cal; }
+5    public def calories() = this.cal;
+6  }
+\end{verbatim}
+%%END X10: NeedsNutrients.x10 needsnutrFlour
+
+Then, we can use \xcd`Flour` in a \xcd`Recipe`: 
+
+%%START X10: NeedsNutrients.x10 needsnutrExample
+\begin{verbatim}
+1  static def example(): void = {
+2    val flours <: Recipe[Flour] = new Recipe[Flour]();
+3    flours.add(new Flour("1 cup bread flour", 495));
+4    flours.add(new Flour("1 cup whole-wheat", 520));
+5    flours.add(new Flour("1 cup rye", 360));
+6    assert flours.totalCals() == 1375;
+7  }
+\end{verbatim}
+%%END X10: NeedsNutrients.x10 needsnutrExample
+
+
+
+(This is different from writing a class which simply manages a list of
+\xcd`Caloried` values.  The difference doesn't matter much in this example,
+but it would matter if the constraint were \xcd`T <: Arithmetic[T]` -- in
+which case we couldn't even talk about a \xcd`List[Arithmetic]`, since X10
+insists on knowing what type of thing the arithmetic is being done on.)
+
 
 \subsubsection{ Why interface methods are public:}  Suppose a class {\tt A} implements an
 interface {\tt I}, and suppose that {\tt B} is a subclass of {\tt A}.  Because
