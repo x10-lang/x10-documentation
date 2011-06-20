@@ -1,0 +1,16 @@
+* MontePi with Long.parse(args(0)) -- need 100000L, not 100000
+* size() is just size
+
+* do a no-numbered-include
+
+* Write \ref{sec:forinloops}, about using Iterable[T] with for loops.
+
+* HelloWorld - "copyright Greeters" is not shown in code.
+
+* 'include line in text' gizmo. The "Hello World" example quotes the lines of
+  the program one by one, and we should auto-do-that.
+
+* line 1 of serial monte carlo: bulleted list (or enum), not indented text
+  list.
+
+* "Most of the time..." --- discuss <:

@@ -1,0 +1,873 @@
+\chapter{A Potpourri of Types}\label{chp:tsl}
+
+We have already mentioned a few of the basic types that \Xten{} provides in its
+standard library.  We will look at some more of them here.  Our discussion will be far
+from complete, but it will at least get you started and aware of where to look
+as you need more. A complete API for the library can be found in
+\href{http://dist.codehaus.org/x10/xdoc/}{http://dist.codehaus.org/x10/xdoc/}.  
+
+The library is very much a work in progress.
+For that reason, some of this chapter may become out-of-date reasonably
+quickly, mostly, if not entirely, because \Xten's resources will rapidly become
+richer. We will try to keep this guide in step as best we can.    
+
+\section{The Numbers Game}\label{sec:tng}
+\subsection{The Players}
+\Xten{} provides the usual sorts of basic numeric types:
+\begin{description}
+\item{\bf Byte, Short, Int, Long: }  8-bit, 16-bit, 32-bit, and 64-bit signed integers.
+\item{\bf UByte, UShort, UInt, ULong: }  8-bit, 16-bit, 32-bit, and 64-bit {\em unsigned} integers.
+\item{\bf Float, Double: } single and double precision IEEE floating point.
+\end{description}
+It also supplies a double-precision {\tt Complex} type that Fortran and  C++
+programmers have come to expect. All of these types are in the package  {\tt
+x10.lang}.
+
+In terms of what these types mean and how they get used, \Xten{} is consistent
+with what other languages do, so we won't go into a lot of detail here.  In
+particular,  implicit conversions will be performed as needed. For the signed
+numeric types, the conversions are between a type  and any type to its right:
+\begin{verbatim}
+    Byte < Short < Int < Long < Float < Double
+\end{verbatim}
+And similarly, for unsigned types:
+\begin{verbatim}
+    UByte < UShort < UInt < ULong < Float < Double
+\end{verbatim}
+
+Let us be a little more clear about our vocabulary here:
+\begin{quote}
+{\bf Coercions:} Suppose we declare a variable ``{\tt i}'' to be an {\tt Int}:
+{\tt var i: Int;} The expression ``{\tt i as Long}'' is \Xten's syntax for
+saying ``convert {\tt i} to be a {\tt Long}.''  In one sense, this conversion
+involves no substantive change to {\tt i}'s value as an integer.  On the other
+hand, when we realize {\tt i as Long} in memory, or in CPU register, the full 8
+byte representation of a long integer will be used.  This sort of
+conversion---in form, but not in substance---is usually called a {\em coercion}.
+
+{\bf Casts:}  Another sort of conversion is that from {\tt Int} to {\tt Byte}. 
+The value of the expression ``{\tt i as Byte}'' is the result of masking out the
+leading 24 bits of {\tt i} and regarding what is left as a {\tt Byte}, meaning
+an integer in the range from -128 to 127.  If, for example, {\tt i} is 4095,
+which in hex is {\tt 0xfff}, then masking out the leading bits leaves us with
+{\tt 0xff}, so {\tt 4095 as Byte == -1 as Byte}. 
+
+A conversion like that from {\tt Int} to {\tt Byte}, or more dramatically, from
+{\tt Long} to {\tt Double} that may involve more than a change to the physical
+representation of the value is called a {\em cast}.
+
+The example of ``{\tt 4095 as Byte == -1 as Byte}'' shows that casting can be
+dangerous. Here, at least, there is nothing subtle going on, so if that wasn't
+the programmer's real intention, there is some chance that the problem can be spotted.
+One may not always be so lucky. For example, casting {\tt Int} to {\tt Float}
+can lose precision for the same reason that {\tt Int} to {\tt Byte} can, because
+{\tt Float} only has 23 bits (plus a sign bit) to hold the value.  It uses the
+remaining 8 bits in its 32 bit word for the exponent.  So casting
+{\tt 23456789 as Float} yields {\tt 2.3456788E7}.  Note carefully the
+last digit.  If that last digit had some significance, you are in trouble---and
+the problem is going to be {\em very} hard to see.
+\end{quote}
+
+Thus, some of the implicit conversions above, like {\tt Int} to {\tt Long} 
+are really coercions, while others, like {\tt Long} to {\tt Float}, are
+really casts. Where a cast is what is at stake, \Xten{} usually forces you to
+be explicit: ``{\tt Int i = someValue(); Byte b = i {\em as Byte};}''.  The
+explicit cast ``{\tt as Byte}'' says you are prepared for the consequences of
+the conversion.
+
+\subsection{Signed versus unsigned}
+This section is largely an aside for Java programmers, because the distinction
+between ``signed''  and ``unsigned'' integers does not exist in Java and so may
+not be familiar. What is at stake?
+
+From the dawn of computer history, CPUs have supported two kinds of arithmetic
+instructions: one set in which one of the bits that make up the integer's value
+is used to hold its sign, and a second set in which all integer values are
+treated as non-negative.  Having the extra bit as part of the value doubles the
+size of the largest positive integer you can express--something that was pretty
+important when the normal machine ``word'' was 16 bits wide.  Today, with 64
+bit words becoming the norm, the extra bit is not all that big a deal:
+$2^{63}-1$ is plenty big---how often will you really need $2^{64}-1$?
+
+When the Java standard was first developed, the designers
+felt that, in their experience, exposing both types, as languages like C had done,
+had been a source of more errors than the additional
+power warranted.  Thus, unsigned values never made it into Java.  Well, they
+made it back into \Xten{}. There {\em are} some arguments for having it, aside
+from doubling the largest value, not the least:
+
+When you declare something to be ``unsigned'', you are telling the reader of
+your code something:  negative values are neither expected nor welcome,
+as, for instance, if you are tracking the number of elements in a list.
+It is nice to have code that really says what you really mean.
+
+Another argument is that if you want to use a numeric type to represent one of
+the 8-bit ISO character types--\eg{} ISO-8859-1, which handles European
+languages nearly completely--then {\tt UByte} is a better match than {\tt
+Byte}.  Certainly, everyone {\em thinks} of the mapping from numbers to
+characters as being a map from the integers 0, \ldots, 255 to characters. Also
+with {\tt UByte}, you can test for control characters with one inequality: they
+are precisely those whose value as a {\tt UByte} is less than {\tt 0x20}.
+Similar considerations apply to multi-byte encodings of characters.
+
+\section{String Theory}
+
+\Xten{} support for character-based applications is limited at the moment, but
+with enough implemented to provide a base for applications that are not
+fundamentally about manipulating character data.  Internationalization,
+in particular, has only very limited support, and regular expressions have
+not yet been implemented. What has been implemented will, with a few exceptions,
+not surprise anyone coming from C++ or Java. The same can be said for file input
+and output: the implementation is limited, get richer, and not surprising.
+
+The basic types for character work are {\tt x10.lang.Char}, {\tt
+x10.lang.String}, and  {\tt x10.util.StringBuilder}. Since {\tt StringBuilder}
+is in the package {\tt x10.util}, it must be imported explicitly; the other two
+need not be.
+
+\subsection{\tt Char} An instance is a 16-bit Unicode character.
+\footnote{Strictly speaking, this is true, but in practice, support for
+multi-byte character sets in both {\tt Char} and {\tt String} is very limited. 
+For the moment, you would be best advised to stay with 7-bit ASCII or 8-bit ISO
+character sets.} Like {\tt Byte} and {\tt Int}, {\tt Char} is a struct, but it
+is {\em not} a numeric type: there is {\em no} implicit conversion to any
+numeric type. The only explicit conversion to a numeric type is the method {\tt
+ord} that returns an {\tt Int}:
+\begin{verbatim}
+   'a'.ord() == 0x61
+\end{verbatim}
+will evaluate to {\tt true}. You {\em can} cast integer values to characters
+\begin{verbatim} 
+   i: Int = ...;
+   c: Char = i as Char;
+\end{verbatim}
+does what you expect: produces the {\tt Char} whose ``{\tt ord}'' is {\tt i}.  
+
+Programmers used to avoiding calls to  {\tt isdigit} by writing 
+{\tt '0' <=c \&\& c <= '9'} will find that the compiler
+complains that you cannot compare integers and characters.  (This will probably be
+fixed in an upcoming release of \Xten{}).  For now, when you
+are writing \Xten{}, call {\tt isDigit}, {\tt isLowerCase}, {\tt isSpaceChar},
+and so on.   All of these utilities are identical in function with their
+counterparts that have been around since the birth of C. 
+\ignore{The Java versions are
+carefully documented at
+\href{http://download.oracle.com/javase/6/docs/api/}
+{http://download.oracle.com/javase/6/docs/api/}. 
+But: unless you are
+really deep into internationalization, your intuition will do when it comes to
+using {\tt isLowerCase} and the others correctly, so don't feel you need to go
+running off to the Web just yet. }
+
+A 16-bit Unicode character can be written as an escape sequence
+$\backslash${\tt u{\em nnnn}}, in which each of the {\tt n}'s is a hex digit. 
+As usual, the following escape sequences may be used:
+\begin{quote}
+ {\tt $\backslash$b == $\backslash$u0008}: backspace BS\\              
+ {\tt $\backslash$t == $\backslash$u0009}: horizontal tab HT\\       
+ {\tt $\backslash$n == $\backslash$u000a}: linefeed LF\\
+ {\tt $\backslash$f == $\backslash$u000c}: form feed FF\\
+ {\tt $\backslash$r == $\backslash$u000d}: carriage return CR\\
+ {\tt $\backslash$" == $\backslash$u0022}: double quote "\\
+ {\tt $\backslash$' == $\backslash$u0027}: single quote '\\
+ {\tt $\backslash\backslash$ == $\backslash$u005c}: backslash           
+\end{quote}
+\subsection{\tt String}
+
+A {\tt String} is an {\em immutable} array of {\tt Char}s.  Immutability means
+that, for example, once you declare
+\begin{verbatim}
+    s: String = "hi";
+\end{verbatim}
+you can, if you wish, access the first character in {\tt s} as {\tt s(0)}, but
+you {\em cannot} reassign via ``{\tt s(0) = 'o';}''.
+
+String literals are delimited by ``double quotes,'' as in {\tt "begin,end"}. 
+The same escapes apply within {\tt String} literals as for {\tt Char} literals.
+
+Any object, be it from a class or struct, is converted to a {\tt String} by
+calling its method {\tt toString()}, and there is always a default implemention
+that is provided and does something sensible.  You are free, of course, to
+provide your own implementation in the classes and structs you create.  For
+example:
+\begin{verbatim}
+ 1 public class Cast {
+ 2     public static def main(args: Array[String](1)): Void {
+ 3        Console.OUT.println("I am a "+ new Cast());
+ 4     }
+ 5     public def toString() { return "Cast of Thousands"; }
+ 6 }
+\end{verbatim}
+
+In line 3, the effect of the ``{\tt +}'' operation is to concatenate the two
+{\tt Strings}.  When the code is run, the console output is:
+\begin{verbatim}
+%x10 Cast 
+I am a Cast of Thousands
+\end{verbatim}
+
+There are some basic methods already implemented for {\tt String}s, and over
+time more will be added. 
+There are four methods for extracting substrings:
+\begin{quote}
+\begin{description}
+\item[{\tt  substring(from:Int)}:] The argument {\tt from} is the index of the first
+character to keep.  For example, , if we have {\tt val s = "misguided"}, then 
+{\tt s.substring(3)} will be  {\tt "guided"}.
+\item[{\tt substring(from:Int, to:Int)}:] The first argument is again the starting
+index, and the second, {\tt to}, is the index 1 greater than where you
+wish to stop.  Thus if {\tt val s = "misguided"} as before, then
+{\tt s.substring(3, length(s)-1)} will be {\tt \"guide"}---and not (as one might
+think) {\tt "guided"}.
+\item[{\tt trim()}] Remove leading and trailing white-space: {\tt "  abc ".trim()}
+is {\tt "abc")}.  In fact, it trims all ASCII control characters as well.
+\footnote{ To be absolutely precise:
+\begin{quote}
+If an empty string, or one whose the first and last characters are represented
+by characters whose codes greater than {\tt 0x20}, which is the ASCII code for
+the space character, then to the same string is returned.
+
+If the string has no character with code greater than {\tt 0x20}, 
+then an empty string is returned.
+
+Otherwise, if {\tt s} is the string, if {\tt start} is the index of the first character in
+{\tt s} whose code is greater than{\tt 0x20}, and if {\tt end} is the index of the last
+character in {\tt s} whose code is greater than{\tt 0x20}, then the returned string
+is {\tt s.substring(start, end+1)}.
+\end{quote}
+}
+\item[{\tt split(s: String)}]  If you need to break up a comma-separated
+list, or something like that, use the {\tt split()} method:
+\begin{verbatim}
+   val s = "a,b, c,  d";
+   val parts = s.split(",");
+\end{verbatim}
+yields an array of four substrings: {\tt "a", "b", " c"} and {\tt "  d"}.
+The argument for {\tt split}  in the C++ runtime is currently a {\tt String},
+but in the Java runtime, it is a regular expression.   
+Eventually, both will accept a regular expression, which will make it
+easier to clean up the white-space trailing the commas at the same
+time you get rid of the commas.
+\end{description}
+\end{quote}
+
+
+There are also four approaches to comparing {\tt String}s. Let {\tt s} and {\tt
+t} be two {\tt String}s:
+\begin{quote}
+{\bf Equality as objects:}  {\tt s == t} evaluates to true if {\tt s} and
+{\tt t} name the same {\tt String} object.  {\tt String} is a class, not a
+struct, {\em so what} {\tt s} {\em names is a reference to a } {\tt String}, not
+a literal string value.
+
+{\tt s != t} is true when {\tt s} and {\tt t} do {\em
+not} name the same {\tt String} object.
+
+{\bf Equality as values: }  The expression {\tt s.equals(t)} evaluates to 
+true if the current values of {\tt s} and {\tt t} are the same---in other
+words, if the two underlying byte arrays are byte-for-byte the same. 
+If you don't care about case, use {\tt s.equalsIgnoreCase(t)} instead.
+
+{\bf Infix comparison operators: } The operators {\tt <}, {\tt <=}, {\tt
+>=}, and {\tt >} compare two {\tt String} values using lexicographic
+(dictionary) order.   For example, {\tt "good"<"goof"} will evaluate to {\tt
+true}, since {\tt d} comes before {\tt f}.
+
+{\bf Comparison methods: } The method {\tt compareTo(s:String):Int}
+returns a signed integer that is {\em negative} if {\tt s < t}, 0 if
+{\tt s.equals(t)}, and {\em positive} if {\tt s > t}.
+The method {\tt compare\-To\-Ignore\-Case(s:String):Int} can be used for
+comparisons that are {\em not} case-sensitive.  The notion of ``order'' is
+the same as for the infix operators.
+\end{quote}
+
+Searching {\tt String}s can be done with the methods
+\begin{quote}
+\begin{description}
+\item[{\tt s.indexOf(what,where}, {\tt s.last\-IndexOf(what, where)}:] 
+returns the indices of the first and last occurrence of the {\tt String}
+or {\tt Char} "{\tt what}" in {\tt s}, if it is present, -1 otherwise.  The
+second argument, {\tt where}, is optional.  It is an integer and specifies
+the index of position in {\tt s} at which to begin the search.
+\item[{\tt s.starts\-With(what)},  {\tt s.endsWith(what)}:]
+returns true or false, true meaning that the {\tt String}  "{\tt what}" 
+appears at the beginning or end of {\tt s}.
+\end{description}
+\end{quote}
+
+For those with fond memories of C's {\tt printf} or Java's {\tt format}, \Xten{}
+gives you
+\begin{quote}
+\begin{verbatim}
+format(fmt:String, args:Array[Any]):String
+\end{verbatim}
+\end{quote}
+whose first
+argument is a format string like those of its C and Java ancestors, and whose
+second argument is the array of whatever is to be formatted.\footnote{The type {\tt
+Any}, as we discussed in section \ref{ssec:wasacs}, page \pageref{ssec:wasacs},
+is the interface all values have in common.}  For example, executing
+\begin{quote}
+\begin{verbatim}
+s = String.format("%s %d %s %10.2f", ["int",32,"dbl",3.2]);
+\end{verbatim}
+\end{quote}
+leaves {\tt s} with the value {\tt "int 32 dbl\ \ \ \ \ \ \ 3.20"}.
+
+Support for the formatting options is limited at the moment, but, as in our
+example, most simple cases work as they have done since {\tt printf} was
+introduced some forty years ago.
+
+\subsection{\tt StringBuilder} One often has to build up a string whose
+length is not known in advance and which isn't short enough that it makes
+sense to just build it up as a concatenation {\tt a+b+c+\ldots}
+That is the job of {\tt x10.util.StringBuilder}. We remind you that you have to
+import this class, like all others in the {\tt x10.util} package.  For
+practical purposes, a {\tt StringBuilder} has two methods: {\tt add(a: Any)} and
+{\tt result()}.  The method {\tt add} uses its argument's {\tt toString} method
+to compute the {\tt String} to append, and {\tt result} simply returns the {\tt
+String} you have been accumulating. Here's an example of how one uses a {\tt
+StringBuilder}:
+\begin{quote}
+\begin{verbatim}
+val sb = new StringBuilder();
+sb.add(2);
+sb.add(" and ");
+sb.add(3.0);
+sb.add(" is "+5.0);
+val s = sb.result();
+\end{verbatim}
+\end{quote}
+The value of {\tt s} will be {\tt "2 and 3.0 is 5.0"}.  
+
+\section{Files}\label{sec:files}
+Let's start simply, with the program in figure \ref{fig:flc}.  
+\begin{figure}[!htbp]
+\hrulefill
+\begin{verbatim}
+ 1 import x10.io.File;
+ 2 
+ 3 public class FileIO {
+ 4    public static def main(args: Array[String](1)) {
+ 5       val inputPath  = args(0);
+ 6       val outputPath = args(1);
+ 7       val I = new File(inputPath);
+ 8       val O = new File(outputPath);
+ 9       val P = O.printer();
+10       for (line in I.lines()) {
+11          P.print(line);
+12       }
+13       P.flush();
+14    }
+15 }
+\end{verbatim}
+\caption{A simple line-reader file copy program,
+\href{http://dist.codehaus.org/x10/documentation/guide/src/files/FileIO.x10}{files/FileIO.x10}}\label{fig:flc}
+\hrulefill
+\end{figure}
+The fun begins with line 7.
+\begin{description}
+\item[lines 7 and 8:] 
+The basic drill for reading and writing files is to get hold of a {\tt File}
+object, and use it to get a stream either inbound or outbound. 
+Executing ``{\tt I = new File(in\-put\-Path)}'' converts
+a file-system path into an object that represents
+the corresponding file, which may or may not yet exist.
+This is more in the
+spirit of Java than C++:
+this step is bypassed in a lot of C++ applications and only the streams are visible.
+
+The reason for having a separate {\tt File} class
+is to be able to perform file-level operations.  For example, the call
+{\tt I.exists()}  returns {\tt true} when the file constructed in line 7 actually exists,
+and {\tt I.isDirectory()} returns {\tt true} when that file not only exists, but is a
+directory.  Like the {\tt String} class, {\tt File} is a work in progress.
+You will eventually also be able to do operations like making a directory and
+renaming a file.  
+
+Most of the time, you will wind up using an instance of {\tt File} as an argument
+to a constructor that builds an input or output stream with some desirable
+properties like buffering, or handling line enders appropriately in text files.
+
+\item[line 9:] The call {\tt O.printer()} returns an output stream that is an
+instance of the class {\tt
+Printer}.  This is the class to which the familiar {\tt Console} streams {\tt
+OUT} and {\tt ERR} belong, and it is an example of a stream that helps you
+write line ends in an operating system-independent way.  
+You have already seen the {\tt println} method in action
+already.  The {\tt print} method, which we use
+here, is the same as {\tt println}, but does not append
+the line ender. 
+\footnote{ {\tt Printer} also has a {\tt printf} method that is \Xten's take on
+the familiar C function, but where the data to be formatted is most
+efficiently passed as an {\tt Array}, although if you have 6 or fewer items
+to format, you can just string them out, C-style, as extra arguments.}
+
+When the {\tt Printer P} is created, the file to which {\tt P} refers is opened for
+writing {\em and is created if need be.}  If the file exists already, its contents are
+discarded.
+\item[line 10:]  There's no mystery, we hope, about what the loop in lines 10 to
+12 does: iterate over the lines in {\tt I}, copying each to {\tt O} via the stream
+{\tt P}.  While it is clear that {\tt I.lines()} represents the sequence of lines in
+{\tt I}, it is probably not obvious {\em how} it does.  The answer is that it 
+implements the interface {\tt x10.lang.Iterator}.
+An {\tt Iterator} is always associated with
+some underlying collection---in our example, the sequence the lines in {\tt I}.
+If the collection contains elements of type {\tt T}, 
+the type is {\tt Iterator[T]}, and it has two methods:
+\begin{quote}
+{\tt {\bf next(): T}} returns the next element, as yet unseen, from the
+collection. 
+
+{\tt {\bf hasNext(): Boolean}} returns {\tt true} if a call to {\tt next()} at this
+point will succeed.
+\end{quote}
+Written in terms of {\tt Iterator}'s methods, our {\tt for} loop looks like
+\begin{verbatim}
+         for(lines = I.lines(); lines.hasNext(); ) {
+             P.print(lines.next());
+         }
+\end{verbatim}
+Although there is some chance that, for some {\tt Iterators},
+a smart implementation might generate better
+code for the {\tt for...in} loop than for the loop written out explicitly
+in terms of the iterator,
+one should view the {\tt for...in} loop as
+a concise, readable way of writing the loop, not as an optimization.
+\item[line 13:] We call {\tt flush()} to make sure that, in case the {\tt
+Printer} has been buffering our output, all of it gets sent {\em now}.  Do not
+count on the output stream being flushed when the program terminates---even when
+it terminates normally. Better safe than sorry here.
+\end{description}
+
+If you compile {\tt FileIO.x10} and then execute
+\begin{quote}
+\begin{verbatim}
+%x10 FileIO FileIO.x10 out.put
+\end{verbatim}
+\end{quote}
+in the same directory as {\tt FileIO.x10}, you should find that {\tt out.put}
+is a copy of {\tt FileIO.x10}.
+
+This example is fine for text files.  Our next examples
+are two classes that show how to read and write a binary file.  
+
+Let's look at the writer first, because we need it to generate input for the
+reader.  Our goal is to create a file whose contents is a sequence of 
+{\tt Doubles}.  We don't want the {\tt String} literals, we really want to store
+the numeric values as they appear in memory.  We'll read the {\tt Strings} in
+from the keyboard (the ``standard input stream''):
+\begin{verbatim}
+ 1 public class WriteDBL { // see the file files/WriteDBL.x10
+ 2    public static def main(args: Array[String](1)) {
+ 3       val I  = new File(args(0));
+ 4       val W  = new FileWriter(I);
+ 5       while(true) {
+ 6         val line = Console.IN.readLine().trim();
+ 7         if (line.length() == 0) break;
+ 8         val dbl = Double.parse(line);
+ 9         W.writeDouble(dbl);
+10       }
+11       W.close();
+12     } 
+13  }
+\end{verbatim}
+We've skipped the imports here---by now, you know what's needed there, and the
+working file is available in
+\href{http://dist.codehaus.org/x10/documentation/guide/src/files/WriteDBL.x10}{files/WriteDBL.x10}.
+\begin{description}
+\item[line 4:] We use the class {\tt x10.io.FileWriter} to stream the output. 
+It has methods like {\tt writeInt}, {\tt writeFloat}, and so on, that allow you
+to write binary data easily out to a file.  In this example, we are going to use
+{\tt writeDouble}.
+
+Just as when one creates a new {\tt Printer}, when one creates a new {\tt
+FileWriter}, either a new file will be created, or if a file of that
+name already exists, all of its contents will be discarded.  In either event,
+you start with an empty file.
+\item[line 5:] The keyword {\tt while} introduces a loop.  The loop's syntax is
+{\tt while({\em boolean\-Expres\-sion}) {\em statement}}.  The expression is
+called the {\em loop's test}, and the statement is the {\em loop's body}. 
+When execution reaches the test, it is evaluated, and if the value is {\tt
+true}, the body is executed. This sequence---check the test, execute the
+body---is continued until the test fails: \ie{} evaluates to {\tt false}.
+Execution then passes to the code that immediately follows the body.
+
+In our example, the test is {\em always} true, so the loop is 
+terminated from within its body, by the {\tt break} statement on line 7.  
+\item[lines 6-7:] We read a line of ordinary text from the standard input
+stream and trim any white-space characters from the beginning and end of the
+line.  If the line is now empty, we break out of the loop.  The statement ``{\tt
+break;}'' causes execution to continue at the first statement following the
+loop's body.
+\item[lines 8-9:] The input line is converted to a {\tt Double}, and that
+value is written, bit-for-bit, to the output file.
+\item[line 11:] We explicitly close the stream here.  This should guarantee that
+any output that has been buffered, but not yet actually written out, does
+get written: in other words, it should guarantee that {\tt flush()} is called
+before the file's info is discarded.  You can, of course, call {\tt flush}
+explicitly at any point where you want make sure your output to that point is
+made persistent. This is particularly worth remembering in the early stages of
+debugging, where normal completion may not occur.
+\end{description}
+We compiled our {\tt WriteDBL.x10} and ran it to create a file for the reader to
+read:
+\begin{verbatim}
+% x10 WriteDBL dbl.out
+1.25
+...
+%
+\end{verbatim}
+If you look at the bytes in {\tt dbl.out}, the first 8 look like {\tt 0x3ff4000000000000}.
+Since $1.25 = 5/4$ in hex is 0x$1.4$, this is about what we'd expect: some 
+exponent stuff followed by {\tt 0x14}.
+
+Now it's the reader's turn.  
+\begin{verbatim}
+ 1 public class ReadDBL { // see the file files/ReadDBL.x10
+ 2    public static def main(args: Array[String](1)) {
+ 3       val inputPath  = args(0);
+ 4       val I  = new File(inputPath);
+ 5       val R  = new FileReader(I);
+ 6       while(true) {
+ 7         Console.OUT.println(R.readDouble());
+ 8       }
+ 9     } 
+10  }
+\end{verbatim}
+The working copy is in
+\href{http://dist.codehaus.org/x10/documentation/guide/src/files/ReadDBL.x10}{files/ReadDBL.x10}.
+You can see that it is almost line-for-line the same
+as the writer---no surprise, really.  The one thing that is different is
+figuring out how to terminate the {\tt while} loop in lines 6-8.  The problem is
+that {\tt FileReader} does not offer a method for testing when we are at the end
+of a stream.  You might think, therefore, that {\tt readDouble} might return a
+nonsense value on end-of-stream, so we could test for that.  It does not.  To
+see what's going on, look at the console log we got by running the code shown
+with input from the file {\tt dbl.out} that we just created:
+\begin{verbatim}
+%x10 ReadDBL dbl.out
+1.2
+2.3
+3.4
+5.678
+x10.io.EOFException
+   at x10.io.InputStreamReader.read(InputStreamReader.java:73)
+   at x10.io.Marshal$LongMarshal.read(Marshal.java:877)
+   at x10.io.Marshal$DoubleMarshal.read(Marshal.java:1057)
+   at x10.io.Reader.readDouble(Reader.java:164)
+   at ReadDBL.main(ReadDBL.java:107)
+   ...
+\end{verbatim}
+We read the file and got just the output we would have expected, and the first
+attempt to read beyond the data we provided caused an ``end-of-file exception''.
+Which brings us to our next topic: exceptions.
+\section{Exceptions}\label{sec:exc}
+\subsection{The Basics}
+An exception in programming, as in life, is literally an event out of the
+ordinary.  Being out of the ordinary, exceptions are a rarity. If they
+happened frequently, they would be part of the rule, and not an exception.
+In programming, an exception is a way of performing an {\em abnormal return}
+from a method call: 
+\begin{quote}
+An abnormal return is one where the called routine cannot sensibly return a
+value to its caller (or simply return to its caller if no return value is at
+stake) because some situation, usually something terribly wrong, has arisen
+that the caller may not have enough context to handle.  Often, that context is
+only available to a method that is many steps earlier in the call chain.  The
+problem is to get control efficiently to where it can be exercised effectively,
+without unduly penalizing the ``normal'', exception-free paths through the code.
+\end{quote}
+
+Instead of each method in the call chain having to look at the
+problem and then having to admit that it doesn't know what to do
+about it, we force a method that thinks it {\em can} handle it to say so {\em before}
+the problem occurs, not {\em after}. The
+construct is called a {\tt try} statement.  If you're not familiar with
+it, no problem: we'll describe it in detail in a moment.  The important thing
+for now is that not every method need take responsibility for every sort of
+problem that might happen while it, or something it calls, is executing.
+
+When running {\tt FileIO.main} for example, the attempts to read and write the
+files {\em could} fail, but how often does that really happen? Almost never.
+If our {\tt main} really wanted to deal with the
+error, it could put the code inside a {\tt try} statement that says it is
+willing to deal this exception---we'll show the more cautious code in a
+moment.
+
+The lingo of the trade is that exceptions are either ``thrown'' or ``raised.'' 
+\Xten{} belongs to the ``throw'' camp.  The methods that want to handle an
+exception are said to ``catch'' it.
+To say that an \Xten{} method ``throws an exception'' means that execution
+reaches an \Xten{} {\tt throw} statement, which looks like:
+\begin{quote}
+{\tt throw new {\em ExceptionSubclass}({\em explanation});}
+\end{quote}
+For example, if a file open failed because an incorrect path was provided, you
+might see
+\begin{verbatim}
+   throw new x10.io.FileNotFoundException("Bad path '"+path+"'");
+\end{verbatim}
+What happens when this statement is executed is that an instance of the
+class being thrown, {\tt x10.io.FileNotFoundException} in our example,
+is constructed.  The class whose name appears in the {\tt throw} must be a
+subclass of {\tt x10.lang.Exception}\footnote{Strictly speaking,  you only need
+a subclass of the parent class of {\tt Exception}, which is called ``{\tt
+Throwable}''.  As a general rule, application code should use or subclass {\tt
+Exception} for problems that application code can reasonably be expected to
+handle.  {\tt Throwable} should be reserved for \Xten{} and for situations that
+you don't expect application code to handle.}.
+The newly created instance has a field that holds the argument in the
+constructor we called ``{\tt{\em explanation}}'' above.
+The catcher can retrieve it by calling the
+method {\tt getMessage()}.  The \Xten{} run-time manager will also provide the
+instance with the call chain at the point of the ``throw'', which can be
+retrieved (as an array of {\tt Strings}, one for each method in the call chain)
+by calling the method {\tt getStackTrace()}.  The \Xten{} run-time manager will
+then look back up that call chain until a method is found that says that it
+wants to handle any exception whose type is a
+subclass of the type named in the {\tt throw}.  Control is returned to that
+method at an appropriate point---we'll see where in our next example.
+
+Let's rewrite our {\tt ReadDbl.main} so that it handles all its I/O
+problems gracefully (see
+\href{http://dist.codehaus.org/x10/documentation/guide/src/files/ReadDBL2.x10}{files/ReadDBL2.x10}).
+\begin{verbatim}
+ 1  public class ReadDBL2 {
+ 2    public static def main(args: Array[String](1)) {
+ 3       val inputPath  = args(0);
+ 4       val I  = new File(inputPath);
+ 5       var r: FileReader = null;
+ 6       try {
+ 7          r = new FileReader(I);
+ 8          while(true) {
+ 9             Console.OUT.println(r.readDouble());
+10          }
+11       } catch(eof: x10.io.EOFException) {
+12             Console.OUT.println("Done!");
+13       } catch(ioe: x10.io.IOException) {
+14         Console.ERR.println(ioe);
+15       } finally {
+16         if (r != null) r.close();
+17      }
+18    } 
+19 }
+\end{verbatim}
+
+Here's the line-by-line:
+\begin{description}
+\item[line 5:]  Our reader {\tt r} is now a {\tt var}, not a {\tt val}, because
+we are going to use it when we reach line 16, and we cannot be sure that the
+assignment in line 7 will succeed.  Remember, a mistyped input file path will
+cause the constructor to throw an exception---an
+{\tt x10.io.File\-Not\-Found\-Excep\-tion} in fact, which happens to be a
+subclass of {\tt x10.io.IO\-Excep\-tion}.  So the assignment in line 7 may be
+aborted.
+\item[line 6:] This is the beginning of the {\tt try} statement, the ``try block''.
+The brace following the keyword {\tt try} is required.  The catch blocks in
+lines 11 and 13 describe the types of exceptions that this {\tt try} statement
+promises to handle.  For example, if the assignment in line 7 does {\em not}
+complete normally, the exception thrown will be an {\tt
+x10.io.IO\-Excep\-tion}, which will cause control to go to line 14, the body of
+the catch block that promises to handle {\tt x10.io.IO\-Excep\-tions}.
+\item[lines 8-10:] The {\tt while} loop is unchanged.  It goes its merry way
+until the end of file exception is thrown, but now, since there is a catcher at
+line 11, control will go to line 12 when the exception is thrown.
+\item[line 11:] The try block is ended by the closing brace, ``{\tt \}}''. 
+What follows is a catch block, which, in English, says: ``if an exception
+was thrown in the try block that is an {\tt x10.io.EOFException}, or is an
+instance of a subclass of {\tt x10.io.EOFException}, then return control to my
+body, namely, the statement bracketed by my braces.  Set the identifier {\tt eof} 
+to the object that was thrown.''  At end-of-file, we don't care about the {\tt
+eof}'s message or the call-chain traceback, so we simply ignore {\tt eof}. 
+We're just done!
+
+All that remains, once the {\tt println} completes, is to be polite and
+close up the {\tt FileReader r}.  Because there is a ``finally block'' at line
+15, control goes to its body, and the close is done there.  Control then falls
+through to whatever statement (if any) comes next.  If there had been no finally block,
+then once the body of the catch block had been executed, control would have
+passed to the first statement following the {\em last} catch block.
+\item[line 13:] Here we have a second catch block, one that is intended to
+catch errors.  When you have several catch blocks, they behave like ``{\tt
+if\ldots else if \ldots else if \ldots}'' sequences: the first one that can do
+the job is the one that the run-time picks: later blocks are ignored.  {\em
+This is very important:}
+\begin{quote}
+If we had put the {\tt IOException} block {\em first}, then, because {\tt
+EOF\-Ex\-cep\-tion} is a subclass of {\tt IO\-Ex\-cep\-tion}, the
+{\tt IOException} block would
+get control on end-of-file as well as whenever an error occurred.  This is
+definitely not what we want, and this can be a pernicious error, because it is
+not always obvious what classes are subclasses of what other classes.  This
+is why, if we had reversed the order of our catch blocks, the compiler
+would have signalled it as an error: ``{\tt Unreachable catch block for
+EOFException. It is already handled by the catch block for IOException}''.  Try
+compiling 
+\href{http://dist.codehaus.org/x10/documentation/guide/src/files/ReadDBL3.x10}{files/ReadDBL3.x10}
+to see this in action.
+\end{quote}
+\item[line 14: ] The argument to {\tt println} is just the exception {\tt ioe},
+which may seem surprising: why not {\tt ioe.getMessage()}?  The answer is that
+since {\tt ioe} is not a {\tt String}, but is in a context here where a {\tt
+String} is expected, the compiler replaces {\tt ioe} with {\tt ioe.toString()}. 
+For all exceptions, the method {\tt toString()} simply calls {\tt getMessage()},
+so {\tt println(ioe)} winds up being the same thing as {\tt
+println(ioe.getMessage())}.
+\item[line 15: ] The statement following the keyword {\tt finally} will be
+executed whether or not the try block terminates without throwing an exception.
+The {\tt finally} block will be executed even if an exception was thrown that is
+{\em not} one we have a catcher for in this try statement. One of the catch
+blocks may be executed before the entering the {\tt finally}, if there is a
+catcher for the error that occurred, but no matter what, control will
+reach the {\tt finally} before leaving the method.
+
+That is why we had to be careful to provide an initial value for {\tt r}: if the
+constructor in line 7 aborted, control would have gone to the second catch block,
+and when it completed, control would wind up in the ``finally'' at line 16.
+Because we were careful to initialize {\tt r} in line 5, we are on safe ground
+accessing its value here, no matter how we got here.  Actually, the compiler
+would have complained if {\tt r} had {\em not} been set along some path that
+starts at its declaration and reaches its use in line 16.  It is an error in
+\Xten{} for code to read an identifier's value before the identifier has been
+initialized.
+\end{description}
+
+A {\tt try} statement may have a {\tt finally} but no {\tt catch} blocks: no
+matter what exception occurs, the {\tt finally}'s statement will get executed. 
+The reason is exactly the sort of thing we saw in this example: if you have
+acquired some resource and need to release it, putting the release
+in a {\tt finally} guarantees that it happens. A {\tt try} statement
+need have no {\tt finally} block. In that case, when the body of the try block
+completes, control goes to the first statement that follows the last of its
+catch blocks.
+
+\section{Functions}
+\subsection{Function Types}
+We have already seen examples of how one can create functions in \Xten{} and
+pass them as arguments.  Indeed, functions are values like any other from the
+point of view of assigning them, passing them around as arguments, and so on. 
+As a ``type'', though, they form a distinct unit, being neither class, struct,
+nor interface.
+
+The basic syntax for function {\em types}---as opposed to
+the syntax for specific method or closure definitions---is:
+\begin{quote}
+{\tt ({\em arg1Type, arg2Type, \ldots}) => {\em returnType}}
+\end{quote}
+For example, we could declare
+\begin{verbatim}
+ var doSum: (Array[Double](1)) => Double;
+\end{verbatim}
+The value of {\tt doSum}, when it is assigned, will be a function that
+takes a single argument, of type a singly-indexed array of {\tt Doubles}, and
+returns a value of type {\tt Double}.  When it is helpful for people reading the
+declaration to have a name for the argument, you can supply one:
+\begin{verbatim}
+ var doSum: (a: Array[Double](1)) => Double;
+\end{verbatim}
+Here it is not very useful, but there obviously are a lot of situations where
+the variable name and argument types by themselves do not reveal your intent.
+
+The argument list for a function type may be empty, as it was for our random
+number generator in the Monte Carlo calculation in \ref{subs:wcdb}.
+
+Getting back to {\tt doSum}, we know that, being a {\tt var}, it can be set (and
+reset!) whenever we wish. It would be polite, however, to assign an initial
+value in the declaration that, if nothing like what we eventually want, at least
+would betray an attempt to use {\tt doSum} before it was properly set.
+Because {\tt Double} is a {\tt struct} we cannot set it to {\tt null}.
+For {\tt Doubles} the closest thing to {\tt null} is the value ``not a number!'',
+{\tt Double.NaN}---not {\tt 0.0}, which is often
+a reasonable value after the fact, as well as initially.
+\begin{verbatim}
+ var doSum: (Array[Double](1)) => Double
+          = (a: Array[Double](1)) => Double.NaN;
+\end{verbatim}
+or to let it throw an exception:
+\begin{verbatim}
+ var doSum: (Array[Double](1)) => Double
+       = (a: Array[Double](1)): Double => {
+            val msg = "doSum called before being set.";
+            throw new IllegalOperationException(msg);
+          };
+\end{verbatim}
+These two examples show the two patterns for creating function ``values''.
+One is exemplified by the right-hand side of the first assignment, in which
+the arrow ``{\tt =>}'' is followed by an expression that is the return value of
+the function.  The other possibility is to write out the function body in the
+usual statement form, bracketed by braces, which is what we did to throw the
+exception.  When you use this format for the function body and want to return a
+value, you need to use a {\tt return} statement to do so, just as you would in
+a method definition.
+
+Notice that in {\em both} of these assignments, a semicolon follows the body of
+the function.  In the first case, it looks natural enough, but in the second, where
+the semicolon follows the closing brace, you may feel that it looks
+a little strange.  Remember, though, that what we have here is an assignment
+(to a {\tt var} of its initial value), not a method definition, 
+and assignments expect to be terminated with semicolons.  
+
+The bottom line is that the syntax for function literals is the same as that for
+function types, except that for a literal, the body follows the arrow rather
+than (as for types) the return type. You need not specify
+the return type for a function literal explicitly any more than you need do so
+for a method definition, unless (as in our second assignment here) the
+literal does not return the type of value you really want.
+
+\subsection{A Few Words On Arguments}
+We are going
+to give a few examples here that lay out \Xten's rules for what happens when you pass
+an argument to method and then assign a value to it.  While this discussion should present
+few surprises, particularly to Java programmers, we suggest you bear with us and read on,
+as the parallels are not exact.
+
+Consider, to begin with, the following attempt to pass some {\tt Int} arguments into a method.
+ %%START X10: src/primitives/TryArgs.x10 tryargs
+\begin{verbatim}
+1  public class TryArgs {
+2     public static def tryargs(val a: Int, b: Int, var c: Int) {
+3        a = b = 1;  
+4        c = 1;       
+5     }
+6  }
+\end{verbatim}
+%%END X10:  src/primitives/TryArgs.x10 tryargs
+You'll find this code in 
+\xlfilename{tryargs}{primitives/TryArgs.x10}
+When you compile it, you will get a pair of error messages:
+\begin{verbatim}
+% x10c  TryArgs.x10
+TryArgs.x10:3: Final variable "b" might already have been
+               initialized
+TryArgs.x10:3: Final variable "a" might already have been
+               initialized
+\end{verbatim}
+The complaint about attempting to reset ``{\tt a}'' after you declared it to be a
+{\tt val} is what you would expect: you cannot assign a value to an already initialized
+ {\tt val}.
+ \footnote{
+ The term ``{\tt final}'' comes from Java's way of describing read-only
+ data fields.
+ }
+Why the same complaint should hold for ``{\tt b}'' is less
+obvious, but now you know: {\em unless you explicitly say that an argument is a {\tt var}, it is
+going to be a {\tt val}.}   Thus, of the three arguments, only {\tt c} may be reset in the
+method body.
+
+The next thing to try is modifying a {\tt var} argument in the body of the method, as in 
+\href{http://dist.codehaus.org/x10/documentation/guide/src/fcns/TryArgs2.x10}{fcns/TryArgs2.x10}: 
+%%START X10: src/primitives/TryArgs2.x10 tryargs2
+\begin{verbatim}
+ 1  public class TryArgs2 {
+ 2     public static def tryargs(var c: Int) {
+ 3        c = 1;   
+ 4        Console.OUT.print("In tryargs, c is "+c);
+ 5     }
+ 6     public static def main(args: Array[String](1)): Void {
+ 7        var ta2: Int = 0;
+ 8        tryargs(ta2);
+ 9        Console.OUT.println(".  In main, ta2 is "+ta2);     
+10     }
+11  }
+\end{verbatim}

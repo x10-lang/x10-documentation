@@ -1,0 +1,1296 @@
+\chapter{A Whirlwind Tour of \Xten{}}
+In this chapter, we'll look at a couple of quick examples that illustrate
+\Xten{} in action. The next two chapters will then fill in a lot of the details.
+\section{Hello!}
+
+Enough suspense! You knew it was coming, and here it is!
+%%START X10: src/intro/HelloWorld.x10 hello
+\begin{verbatim}
+ 1  // Copyright 1977 Greeter's Anonymous. All rights reserved 
+ 2  /** classic first code example */ 
+ 3  public class HelloWorld { 
+ 4     /** //
+ 5      * writes "Hello, World" to the console 
+ 6      * @param args the command line arguments 
+ 7      */ //
+ 8     public static def main(args:Array[String](1)) { 
+ 9        x10.io.Console.OUT.println("Hello, World"); 
+10     }
+11  }
+\end{verbatim}
+%%END X10: src/intro/HelloWorld.x10 hello
+The working copy of this code is 
+\href{http://dist.codehaus.org/x10/documentation/guide/src/hello/HelloWorld.x10}{\xlfilename{hello}{intro/HelloWorld.x10}}.
+Let's step through it, a line at a time:
+
+\begin{description}
+\item [line \xlref{hello-cmnt}{1}:] 
+\xline{hello-cmnt}{// Copyright 1977 Greeter's Anonymous. All rights reserved}\\
+Comments in \Xten{} are the same as Java or C++: they either begin
+with ``{\tt //}'' and go through the end of the line, or begin with ``{\tt /*}''
+and end at the \emph{first} ``{\tt */}'' that follows.  Because the first ``{\tt */}'' 
+ends the comment, ``{\tt /*...*/}'' {\em comments do not nest}. 
+
+\item[line \xlref{hello-x10doc1}{2}:] {\tt /** classic first code example
+*/\\}
+Comments in the style {\tt /** \ldots */} that immediately preceed a
+declaration are called ``X10Doc'' comments. X10Doc is a set of conventions for
+publishing the APIs for whole directory trees of \Xten{} source files.  X10Doc
+follows that same format as Java's ``JavaDoc'', but instead of using the
+``javadoc'' command, you use the ``x10doc'' command to process it.  The final
+product is a nicely organized HTML site. 
+All of our sample code uses X10Doc documentation, but we usually
+do not copy it into the displays in the text.
+The documentation for the \Xten{} library 
+\href{http://dist.codehaus.org/x10/xdoc/}{http://dist.codehaus.org/x10/xdoc/}
+is all generated from X10Doc comments.
+\footnote{If you want
+  to really get to know JavaDoc, its home page is at  
+  \href{http://www.oracle.com/technetwork/java/javase/documentation/index-jsp-135444.html}{oracle.com},
+  but for a quick executive summary sufficient for almost all purposes, see
+  \href{http://en.wikipedia.org/wiki/Javadoc} {the Wikipedia entry}.
+}
+
+\item [line \xlref{hello-code0}{3}:] {\tt class HelloWorld \{\ldots \}}\\
+\Xten's classes serve essentially the same purpose as classes in other object
+oriented languages, Java and C++ in particular.  There are some differences, of
+course, which we'll point out as they arise in the discussion.
+
+A class normally will have the same name as the file in which is
+declared---\eg{} {\tt HelloWorld} is found in {\tt HelloWorld.x10}.  C++
+programmers should realize that, unlike C++, \Xten{} relies on file names to
+find class declarations.  We'll go through the rules in detail in Chapter
+\ref{chp:types}.
+
+\item [line \xlref{hello-x10doc2}{6}]{\tt * @param args the command line
+arguments}\\
+Inside X10Doc comments, lines that start with an asterisk (``*'') are 
+copied into the HTML with the asterisk (and leading spaces) deleted. 
+This line says that {\tt args} is an argument for the method whose
+declaration follows, namely {\tt main()}.
+
+\item [line \xlref{hello-code1}{8}:] {\tt public static def main(args:
+Array[String](1))}\\ Program execution starts, as in Java and C++, with a
+method named {\tt main}, which takes the command-line arguments as a collection
+of strings. But here we start to see some differences in syntax from Java and
+C++:
+\begin{itemize}
+\item The keyword {\tt def} begins a method declaration.   
+This makes it easy to tell what is a method and what isn't. 
+(In contrast, in Java and C++, you have to look for clues -- sometimes small
+ones -- to tell
+the difference between a method and a field.)
+
+\item There is no return type specified here.
+In fact, {\em you don't normally need to specify the return
+type for a method.} This differs from both Java (you must supply it) and C++
+(the default is {\tt int}).  The \Xten{} compiler looks for the return
+statements in a method and normally can infer the return type. 
+
+If you {\em do} wish to specify it, then, unlike Java and C++, it {\em follows} the
+argument list.  For example, ``{\tt def doIt(t: T): U \{\ldots\}}'' declares a
+method named {\tt doIt} with one argument of type {\tt T} and a return value of
+type {\tt U}.  Notice the `{\tt :}' that preceeds the types in both places:
+it is the required syntax.  The return type of {\tt main()} is {\tt void},
+meaning that no value is returned.
+
+So why might you specify the return type, if you don't have to?  Basically,
+writing down the return type gives valuable documentation, particularly for
+longer methods where the return type is not immediately obvious.   It also
+prevents some mistakes: if you expect to return a \xcd`Boolean`, but one of
+the seventeen \xcd`return` statements accidentally has an \xcd`Int` instead,
+X10's type inference will happily pick \xcd`Any`, which can be anything, as
+the return type of the method.  If you specify the \xcd`Boolean` return type,
+X10 will flag the \xcd`Int` return as an error, which is probably what you want.
+
+Occasionally, the compiler will force you to specify a return
+type to resolve type checking difficulties.  For example, X10 might infer that
+method \xcd`m` is \xcd`Boolean` --- but in a subclass, you want to have
+\xcd`m` return other kinds of things.  So you would need to declare \xcd`m` to
+be \xcd`Any`, rather than the inferred \xcd`Boolean`, in the parent class.  
+
+\item \Xten{} has generic types, along the same general lines as Java and C++. 
+\Xten{} uses square brackets to hold the actual type, {\em e.g.} {\tt Array[String]}
+for declaring an array of {\tt String}s.
+
+\item \Xten{} arrays, like FORTRAN arrays, may be multi-dimensional. The
+``{\tt (1)}'' that follows {\tt Array[String]} asserts that the array is
+one-di\-men\-sional, or in other words, is just like the usual Java or C++
+array.
+
+\item The general syntax for assigning a type to an identifier is 
+\begin{center}{\tt {\em iden\-ti\-fi\-er}: {\em type}},\end{center}
+as in {\tt args:Array[String](1)}.  White space before or after the `{\tt :}' is 
+ignored by the compiler. In fact, white space in \Xten{} is treated as it
+is in Java and C++: normally ignored, except to the extent that it is needed to
+separate tokens or appears in string literal constants.
+\end{itemize}
+
+\item [line \xlref{hello-code2}{9}:]{\tt x10.io.Console.OUT.println("Hello, World");}\\
+Like Java, \Xten{} groups classes into units called ``packages''.  For example,
+the input-output classes in \Xten's standard library all belong to the package
+{\tt x10.io}. The class {\tt Console} is part of that package.  
+Package names are used both as prefixes to provide unique names for classes {\em
+and to locate the classes}. 
+\begin{quote}{\tt Console.IN},  {\tt Console.OUT}, and  {\tt Console.ERR}\end{quote}
+are the standard input, output, and error streams. 
+The method  {\tt println} prints a string, followed by an operating-system
+dependent line-ender: either a single newline character for Unix based systems, 
+or a carriage return-newline pair. If you don't want the newline, use {\tt print} instead.
+
+We'll give some more details about packaging in chapter \ref{chp:types}.
+\end{description}
+
+Here's the command for compiling {\tt HelloWorld} for execution by a Java-based
+runtime (``{\tt \%}'' is the command line prompt):
+\begin{verbatim}
+% x10c HelloWorld.x10
+\end{verbatim}
+To run it, you use the {\tt x10} command:
+\begin{verbatim}
+% x10 HelloWorld
+Hello, World
+\end{verbatim}
+If {\tt HelloWorld} had required some command-line arguments, you could have
+added them at the end of the command line.
+
+There is also a C++
+runtime.  To use it, you need to compile using {\tt x10c++} rather than {\tt
+x10c}.  The usual C compiler convention {\tt -o {\em filename}} for naming the
+executable is used.
+\begin{verbatim}
+% x10c++ HelloWorld.x10 -o hello
+% runx10 hello
+Hello, World
+\end{verbatim} 
+You'll need the {\tt runx10}: you cannot invoke {\tt hello} directly, because
+some special setup is required to bootstrap the \Xten'c C++ runtime.
+We don't actually need anything special
+for {\tt hello}, but \Xten{} code that sets up the call to {\tt main()} {\em is}
+generic and needs information supplied by {\tt runx10}.
+
+\section{Two CPUs Are Better Than One}
+
+The point of \Xten{} is concurrent programming: giving you control over clusters of 
+multiprocessors.   We'll get started on this by parallelizing a simple piece of serial
+code that computes an approximation to the number $\pi$.  Along the way, we'll
+introduce some more \Xten{} syntax and write our first loops.
+
+\subsection{$\pi$ via Monte Carlo}
+
+The unit circle is the set of points $(x,y)$ in the plane that satisfy $x^{2} + y^{2} \le 1$,
+and its area is $\pi$.  We are going to explore a particularly simple method of estimating
+$\pi$.  Figure \ref{fig:cis} shows the one-quarter of the unit circle that lies
+in the unit square,  $0 \le  x,y \le 1$.  The unit square has area 1, and the
+shaded part inside the circle has area $\pi/4$.  
+\begin{figure}[!htbp] 
+\begin{center} 
+\includegraphics[width=2.5in]{"images/cis3"} 
+\caption{The intersection of the unit circle with the unit square}
+\label{fig:cis}
+\end{center}
+\end{figure}
+Now imagine picking points at random in the unit square.  What fraction
+will also lie in the unit circle?  If the points are really random, the
+answer ought to be the fraction of the square that lies inside the unit circle,
+namely: $\pi/4$.
+
+One way to estimate $\pi/4$, then, is to pick a
+large number of points $(x,y)$ in the unit square at random and see what fraction
+actually land in the unit circle. This sort of process is called a ``Monte
+Carlo'' algorithm.
+
+If ever there 
+were an easily parallelized type of algorithm, Monte Carlo is it: if we have 1,000
+processors, we let each generate points independently, and at the end, we
+just have to merge the results.  The only trick is to make sure that each of the 1,000
+processors starts in a way genuinely random with respect to the others, so that
+they don't just duplicate each other's efforts. 
+
+\subsection{Getting Started: A Serial Version}
+Let's look first at a serial version in Figure \ref{fig:mcpi}, 
+because it introduces a number of \Xten{} idioms that we'll need in the
+parallel version.  You can find the source in 
+\href{http://dist.codehaus.org/x10/documentation/guide/src/montePi/MontePi1.x10}{MontePi1.x10}.
+\begin{figure}[!htbp]
+\hrulefill
+%%START X10: src/intro/MontePi1.x10 mpi1
+\begin{verbatim}
+ 1  import x10.util.Random; 
+ 2  public class MontePi1 {
+ 3      static val N = 10000; 
+ 4      public static def main(s: Array[String](1)) { 
+ 5          val r = new Random();   
+ 6          var inCircle:Double = 0.0; 
+ 7          for (j in 1..N) { 
+ 8              val x = r.nextDouble(); 
+ 9              val y=  r.nextDouble(); 
+10              if (x*x +y*y <= 1.0) inCircle++; 
+11          }  
+12          val pi = 4*(inCircle/N); 
+13          Console.OUT.println("Our estimate for pi is " + pi); 
+14      }
+15  }
+\end{verbatim}
+%%END X10: src/intro/MontePi1.x10 mpi1
+\hrulefill
+\caption{Serial Monte Carlo Approximation of Pi}\label{fig:mcpi}
+\end{figure}
+\begin{description}
+\item[line \xlref{mpi1-imp}{1}:] 
+{\tt Random} is a class from the \Xten{}
+standard library. Whenever you need a class that is not implemented in the file
+you are editing, the compiler needs to be told how to find it.  There are two ways
+to do so, which are the same as in Java:
+\begin{enumerate}
+\item 
+You can specify the {\em fully qualified name} of the class in an {\tt import}
+statement, as line \xlref{mpi1-imp}{1} does for {\tt Random}. In the next
+chapter, we'll go into more detail about the naming conventions. 
+
+\item Or, you can omit the {\tt import} statement, 
+but if you do, you have to write out
+the fully qualified class name at each use.  Iif we had left it out
+here, we would have had to rewrite line \xlref{mpi1-r}{5}  as
+\begin{verbatim}
+val r = new x10.util.Random(); 
+\end{verbatim}
+The standard \Xten{} library provides some types which are so commonly
+used that the compiler is kind and does not force you to import them
+explicitly or write them out in detail at each use.  {\tt Int}, for example,
+is really {\tt x10.lang.Int}, and {\tt Console} in line \xlref{mpi1-out}{13}
+is really {\tt x10.io.Console}.
+\end{enumerate}
+
+\item[lines  \xlref{mpi1-N}{3},  \xlref{mpi1-r}{5}, 
+ \xlref{mpi1-x}{8},  \xlref{mpi1-y}{9},  \xlref{mpi1-pi}{12},]
+In line  \xlref{ \xlref{mpi1-N}}{3}, we declare {\tt N} to be a {\tt static val}.
+The keyword ``{\tt val}'' means that {\tt N} names a value,
+{\tt 10000} in this case.  One cannot assign a new value to 
+{\tt N} later on in the code: it is a constant, in the same way the {\tt const}
+is used in C and {\tt final} in Java.
+
+The keyword ``{\tt static}'' means that the value is associated with the class
+{\tt MontePi} itself. The remaining {\tt val}s, {\tt r}, {\tt x}, {\tt y} and
+{\tt pi} are not part of the class: they are just local variables of the method
+{\tt main()}.
+
+The compiler will happily figure out the type of a {\tt val} whose
+value appears in its declaration, as it does in each of the five declarations
+here. You can, if you wish, provide the type yourself.
+For example, we could have written line  \xlref{mpi1-r}{5} as
+\begin{verbatim}
+val r:Random = new Random(); 
+\end{verbatim}
+There's not much point in this case, though, to spelling things out.
+Adding ``{\tt :Random}'' helps neither people nor the compiler read the code. 
+
+\bard{I added a discussion of $<:$.  This probably needs to get moved; it's
+too long for here.}
+\begin{nonquote}
+{\em Most of the time, you should not
+specify the type of a {\tt val} whose initial value appears with its
+declaration.}  
+You can trust the compiler to come up with a correct type for your value, 
+or to give you an error message.  
+
+You might want to give a type for the sake of someone reading the program --
+someone like yourself six months later, or even the compiler.  You can give an
+exact type, and insist that all that the compiler can know about the variable
+is the type you give it, with the \xcd`:Random` syntax.  
+
+It's usually better to give {\em approximate} type information, where you tell
+{\em some} things about the variable -- the things you expect people reading
+your code to care about, and the things you want the compiler to check.  The
+compiler will figure out the exact type, but it will check everything that you
+said you wanted.  The syntax for this is to use ``\xcd`<:`'' instead of just
+``\xcd`:`'', like this:
+\begin{verbatim}
+val r <: Random = new Random();
+\end{verbatim}
+For \xcd`Random`, there aren't a lot of choices for what you could say for
+partial information.  If you were giving another name to \xcd`s`, the
+one-dimensional array of \xcd`String`s declared on line \xlref{mpi1-s}{4}, you
+have more choices:
+%%START X10: ArgvPartialInfo.x10 argvpartial
+\begin{verbatim}
+1  public class ArgvPartialInfo {
+2      public static def main(s: Array[String](1)) {
+3          val a <: Object = s; 
+4          val b <: Array[String] = s;
+5          val c <: Array[String]{rank != 3} = s;
+6      }
+7  }
+\end{verbatim}
+%%END X10: ArgvPartialInfo.x10 argvpartial
+
+On line \xlref{argvpartial-a}{3}, we give very little information, just saying
+that \xcd`a` is an \xcd`Object`.  On \xlref{argvpartial-b}{4}, we say that
+\xcd`b` is an array of strings, but, unlike the declaration of \xcd`s` on line
+\xlref{argvpartial-s}{2}, we don't say that it's a {\em one-dimensional} array.  
+On \xlref{argvpartial-c}{5}, just because we can, we say that it's 
+an array but not a three-dimensional array: it could be one-dimensional or
+four-dimensional or eighty-dimensional.  
+
+The difference between ``\xcd`:`'' and ``\xcd`<:`'' in \xcd`val` declarations
+is that  ``\xcd`:`'' erases information and ``\xcd`<:`'' doesn't.  
+So, if you write 
+\begin{verbatim}
+val b : Array[String] = s;
+\end{verbatim}
+\noindent
+all that X10 will know about \xcd`b` is that it is an array of strings, of
+some unknown dimensionality.  But if, as on line \xlref{argvpartial-b}{4}, you
+write 
+\begin{verbatim}
+val b <: Array[String] = s;
+\end{verbatim}
+\noindent
+X10 will remember that \xcd`b`, like \xcd`s`, is one-dimensional. This is
+important information later on if you want to subscript it with a single
+index, \xcd`b(0)`.  That's the right thing to do with a one-dimensional array,
+but wrong for an array whose dimensionality is unknown.
+\bard{This new bit has gotten quite long, and should be put into a separate section}
+
+
+You {\em do} need to provide the type when you don't want to initialize
+the {\tt val} in the declaration itself.  Typically this happens when the {\tt val}
+depends on some choices that you can't neatly write in one line:
+\begin{verbatim}
+     val howMany: Int;
+     if (aBoolean) {/* howMany gets set one way here */}
+     else {/* and gets set differently here */}    
+\end{verbatim}
+The {\tt if} and {\tt else} blocks are both free to do any calculation they
+need to in arriving at {\tt howMany}'s value, so long as they don't try to
+use {\tt howMany} itself before it has been set.  
+The rule is
+\begin{quote}
+{\em Control cannot reach a use of a {\tt val} without first
+reaching an assignment that sets the {\tt val}'s value.}
+\end{quote}
+In other words, there is no such thing as ``default value'' for a {\tt val}.
+It must be set explicitly by you, and once set, cannot be changed.
+\end{nonquote}
+
+The initializer for a {\tt val} may be any legal \Xten{} expression that can be
+evaluated at run-time---they need not be compile-time constants.  Lines  \xlref{mpi1-x}{8},
+ \xlref{mpi1-y}{9}, and  \xlref{mpi1-pi}{12} all show examples of initialization expressions.
+
+\item[lines  \xlref{mpi1-incircle}{6}:]  
+The keyword {\tt var} introduces the declaration of a variable.
+A declaration like ``\xline{mpi1-incircle}{var inCircle:Double = 0.0;}''  says that
+{\tt inCircle} names some storage that holds a value of type {\tt Double}
+whose initial value is {\tt 0.0}, and this value
+may be updated as the code runs.  In the lingo of the trade, one
+says that ``{\tt inCircle} {\em references} a {\tt Double}''.  
+
+{\tt Double} values are double-precision IEEE floating points, exactly like Java's and C++'s
+{\tt double}.  
+
+You do need to supply
+the type for a {\tt var} even when an initial value is provided.
+The rationale is a bit involved, so we ask you just to take our word for it that  
+for now, the compiler needs to be told the type of every {\tt var}. 
+
+\item[lines  \xlref{mpi1-for}{7}- \xlref{mpi1-endfor}{11}]
+Another new ingredient in the code is the ``{\tt for}''  loop, lines
+\xlref{mpi1-for}{7} through \xlref{mpi1-endfor}{11}.  
+\xline{mpi1-for}{for (j in 1..N) \{} executes its body (lines
+\xlref{mpi1-r}{5}-\xlref{mpi1-if}{10}) once with \xcd`j` bound to \xcd`1`, then
+once with \xcd`j` bound to \xcd`2`, and so on, ending (if nothing stops it
+sooner) with \xcd`j` bound to \xcd`N`.  
+
+\xcd`1..N` is an example of an \xcd`IntRange`, a value that describes a range
+of integers.  They're useful for looping over, as we do here.  They are also
+useful for declaring the subscripts of arrays, and a variety of other
+situations. 
+
+
+X10 has old-style \xcd`for` loops too, like \xcd`C++` and \xcd`Java`'s
+traditional \xcd`for` loops.  We could have written this one:
+%%START X10: OldStyleFor.x10 oldstylefor
+\begin{verbatim}
+1      for(var j:Int = 1; j <= N; j++) {
+2         //...
+3      }
+\end{verbatim}
+%%END X10: OldStyleFor.x10 oldstylefor
+(\xcd`j` needs to be declared as a \xcd`var`, not a \xcd`val`, because we're
+changing it.  \xcd`j++` means ``Add one to \xcd`j`,'' just as it does in C and
+Java.)
+
+%%OLDFOR%% The syntax in line  \xlref{mpi1-for}{7} should be familiar.
+%%OLDFOR%% It begins with the declaration and initialization of the loop
+%%OLDFOR%% variable {\tt j}, ``{\tt var j:Int = 1}''.  Important: you need the ``{\tt var}'', because that
+%%OLDFOR%% tells the compiler you want to declare a new variable. ``{\tt j:Int = 1}'' by itself
+%%OLDFOR%% won't do: the compiler will complain that {\tt j} is a value, not a variable.
+%%OLDFOR%% 
+%%OLDFOR%% As you might guess, ``{\tt Int}'' is \Xten's 32-bit integer type. 
+%%OLDFOR%% 
+%%OLDFOR%% The declaration for {\tt j} is followed by the test ``{\tt j <= N}'' .  This expression is
+%%OLDFOR%% evaluated at each iteration (including the first!) and the loop body will be executed
+%%OLDFOR%% only so long as it evaluates to ``true.''  
+%%OLDFOR%% 
+%%OLDFOR%% The third expression in line \xlref{mpi1-for}{7}, ``{\tt j++}'', is the re-initialization of the
+%%OLDFOR%% loop variable. \Xten's binary and unary operators are the same as in all of the
+%%OLDFOR%% languages in the tradition of C, so things like ``{\tt +=}'' and ``{\tt ++}''
+%%OLDFOR%% mean exactly what most of you would expect, but just in case:
+%%OLDFOR%% \begin{quote}
+%%OLDFOR%% The expression ``{\tt a += b}'' is a short-hand for ``{\tt a = a+b}''.  This
+%%OLDFOR%% shorthand works for all binary arithmetic operators and the three bitwise operators
+%%OLDFOR%% ({\tt |}, {\tt \&} and \verb+^+).  Operators like {\tt +=} are often referred to as ``update
+%%OLDFOR%% assignments''
+%%OLDFOR%% 
+%%OLDFOR%% ``{\tt n++}'' is another form of update assignment.  As an expression, the
+%%OLDFOR%% value of {\tt n++} is the {\em current} value of {\tt n}. As a side-effect of
+%%OLDFOR%% evaluating {\tt n++}, though, {\tt n}'s value is incremented by {\tt 1}.  The
+%%OLDFOR%% expression {\tt n--} is similiar, but (of course) subtracts {\tt 1}.
+%%OLDFOR%% 
+%%OLDFOR%% ``{\tt ++n}'' is just a short-hand for ``{\tt n = n+1}''.  That is: {\tt n} is
+%%OLDFOR%% incremented by {\tt 1} and the result is used as the value of the expression.
+%%OLDFOR%% The expression {\tt --n} is similar.
+%%OLDFOR%% \end{quote}  
+%%OLDFOR%% 
+
+Each time through the loop, we call the random number generator
+{\tt r} twice to get the coordinates of a point
+(lines  \xlref{mpi1-x}{8}, and  \xlref{mpi1-y}{9}).
+Happily, {\tt r.next\-Double}
+returns a value between 0 and 1, so we can use it ``as is.''   In line \xlref{mpi1-if}{10},
+we check whether the point lies in the unit circle, and if so, we increment
+{\tt inCircle} by 1. 
+
+As it happens here, we don't need {\tt j} in the loop, but we do want to emphasize
+that {\em the scope of {\tt j}'s declaration is the loop and nothing but the
+loop}, so when you leave the loop, {\tt j} will be unavailable.  
+%%FOR%% There is no rule, however,
+%%FOR%% that says you {\em have} to declare the loop variable in the {\tt for} statement.
+%%FOR%% If you need the value once the loop completes, just declare it in a context surrounding
+%%FOR%% the loop, and set it to its initialize value wherever it is convenient to do so, \eg:
+%%FOR%% \begin{verbatim}
+%%FOR%%    var j: Int = 1;
+%%FOR%%    for( ; j <= N; j++) { ... }
+%%FOR%%    Console.OUT.println("Is "+j+" == "+(N+1)+"?");
+%%FOR%% \end{verbatim}
+
+\item[line  \xlref{mpi1-pi}{12}:]
+On exit from the loop at line  \xlref{mpi1-pi}{12}, {\tt inCircle/N} is the fraction of points
+in the circle, which is going to be a positive number less than 1, so we
+have to use a {\tt Double} (or if we don't care about the precision, a {\tt Float})
+to capture the value.  
+That's why we made {\tt inCircle} a ``{\tt Double}'' in line  \xlref{mpi1-incircle}{6}.
+When we do the division here, the compiler will arrange to convert
+{\tt N} to a {\tt Double}, too, and will use double precision floating
+point division.  
+
+Suppose we had said to ourselves, ``incrementing a {\tt Double} by 1 inside that
+loop has got to
+be more expensive than incrementing an {\tt Int}.  So let's declare {\tt inCircle} to be
+an {\tt Int}.''  That's fine, but when we get to line \xlref{mpi1-pi}{12}, we have to be careful to
+convert it to a {\tt Double}.  One way to do this is with \xcd`as`:
+\begin{verbatim}
+     val pi = 4 * (inCircle as Double / N);
+\end{verbatim}
+\end{description}
+
+Time to try compiling and running the code.  Here is our console log for the
+run:
+\begin{verbatim}
+% x10 MonteCarloPi
+The value of pi is 3.1368
+\end{verbatim}
+Not a brilliant guess at $\pi$, but we didn't really try all that many points.  Your
+answer might vary: in fact, the answer will vary with each run because, whenever
+{\tt Random} creates a new generator, it
+uses the current time to create a new starting point for computing its values.
+The first two digits, 3.1, though, should be stable.  Good luck!
+
+\subsection{We Can Do Better}\label{subs:wcdb}
+
+There are some pretty primitive aspects to our first cut at $\pi$.  In this section
+we'll introduce a few features of \Xten{} that will help us spruce up the code a
+little bit.
+
+To begin with, that ``{\tt static val N = 10000;}'' in line  \xlref{mpi1-N}{3} is really, truly rigid. 
+We have access to a perfectly good set of command line arguments.  Why not use
+the first, if supplied, to set the number of points to try?  That would have
+let us try 1,000,000 points right away to see how much better we could do than
+10,000. The code we need is simple enough:
+
+%%START X10: MontePi2.x10 mpi2-N
+\begin{verbatim}
+1     public static def main(args: Array[String](1)) {
+2         val N = args.size > 0 ? Int.parse(args(0)) : 10000;
+\end{verbatim}
+%%END X10: MontePi2.x10 mpi2-N
+
+Some comments:
+\begin{description}
+\item[line 1:]
+The command line arguments come in as the array {\tt args}.  The declaration
+\begin{quote} {\tt args:Array[String](1)}  \end{quote}
+should, as we have already mentioned, be read: ``{\tt args} {\em is a value whose type
+is an array of strings indexed by a single integer.}''   \Xten{} arrays, unlike Java
+or C++ arrays, may be indexed by arbitrarily many integers, so you have to 
+tell the compiler what sort of indexing you want.  Don't be confused here: the
+``{\tt (1)}'' is not the size of the array: it is the {\em kind} of index you
+need (a single integer, in this case).
+\item[line 2:]
+ \Xten{} uses the property {\tt size} to get the number of elements in
+an array.  Using ``{\tt length}'', as Java does,
+would be misleading, because \Xten{} arrays can be $n$-dimensional, not just
+1-dimensional.
+
+\Xten{} uses ordinary parentheses, and not square brackets, to access array elements.  
+Thus, since {\tt args} is indexed by a single integer, {\tt args(k)} is the
+entry in {\tt args} indexed by the integer {\tt k}.  \Xten, like its relatives
+C++ and Java, normally starts array indexing from 0.  However, the \Xten{} programmer can
+specify other index domains. There is no reason to get fancy about {\tt args}, however,
+so its first element is {\tt args(0)}. Arrays in \Xten{} are a whole subject unto
+themselves that we will get to in Chapter \ref{chp:tsl}.
+
+We use {\tt Int}'s static method {\tt parse} to convert the command line input
+from a {\tt String} to an {\tt Int}.  Then the conditional operator, 
+``{\tt ?:}'' allows us to choose a value:
+it begins by testing its first operand, which must must evaluate to \xcd`true`
+or 
+\xcd`false`
+, \ie{} a {\tt Boolean}. If it evaluates to \xcd`true`, the value of the
+expression is the second operand; otherwise the value is the third.
+Once again, \Xten{} is consistent with Java and C++.
+\end{description} 
+The next step in improving the code is a little more involved.
+We used a random number generator
+that the \Xten{} library provided for us.  Suppose, though,
+that for some reason we wanted to try another one. 
+It would be nice if the generator
+were just another parameter to the computation, so we could play with a bunch
+of them if we wanted to.  To get there, we are going pull the main loop
+out of {\tt main} and put it in its own method, one parameter of which is the
+random number generator:
+%%START X10:  src/intro/MontePi2.x10 mpi2cp
+\begin{verbatim}
+1     public static def countPoints(n: Int, rand: ()=>Double) {
+2        var inCircle: Int = 0;
+3        for (j in 1..n) {
+4           val x = rand();
+5           val y = rand();
+6           if (x*x +y*y <= 1.0) inCircle++;
+7        }
+8        return inCircle;
+9     }
+\end{verbatim}
+%%END X10:  src/intro/MontePi2.x10 mpi2cp
+ 
+
+
+The new ingredient here is the declaration of {\tt rand} in the first line.
+As usual, its type follows
+a colon (``:''), but what's there is not just a name, as usual, but a sort
+of ``expression'', 
+{\tt ()=>Double}, which is read:
+``{\em a function that takes no arguments and returns a {\tt Double}.}''
+There is no strictly analogous construct yet in Java, although one is planned, 
+and the closest thing in C++ is the ``function pointer'' {\tt double (*rand)()}.
+
+Note, too, that we compute {\tt inCircle} as an {\tt Int} here.  It's a little
+faster than using {\tt Double} and besides, we know that the result is an
+integer, so it makes sense to declare it as such.  
+
+How do we create the function to pass in as {\tt rand}?  Here's one approach: in
+{\tt main()}, put
+%%START X10: src/intro/MontePi2.x10 mpi2main
+\begin{verbatim}
+1         val r = new Random();              
+2         val rand = () => r.nextDouble();   
+3         val inCircle = countPoints(N, rand); 
+4         val pi = (4.0 * inCircle)/N;       
+\end{verbatim}
+%%END X10: src/intro/MontePi2.x10 mpi2main
+ 
+\begin{description} 
+\item[line \xlref{mpi2main-r}{1}] says that {\tt rand} is a function with no arguments whose body
+is the expression {\tt r.nextDouble()}, which is its return value.  This is, as you would guess,
+just a simple example of a much more general facility, and we'll see a lot of 
+examples later that will flesh out how to use it. 
+
+One important thing to understand is that the declaration of {\tt rand} captures the
+runtime value of {\tt r}.  If we put this code in the body of a loop, then each time through
+the loop, {\tt rand} would use the new value of {\tt r} that is yielded by the constructor
+{\tt new Random()}.
+
+The right-hand side of the declaration is often called a
+``closure'' in the literature (because of the way variables from the surrounding
+context (like {\tt r} here) are captured and kept until needed).  You'll also
+see languages like \Xten{} describing themselves as supporting 
+``first-class functions'', which is short for ``functions as first-class
+data'' and simply means they allow you to work with functions 
+in exactly the same way you would with any other sort of data, like \xcd`Int`s
+or \xcd`String`s: you
+can assign one, pass it as an argument, save it as an array element, \etc{}
+
+\item[line \xlref{mpi2main-incircle}{3}] replaces the whole loop in lines
+\xlref{mpi1-for}{7} through \xlref{mpi1-endfor}{11} of
+our original with the call to our new method {\tt countPoints}.
+
+\item[line \xlref{mpi2main-pi}{4}] We use a factor of {\tt 4.0} here, rather than {\tt 4} as we did
+in our original. The type of {\tt 4.0} is {\tt Double}, which forces the whole
+expression to be treated as a {\tt Double}.  
+(We could also have used \xcd`as Double`, as we did before.)
+We'll say more about this sort of
+automatic conversion in section \ref{sec:tng}.
+\end{description}  
+
+The cleaned-up version of this code is
+\href{http://dist.codehaus.org/x10/documentation/guide/src/montePi/MontePi2.x10}{MontePi2.x10}.
+
+There are one or two things we could do to pretty it up even more, but enough
+for now. It is time to look at how to parallelize it.
+\subsection{Enter The Second Processor}\label{sec:esp}
+We are going to present several parallel versions of our code.  We'll begin with
+a version that assumes shared memory: multiple threads running on a single
+machine.  Most PCs these days have
+dual-processor CPUs, so a factor of 2 speedup is available right out of the box,
+{\em if} your code can effectively use both processors.
+
+For our $\pi$ calculator, the changes are simple: we just have to be able to
+say ``start $n$ threads going, each with its own independent random number
+generator, and when each has done it's share of the work, sum the hits from all
+$n$ and divide by the total number of points tried.''  
+
+\Xten{} avoids the term ``thread'', because it (together with ``process'' ) has
+a variety of meanings in different contexts.  Instead, \Xten{} uses the term 
+{\em activity} to mean a sequential thread of control. We'll be more loose here
+and use whichever term seems more natural (to us!) at the moment, but you
+should be aware of \Xten's convention when reading other literature.
+
+Figure \ref{fig:mcpm} shows the relevant part of our new, parallel {\tt main}.
+We'll go through it line by line.
+\begin{figure}[!bthp]
+\hrulefill
+%%START X10: src/intro/MontePiAsync.x10 mpia
+\begin{verbatim}
+ 1        val N = args.size > 0 ? Long.parse(args(0)) : 100000L;  
+ 2        val threads : Int = args.size > 1 ? Int.parse(args(1)) :  4; 
+ 3  
+ 4        val nPerThread = N/threads; 
+ 5        val inCircle = new Array[Long](1..threads);   
+ 6   
+ 7        finish for(k in 1..threads) { 
+ 8           val r = new Random(k*k + k + 1);       
+ 9           val rand = () => r.nextDouble();       
+10           val kval = k;                     
+11           async inCircle(kval) = countPoints(nPerThread, rand); 
+12        }                                 
+13  
+14        var totalInCircle: Long = 0;             
+15        for(k in 1..threads) {      
+16           totalInCircle += inCircle(k);         
+17           Console.OUT.println("ic("+k+") = "+inCircle(k)); 
+18        }                                 
+19  
+20        val pi = (4.0*totalInCircle)/(nPerThread*threads); 
+\end{verbatim}
+%%END X10: src/intro/MontePiAsync.x10 mpia
+\hrulefill
+\caption{Shared memory parallel code for computing $\pi$}\label{fig:mcpm}
+\end{figure}
+\begin{description}
+\item[lines \xlref{mpia-N}{1}-\xlref{mpia-nperthread}{4}:] 
+If command-line arguments are supplied, we read the number of points to try, {\tt N},
+from the first, and
+the number of threads to use, {\tt threads}, from the second.  Otherwise we just use
+100,000 points and 4 threads. The number of points each thread will try is {\tt nPerThread}.  Since we
+are now using multiple threads, we've switched to {\tt Long} integers---64
+bits---instead of ordinary {\tt Ints}.
+\item[line \xlref{mpia-incircle}{5}:]
+The right-hand side is the \Xten{} idiom for constructing an array that is indexed
+by a single integer running from {\tt 1} to {\tt threads}.  
+The
+entries in the array are initialized to {\tt 0L}, the \xcd`Long` way to say
+zero, which is the default value for a \xcd`Long` that doesn't have its value
+specified some other way.
+You might wonder what
+declaring {\tt inCircle} here to be a ``{\tt val}'' implies: what is
+it that cannot be changed because {\tt inCircle} is a {\tt val}?  The answer
+is that {\tt inCircle}'s value is always going to be the array it is initialized
+by the right-hand side of this line, but during the program's run, the individual
+elements of that array may be assigned to as needed.
+
+\item [line \xlref{mpia-N}{1}:] The number \xcd`100000L` is the \xcd`Long`
+      version of \xcd`100000`.  You can also use a suffix of \xcd`S` for
+      \xcd`Short`, and \xcd`Y` for \xcd`Byte`\footnote{\xcd`B` is a
+      hexadecimal digit, so X10 couldn't also use it as a byte marker.}, and
+      any of these with a \xcd`U` 
+      for the unsigned version.
+
+
+
+\item[line \xlref{mpia-for}{7}:] There is nothing unusual about the ``{\tt for}'' loop part of
+this line. The interesting part is the ``{\tt finish}''.  The whole
+point of this loop is to spawn some number of
+independent activities, each computing how many hits
+out of a possible  {\tt nPer\-Thread} land in the circle.  We can't do any
+further processing until we are sure that all of these activities have run to
+completion.  That is what ``{\tt finish}'' guarantees: control will not reach
+the statement after that guarded by a {\tt finish} until all of the activities
+spawned in the {\tt finish}'s statement have completed.  So when we get to line
+11, we can be sure that every entry in {\tt inCircle} has been correctly set.
+
+\xcd`finish` is followed by a statement, like \xcd`for` in this example.  It
+can be any statement, though.  If you want to start two activities and wait
+for them to finish, you can write: 
+
+%%START UX10: FinishTwo.x10 finishtwo
+\begin{verbatim}
+      finish {
+        async do_this();
+        async do_that();
+      }
+\end{verbatim}
+%%END UX10: FinishTwo.x10 finishtwo
+
+
+\item[line \xlref{mpia-r}{8}:]  The constructor {\tt Random()}, if called with no arguments,
+uses the number of milliseconds from some fixed time as the ``seed'' to begin
+generating its random numbers. Alas, less than a millisecond may elapse between
+the creation of two or more of our threads, and when that happens, we get the
+same sequences in several threads, not the independent sequences we need.
+So we've spiced things up by using a simple
+polynomial in the loop counter {\tt k} to generate a unique seed for each activity.
+Why not just {\tt k}? Why {\tt k*k + k +1}?  Just to spread the starting points out
+a little more in the hope that our threads really
+get independent sequences.
+
+\item[lines \xlref{mpia-kval}{10} and \xlref{mpia-async}{11}:]
+This is \Xten's idiom for spawning an activity
+at the current processor.
+The {\tt async} statement is readied for execution in its own thread, and control
+may then be returned to the originating activity whenever the \Xten{} runtime's
+activity manager wishes: it could be immediately, or it could be after the new
+activity has been allowed some time. The important point---particularly if we
+are running on a multi-processor---is that we do not have
+to wait for the new activity to complete before returning control to the
+original activity.  The effect of the {\tt for} loop is, therefore, to get
+{\tt threads} activities up and running {\em concurrently}.
+
+\xcd`async`, like \xcd`finish`, can be applied to any statement.  If you want
+to start a multi-statement activity, use a \xcd`{` block \xcd`}`: 
+
+%%START X10: MultiLineAsyncExample.x10 multilineasync
+\begin{verbatim}
+1       async {
+2         do_this();
+3         do_that();
+4       }    
+\end{verbatim}
+%%END X10: MultiLineAsyncExample.x10 multilineasync
+
+
+Why do we introduce {\tt kval} in line \xlref{mpia-kval}{10}?
+Using {\tt kval}, which is a constant,  in
+the {\tt async}, rather than {\tt k}, which is a
+variable, ensures that that activity is using the value of {\tt
+k} in force when the {\tt async} is spawned.  Were we to use {\tt k} inside the
+{\tt async}, and it happened that the execution of the {\tt async} got
+sufficiently delayed, the {\tt async} could see a value of {\tt k} greater than
+that at time of the {\tt async}'s creation, and then it would set the wrong
+array entry in line \xlref{mpia-async}{11}.
+
+Line  \xlref{mpia-async}{11}  ends by calling {\tt countPoints}, as in our serial code.
+We've allowed its first argument, the number of points to try, to be a {\tt Long}.
+64-bit integers are probably overkill here, but with so many threads at our.
+command, we can afford to think {\em big}.
+
+\item[line \xlref{mpia-for2}{15}: ]
+When we get to line , we can compute the total number
+of hits in the circle out of the {\tt N} points we generated, because we can be sure that every entry in {\tt inCircle} has been correctly set.  
+
+\item[line \xlref{mpia-pi}{20}: ]
+Once the loop in lines \xlref{mpia-for2}{15}-\xlref{mpia-endfor2}{18}
+has computed the total number of hits in the circle, 
+we have to normalize the result to get the final answer.  
+{\tt N} is the total number of points
+we wanted to try, and each thread actually got {\tt N/threads == nPerThread}
+ points to try.
+If {\tt threads} doesn't divide {\tt N} evenly, though, we only wind up using
+{\tt nPerThread*threads} points, which explains the denominator here.
+Using a {\tt Double}, {\tt 4.0}, as the first term in the right hand side forces
+the compiler to generate code for converting the two {\tt Long}s to {\tt Doubles} before
+the arithmetic is performed.
+\end{description}
+
+Here's our console log for running the code from a Unix-style terminal window.
+The Unix {\tt time} command
+executes the program and then produces three time estimates: total CPU usage (``real''),
+wall-clock elapsed time (``user''), and system overhead (``sys'').
+This timing is for a 3GHz dual-processor laptop.   
+\begin{verbatim}
+% time x10 MontePiAsync 10000000 1
+The value of pi is 3.1402504
+
+real	0m2.426s
+user	0m3.368s
+sys	0m0.165s
+% time x10 MontePiAsync 10000000 2
+The value of pi is 3.1405268
+
+real	0m1.370s
+user	0m1.893s
+sys	0m0.109s
+\end{verbatim}
+Not bad: an overall factor of  $3.368/1.893 = 1.78$ speed-up for the observed time-to-completion
+out of a best possible of $2$.  
+
+You can find the whole program in
+\href{http://dist.codehaus.org/x10/documentation/guide/src/montePi/MontePiAsync.x10}{\tt MontePiAsync.x10}.
+
+
+\section{A Thousand CPUs Are Better Than Two}
+\subsection{Distributing Work}\label{sec:distwork}
+To get heavy-duty concurrency, we have to distribute work across many
+processors, which usually means we have to scale out to more than one
+(shared-memory) machine.
+
+To this end, \Xten{} provides a type, {\tt Place}, that is best thought of as
+an address space in which activities may run.
+The physical reality is that different {\tt Place}s may refer to the same
+physical processor and may share physical memory, but from the programmer's
+point of view:
+\begin{itemize}
+\item The running program has a single address space.
+\item The distinct {\tt Places} partition that address space: no two {\tt
+Places} have any storage in common.
+\item But, since there is a single global address space, an activity at one
+{\tt Place} may refer directly to storage at another.
+\end{itemize}   
+
+{\tt Place.MAX\_PLACES} is the number of {\tt Places} available to a program.  It is fixed
+at program start-up and cannot be altered thereafter.
+
+Each {\tt Place} has an integer id:
+if {\tt p} is a {\tt Place}, then {\tt p.id} is its id.  An activity can find
+out at which {\tt Place} it is executing by evaluating the expression {\tt
+here}.  The keyword {\tt here} is reserved for this purpose alone.  The id of
+the current activity's {\tt Place} is {\tt here.id}. The {\tt Place} whose id 
+is ``{\tt i}'' can be got by evaluating {\tt Place.place(i)}.\footnote{
+If you've programmed using the MPI
+library,  {\tt Place.MAX\_PLACES} is analogous to
+what you get by calling {\tt MPI\_Comm\_size} and the {\tt id} is analogous to
+what {\tt MPI\_Comm\_rank} gives you.  The UPC equivalents are THREADS and MYTHREAD.
+}
+
+The \Xten{} runtime begins a program's execution by creating a single activity, the
+``root'' activity, that calls
+the program's {\tt main()}.  The root activity's home {\tt Place} is called
+{\tt Place.FIRST\_PLACE}, and by convention, it is the {\tt Place} whose id is
+{\tt 0}.
+
+ So the question is: how does information at one {\tt Place} get to another? 
+ One simple way is to use an ``{\tt at(p)}''  statement: if the identifier {\tt
+ p} names a {\tt Place}, and if {\tt compute\-An\-Int()} is a method that
+ computes an {\tt Int}, then
+ \begin{verbatim}
+      val anInt = at(p) computeAnInt();
+ \end{verbatim} 
+ means: 
+ \begin{quote}
+ Pause the thread for this activity.  Go to the {\tt Place p}, and resume the activity
+ by calling {\tt compute\-An\-Int()} in a thread at {\tt p}. 
+ Send the result back here to the original {\tt
+ Place}, restart the thread there for the activity by assigning the value to {\tt anInt}.
+ The activity then continues at the original {\tt Place}.
+ \end{quote}
+ If you like to think about implementation, you can think of the single
+ \Xten{} activity being built out of two threads: the thread for the requesting
+ activity and the thread for the remote activity. From the point of view
+ of the \Xten{} programmer, though, exactly one activity is going on here,
+ because the requesting thread is blocked
+ while the remote thread does its thing, so no matter how many ``hardware
+ threads'' we use to carry out this computation, it is strictly serial:
+ it is one activity. This is one reason why \Xten{} uses the term
+ ``activity'' for a serial computation, rather than ``thread.''
+ 
+ If you do not want to wait around for the value to be computed and assigned,
+ things are not so simple.  You might think, for instance,
+ that something like the obvious ``{\tt async val anInt =  at(p) computeAnInt();}''
+ might work, but it doesn't.   Just as with variables declared in {\tt for}  loops,
+ the declaration of {\tt anInt} 
+ in an {\tt async}'s body means that it is not available outside of it.  This
+ is consistent with Java and C++ (and just about every other language): a
+ declaration within a statement's body is visible only in that body.
+ 
+The secret is to separate the assignment from the declaration:
+%\begin{figure}[!hbtp]
+ \begin{verbatim}
+ 1    val anInt: Int;
+ 2    finish { 
+ 3       /* some code not using anInt can go here */
+ 4       async { anInt = at(p) computeAnInt(); }
+ 5       /* maybe more code not using anInt here, too! */
+ 6    }
+ 7    /* at last: anInt can be used here! */
+ \end{verbatim} 
+% \caption{Passing a {\tt val} into an {\tt async}}\label{fig:vina}
+%\end{figure} 
+As the comments in this code suggest, the {\tt async} has to be inside a
+ {\tt finish} block, and  {\tt anInt} cannot be used until control leaves the block.
+ 
+Passing a ``{\tt var}'' into an {\tt async}'s block is also possible, but (of
+course) risky because of the possibility of race conditions, an example of which
+we'll discuss in the next section. If you change {\tt val} to {\tt var} in
+line 1, the code works as before, but be aware that the {\tt finish} must be
+present in the same scope as the {\tt var} that is used in the {\tt async}. 
+That is, you cannot just spawn an activity into which you pass a variable 
+unless that activity has a visible bound on its lifetime.  For example, the
+code
+\begin{verbatim} 
+ 1    def syncIt() {
+ 2       var anInt: Int;
+ 3       async anInt = 3;  // compiler won't accept this
+ 4   }
+\end{verbatim}
+will cause the compiler to complain:
+\begin{quote}{\tt
+Local variable "anInt" cannot be captured in an async if\\
+there is no enclosing finish in the same scoping-level\\
+as "anInt"; consider changing "anInt" from var to val.}
+\end{quote}
+What the compiler wants is a {\tt finish} surrounding the {\tt async} within the
+scope of the declaration of {\tt anInt}.  To be precise, what will {\em not}
+work is:
+\begin{verbatim} 
+ 1    def syncIt() {
+ 2       finish {
+ 3         var anInt: Int; // anInt is local to the finish block
+ 4         async anInt = 3;
+ 5       }
+ 6       use(anInt);  // no! anInt is not defined here!
+ 7    }
+\end{verbatim}
+What {\em will} work is inserting the {\tt finish} so that {\tt anInt} is alive
+and visible when the {\tt finish} completes:
+\begin{verbatim} 
+ 1    def syncIt() {
+ 2       var anInt: Int;
+ 3       finish {
+ 4         async anInt = 3;
+ 5       }
+ 6       use(anInt);
+ 7    }
+\end{verbatim}
+
+Now that we know how to move data around and in and out of {\tt asyncs}, we are
+ready to rework our code.
+ 
+\subsection{A First Try At Multi-Place Code}\label{ssec:montepierror}
+Let's get started with our multi-processor code with some high-level pseudo-code.
+We are going to go all out and not only use several {\tt Places}, but at each
+{\tt Place}, we'll use several activities.  Here we go:
+\begin{description}\label{lbl:mpchl}
+\item{\tt main}:
+      Read the command line to get the number of places to use.
+      For each {\tt Place}, call the function {\tt countAtP} to get
+      that one {\tt Place}'s contribution, and add up all of them
+      to get the final answer.
+\item{\tt countAtP}:
+      Add up the counts from several threads at one {\tt Place}. 
+\item{\tt countPoints}:
+      Called once per thread.  It is the same as its namesake in
+      {\tt MontePi2} and {\tt MontePiAsync}.  This is where we actually call
+      the random number generator to get the points to test.
+\end{description}
+
+In thinking about this code, keep in mind that a really high-performance computer
+can provide literally thousands of {\tt Place}s, but,
+for this sort of CPU-intensive activity, at any given {\tt Place}, it is likely
+to be worthwhile running at most a dozen or so threads, probably fewer.  That
+said, we might ask ourselves whether it makes sense to use different strategies
+for accumulating our results in {\tt countAtP},  which we expect to have very
+few contributors, versus {\tt main}, which may have thousands.
+
+When we only have two or three integers to add together, it might make sense to
+use a single {\tt var count:Long} to accumulate the total count, rather than using
+an array (as we did in the {\tt main} for {\tt MontePiAsync}).
+Here's a first cut:
+\begin{verbatim}
+ 1 public static def countAtP(pId:Int, threads:Int, n:Long) {
+ 2    var count: Long = 0L;  // 0L == Long integer literal 0
+ 3    finish for (var j: Int = 1; j<= threads; j++)  {
+ 4       val jj = j;
+ 5       async {
+ 6          val r = new Random(jj*Place.MAX_PLACES + pId));
+ 7          val rand = () => r.nextDouble();
+ 8          count +=  countPoints(n,rand); // trouble, as we'll see
+ 9       }
+10    }
+11    return count;
+12 }
+\end{verbatim}
+Sadly, this code has a very nasty bug, which is due to the variable
+{\tt count} being shared by the whole set of threads.
+The trouble is in line 8, where {\tt count}'s value is updated.  Broken
+down, line 8 involves the following steps:
+\begin{quote}
+  {\bf Step 1: } Load the value of {\tt count} into the CPU.\\
+  {\bf Step 2: } Call {\tt countPoints}.\\
+  {\bf Step 3: } Add the return value from the call to the loaded value of {\tt
+  count}.\\
+  {\bf Step 4: } Copy the sum from the CPU into {\tt count}.
+\end{quote}
+
+If you are a
+veteran of the parallel programming wars, you will recognize this as a classic
+opportunity for a {\em race} condition. For the newcomers, here is a scenario
+that shows what can go wrong:
+\begin{quote}
+We begin at line 2 with {\tt count}'s value is initially set to 0.
+Suppose that the value of {\tt threads} coming in is {\tt 2}.
+The {\tt async} in line 5 will then get called twice, so we'll have
+two threads, call them {\tt T1} and {\tt T2}, executing the code
+in lines 6-8 in parallel.  Figure \ref{fig:tml} is a graphic view
+of one possible time-line for the two threads.
+
+Suppose that {\tt T1} begins
+executing first.  When it gets to line 8, and does the first step: it loads the
+value of {\tt count}, which is still 0. But now comes trouble: suppose that
+just after this step completes, the operating system's thread manager suspends
+{\tt T1} for some reason.  
+
+If a few nanoseconds later, the thread manager lets {\tt T2} start {\em rather
+than restarting {\tt T1}, which, after all, is only fair, since {\tt T1}
+already got at least some CPU time}. When {\tt T2} gets to line 8, it, too,
+loads {\tt count} into the CPU. But, because {\tt T1} never completed updating
+{\tt count}, {\tt T2} finds the same value, 0, stored there that {\tt T1} did.
+So when {\tt T2} gets to step 3 in its execution of line 8, it adds
+the return value to 0, and stores the result back into {\tt count},
+so {\tt count} now is whatever {\tt T2} computed.
+
+At some point {\tt T1} will be restarted, and because it will start executing
+exactly where it was suspended, it will be at step 2, the call to {\tt
+countPoints.}  {\tt T1} will {\em not} repeat the first step, loading {\tt
+count}.  Threads also restart exactly where they where suspended.
+So {\tt T1} add its contribution to what it thinks the value of {\tt
+count} is---namely, 0.  The result is that {\tt T1} winds up overwriting {\tt
+T2}'s value in {\tt count} with its own, not adding the two, which is what
+we wanted.
+
+Both activities having now completed, {\tt T2}'s contribution has been
+lost.
+
+\begin{figure}[!htbp]
+\begin{center} 
+\includegraphics[width=3.5in]{"images/timeline"} 
+\caption{One possible timeline for {\tt T1} and {\tt T2}}
+\label{fig:tml}
+\end{center}
+\end{figure}
+
+Disaster!
+\end{quote}
+You can see why this is called a race. It is a particularly insidious sort of bug,
+because sometimes you get the right answers, and sometimes you don't.
+After all, the operating system did not {\em have} to suspend {\tt T1} at a
+bad moment.  It just happened to.  The event that led the thread manager
+to suspend {\tt T1} may have come from an external event having nothing to
+do with {\tt MontePi} at all.  Maybe it was an I/O event of some kind
+that simply had to take precedence over {\tt T1}---so, too bad: {\tt T1} loses.
+That's life!
+
+The cure is simple enough: we just need to replace line 8 with some code
+that ensures that once one activity starts executing that code, {\em no other
+activity can begin that code until the first one finishes.}
+\begin{verbatim}
+ 8          atomic count += countPoints(n, rand));
+\end{verbatim}
+Guarding an \Xten{} statement this way, with the keyword {\tt atomic},
+does just what we want: we are guaranteed that once an activity enters the
+statement, no other activity may enter it until the original activity
+completes it.
+
+In our original scenario, this means that once {\tt T1}
+starts executing line 8,  {\tt T2} will be blocked from entering
+line 8 while {\tt T1} is still active there, even if for some reason the
+operating system suspends {\tt T1} for a while.  {\tt T2} will be
+suspended when {\em it} reaches line 8, at least until {\tt T1} finishes there.
+This slows things down, but you get the right answer.
+
+Even though our new line 8 is correct, it really is not a good solution.
+The problem is that virtually all the time spent executing the statement is
+in the expensive call to {\tt countPoints}.  {\tt countPoints}
+does not depend on any resources shared by the two threads,
+so there is no problem about the
+two executing the call to {\tt countPoints} concurrently.
+The only shared resource is {\tt count}, which
+doesn't appear in {\tt countPoints} at all.  So what we really need
+to do is to split the line into two:
+\begin{verbatim}
+ 8       val countForJ =  countPoints(n, rand);
+ 8*      atomic count += countForJ;
+\end{verbatim}
+Because only one activity at a time can execute an atomic statement,
+clearly the smart thing is to keep it as small as possible.
+
+Races can occur whenever multiple activities share a resource.  In our example,
+they shared a piece of storage, {\tt count}, but they could equally well, for
+example, share an output stream.  Suppose three activities
+call {\tt Console.OUT.println} at the same time.  What happens?  Answer:
+it depends! Or perhaps better: ``We're off to the races!''  Sometimes each line
+will print as desired, sometimes the two lines will be interleaved, and
+sometimes all three will be. Try the following code, for example, on your
+machine a bunch of times:
+\begin{verbatim}
+public class HelloAsync {
+   public static def main(argv:Rail[String]!) {
+      async Console.OUT.println("Hello, World");
+      async Console.OUT.println("Hola, Mundo");
+      async Console.OUT.println("Bonjour, Monde");
+   }
+}
+\end{verbatim}
+Here's our console log for our own first shot at running it:
+\begin{verbatim}
+% x10 HelloAsync
+BHelonlo,j oWuorr,l dM
+onde
+Hola, Mundo
+\end{verbatim}
+``Hola, Mundo'', got delivered intact, but ``Hello, World'' and
+``Bonjour, Monde'' got pretty well interleaved.  Who knows what might have
+happened on another run!  Even more amusing: why was the {\em second} of the
+three {\tt asyncs} the one that wasn't interrupted?  The first, maybe--the last,
+not too surprising--but, the {\em second}?  Moral: where there are races, the
+outcomes really are unpredictable. 
+
+Bad as this behavior is, it is all that \Xten{} can reasonably
+guarantee, because enforcing atomicity---on calls to {\tt Console.OUT},
+for example---is not free, and knowing exactly when and where it is required is
+something that really only the programmer can  know. So \Xten's {\tt atomic}
+statement makes it easy for the programmer to enforce atomicity, and that's
+really the best thing.
+
+Putting all this discussion to use, we get a first cut at {\tt MontePiCluster}
+in Figure \ref{fig:mpmtmc} on the next page.
+\begin{figure}[!htbp]
+\hrulefill
+%%START X10: src/intro/MontePiCluster.x10 mpicluster
+\begin{verbatim}
+ 1  import x10.util.Random;
+ 2  /**
+ 3   * A parallel version of the Monte Carlo estimate for pi that uses 
+ 4   * several Places and several threads at each place.
+ 5   */
+ 6  public class MontePiCluster {
+ 7      /**
+ 8       * At the current Place, spawn some threads, each of which
+ 9       * generates n random points and return the total number
+10       * (combining all of the threads results) that fell inside
+11       * the circle.
+12       * @param pId: this process's id: used to create the seed for the
+13       *    random number generator.
+14       * @param threads: how many threads to use at this Place
+15       * @param n: how many points for each thread to generate
+16       * @return the total for all the threads of the number of points
+17       * that landed inside the circle. 
+18       */
+19      public static def countAtP(pId: Int, threads: Int, n: Long) {
+20          var count: Long = 0;
+21          finish for (j in 1..threads)  {
+22              val jj = j;
+23              async {
+24                  val r = new Random(jj*Place.MAX_PLACES + pId);
+25                  val rand = () => r.nextDouble();
+26                  val jCount = countPoints(n, rand);
+27                  atomic count += jCount;
+28              }
+29          }
+30          return count;
+31      }
+32      /**
+33       * Generate n points at random in the unit square, and return
+34       * the number that fell within the unit circle.
+35       * @param n the number of points to generate
+36       * @param rand the function generating the random numbers
+37       * @return the number of points that landed in the circle
+38       */
+39      public static def countPoints(n:Long, rand:()=>Double) {
+40          var inCircle: Long = 0;
+41          for (j in 1..n) {
+42              val x = rand();
+43              val y = rand();
+44              if (x*x +y*y <= 1.0) inCircle++;
+45          }
+46          return inCircle;
+47      }
+48     /**
+49      * There are three optional command line arguments: args(0) is the
+50      * number of points to generate, and args(1) is the number of
+51      * parallel activities to use, and args(2) is the number of 
+52      * threads to use at each Place.
+53      */
+54     public static def main(args: Array[String](1)) {
+55        val N = args.size > 0 ? Long.parse(args(0)) : 1000000L;
+56        val places = args.size > 1 ? Int.parse(args(1)) : Place.MAX_PLACES;
+57        val tPerP = args.size > 2 ? Int.parse(args(2)) : 4;
+58        val nPerT = N/(places * tPerP);
+59        val inCircle = new Array[Long](1..places);
+60        finish for(k in 1..places) {
+61           val kk = k;
+62           val pk = Place.place(k-1);
+63           async inCircle(kk) = at(pk) countAtP(kk, tPerP, nPerT);
+64        }
+65        var totalInCircle: Long = 0;
+66        for(k in 1..places) {
+67           totalInCircle += inCircle(k);
+68        }
+69        val pi = (4.0*totalInCircle)/(nPerT * tPerP * places);
+70        Console.OUT.println("Our estimate for pi is " + pi);
+71     }
+72  }
+\end{verbatim}
+%%END X10: src/intro/MontePiCluster.x10 mpicluster
+\hrulefill
+\caption{Multi-place, multi-threaded Monte Carlo:
+\href{http://dist.codehaus.org/x10/documentation/guide/src/montePi/MontePiCluster.x10}{\em
+montePi/MontePiCluster.x10}}\label{fig:mpmtmc}
+\end{figure}
+
+You've now seen almost all of the principal ingredients for writing multi-threaded
+\Xten{} code: {\tt async} to spawn activities, {\tt finish} to know when a
+set of activities is complete, {\tt at} to shift the action to some other
+processor, and {\tt atomic} to maintain the integrity of access to shared
+data.  We'll fill out the picture in Chapter \ref{chap:concurrency}.
+But first we want to take some time to look at how object oriented
+programming looks in \Xten.
+
+{\bf Exercise:} You might want to try the following slight variation on the Monte-Carlo
+code.   Write a method that
+uses one or more {\tt Place}s to sum the values of a function  {\tt f:(d:Double)=>Double} over a 
+sequence of {\tt n Doubles}  {\tt d,} {\tt d+delta,} ... {\tt d+n*delta}:
+
+\begin{quote}\begin{equation}
+\sum_{k=0}^{n-1}  f(d + k\delta)
+\end{equation}
+\end{quote}
+
+For debugging sake, try some simple {\tt f}'s to begin, like {\tt (d:Double) =>
+1.0}.  Then you can go hog-wild using your own functions (\eg {{\tt
+(d:Double)=>d*d}}), or the functions in {\tt x10.Math}, like {\tt sin}, {\tt
+log}, and {\tt sqrt}.
+
+The amusing questions are: what part of the sum is a given activity responsible for,
+and how do we combine the partial results?  Combining the results is essentially
+the same as what we've done for {\tt MontePiCluster} here.  Splitting up the
+sum, though, requires some thought.  Here's one approach:
+
+If there are $p_{all}$ {\tt Place}s in all, and there are $a$ activities
+in parallel at each {\tt Place}, there will be $ap_{all} = a_{all}$
+activities in all. Since there are
+$n$ values to be summed, each activity should handle roughly $n/a_{all}$
+additions---``roughly'' because $a_{all}$ might not divide $n$ evenly.
+One solution is to let the $j$-th
+activity $( j=0,1,...,a-1)$ at the {\tt Place} whose id is {\tt p}  take care of the values 
+$d+k\delta$, where $k$ runs over $(p a+j)+h a_{all}$ for $h = 0,1,\dots$
+
+We'll come back to this sort of loop in gory detail when we dive deeper into \Xten{} arrays.

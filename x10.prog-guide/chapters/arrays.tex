@@ -1,0 +1,1875 @@
+\chapter{Arrays}
+\section{Some Design Issues}
+Let's begin by looking at how Java and C++ implement arrays.  If you
+are using one of those languages and want a matrix {\tt M}, or in other
+words, you want an array indexed by a pair of integers, what you get is an
+array of arrays: {\tt M[i][j]} is the $(i,j)$-th element of the array, and {\tt
+M[i]} is a reference to (or in C++, points to) an array that is the $i$-th row.
+To repeat, {\tt M} is not really a doubly-indexed array: it is an array of
+arrays.
+
+Matrices are only the beginning: arrays indexed by 3-tuples,
+4-tuples and even more occur regularly in physical problems.  And even if you
+stick with matrices, there are a number of different types that require very
+different storage layout strategies, most obviously {\em sparse} matrices, where
+only a small fraction of the entries are non-zero, require  different
+handling from {\em dense} matrices.
+
+The essential differences among these various sorts of arrays is how we choose
+to manage the underlying storage, {\em and not the operations we wish to perform
+on them}. How nice it would be, for instance, if accessing an element of an
+array looked the same, regardless of the underlying storage layout. This
+suggests that there should be an {\tt interface} or an {\tt abstract class} 
+that defines the API common to all arrays, whatever their dimension or storage
+layout. To get there, it is helpful to begin with two more primitive classes:
+one for the type of an array index, and the other for the type of the underlying
+storage:
+\begin{quote}
+An array index is an ordered $n$-tuple of {\tt Ints} for some non-negative
+integer $n$.  The integer $n$ is called the {\em dimension} or the {\em
+rank} of the tuple\footnote{It may seem strange that we allow rank-0 tuples.
+This a technical convenience having to do with writing code that involves
+Cartesian products of regions, which we will discuss when we get to the details
+on regions in section \ref{sec:regions}.}. The corresponding \Xten{} class is
+called {\tt x10.array.Point}.
+
+The storage required for an array is indexed by a set of tuples {\em all
+having the same rank} $n$.  Again, $n$ can be any integer $\ge\  0$.  We'll call
+these sets {\em regions} or {\em domains}, and the \Xten{} class that implements
+them is called {\tt x10.array.Region}.
+
+\end{quote}
+
+The class {\tt x10.array.Ar\-ray} implements generic arrays that are local to a
+single {\tt Place}. It aims to provide performance at the cost, in some cases,
+of storage. The three classes {\tt Point}, {\tt Region} and  {\tt Array} are
+all part of the package {\tt x10.array}, which, like {\tt x10.lang}, is
+imported automatically for you.  The rest of this chapter looks at each of
+these classes in detail.
+
+\section{Points}\label{sec:points}
+
+While array code is littered with {\tt Points}, there are relatively few
+situations where you actually wind up constructing a {\tt Point} explicitly. 
+One clean way to do so is to simply write out the coordinates:
+\begin{verbatim}
+       val p = [i, j, k] as Point;
+\end{verbatim}
+The expression {\tt [i,j,k]} is really a rank-1 array of {\tt Ints} of size
+three.  Appending ``{\tt as Point}'' causes the compiler to convert that {\tt
+Array} to a rank-3 {\tt Point} with same 3 coordinates.\footnote{The use of
+``rank'' in two different senses here is perhaps unfortunate, what with a
+rank-1 array turning into a rank-3 point. It's the price we pay for being able
+to speak of the rank of an array's indexing region as the array's rank.}
+ 
+Zero-based indexing is used for {\tt Points}.  So, for the {\tt Point} ``{\tt p}''
+just constructed, {\tt p(0)} is {\tt i}, {\tt p(1)} is {\tt j} and {\tt p(2)} is
+{\tt k}.
+
+The assignment to {\tt p} could also have been written:
+\begin{verbatim}
+       val p: Point = [i, j, k];
+\end{verbatim}
+The compiler will perform the implied conversion for you.  This is an
+interesting case where it makes sense to specify the type of a {\tt val}.
+
+There is nothing sacred about using an {\tt Array} literal like {\tt [i, j,
+k]} on the right-hand side. Any {\tt Array} value that is zero-based and singly
+indexed will do:
+\begin{verbatim}
+       def doSomething(a: Array[Int](1)) {
+          ... 
+          var q: Point = a;
+          ...
+       }         
+\end{verbatim}
+Here a rank 1 {\tt Int} array {\tt a} is being passed in 
+as an argument and  
+its entries are assigned to the  {\tt Point} {\tt q}'s coordinates.
+The rank of {\tt q} will be the size of {\tt a}.   If an {\tt a} that
+is not zero-based
+is passed in when the code is run, an exception will be thrown.
+
+The declaration for {\tt q} here raises an
+interesting issue. Suppose that you know in advance what rank you need {\tt q}
+to be. \Xten{} allows you to constrain the type to make that clear:
+\begin{verbatim}
+       var q: Point(3) = a;
+\end{verbatim}
+The compiler will try to enforce the restriction, but if it cannot
+verify at compile-time that {\tt a} has 3 elements, it will generate code to
+do the check at run-time. If the check fails, a {\tt ClassCastException} will be
+thrown.
+
+In our example, the rank of {\tt q} is specified as a literal constant, 3.  It
+need not be. The constraint could relate the rank of {\tt q} to the rank of
+some other variable {\tt p}:
+\begin{verbatim}
+       val q: Point(p.rank) = ...;
+\end{verbatim}
+We mention this not because we want to help you avoid errors by writing
+more precise declarations, although being as precise as you can in your
+declarations is generally a good idea.
+\footnote{ It would be surprising, however, if
+anybody ever passed a 3-dimensional value to a variable that only expected a
+2-dimensional one---that just does not happen, and we don't expect you'll make
+such a mistake, either.}  But documenting when two identifiers share a property
+is well worthwhile, particularly when it is not visible from the surrounding
+context that they must share it.
+\begin{quote}
+For example, X10Doc will reproduce a method's signature as part of its API
+documentation. If the signature is {\tt doIt(p:Point, q:Point)}, it may or may
+not be clear whether {\tt p} and {\tt q} must have the same
+rank.  It might be clear from the implementation, but X10Doc is not going to
+display that.  So writing the signature out as {\tt doIt(p:Point,
+q:Point(p.rank))}, or in the more explicit form\footnote{
+We'll describe the full syntax for describing constraints in section
+\ref{sub:tnpct}}
+{\tt doIt(p:Point, q:Point\{self.rank == p.rank\})}, has some real virtue.
+It is clearly better than burying the check in the body of the method, or just
+alluding to it in the method's X10Doc comment (which the compiler does 
+{\em not} check as the code changes!), or perhaps worst of all, not saying 
+anything about it anywhere.
+\end{quote}
+At the moment, there are no public constructors for {\tt Points}.
+There is a family of static ``factory'' methods, all named ``{\tt make}''.  For
+example,
+\begin{verbatim}
+       var k: Int = 32;
+       ...
+       val p = Point.make(1,k);
+\end{verbatim}
+assigns a rank 2 point to {\tt p} with coordinates {\tt 1} and {\tt k}. 
+Calls to {\tt make} can be made with 1, 2, 3 or 4 {\tt Int}s as arguments to get
+{\tt Points} of the corresponding rank. For points with rank $>4$,  {\tt
+make} takes one argument, a zero-based {\tt Array[Int](1)} whose size is the
+rank. In situations where the compiler can see that a conversion from {\tt
+Array} to {\tt Point} has to be done, there is no advantage to calling {\tt make}
+over simply using an array literal value, as we did in our first example.
+\footnote{
+Arguably, calling {\tt make} makes it clear that you want a ``new'' {\tt Point}
+instance and because {\tt Point} is currently implemented as a class, that
+{\em might} have implications.  The reality is that {\tt Points} once created
+are immutable: the class provides no methods for changing the coordinates
+of a given point.  The only ``subtle error'' that you might fall into with 
+{\tt Points} has nothing to do with how you set them: it is the
+usual confusion of testing for {\tt ==}  when {\tt equals()} was needed.
+}
+
+There is one other form of {\tt make} that is convenient, although 
+probably relatively rarely:
+\begin{verbatim}
+   val p = Point.make(4, (n: Int) => 2*n + 1);
+\end{verbatim}
+The first argument is the rank, which in this example is 4, and the second
+argument is a function that assigns a value to each coordinate.  The value for
+{\tt p} will be the same as if we had written ``{\tt val p:Point(4) = [1,3,5,7];}''.
+
+{\tt Point} implements coordinate-wise arithmetic for pairs of {\tt Points}, for
+example,
+\begin{quote}
+    {\tt (1,2)} {\tt +} {\tt (3,4}) yields {\tt (4,6)}\\
+    {\tt (2,5,8)} {\tt *} {\tt (6,3,1)} yields {\tt (12,15,8)}
+\end{quote} 
+It also implements scalar arithmetic operations like
+\begin{quote}
+    {\tt (4,3)} {\tt -} {\tt 1} yields {\tt (3,2)}\\
+    {\tt (6,9)} {\tt /} {\tt 3} yields {\tt (2,3)}
+\end{quote} 
+
+In addition, {\tt Points} may be compared using  {\tt
+<}, {\tt <=}, {\tt >=} and {\tt <}.  The ordering is {\em lexicographic}:
+\begin{quote}
+Let {\tt p} and {\tt q} be two points of the same rank. Then {\tt p < q} if,
+when {\tt k} is the first coordinate for which {\tt p(k) != q(k)}, then {\tt
+p(k) < q(k)}.  For example, $(1,2,3,5) < (1,2,4,0)$, because they agree up to
+the point where the first has a $3$ and the second a $4$.
+\end{quote}
+
+{\bf But be careful!} The truth of the expression {\tt p<=q \&\& q<=p} does {\em
+not} imply the truth of {\tt p==q}, because {\tt Point} is implemented as a {\tt
+class}. It {\em does} imply that {\tt p.equals(q)}.
+
+\section{Regions}\label{sec:regions}
+
+A {\tt Region} is just a set of {\tt Points} all having the same rank.  That
+rank is referred to as the rank (or dimension) of the {\tt Region}. 
+\begin{figure}[!htbp] 
+\begin{center} 
+\includegraphics[width=2.5in]  
+{"grid3"} 
+\caption{A rank-2 {\tt Region}: the 24 points (i,j) with $0\le i\le 5$ and
+$0\le j\le 3$ }
+\label{fig:r2rr}
+\end{center}
+\end{figure}
+
+As with {\tt Points} and {\tt Arrays}, you can specify the rank of a {\tt
+Region} by appending it in the declaration, \eg{} ``{\tt Region(2)}'' for a two
+dimensional (rank-2) {\tt Region}.
+
+Unlike {\tt Point}, which is as concrete a class as there is, the class {\tt
+Region} has to be abstract, because regions vary widely in how they may be
+represented efficiently.  This goes to the heart of the problem of bringing
+together into one API domains as different from one another as those needed for
+rectangular matrices and sparse matrices.
+
+The most commonly used concrete subclass handles ``rectangular regions'',
+like that in Figure \ref{fig:r2rr}.
+
+A rank-{\tt n} rectangular {\tt Region} is determined by two rank-1
+arrays of size {\tt n}:
+\begin{description}
+\item[mins,] whose elements are the lower bounds for each coordinate, and
+\item[maxs,] whose elements are the corresponding upper bounds.
+\end{description} 
+The {\tt Region} consists of all {\tt Points p}
+that satisfy
+\begin{quote}
+{\tt mins(k) <= p(k) \&\& p(k) <= maxs(k)} for {\tt k = 0}, {\tt
+1}, \ldots, {\tt n-1}.
+\end{quote} 
+For example, the {\tt Region} in Figure \ref{fig:r2rr} is given by the pair
+{\tt mins} {\tt =} {\tt [0,0]} and {\tt maxs} {\tt =} {\tt [5,3]}.
+
+The class method {\tt Region.makeRectangular(mins,
+maxs)} constructs a {\tt Region} this way.  In the literature,
+you will often find this sort of region called an ``$n$-dimen\-sional
+hyper-rectangle'' or, when the sides all have the same length, an
+``$n$-dimen\-sional hyper-cube''.
+
+For constructing rank-1 {\tt Regions}, there is a useful shorthand: given two
+{\tt Ints}, {\tt min} and {\tt max}, you can use the expression {\tt min..max}
+in place of 
+\begin{quote}
+{\tt Region.makeRectangular([min],[max])}.
+\end{quote}
+This means that you can represent
+more general rectangular regions as Cartesian products: 
+\begin{quote}
+{\tt (min1..max1) * (min2..max2) *} \ldots {\tt *
+(mink..maxk)}
+\end{quote}
+is the same rank-{\tt k} rectangular {\tt Region} that you would get by invoking
+\begin{quote}
+{\tt Region.makeRectangular([min1,\ldots,mink], [max1,\ldots,maxk])}
+\end{quote}
+
+There are other ``factory'' methods in {\tt Region}, but none nearly so commonly
+used as {\tt Region.makeRectangular}.  One that is useful in a negative sort of
+way is {\tt make\-Emp\-ty(rank:Int)}, which creates an empty region of the given
+rank.  This is useful for initializing {\tt Region} variables in situations
+where you need some sensible value, but are not yet ready to assign what you
+{\em really} want.  It is also useful as a return value when you wish to return
+a subset of a {\tt Region} where the rank is specified, and you have to deal
+with the possibility that there are no {\tt Points} in the subset.
+
+Another useful method is {\tt Region.makeUnit}.   If {\tt u =
+Region.makeUnit()},  and if {\tt r} is any {\tt Region}, then the two Cartesian
+products, {\tt u*r} and {\tt r*u} are both the same  as {\tt r}---that is, both
+{\tt Regions} consist of the same {\tt Points} as {\tt r}:
+\begin{quote}
+You can
+think of {\tt u} as being a {\tt Region} of rank 0 containing a single {\tt
+Point} that we'll call `{\tt ?}'. When you form the product {\tt r*u}, you get a
+{\tt Point} in it for each pair {\tt p,q} of {\tt Points} with {\tt p} in {\tt
+r} and {\tt q} in {\tt u}. Since '{\tt ?}' is the only point in {\tt u}, the
+product therefore consists of one {\tt Point} for each {\tt p} in {\tt r}.
+The new {\tt Point}'s coordinates are those of {\tt p} followed by those of
+`{\tt ?}'.  {\em Since {\tt u} has rank 0, `{\tt ?}' adds {\em no}
+coordinates,} so we are left with our original {\tt p}. Devious, but not
+unreasonable: {\tt r.equals(r*u)} will be {\tt true}.
+\end{quote}
+  
+\section{Arrays: First Words}
+
+There's more to the {\tt Region} API than we've covered, but we have more than
+enough for the moment, so let's move on to {\tt Arrays}.
+
+The first thing to keep in mind when working with {\tt Arrays} is that they
+really are indexed by {\tt Points}, not {\tt Ints}.  It is easy to be misled by
+code like that for the ``quicksort'' implementation shown as  ``{\tt sort}'' in
+Figure \ref{fig:qs}. The compiler has done you a favor here: because you 
+\begin{figure}[htpb!]
+\hrulefill
+\begin{verbatim}
+public static def sort(data:Array[Int](1),left:Int,right:Int) {
+   var i: Int = left, j: Int = right;
+   val pivot = data((left + right)/2);
+   while (i <= j) {
+      while (data(i) < pivot) i++;
+      while (data(j) > pivot) j--;
+      if (i <= j) {
+         val tmp = data(i);
+         data(i++) = data(j);
+         data(j--) = tmp;
+      }
+   }
+   finish { // when you are here, i > j
+      if (left < j) async sort(data, left, j);
+      if (i < right) sort(data, i, right);
+   }
+}
+\end{verbatim}
+\hrulefill
+\caption{Basic quicksort for Int arrays}\label{fig:qs}
+\end{figure}
+declared {\tt data} to be a rank-1 array, it has cast the {\tt Ints i} and {\tt
+j} to be rank-1 {\tt Points}.  If you had just declared {\tt
+data} to be {\tt Array[Int]}, the compiler would have complained bitterly about
+the argument to {\tt data} not being a {\tt Point}.
+
+The code for {\tt sort()} is also worth a moment's study for the way the
+recursion is handled. Using an {\tt async} for the left half of the array allows you to
+process the left and right halves in parallel, and the {\tt finish} sets up the
+rendezvous for the two threads very cleanly. {\em Extra credit}: if you are
+familiar with tail-recursion elimination, think about the trade-off between
+using the {\tt async} (as we did here) and taking advantage of the
+tail-recursion to eliminate the second of the two recursive calls to {\tt
+sort}.
+
+One thing to remember, particularly if you come from the C++ world, is that 
+all of the ``{\tt new Array}'' calls initialize the entire {\tt Array}.  If no
+value is provided, and if there is a natural ``zero'' value (like 0 for a
+{\tt Long} or {\tt null} for a reference to an instance of a class),
+the storage is zeroed.  For example, {\tt dbl = new
+Array[Double](R)} will set every entry of {\tt dbl} to 0.0.
+\footnote{
+In those (rare) cases where there is no natural zero, as might happen
+for a struct, you must supply an initial value.  
+}
+
+A call like 
+{\tt new Array[Double](R, Double.NaN)} will initialize all of the entries in
+the {\tt Array} 
+with the value ``not a number''.
+This is probably a better
+initial value in many cases than the default, 0.0, would be:
+\doom{There was an exclamation point here}
+if
+you
+are
+in
+a
+situation where you may have to check whether your program has actually stored a
+meaningful value in a given entry of the {\tt Array} after the constructor
+returned, it is better to initialize with a value that cannot be mistaken for
+the real thing.
+
+There are several different constructors to make it convenient to initialize
+arrays.  Suppose that we are working with an {\tt Array} whose {\tt Region} is
+{\tt R}, and whose elements must have type {\tt T}.
+\begin{description}
+\item[{\tt new Array[T](R, t)}] Initialize every element of the array to
+have the value {\tt t} of type {\tt T}, coercing {\tt t} to the correct type, if
+need be.  Our example ``{\tt new Array[ Double](R, Double.NaN)}'' used this
+call.
+\item[{\tt new Array[T](R, (p:Point(R.rank):T=>\ldots))}] For each point {\tt p}
+in the region {\tt R}, evaluates the given function at {\tt p} to get the
+initial value for that entry in the array.
+\item[{\tt new Array[T](anotherArrayOfT)}] Create a new array that is a copy of
+the argument.  
+\end{description}
+{\bf Be careful here:} In the last form of the construct, the type of the
+argument {\tt another\-Ar\-rayOfT} must be precisely {\tt Array[T]}, {\em and
+not {\tt Array[U]} for some type {\tt U} that is not {\tt T}, but that can be
+coerced to {\tt T}}.  For example, if {\tt arrayOfInt} has type {\tt
+Array[Int]}, you cannot write {\tt new Array[Long](arrayOfInt)}.  The compiler
+will say
+\begin{verbatim}
+Constructor this(reg: x10.array.Region) cannot be invoked with
+    arguments (x10.array.Array[x10.lang.Int]).
+\end{verbatim}
+This may seem strange to Java and C++ programmers, who might expect the {\tt
+Ints} to be converted to {\tt Longs} automatically on being copied into the
+corresponding entries in the new {\tt Array}, at the expense, possibly, of a
+much slower copy. We'll have more to say about \Xten's strictness in this
+regard--- and how you work around it---in a moment.
+
+For 1-dimensional arrays, you can replace the region {\tt R} in these calls with
+the number of elements you want in the array.
+There are also some other constructors that allow you to construct an array from
+data that is remote---that is, is stored at another {\tt Place}.  We'll worry about
+them in the next chapter.
+
+As we saw in the initialization of {\tt Points}, small 1-dimensional {\tt
+Arrays} can be written by simply spelling out their elements, surrounded by
+square brackets, as in {\tt [1.0, 3.5, 1.1]}.  Here each entry is visibly of
+type {\tt Double}, so the type of the {\tt Array} will be {\tt Array[Double](1)}
+and its {\tt Region} will be {\tt 0..2}.  
+
+When forming an array literal, you don't have to use
+constants for the entries.  Run-time values are equally valid, so for example,
+if {\tt a} and {\tt b} are variables declared to be {\tt Doubles}, you can go
+wild and write things like
+\begin{verbatim}
+      [a, b, Math.sqrt(a * b), (a + b)/2.0]
+\end{verbatim}
+{\bf More on the strict typing:}  
+We are going to go into more detail now about two problems: copying
+one array into
+another when the types are not precisely the same, and getting the type you
+really want for an array literal.
+
+Let's start with the problem of copying one array to another.  As we saw,
+you can't just initialize an {\tt Array[Long]} using an {\tt Array[Int]}.  Nor is
+the following code legal
+\begin{verbatim}
+      val ints    = new Array[Int](100, (n: Int) => n);
+      val  longs = new Array[Long](100);
+      longs.copy(ints);
+\end{verbatim}
+even though the two arrays have precisely the same regions, and {\tt Int}
+to {\tt Long} is just a coercion: method arguments that are {\tt Arrays} are strictly
+matched for the array entry's type: no coercions and no conversions.  
+
+There are good reasons for \Xten's strictness regarding array types. 
+Consider the following scenario:
+\begin{quote}
+1) You create create a rank-1 array {\tt fleet} whose elements are instances of
+our class {\tt DieselArk}.
+
+2) In your code, you pass {\tt fleet} as an argument to a function that expects
+{\tt Array[NoahsArk]}.  Now, {\tt DieselArk} is a subclass of {\tt
+NoahsArk}, so there should be no problems here.
+
+3) But there are.  Inside the function, an instance of {\tt RowedArk}, which
+is also a subclass of {\tt NoahsArk}, is assigned to {\tt fleet(0)}.  Then the
+function returns.
+
+4) Back in our own code, what started out as an array of {\tt DieselArks} now
+has a row boat as its first element.  Not good.
+\end{quote}
+You could deal with this problem by inserting code to check, at the
+point of the assignment, whether the class of the value being assigned is
+acceptable.  In our scenario, that check would throw an exception when it saw a
+row boat being supplied when a diesel was expected.  {\em This is a run-time check,
+and if the array is large and the assignments many, the cost is substantial.} 
+\Xten's concern is with high-performance computing, and this is a case where a
+little strictness on the part of the \Xten{} compiler pays real dividends, not just
+in theory, but in practice.
+
+So, if you really want to use the array {\tt ints} as the values for {\tt longs},
+you have two choices---either be explicit about the cast in the implied loop
+in initialization, or write out the loop yourself:
+\begin{verbatim} 
+      val longs: Array[Long](100, (n: Int) => ints(n) as Long);
+\end{verbatim}
+or 
+\begin{verbatim}
+      for(p in longs) longs(p) = ints(p);
+\end{verbatim}
+Notice that you get the cast ``for free'' in the {\tt for} loop version, but
+you need it in the initializer.
+
+Let's change the focus now and return to how {\tt Array} literals get their
+type.
+If the entries in your  literal do
+not all have exactly the same type, it is important to make the type you want
+for the resulting {\tt Array} explicit.  One way to do so is
+by casting each element in the literal to
+that type. Consider the literal {\tt [3.14, 1]}.  You might think that the compiler
+will convert the ``1'' to be a {\tt Double}.  To see what actually happens, execute:
+\begin{quote}
+\begin{verbatim}
+public class CastType {
+   public static def main(args: Array[String](1)) {
+      Console.OUT.println([3.14, 1].typeName());
+   }
+}
+\end{verbatim}
+\end{quote}
+The console output will be {\tt x10.array.Array[x10.lang.Any]}.  We've seen {\tt
+Any} before: it is the base interface we described in section
+\ref{ssec:wasacs}, page \pageref{ssec:wasacs}.  In other words, the most that
+{\tt 3.14}'s and {\tt 1}'s types have in common is the absolute minimum possible.
+If you really wanted as an array of {\tt Doubles}, one way is to change ``{\tt 1}'' 
+to ``{\tt 1 as Double}''. If you print out ``{\tt [3.14, 1 as Double].typeName()}'', you
+will see {\tt x10.array.Array[x10.lang.Double]}.
+
+Another way getting an {\tt Array[Double]} from a mixed bag of numeric
+values is to use a special form of the {\tt Array} constructor:
+\begin{verbatim}
+      new Array[Double][3.14, 1]
+\end{verbatim}
+Notice that the array
+literal {\tt [3.14, 1]} follows the the array type specification immediately:
+{\em it is} not {\em parenthesized!}  Providing the array element type up front
+prods the compiler into doing the implied conversion of the second entry.
+
+It is important to understand that one does not always want the conversion of
+the {\tt Int} to a {\tt Double} to be done---another one of the reasons for
+\Xten{} being
+fussy about {\tt Array} types.  Consider the following code:
+\begin{verbatim}
+public class Casts {
+   public static def main(args: Array[String](1)) {
+      val neat = String.format("%f %d", [3.14, 1]);
+      Console.OUT.println(neat);
+   }
+}\end{verbatim}
+Clearly you don't want the compiler to mess with the ``1'' in the
+second slot of the array,
+because your formatting string, ``{\tt \%f \%d}'', says, ``I expect a
+double-precision float, followed by an integer''. The moral here is
+that sometimes you want
+conversions, and sometimes you don't---and the reasons why
+may involve considerations that the compiler cannot know.
+So it is probably best to get into the habit of being explicit: among other
+things, when (as in this example) you have a bunch of types, it will be
+clear that that was your intention.
+
+Bottom line: in \Xten{} programs, {\tt Array[T]} really means {\tt Array[T]}.
+
+\section{The Notions Of Properties and Constrained Types}\label{sub:tnpct}
+
+When you think about what the ``type'' of an array is, two things come
+to mind: the type of its entries, and how they are indexed.  These two things
+parameterize an {\tt Array} type, but most programming languages present a
+very limited vocabulary talking about these sorts of parameters in the code itself.   
+How, for example, would you say, in your favorite language, that two variables
+that are arrays of integers must have the same index sets?  Can you say
+it in a way that the compiler can make use of the information? 
+
+\Xten{} takes
+this sort of question seriously, and because arrays provide such a good
+context for describing \Xten's ideas, we want to take a brief break from
+working with {\tt Arrays} API and tell you about them.
+
+There are two sides to the problem:
+\begin{quote}
+- to allow programmers to introduce parameters for types that can be used
+describe precisely what values a given variable---an instance variable, an method
+argument, or whatever----may have.
+
+- to design the syntax so that the compiler can be correspondingly 
+precise in verifying that the programmers' intentions are respected in the
+code.
+\end{quote}
+We've already seen examples of this sort of thing in the care with which
+we specify the ranks of {\tt Regions} and {\tt Points}.
+For example, suppose we have a method {\tt m} that takes a
+{\tt Region} {\tt r} as an argument.  If the declaration looks like
+\begin{verbatim}
+      def m(r: Region, ...) : {...}
+\end{verbatim}
+the compiler (and presumably, the author) is willing to allow a {\tt Region}
+of arbitrary rank as an argument.  On the other hand, if what we find is
+\begin{verbatim}
+      def m(r: Region(2), ...) : {...}
+\end{verbatim}
+the compiler can insist, at every point in the code where {\tt m} is called,
+on verifying that the value passed in for  {\tt r} has {\tt rank} 2, and if it does
+not have enough 
+information when compiling the call, it can insert code to make the check
+at run time.  \Xten's way of talking about this is to say that {\tt r} has a
+{\em constrained type}, the constraint being {\tt r.rank} {\tt ==} {\tt 2}.
+
+You may not find this particular example convincing as a reason for beefing
+up a language, but it is really only a very simple case.  Consider, for example,
+\begin{verbatim}
+      def m(n: Int, r: Region(3*n), ...) : {...}
+\end{verbatim}
+or
+\begin{verbatim}
+      var r1: Region;
+      var r2: Region(r1.rank);
+\end{verbatim}
+The first example shows that the type parameter need not be a compile-time
+constant, but may be a computed value.  In the context in which {\tt m}
+is called, the parameter {\tt n} may very well have a meaning, and the
+code is saying  to both the reader and the compiler that 
+``I care that {\tt r}'s rank is {\tt 3*n}.''  Indeed, if you are a physicist
+and you have {\tt n} particles, then at any given instant, the positions
+of the these particles are completely described by providing {\tt 3*n}
+coordinates---the $x,y,z$ coordinates of each, constrained here to be
+be integer values.
+
+The second example shows that what is important may not be that
+one {\tt Region} has a particular rank, but that
+two {\tt Regions} that appear in the computation must have the
+same rank, whatever that rank is.  
+
+It's true that you {\em could} communicate all this information in
+X10Doc for your classes and methods.
+Your readers, at least, would then be aware of the assumptions you are
+making.  How much better, though,
+ to have an {\em enforceable} comment with so little effort.
+
+If you think of the properties of a type as being analogous to
+the arguments of a method, then  you will find \Xten's primary syntax
+for declaring properties comfortable: you list them in parentheses
+{\em exactly as you would method arguments} after the name of the
+type being declared, as in 
+\begin{verbatim}
+   public class Element(atomicNo: Int, atomicWt: Double) { ...
+\end{verbatim}
+which declares two properties for an {\tt Element}.  If you looked at a
+constructor for an {\tt Element}, you'd see something like:
+\begin{verbatim}
+   public def this(ano: Int, name: String, awt: Double) {
+      ...
+      property(ano,  awt);  // how the two properties are set
+      ...
+\end{verbatim}
+Our example shows a class being declared, but structs and interfaces
+may also declare properties in the same way.
+
+The syntax ``{\tt property(p1, p2, ...);}'' is used to set the properties
+that appear as arguments after the types identifier.  The 
+order to the parameters in this {\tt property} statement must match that
+of the properties in the type's declaration.  The properties {\em must}
+be set before the constructor exits.  The values need not, as in our example,
+simply be passed in.   You are free to compute them however you wish.
+You just cannot use any properties in an expression
+until the {\tt property()} statement is executed.
+
+You access a property's value for an instance {\tt element} as you
+would any instance member of {\tt element}: \eg{} {\tt element.atomicWt}.
+As you might guess, the convenience of being able to use the dot notation
+means that you cannot have an instance field with the same 
+name as a property.  
+
+The first few lines of {\tt Region}'s actual declaration in the {\tt x10.array}
+package illustrate a second syntax for declaring properties:
+\begin{verbatim}
+ 1    public abstract class Region(
+ 2       rank: Int,  // the dimension of the space 
+ 3       rect: Boolean,  // constructed by makeRectangular?
+ 4       zeroBased: Boolean  // indexing starts from 0?
+ 5    ) implements Iterable[Point(rank)] {
+ 6       property rail = rank==1 && rect && zeroBased;
+ 7       ...
+ 8 }
+\end{verbatim}
+\begin{description}
+\item[lines 1-4]  {\tt Region} actually has three primary properties
+ {\tt rank}, {\tt rect}, {\tt zeroBased}.   We've really only worked with the
+ rank.  The {\tt rect} is true when the region rectangular, and {\tt zeroBased}
+ is true when each coordinate's indexing starts from 0.
+\item[line 6] In addition, in the body of the class definition, we declare another
+property, {\tt rail}, which is a {\tt Boolean} that is true precisely when the
+{\tt  Region}'s three primary properties have prescribed values:  {\tt rank}
+equal to 1  and both {\tt rect} and {\tt zeroBased} true.  In other words,
+{\tt rail} is true when we have a C-like or Java-like array with a single integer
+as index that runs from 0 to some non-negative value.
+
+Properties like {\tt rail} that are declared in the body must be set
+at the point of declaration as illustrated here.  The value need not be a 
+Boolean: any expression in terms of literal constants and other properties
+is okay.  The only restriction is the obvious one: if you use this second
+syntax to declare a property {\tt p}, you cannot use {\tt p} to initialize
+another property {\tt q} of this sort unless {\tt q}'s declaration follows {\tt p}'s.
+\end{description}
+
+That is all there is to declaring properties.  The syntax for using them is
+also straightforward. 
+Suppose that we want {\tt cube} to be a zero-based rectangular {\tt Region}
+of {\tt rank} 3.  Here's one way to say this:
+\begin{quote}
+{\tt var cube: Region\{rank==3, rect, zeroBased\};}
+\end{quote}
+The class name {\tt Region} is followed by comma-separated list of
+{\tt Boolean} expressions in ``braces''---three expressions in this example.
+By the way, you don't have to say ``{\tt rect==true}",
+because {\tt rect} is a {\tt Boolean}: its value {\em is} either {\tt true}
+or {\tt false}, which is all we care about for a property constraint.
+
+If in your code you try to assign a  {\tt Region} {\tt r} to {\tt cube},
+all three expressions {\tt r.rank==3}, {\tt r.rect} and {\tt r.zeroBased}
+must evaluate to {\tt true}.  Again, if the compiler can't check this,
+it will generate code to enforce it when the program is run.
+The effect of the three
+constraints is to pin down everything about the {\tt cube}'s region except the
+upper bounds on its three coordinates.
+
+Don't be fooled by
+the examples so far into thinking that properties must all be
+some sort of ``scalar'' like an {\tt Int}.  The types can be anything
+that has state---properties or a values---that you 
+can refer to and hence check in a constraint.   For example,
+{\tt x10.array.Array} has a property {\tt region} whose
+value is a {\tt Region}, namely the index set for the array.
+You can force an {\tt Array}'s {\tt Region} to be rectangular by writing
+\begin{quote}
+{\tt Array[Stuff]\{region.rect\}}
+\end{quote}
+{\tt Array}'s  {\tt region} property itself has a property
+{\tt rect} that is a {\tt Boolean}, and it must evaluate to {\tt true} for
+an instance of this type of {\tt Array}. Actually, the properties
+{\tt rank}, {\tt rect}, {\tt zeroBased} and {\tt rail}
+of an {\tt Array}'s underlying {\tt Region} are so commonly 
+constrained that they have been made available as
+properties of the {\tt Array} itself: an {\tt Array a}'s
+{\tt Region} is {\tt a.region}, and {\tt a.rect} is a shorthand for {\tt a.region.rect}.
+The {\tt size} of {\tt a}'s {\tt Region} is also a property, so you can get it as
+{\tt a.size}---you don't need {\tt a.size()}. 
+
+As you can imagine, writing out constraints can lead to some pretty
+long and cumbersome declarations.  To ease this pain, \Xten{} provides
+{\tt type} declarations.   We've actually been taking advantage of
+the two in the following example:
+\begin{quote}{\tt
+   public static type Point(r:Int) = Point\{rank==r\};\\
+   public static type Region(r:Int) = Region\{rank==r\};}
+\end{quote}
+
+These declarations say that you can use {\tt Point(r)} as a synonym
+for {\tt Point\{rank==r\}}, and {\tt Region(r)} for {\tt Region\{rank==r\}}.
+The declarations are from the file \href{????}{\_.x10} in the package
+{\tt x10.lang}.  And, yes that is correct: the file's name is ``{\tt \_.x10}''.
+As part of the package that is always imported, {\tt\_.x10} makes available the
+shorthands we have been using for {\tt Points} and {\tt Regions} of given
+rank.  By all means, look through it for other useful {\tt type} declarations.
+  
+In the constraints we have seen so far, we have been lucky in that whenever
+a property name appeared, it what clear what the type was whose property 
+it was.   There are, however, declarations in which
+the property name appearing in a constraint may be ambiguous.  Here is a
+typical example:
+\begin{verbatim}
+ 1 public class Trailer(width: Int) {
+ 2    def this(width: Int) { property(width); };
+ 3    def doubleWide():Trailer{width==2*this.width} { // ambiguous
+ 4       return new Trailer(2*width);
+ 5    }
+ 6 }
+\end{verbatim}
+The method {\tt doubleWide} returns a {\tt Trailer} of twice the width
+of the {\tt Trailer} instance that invoked it  But look carefully at line 3:
+how does the compiler know that the {\tt width} on the left hand side
+of the ``{\tt ==}'' is not the same as {\tt this.width}?  Clearly, what we
+intend is ``the width of the return type == twice the width of caller.''
+To allow you to be explicit in this sort of situation, \Xten{} provides a
+keyword ``{\tt self}''.  What we need to say in line 3 is
+\begin{verbatim}
+ 3    def doubleWide():Trailer{self.width==2*this.width} { // ok!
+\end{verbatim}
+You should read {\tt self.width} as ``the {\tt width} for my type''.
+You can see why \Xten{} cannot
+just use a single keyword {\tt this}, but has to introduce a second, {\tt
+self}: there are two different types involved in the constraint: that of
+instance variable that is calling the method, and that of the
+return type: the point of the constraint is to relate the two.
+
+The complications in the example are analogous to the familiar problem
+of having to spell out ``{\tt this.x}'' in a method body if
+ {\tt x} also names an argument or a local
+variable of that method.  In that situation, if you really want to refer to the
+instance field {\tt x}, and not that other local variable {\tt x}, you have to prepend the
+``{\tt this.}''.
+
+Let's look at another situation where {\tt self} may be needed to resolve an ambiguity.
+Our starting point is an array of arrays:
+\begin{verbatim}
+   Array[Array[Int]]
+\end{verbatim} 
+There are two {\tt Arrays} here, the outer and the inner, and both have a
+property named ``{\tt region}'' whose value is a {\tt Region} that describes the
+{\tt Array}'s index set. Here's how we can constrain the ranks of these regions,
+formatted so that (we hope) it is clear to what each of the two {\tt self}'s applies:
+\begin{verbatim}
+ 1    Array[
+ 2        Array[Int]{self.rank==2}
+ 3    ]{self.rank==1}
+\end{verbatim}
+The {\tt self} in line 2 gets attached to the {\tt Array} that is also there.
+To get from the {\tt self} in line 3 to what it refers, you go back the
+line 1, the {\tt Array} to whose square brackets the {\tt self} constraint
+is attached.  Thus, what we have here is a one-dimensional array of
+two-dimensional arrays of {\tt Ints}.  Using {\tt type} declarations helps
+keep your head straight:
+\begin{verbatim}
+ 1    public static type Matrix[T] = 
+ 2        Array[T]{self.rank==2};
+ 3    public static type IntMatrixSet =
+ 4        Array[Matrix[Int]]{self.rank==1};
+\end{verbatim}
+
+\section{Arrays: An Example}
+
+Back to {\tt Arrays}!
+We're now going to look at some example code that will help us fill in the API
+for {\tt Arrays}.  The algorithm we are going to implement is a way to
+estimate heat transfer.  The problem is this:
+\begin{quote}
+Suppose we have a bowl in the
+shape of a hemisphere made of ice that is at roughly $0^{\circ}$ C. 
+We pour some liquid into
+the bowl, filling it to the top. Initially, there is some temperature
+distribution across the liquid.  How does that evolve over time?  
+\end{quote}
+If one looks at a small ball in the middle of the liquid,
+then over a short interval of time, the temperature at the center of the ball
+should drift toward the average of the temperatures in the ball at the start
+of the time interval.  And, at least
+for a while, because the liquid is bounded by the $0^{\circ}$ ice, the temperature
+at the boundary, where liquid meets bowl,
+ought to stay fairly close to $0^{\circ}$---essentially constant.
+
+We are going to use a discrete model of this process for our example. 
+The {\tt Region} is going to be the integer points in a hemisphere, the ice bowl
+being a layer of some (relatively small) width at the boundary of the
+hemisphere. The function {\tt inTheBowl} differentiates the points in the bowl
+from those not:
+\begin{verbatim}
+ 1   static def inTheBowl(p:Point(3), outerSq:Int, innerSq:Int) {
+ 2      if (p(2) > 0) return -1; // p is above the bowl
+ 3      val lengthSq: Int = p(0)*p(0) + p(1)*p(1) + p(2)*p(2);   
+ 4      return lengthSq <= innerSq ?  1 :
+ 5            lengthSq <= outerSq ?  0 :
+ 6            -1;
+ 7   }
+ \end{verbatim}
+Here {\tt p} is a {\tt Point} of rank 3 whose position we are computing.  
+The two other parameters, {\tt outerSq} and {\tt innerSq},
+are the {\em squared} radii, respectively, of the whole bowl and of its
+interior. 
+We could take {\tt innerSq} to be $16 =
+4^2$ and {\tt outerSq} to be $25 = 5^2$.  Our bowl would be the points in the ball
+of radius $5$ centered at (0,0,0) whose third coordinate is $\leq 0$.  Its
+interior would be the hemisphere of points that also lie in the ball of radius
+$4$:
+\eg{}
+\begin{quote}
+$(3,4,0)$ is on the boundary, since $3^2 + 4^2$ is $25 = 5^2$; 
+
+$(2,3,-1)$ is an interior point, since $2^2 + 3^2 + (-1)^2$ is
+$\leq 16$; 
+
+$(4,4,0)$, is outside of the bowl, since $4^2 + 4^2$ is $32$; and
+
+$(0, 0, 1)$ is outside the bowl, even though its squared length is $1$, because
+its third coordinate is positive, and therefore it lies above the bowl.
+\end{quote}
+The return values of {\tt inTheBowl()} are
+\begin{quote}
+\hspace*{0.33em}{\tt {\bf 1}}\hspace{1em} when the point lies in the inner
+bowl---\ie{} is in the interior;\\ 
+\hspace*{0.33em}{\tt {\bf 0}}\hspace{1em} when the point lies between the inner
+and outer bowls---\ie{} lies on the boundary;  and\\
+{\tt {\bf -1}}\hspace{1em} when the point lies outside the outer bowl. 
+\end{quote}
+We could, if we wished to, capture all of {\tt inThe\-Bowl}'s values as cheaply
+as possible in an {\tt Array[Byte]}, and avoid having to call the function any
+more often than necessary.  The trade-off is between space (to store the
+values) and time (the overhead of the call).
+
+{\bf Problem:} We'd like an {\tt Array}, the temperature distribution,
+whose Region is exactly the bowl.  To get there, we need to implement an
+extension of the class {\tt Region} whose {\tt Points} are those in the ice
+bowl and its interior. We also have to keep enough information around
+so that we can easily and
+efficiently tell when a {\tt Point} is on the boundary. We'll call the class
+``{\tt BlobWithBdry}'', because it allows us, at minimal additional cost, to
+define {\tt Regions} much less regular than our very-well behaved bowls. You
+can find the code for it in its entirety in
+ \href{http://dist.codehaus.org/x10/documentation/guide/src/avging/BlobWithBdry.x10}
+{avging/BlobWithBdry.x10}.
+  
+
+{\tt BlobWithBdry} has two main instance fields: a {\tt Region}
+``{\tt box}'' that contains the (possibly quite irregular) blob that is the {\tt
+Region} we really want, and a function ``{\tt where: (p:Point)=>Byte}'' that
+implements the analogue of {\tt inTheBowl}: {\tt where} is defined for {\tt
+Points} in {\tt box}, and its value is positive, 0, or
+negative according as {\tt p} is in the interior, on the boundary, or outside
+the blob.  Here is the constructor:
+
+\begin{verbatim}
+ 1 public class BlobWithBdry extends Region {
+ 2    private val box:   Region(rank);
+ 3    private val where: (p: Point)=>Int;
+ 4    public def this(box:Region, 
+ 5                    where:(p: Point)=>Int) {
+ 6       super(box.rank, false, false);
+ 7       this.box   = box;
+ 8       this.where = where;
+ 9    }
+10    ...
+\end{verbatim}
+\begin{description}
+\item[line 1:]  {\tt box} is a {\tt Region} that is large enough to hold the
+blob and that can serve as the natural domain for the mask {\tt where}.
+In practice, it will be a rectangular region: the whole point is space 
+and time efficiency.  Because the blob-like {\tt Region} we are representing
+here is a subset of the {\tt Region box}, the two {\tt Regions} clearly must
+have the same rank.
+
+In this context (namely, an instance variable declaration), {\tt rank}
+appearing unqualified is a shorthand for
+{\tt this.rank}, namely the rank of this instance of a {\tt BlobWithBdry}.  So
+the declaration ``{\tt box: Region(rank)}'' means that {\tt box} is a {\tt Region}
+whose rank must be the same as its {\tt BlobWithBdry}'s rank.
+
+\item[lines 3, 5:] ``{\tt where}'' is the function that determines which {\tt
+Points} in the {\tt box} are in the interior of the blob,
+ and which are actually on its boundary.
+\item[line 6:] The constructor begins by calling the superclass {\tt Region}'s
+constructor.  The first argument, {\tt box.rank}, is what will become the {\tt
+rank} of the newly constructed {\tt Region}.  This is how we force our new
+{\tt Region} and {\tt box} to have the same rank.  The remaining two
+arguments being false, say that our region is neither rectangular nor
+zero-based.
+\end{description}
+
+The bulk of the rest of the code in {\tt BlobWithBdry.x10} is boilerplate that
+is needed to fill in all of the abstract methods of the {\tt Region} API, so we
+leave it to those who are interested to read through the source.  The next
+interesting step is to create the class we'll call {\tt HeatXfer}
+that carries out the averaging process.  The complete source for it can be found
+in
+\href{http://dist.codehaus.org/x10/documentation/guide/src/avging/HeatXfer.x10}{avging/
+HeatXfer.x10}.
+
+Its instance fields are
+\begin{verbatim}
+   private val B: BlobWithBdry; 
+   private val T: Array[Double](B.rank);
+\end{verbatim}
+{\tt B} is the bowl, which we're declaring to be an arbitrary blob, but our
+constructor is only going to initialize it to be a bowl.
+The {\tt Array T} is the temperature array. In order to have some simple 
+data to work with, we will initialize it with random
+values between 0.0 and 1.0 and then average some number of times to see how it
+evolves.  This is not physically realistic, but it gives us a lot of easily
+analyzed examples to play with.
+
+The last ingredient we need is the ``small ball'' over which to average. We'll
+start with the integer points on the boundary of the ball of radius 1 around the
+origin $(0,0,0)$  That set is precomputed as the array {\tt NEIGHBORS}. 
+It consists of the 6
+points $(\pm 1, 0, 0), (0, \pm 1, 0)$  and $(0, 0, \pm 1)$, which are the
+nearest neighbors of the origin.
+\begin{verbatim}
+   private static NEIGHBORS = 
+      new Array[Point(3)][  // neighbors of (0,0,0)
+         Point.make(-1, 0, 0), Point.make(1, 0 ,0),
+         Point.make( 0,-1, 0), Point.make(0, 1, 0),
+         Point.make( 0, 0,-1), Point.make(0, 0, 1)
+      ];
+\end{verbatim}
+To get the neighbors of any {\tt Point} {\tt p} in the region, all you need is the
+following elegantly simple loop that takes advantage of being able to add a pair
+of {\tt Points}:
+\begin{verbatim}
+      for(n in NEIGHBORS.values()) {
+         val neighbor = p + n;
+         ...
+\end{verbatim}
+Here's the whole method that does the averaging.  
+%%X10 START
+\begin{verbatim}
+ 1 public def average() {
+ 2    for(p in T) { //  for every Point in T's Region
+ 3       if(B.isInTheInterior(p)) { // only care about interior
+ 4          var count: Int    = 1;
+ 5          var sum:   Double = T(p);
+ 6          for(n in NEIGHBORS.values()) {
+ 7             val neighbor = p + NEIGHBORS(n);
+ 8             if (B.contains(neighbor)) { // T has valid value
+ 9                sum  += T(neighbor);
+10                count += 1;
+11             }
+12          }
+13          T(p) = sum/count; 
+14       }
+15    }
+16 }
+\end{verbatim}
+%%X10 END
+You may be wondering why we are so fussy in line 8 about checking
+that the neighbor is in {\tt B}.  We do
+have to be a little careful.  Points at the top of
+the interior look like $(x,y,0)$.
+They have a neighbor $(x,y,1)$ that is {\em above} the bowl. 
+That is why we have a test that the neighbor is still inside the
+bowl.  {\em Something to think about:}
+We wrote a relatively expensive, but general test here:
+{\tt B.contains(neighbor)}. Can we get away with a weaker test, ``{\tt
+neighbor(2) <= 0}''?
+
+{\tt HeatXfer}'s constructor is 
+\begin{verbatim}
+ 1    public def this(r: Int, bw: Int) {
+ 2       val box = (-r..r) * (-r..r) * (-r..0);
+ 3       val inBowl = (p:Point)=>inTheBowl(p,r*r,(r-bw)*(r-bw));
+ 4       this.B = new BlobWithBdry(box, inBowl);
+ 5       val rand = new Random();
+ 6       val assignTemp = (p:Point(B.rank)) =>
+ 7             B.contains(p) ? rand.nextDouble() : Double.NaN
+ 8       this.T = new Array(B, assignTemp);
+ 9    }  
+\end{verbatim}
+\begin{description}
+\item[line 1:]  The arguments to the constructor are
+\begin{description}
+\item[{\bf r}:] the radius of the ball the lower half of whose interior is the
+bowl.
+\item[{\bf bw}:] the boundary width: the boundary will consist of all the points
+with integer coordinates lying in the bowl, but lying outside the ball of radius
+{\tt r-bw}.
+\end{description}
+\item[line 2:] On the right-hand side, we construct the hyper-rectangle that is
+the bounding box for the bowl. It is the smallest rectangular {\tt Region} that
+contains the bowl.  The use of Cartesian products of 1-dimensional {\tt Regions}
+makes this code very clean.  Also, should we wish to index over the
+coordinates of the {\tt Points} in the {\tt Region}, we can use the natural
+negative and positive indices, rather that having to translate everything to
+be zero-based.
+\item[lines 3-4:] Here we are using the function {\tt inTheBowl} that we
+described earlier to create the function for the particular case we need here:
+outer radius {\tt r} and inner radius {\tt r-bw}.  Remember that {\tt inTheBowl}
+uses the {\em squared} radii as arguments.
+\item[lines 5-8:] This is the now familiar pattern for creating and initializing
+an {\tt Array}.  For points in the bowl, we use a random number between 0.0 and
+1.0.  Outside of the bowl, we use {\tt Double.NaN}.  That guarantees
+that if we ever try to average in a point {\em not} in the bowl, we will get
+nonsense.
+\end{description}
+The process, starting from {\tt HeatXfer}'s {\tt main} is (1) construct the
+bowl and the initial temperature distribution, (2) print some initial
+statistics about the temperature distribution, (3) go through the averaging
+algorithm some number of times, and (4) print the final temperature statistics.
+We'll only look at the display here---it turns out to be the interesting part.
+
+How should we display some of the statistics for the initial and final
+temperature distributions?  Here is one way to get the maximum over the
+whole region:
+\begin{verbatim}
+   var max: Double =  Double.MIN_VALUE;
+   for(t in T.values()) max = Math.max(max, t);
+\end{verbatim}
+Whatever the temperatures are, surely they all beat the minimum {\tt Double}
+value.   So when we exit the loop, we are guaranteed that {\tt max}
+is the maximum that actually appears in {\tt T}.
+Another way of saying the same thing is:
+\begin{verbatim}
+   val getMax = (a:Double, b:Double)=>Math.max(a,b);
+   val max = T.reduce(getMax, Double.MIN_VALUE);
+\end{verbatim}
+The first argument is a function of two variables whose results we wish to
+accumulate.  
+The second argument is used as the initial value of the process.  The semantics
+of the call are identical to the loop we originally wrote. Here is another example,
+this time summing the entries in {\tt T}:
+\begin{verbatim}
+   val sum1 = T.reduce((a:Double,b:Double)=>a+b,0.0);
+\end{verbatim}
+Using {\tt 0.0} as the
+initial value, means that the sum of {\tt T}'s elements is exactly what we get.
+We could have also evaluated
+\begin{verbatim}
+   val sum2 = T.reduce((a:Double,b:Double)=>a+b,1000.0);
+\end{verbatim}
+The answer, {\tt sum2} will be what you expect: {\tt sum1 + 1000.0}.
+
+Which is preferable, the loop or the call to {\tt reduce}?  From a performance
+point of view, there is at least a chance that it will be the call to {\tt reduce},
+because the implementer of {\tt
+Array} might be able to write more efficient code for the traversal, particularly for
+rectangular and other very regular regions, than an optimizer may be
+able to get for the loop as we wrote it.  The use of the term ``reduce'' in
+the sense \Xten{} does in this context, by the way, is now common enough
+that there is no real readability issue.
+
+There are two related calls, {\tt scan} and {\tt map}, that are often useful.
+ 
+{\tt scan} is like {\tt reduce}, but instead of producing a single answer, it
+creates an {\tt Array} with the same {\tt Region} as the one we are iterating
+over, and the value at each {\tt Point p} in the {\tt Region} is the cumulative
+value after the reduction has processed the element at {\tt p}.
+\begin{verbatim}
+   val a = [1,2,3,4];
+   val scanned = a.scan((m:Int,n:Int)=>m+n, 0);
+\end{verbatim}
+yields the array {\tt [1, 3, 6, 10]}, which is then assigned to {\tt scanned}.
+
+{\tt map} has several variations that, in effect, provide unary and
+binary operations on arrays.  The simplest form is converts an {\tt Array[T]}
+to an {\tt Array[U]}.  Suppose {\tt A} is the {\tt Array} and {\tt op:(t:T)=>
+U}. Then {\tt A.map(op)} applies {\tt op} to each element of {\tt A}, and its
+result is a newly constructed array that is exactly the same as the result of
+the constructor
+\begin{verbatim}
+   new Array[U](A.region, (p:Point(A.rank))=>op(A(p)));
+\end{verbatim}
+
+The target array for {\tt map} need not be constructed from scratch.
+The call  {\tt A.map(B, op)}, in which {\tt B} is an array of type {\tt U}. sets 
+the entry {\tt B(p)} equal to {\tt op(A(p))}
+for every {\tt p}.  If {\tt A == B}, the effect is to modify {\tt A} in place.
+\footnote{
+We should perhaps underline here that the function {\tt op}, instead of just
+depending for its outcome on its argument and only on its argument, can be a
+closure that captures {\tt A} and, in the two array form, {\tt B}. All we can
+say is please don't, or if you must, please spell out for your colleagues what
+the expected outcome is, because it is likely not to be obvious. 
+}
+
+The binary form for {\tt map} starts with a pair of arrays {\tt A: Array[T]} and
+{\tt B: Array[U]} with the same underlying {\tt Region} and forms a new {\tt
+Array[V]} by applying a function {\tt op:(t:T, u:U) => V} to each pair from
+{\tt A} and {\tt B}.  As with the unary form, you can also provide a
+destination array as the first argument: {\tt A.map(C, B, op)}.
+
+\subsubsection{Some questions to ponder}
+There are some interesting questions raised by the this example.
+
+We've mentioned that we could replace the field {\tt where}
+in {\tt BlobWithBdry}, which in our implementation is a function, by an {\tt
+Array} of {\tt Bytes} whose {\tt Region} is the field {\tt box}, 
+and whose value at a {\tt Point p} is exactly the value {\tt where(p)} that the
+function we have now would have returned.  It is worth a few minutes to make
+this change, if for no other reason than to see how {\em little} you do have to
+change to get {\tt BlobWithBdry} back and working.  The interesting question
+here is: what are the trade-offs
+between keeping the function and pre-computing it as an {\tt Array}?  Does
+using (a lot) more space to hold the array gain you anything over the
+(also large number of) function calls?
+
+Another variation on this theme is to create a more limited class {\tt Bowl}
+that really does 3-dimensional bowls and not general blobs.  In particular, you
+can make {\tt where} an {\em instance method}---or even a {\em static method}
+with the right parameters---that does exactly the right thing for bowls, and
+not an {\em instance field} that is generic.  Question: what else has to
+change to make this approach workable? One of the
+interesting things here is the trade-off between the generic closure
+capturing the bowl's parameters (see the constructor for {\tt HeatXFer}),
+versus keeping those parameters as instance data.  Does this
+change (from generic closure to method) affect the performance for your
+installation? What do we really pay for allowing the generality of blobs?
+
+You might also want to add the mean temperature to our displayed statistics. 
+It's a one-liner if you use {\tt reduce}.  Again: what are the trade-offs
+between $n$ calls to {\tt map}, {\tt reduce}, and {\tt scan}, versus a
+single loop with $n$ expressions to evaluate on each iteration---\eg{} two
+calls, one each for {\tt max} and {\tt mean}, versus a single loop that
+computes both?   If only the answer were simple: it really is a function
+of the implementation: do the {\tt Array} methods really do so much
+faster a traversal than an optimizing compiler can eke from 
+\Xten's {\tt for} loops?  What we're recommending by raising this
+issue is that you
+play with the loops and these {\tt Array} methods for the sorts of {\tt Regions} you
+care about in order to understand how this plays out for your own environment.
+\section{More Examples}
+There are a couple of examples involving local arrays that we think you will
+find useful.  
+
+The first
+example introduces graphs and solves a simple graph searching problem.  It's our
+first shot at representing graphs, and it's interesting, among other things for
+the synchronization issues it poses.  It is a good starting point for the
+detailed discussion of parallelism that follows in the next chapter.
+
+
+The second is another numerical integration problem in
+much the spirit of our Monte Carlo example, in the sense that you can get
+a lot of parallelism easily, just by partitioning the domain where the action takes
+place.  It is of interest as an example of general software pattern for exploiting
+closures in numeric problems.  The discussion is self-contained and not required
+for anything that follows: it is there only for those who work with that sort of
+numeric problem to see an \Xten{} idiom that is very different from Java and
+not quite C++, either.   Feel free to skip this one.
+
+\subsection{Spanning Trees For A Graph}
+
+\begin{figure}[!htbp]
+\begin{center} 
+\includegraphics[width=2.5in]  
+{"simplegraph1"} 
+\caption{A 7 vertex undirected graph with 8 edges}\label{fig:simgph}
+\end{center}
+\end{figure}
+
+We'll need a little terminology to get us going:
+\begin{quote}
+To build a {\em graph} we start
+with a set of {\em vertices}, which we will always label with non-negative
+integers. Between any pair of vertices we may put one or more {\em edges}.  An
+edge from a vertex $v$ to a vertex $w$ is an ordered pair $v \rightarrow w$. 
+We allow an edge from a vertex to itself---an example being a graph whose vertices are {\tt
+.html} documents and whose edges are links: a document may point into itself.  
+
+As the example of {\tt html} links shows, there are situations where it pays
+to assign a {\em direction} to each edge. There are also others where it does
+not pay, such as a network where the only question is whether there is a wire
+between two points or not.  You can think of an undirected graph as one for
+which every directed edge $v \rightarrow w$ there is another ``back edge'', 
+$w \rightarrow v$.
+
+A {\em subgraph} of
+a graph $G$ is a graph whose vertices and edges are subsets of $G$'s vertices
+and edges.  (Be careful: we do {\em not} require that if $v$ and $w$ are 
+vertices in the subgraph, then {\em every} edge in $G$ from $v$ to $w$ is
+in the subgraph.)
+
+Two edges are {\em adjacent} if they have a vertex in common---\eg{}
+$u \rightarrow v$ and $v \rightarrow w$. A graph is {\em connected} if
+given any pair of vertices $u \neq v$, there is a sequence of adjacent edges {\em with
+distinct vertices} $\{u, w_1, \ldots w_k\}$
+$$
+u \rightarrow w_1, w_1 \rightarrow w_2, \ldots w_k \rightarrow v
+$$ 
+that goes from $u$ to $v$.  (If
+we did not require {\em distinct} vertices in the path, we would get the
+same definition of connectivity:  if $z$ appears twice in a path, simply remove the
+part of the path beginning at the first occurrence of $z$ and ending just before
+the second. You can eliminate all duplicates this way.)
+
+A {\em cycle} in the graph is a sequence of adjacent edges, again with distinct
+vertices, that begins and ends at the same vertex.
+The graph in Figure \ref{fig:simgph} is undirected, is connected and has three
+cycles, 
+$1 \rightarrow 2 \rightarrow 5 \rightarrow 6 \rightarrow 1$,
+$2 \rightarrow 3 \rightarrow 4 \rightarrow 5 \rightarrow 2$ and
+$1 \rightarrow 2 \rightarrow 3 \rightarrow 4 \rightarrow 5 \rightarrow 6 \rightarrow 1$.
+
+A graph that contains no cycles is said to be {\em acyclic}.  A connected,
+acylic graph with a single vertex from which all its other vertices may be
+reached is called a {\em tree}, and the vertex that is the starting point is
+called the {\em root} of the tree. A {\em spanning tree} in a graph $G$ is a
+maximal subgraph of $G$ that is a tree. Figure \ref{fig:spatre} below shows one
+of the possible spanning trees in the graph from Figure \ref{fig:simgph}.
+In an undirected, connected graph, any node can serve as the root of a
+spanning tree that reaches every vertex.
+\end{quote}
+
+{\bf Problem:} Given a vertex $v$ in a connected graph $G$, find a maximal tree
+that starts from $v$.  When $G$ is undirected, this will be a spanning tree.
+
+Finding maximal trees presents a nice synchronization problem that also gives
+us a chance to show how you can declare your own implementations for
+operators like ``{\tt +}'' or ``{\tt >}'', and how interfaces can be used to
+write generic methods---in this case, a generic sorting routine.  We restrict to
+undirected graphs for finding spanning trees because it requires less work than
+directed graphs, and the extra work does not involve any new \Xten.
+
+One simple way to construct a spanning tree is to do a {\em breadth-first
+search}, in which we start at some vertex, ``visit it'', next visit all
+vertices that can be reached from it by following a single edge, and continue
+that process until we get no new vertices to visit.  Let's set up some notation:
+\begin{quote}
+- {\tt v0}: our starting point.\\
+- {\tt visited}: the set of vertices we've gotten to so far\\
+- {\tt treeEdges}: the edges we are collecting for the subgraph\\
+- {\tt pending}: the set of vertices that were reached from vertices that we\\
+   \hspace*{1em}have visited, but that themselves have not yet been visited.
+\end{quote}
+We will treat {\tt pending} as a queue. The process begins by adding {\tt
+v0} to it.  The main loop is:
+\begin{quote}
+While the {\tt pending} queue is not empty:
+\begin{quote}
+Remove a vertex {\tt w} from it.  For each
+vertex {\tt w'} that can be reached by an edge from {\tt w}, but that is not
+already in {\tt visited},\\
+\hspace*{1em} add {\tt w'} to the end of the {\tt pending} queue,\\
+\hspace*{1em} add {\tt w'} to {\tt visited}, and \\
+\hspace*{1em} add an edge between {\tt w} and {\tt w'} to {\tt treeEdges}.\\
+Continue.
+\end{quote}
+\end{quote}
+The spanning tree is the graph whose vertex set is {\tt visited} and whose edge
+set is {\tt treeEdges}.
+
+\begin{figure}[!htbp] 
+\begin{center} 
+\includegraphics[width=2.5in]  
+{"spanningtree1"}
+\caption{One possible spanning tree for the graph in Figure \ref{fig:simgph}}
+\label{fig:spatre}
+\end{center}
+\end{figure}
+
+The serial code for this algorithm almost writes itself.  The only
+interesting problem is how to represent to the graph: what sort of array to
+use. We'll discuss that in a moment.
+
+In trying to parallelize the algorithm, it is important that all of the
+active threads have to see a consistent view of {\tt visited}.  The one other
+thing we need to synchronize is the addition of edges to {\tt treeEdges}.  
+To do that, all we need is that the index of the next available slot in
+{\tt treeEdges} be updated atomically.  
+
+If we use one thread per vertex visited, we can dispense
+with the {\tt pending} queue entirely. It is only there because we don't have a
+thread around to handle {\tt w'} immediately.  On the other hand, using one
+thread per vertex may not allow enough work per thread to pay for the start-up
+and tear-down cost of the threads.  This is particularly apt to happen if the
+graph is {\em sparse}---that is, if the average number of edges per vertex is
+small compared to the number of vertices.  So we are at least going to have to
+think about how to organize things when there are only a limited number of
+threads.
+
+Let's begin. though, by thinking about how we might represent the graph.  The
+natural approach is to use a matrix {\tt edges:Array[Int](2)} and set
+{\tt edges(i,j)} equal to the number of edges between the {\tt i}-th and
+{\tt j}-th vertex. Simplicity is far from free here, though.  If the graph is
+sparse, the array will also be sparse (that is, virtually all of its entries
+are 0), so we are wasting a lot of memory, and because our information is so
+spread out, we'll get very poor cache utilization.  Even if the graph is not so
+sparse, we are still using 2 entries for every one we need when the graph is
+undirected, because {\tt edges(i,j) == edges(j,i)} for undirected graphs.
+
+Another obvious tack is to create a type {\tt Edge} and an array
+{\tt edgeSet:Array[Edge](1)} that we'll call ``{\em an adjacency list}'' to hold the
+edges. We can then sort the array and index it so that we can efficiently
+look-up the edges leading out of a given vertex.
+
+When the graph is undirected, we still wind up with two copies of each edge,
+but unfortunately, given that we have to look up the vertices reachable from an
+arbitrary vertex, there seems no obvious way to avoid the redundancy without
+significantly sacrificing performance.  
+
+If you want to peek ahead, our first cut, which uses an adjacency list, is in
+\href{http://dist.codehaus.org/x10/documentation/guide/src/spanning/Graph1.x10}{spanning/Graph1.x10}.
+Here's the rationale we used for choosing the list over the matrix:
+\begin{quote}
+If there are $N$ vertices and $E$ edges, then, assuming 4 bytes per integer, the
+matrix representation costs roughly $4N^2$ bytes, and the adjacency list
+representation costs $4N+8E$ bytes.  The latter is smaller whenever
+$N^2 > N + 2E$, or in other terms, when $E/N < (N - 1)/2 \approx N/2$. The
+bottom line, then, is that so long as, on average, each vertex has substantially
+less than $N/2$ edges leading out of it, the adjacency list representation is
+probably the right way to go, particularly since as a practical matter, when
+$N$ gets very large and exploiting concurrency becomes critical,
+non-sparse graphs are much less likely to occur in real-life problems.
+\end{quote}
+Let's look now at how one constructs the graph.  The first thing to do is to
+sort the edges.  This requires a modest extension of the Quicksort code in
+Figure \ref{fig:qs} that we wrote for arrays of {\tt Ints}.  The complete
+source for the more general version is to be found in
+\href{http://dist.codehaus.org/x10/documentation/guide/src/utils/QSort.x10}{utils/QSort.x10}.
+The only new ingredient in it is the declaration of the class {\tt QSort}
+itself:
+\begin{verbatim}
+   public class QSort[T] {T <: Ordered[T]} { ... }
+\end{verbatim}
+{\tt QSort} is a {\em generic} class---that is, one parameterized by a type. The
+type is not arbitrary, though: the expression in the first set of braces, ``{\tt T}
+{\tt <:}  {\tt Ordered[T]}'' is a constraint on {\tt T} that says ``the only types
+{\tt T} that are allowed for this class are those that extend
+{\tt Ordered[T]}''.
+
+{\tt Ordered} turns out to be an interface in the package {\tt x10.utils}.
+Since we want to sort an array of {\tt Edges}, we need to assure that {\tt Edge}
+implements {\tt Ordered[Edge]}.  Here is the declaration for {\tt Ordered}:
+\begin{verbatim}
+   public interface Ordered[T] {
+      operator this <   (that: T): Boolean;
+      operator this >   (that: T): Boolean;
+      operator this <=  (that: T): Boolean;
+      operator this >=  (that: T): Boolean;
+   }      
+\end{verbatim}
+The new keyword {\tt operator} is used in place of {\tt def} when one is
+defining a method for which the call is to be written in
+{\em infix} form---for example, the first declaration says that a method must be
+provided for evaluating the expression ``{\tt this < that}'' when {\tt that} has
+type {\tt T}, and the result must be a {\tt Boolean}.  Since {\tt Ordered} is an
+interface, none of the methods are implemented here. 
+
+Inside the class {\tt Edge}, we need analogous declarations to implement the
+``$<$'' and the other three comparison operators:
+\begin{verbatim}
+ 1    private static type Vertex = Int;
+ 2    private static struct Edge implements Ordered[Edge] {
+ 3       public v: Vertex; 
+ 4       public w: Vertex;
+ 5       public operator this <  (that:Edge): Boolean =
+ 6             v < that.v || (v==that.v && w<that.w);
+\end{verbatim}
+We introduce {\tt Vertex} on line 1 as a synonym for {\tt Int} just to document
+which integers label vertices, and which serve other purposes.  line 5 is the
+implementation of ``$<$''.  We need ``{\tt public}'' here because all of the
+methods in an interface must be declared public.  The result of the evaluating
+{\tt this<that} is the value of the expression on the right-hand side of the
+``{\tt =}''.  As with ordinary method declarations, you can also use ``brace''
+notation,
+\begin{verbatim}
+ 5       public operator this <  (that:Edge): Boolean {
+ 6            return v < that.v || (v==that.v && w<that.w);
+ 7       }
+\end{verbatim}
+ 
+As you might guess, you can use the same syntax for all of the other binary
+operators, like ``{\tt +}'' or ``{\tt *}'', should you want to declare versions
+of them for a class, interface, or struct of your own. Unary operators are
+handled analogously. For example, if we felt the need of being able to write
+``{\tt -e}'' for the reversal of an {\tt Edge} {\tt e}, we could declare
+\begin{verbatim}
+   public operator - this: Edge = Edge(w, v);
+\end{verbatim}
+to swap the order of the vertices.
+
+\begin{figure}[!htbp]
+\hrulefill
+\begin{verbatim}
+public class Graph1(vertices: Int, edges: Int) {
+   public val  edgeSet:  Array[Edge](1); 
+   public val  first:    Array[Int](1);
+   public def this(vertices: Int, edges: Int, edgeSet: Array[Edge](1)) {
+      val firstEdge = edgeSet.region.min(0);
+      val lastEdge  = firstEdge + edges - 1;
+      val qsort = new QSort[Edge]();
+      qsort.quicksort(edgeSet, firstEdge, lastEdge);
+      property(vertices,  edges);
+      this.edgeSet = edgeSet;
+      val notAnEdge = firstEdge - 1;
+      this.first  = new Array[Int](vertices+1, (k: Int)=>notAnEdge);
+      if (edges > 0) {
+         var e: Edge = edgeSet(firstEdge);
+         var v: Int = e.v;  // edges are sorted, so v is the min
+         this.first(v) = 0; // and it is also v's first edge
+         for(var k:Int = firstEdge+1; k <=lastEdge; k++) {
+            e = this.edgeSet(k);
+            if (e.v > v) { // if so, we're starting a new vertex
+               v = e.v;
+               this.first(v) = k;
+            }
+         }
+      }
+      var lastFirst: Int = first(vertices) = edges;
+      for(var v:Int = vertices-1; v>=0; --v) {
+         if (this.first(v) == notAnEdge) this.first(v) = lastFirst;
+         else lastFirst = this.first(v);
+      }
+   }
+\end{verbatim}
+\caption{Constructing a graph as an adjacency list.}
+\label{fig:g1con}
+\hrulefill
+\end{figure}
+Let's look in detail at the constructor for {\tt Graph1}.  It is shown in 
+Figure \ref{fig:g1con}.  The first step is to sort the
+array {\tt edgeSet} so that all of the edges from a given vertex will
+be next to one another in the array.  Thus, once we compute an index for {\tt edgeSet}
+that locates the first edge for each vertex, we can efficiently find the remaining
+edges from that vertex.
+We've called the index ``{\tt first}''.  Computing it is a two-step process:
+\begin{quote}
+The first loop (lines \xlref{stg1:cstr}{for1}-\xlref{stg1:cstr}{for1end})
+sets {\tt first(v)} equal to the first index in {\tt edgeSet} for an edge starting at
+{\tt v}.  This sets {\tt first(v)} for every vertex {\tt v} that actually does begin an edge. 
+
+There may be some vertices that have no edges that originating from them.
+How should we set {\tt first} for those isolated vertices?  Our strategy was to
+set {\tt first(v)} so that whatever {\tt v} is (isolated or not)
+\begin{quote}
+- {\tt v} has exactly {\tt first(v+1)} {\tt -} {\tt first(v)} edges that start from it.
+This difference is always going to be non-negative, but may be $0$.
+
+- if {\tt v} does start some edges,  {\tt edgeSet(first(v)} will be the first
+(and  {\tt edgeSet(first(v+1)} {\tt -} {\tt 1} will be the last).
+\end{quote}
+
+The second loop (lines \xlref{stg1:cstr}{for2}-\xlref{stg1:cstr}{for2end}) sets
+the uninitialized entries in {\tt first}.  It works {\em backward} through {\tt first}.
+When it finds an uninitialized entry {\tt first(v)}, it sets that entry equal to
+{\tt first(v+1)} (which we have already made sure {\em is} initialized: that is why we
+work backward through the array).  This ensures that the difference
+ {\tt first(v+1)} {\tt -} {\tt first(v)} is $0$, which is how we will be able to
+ see later that {\tt v} starts no edges.  
+ 
+ We leave it as an exercise for you to check that, once the second loop
+ is finished, the difference  {\tt first(v+1)} {\tt -} {\tt first(v)} is the number
+ of edges starting from {\tt v} for {\em every} {\tt v}.
+\end{quote}
+
+With the constructor in hand, we can create an instance {\tt g}  of {\tt Graph1} .
+The call {\tt g.visitAllFrom(v)} will then compute the
+spanning tree starting from the vertex {\tt v} by calling the 
+recursive method {\tt visit} to start the ball rolling:
+\begin{verbatim}
+ 1    public def visitAllFrom(vertex: Vertex) {
+ 2       this.treeEdge = new Array[Edge](vertices, NOT_AN_EDGE);
+ 3       val initAB = (k: Int) => new AtomicBoolean(false);
+ 4       this.visited = new Array[AtomicBoolean](vertices, initAB);
+ 5       nextInTree.set(0);
+ 6       finish this.visit(vertex);
+ 7       this.visited = null;
+ 8       val treeSize = nextInTree.get();
+ 9       val span = new Graph1(vertices,treeSize,treeEdge);
+10       this.treeEdge = null;
+11       return span;
+12    }
+\end{verbatim}   
+The line-by-line:
+\begin{description}
+\item[lines 2-4:] {\tt treeEdge} and {\tt visited} are private instance fields that we
+are allocating here, rather than in the constructor, because they are only
+needed for the spanning tree computation. They are realized as instance fields,
+rather than (as might seem more sensible) as local variables in this method,
+in order to save the overhead of having to pass them repeatedly as arguments to the
+method {\tt visit} that calls itself recursively to do the real work.
+
+The entries in {\tt visited} have to be updated atomically to avoid visiting the
+same vertex twice, so they have to be {\tt AtomicBooleans}, at some cost in
+storage.
+\item[line 5:] {\tt nextInTree} is also an instance field.  It tracks the next
+available slot in {\tt tree\-Edge} for accumulating the spanning tree's edges.
+As we remarked earlier, it has to be incremented atomically, so it is declared
+to be an {\tt AtomicInteger}.
+\item[line 6:] This is the heart of the matter.  The method {\tt visit} does the
+breadth-first search, spawning activities to help it as the need arises.  This
+is our first example of a {\tt finish} in which the threads that must finish
+are, in effect, invisible, their creation being hidden within {\tt visit}.  It is
+important to realize that a {\tt finish} does not just apply to activities
+immediately visible, but to {\em all} activities spawned within the execution of
+the statement it guards, no matter whether or not these activities are directly
+spawned by the {\tt finish}'s own activity.
+\item[lines 7 and 10:] We clean up these two variables to allow the garbage
+collector to reclaim their storage.  They are really only ``temporaries'' used
+to facilitate this method.  
+
+An aside for C++ programmers: assigning {\tt null}
+like this is the closest thing \Xten{} provides for saying ``I don't need the
+storage now referenced by this variable any more.''  Some other variable may
+still refer to the storage, but at least {\em this} one no longer does.  When no
+references are alive, the automatic garbage collector can reclaim the storage.
+
+\item[lines 9 and 11:] We could, in principle, return nothing and simply use
+{\tt treeEdge} to hold our tree.  It seemed a little friendlier to return a
+``true graph'', with all the cleanup that that implies---hence the call to {\tt
+Graph1}'s constructor.
+\end{description}
+
+All that remains is the code for the method {\tt visit}.
+\begin{verbatim}
+ 1 private def visit(var v: Vertex) {
+ 2    while(v >= 0) {
+ 3       val lastV = first(v+1)-1;
+ 4       var pending: Vertex = -1;  // this thread's next vertex
+ 5       for (var en: Int = first(v); en <= lastV; en++) {
+ 6          val w = edgeSet(en).w;
+ 7          val wHasBeenVisited = visited(w).getAndSet(true);
+ 8          if (!wHasBeenVisited)  {
+ 9             val n = nextInTree.getAndAdd(1);
+10               treeEdge(n) = Edge(v, w);
+11             if (pending == -1) pending = w; 
+12             else async visit(w);           
+13          }
+14       }
+15       v = pending; 
+16    }
+17 }
+\end{verbatim}
+What we want to emphasize here is that because {\tt visit} calls itself
+recursively at line 12, we can get chains of {\tt asyncs} spawning {\tt asyncs},
+spawning {\tt asyncs}, and so on, more or less randomly, depending on whether the
+current vertex {\tt v} reaches more than one other vertex, and depending on
+what has already been visited.  The charm of the {\tt finish} in
+{\tt visitAllFrom} is that doesn't care: before control passes out of
+the statement it guards, every activity spawned in the course of executing that
+statement must terminate, or in the case of the activity that is executing the
+{\tt finish}, must reach the statement's end.
+
+\subsubsection{Exercise 1} We used a stack of depth 1 to make sure that we did
+not generate any more {\tt asyncs} than made sense.  It might be worthwhile to be a
+little more generous and stack several vertices for the current thread before
+spawning a new one.
+
+\subsection{Exercise 2} The honest truth is that we really did not need to sort
+the vertices, nor did we have to keep an array of {\em edges}.  If we know that
+the edges out of {\tt v} are in the entries {\tt first(v)} to {\tt last(v)} in
+the array {\tt edgeSet}, then all we need to keep in {\tt edgeSet(n)} is {\em
+the other end of the edge.}  After, {\tt n}'s value already tells us the
+starting vertex of the edge.  This reduces the size of {\tt edgeSet} by a factor
+of 2.  You can see the code for this approach in 
+\href{http://dist.codehaus.org/x10/documentation/guide/src/spanning/Graph2.x10}{spanning/Graph2.x10}.
+
+Here's the exercise:  We've only worried about spanning trees for
+undirected graphs.  Our {\tt visitAllFrom(v)} in the directed case gets the
+largest tree starting from {\tt v}.  Suppose, though, that there is a vertex
+{\tt w} that is not already in that tree, and that has an edge {\tt w --> v} 
+leading to {\tt v}.  We can add {\tt w} to the tree as its new root, and we can
+add any vertex not already in the tree that is reachable from {\tt w}.
+
+It is not too hard to see that if we follow
+this process until no {\tt w} can be found to be a new root, the resulting
+tree {\tt }, rooted at the last vertex we added, is maximal in the sense that a
+vertex can be added to {\tt T} only by destroying the property that there is a
+root vertex in the subgraph from which every other vertex is reachable
+{\em using the edges already in {\tt T} and those from the new vertex}.  (There
+might be a different set of edges in the larger graph that does allow for a
+larger tree that contains all of the vertices of {\tt T}.)
+
+Implementing this algorithm involves being able to compute, for each vertex {\tt
+v}, the vertices {\tt w} with a forward edge {\tt w --> v} leading to it.  Our
+adjacency list as implemented so far is good for tracking edges {\em from}
+{\tt v}, but it is miserable for tracking edges {\em into} {\tt v}. 
+
+{\bf Problem:} Implement adjacency lists so that both directions are trackable,
+and use them to grow a maximal tree in a directed graph that contains a given
+vertex {\tt v}.
+
+\subsection{A Different Approach}
+
+If there were 100K vertices in our graph, the code we just
+wrote might wind up spawning 50K or even more threads.  For an 8 core CPU,
+that's probably not a winning strategy.  But if we limit the number of threads,
+we have to seriously rethink our algorithm.  Since we're thinking about a
+single {\tt Place} for the moment, we can imagine a single stack {\tt pending}
+that every thread uses to save vertices that need to be visited.  Threads can
+then pop one (or more) vertices off the stack as needed.
+
+Problem: what is the best way to manage the set of threads and the stack to
+minimize contention?
+
+If threads both add to the top of the stack and take from the top, then
+synchronization is a bit subtle:
+\begin{quote}
+A thread that wants to pop the stack must atomically get the height of the
+stack, and---if that height is positive---get the vertex that is stored there,
+and decrement the height.
+
+A thread that wants to push a vertex onto the stack has the analogous problem:
+it must atomically get the height, and, if the height is not too great, store
+the new value, and increment the height.  If the height is too great, either
+an exception must be thrown, or the stack grown.
+\end{quote}
+To the extent that {\tt atomic} is efficiently implemented, this is easy enough
+to code.  It effectively serializes access to the stack, though, because both
+consumers and producers need to work with the height and one must be careful a
+consumer that is interrupted does not wind up having the vertex it should have
+read being overwritten by a producer, or wind up fetching an entry that is now
+in the middle of the stack, not the top.
+
+Let's get rid of one problem by letting the stack have one
+entry per vertex, so that we don't have to worry about it overflowing.
+To reduce contention, let threads push vertices onto the top as before, but
+let them get vertices from the bottom.  Then, unlike popping a
+stack, {\em we are no longer trying to share or to reuse any storage.}  Each
+entry in {\tt pending} now gets set at most once and gets read at most once.
+The only source of contention between consumers and producers is the size. If
+the stack is non-empty, a thread can grab the vertex at the bottom without
+worrying about whether another thread is simultaneously adding a vertex at the
+top. We don't have to worry about synchronizing the loads and stores to and from
+the stack.
+
+The pattern we've been describing is usually referred to as a ``double-ended
+queue'', which is usually shortened to ``deque'' or (less commonly) ``dequeue''.  
+There is a ``native'' implementation {\tt x10.lang.Deque}, but we felt this is
+an interesting example to write out in \Xten{} itself.  Our version is in
+\href{http://dist.codehaus.org/x10/documentation/guide/src/utils/Dequeue.x10}{/utils/Dequeue.x10}.
+We chose to call it ``{\tt Dequeue}'' to avoid confusion with the library's
+version.
+
+It's worth a moment to look at how the synchronization is done here, because it
+involves some interplay between {\tt atomic} statements and 
+{\tt AtomicIntegers}.  The essential parts of the source are in Figure
+\ref{fig:deq}.  Let's begin with adding an entry at the end, lines 12 through
+17.
+\begin{quote}
+1. We acquire a slot in the buffer, {\tt last}, and at the same
+time bump it so that no other producer can use that slot. Since only producers
+access {\tt last}, it is no problem if we get interrupted here: a producer
+cannot enter this statement until we are done. We have not yet reset the size,
+so a consumer won't mistakenly fetch garbage if the size happened to be 0 
+and we get interrupted before we are able to complete storing our entry.
+
+2. Next we stuff the new data into its slot.
+
+3 Then, and only then, do we update the size.  This we have to do atomically,
+because both producers and consumer access it.
+\end{quote}
+
+Why the atomic block and not just making {\tt last} an atomic integer?  Because
+if thread 1 gets a slot, is interrupted, thread 2 gets the next slot and
+finishes, and before thread 1 finishes, thread 3, seeing that the stack is
+non-empty (because thread 2 incremented the size) tries to read the next
+slot that should be filled, which will be the slot assigned to thread 1, who,
+sadly, is still waiting around to do the store.  Later, thread 1 does do the
+store, but by then the {\tt Dequeue} thinks that the next fetch should be
+somewhere well beyond where thread 1's slot is, so thread 1's contribution is
+lost.
+
+ \begin{figure}[!htbp] 
+\hrulefill
+\begin{verbatim}
+ 1 public class Dequeue[T] {
+ 2    private var first: new AtomicInteger(0);;
+ 3    private var last: Int = 0;
+ 4    private val size = new AtomicInteger(0);
+ 5    private val nullEntry: T;
+ 6    private val buffer: Array[T](1);
+ 7
+ 8    public def this(size: Int, nullEntry: T) {
+ 9       this.nullEntry = nullEntry;
+10       this.buffer = new Array[T](size, nullEntry);
+11    }
+12    public def addLast(t: T) {
+13       atomic { 
+14         buffer(last++) = t;
+15         size.getAndAdd(1);
+16       }
+17       return true;
+18    }
+19    public def removeFirst(): T {
+20       var sizeNow: Int;
+21       atomic {
+22          sizeNow = size.get();
+23          if (sizeNow > 0) size.getAndAdd(-1);
+24       }
+25       return sizeNow == 0 ? nullEntry : buffer(first.getAndAdd(-1));
+26    }
+27 }
+\end{verbatim}
+\caption{Single Place Double-Ended Queue}
+\label{fig:deq}
+\hrulefill
+\end{figure}
+\subsection{ Numerical Integration: Simpson's Method}
+Simpson's Rule is a way of getting an approximate value for the area
+under a smooth curve.
+Let $[a, b]$ be a closed interval of real numbers, and let 
+$f$ be a smooth, real-valued function defined on that interval.
+Let $n$ be an \emph{even} integer, let $h$ be $(b-a)/n$, and let
+$$x_{0}=a, x_{1}=a+h, \dots x_{n-1} = a + (n-1)h, x_{n} = b$$
+Simpson's Rule says that
+$$
+h/3 (f(x_{0}) + 4f(x_{1}) + 2f(x_{2}) + 4f(x_{3}) + 2f(x_{4}) + \dots + f(x_{n}))
+$$
+is a good approximation to the integral
+$
+\int_a^b f(x)dx
+$
+
+Our version of an \Xten{} solution can be found in 
+\href{http://dist.codehaus.org/x10/documentation/guide/src/simpon/Simpson.x10}{simpson/Simpson.x10}.
+You might want to try writing one before looking at ours.  There is certainly
+nothing fancy about the parallelization: just divide up the interval $[a, b]$
+and let each activity worry about one of the subintervals.  The final result is 
+the sum of the individual results---as we said, very close in spirit to how one
+parallelizes Monte Carlo $\pi$.
+ 
+We called the method that computes the sum serially
+``{\tt serial()}''.  It tries smaller and smaller values of {\tt h}
+until either 
+\begin{quote}
+- the new sum is so close to the previous one as to suggest that
+smaller\\
+\hspace*{2em} values of {\tt h} will not materially change the result, or\\
+- the next value for {\tt h} is too small to work with.
+\end{quote}   
+
+The parallel code is ``{\tt parallel()}''. It does the obvious: uses {\tt serial()}
+on subintervals and sums the results.
+
+Both {\tt serial()} and {\tt parallel()} take a single argument, the function to be
+integrated.  The information about the interval of integration and all of
+the other data are kept as instance fields in the object whose methods 
+{\tt serial()} and {\tt parallel()} are being invoked.  To a C programmer, if not a Java
+programmer, having a function as an argument is reasonably natural.  Where
+\Xten differs from both is how one might create those functions.  That is
+where closures come in. 
+
+Having implemented Simpson's Rule, we wanted to be able to generate lots of
+examples, both to check our work and so we could play with it.  One simple
+class of functions rich enough to be interesting are the ``rational'' functions:
+\begin{quote}
+A {\em rational function} is the quotient $P(x)/Q(x)$ of two polynomials $P$
+and $Q$.
+\end{quote} 
+  For any one polynomial $P$, there is a simple recipe for computing
+$\int_a^b P(x)dx$ that is taught any calculus course.  The situation
+for $P(x)/Q(x)$ is not so simple: try $1/(1+x^3)$ or $1/(1+x^4)$ if you want to
+convince yourself that, while there may be formulas, they are most certainly not
+straightforward---not even when the numerator $P(x)$ is just $1$.
+
+It is easy to create a method that constructs a rational function from its 
+coefficients:
+\begin{verbatim}
+ 1 public static def makeRatFcn(
+ 2          num: Array[Double](1),    // the numerator
+ 3          den: Array[Double](1))    // the denominator 
+ 4    {   
+ 5        return (x: Double): Double => poly(num,x)/poly(den,x);
+ 6    }
+ 7 public static def poly(p: Array[Double](1), x: Double) {
+ 8    var answer: Double = 0.0;
+ 9    for(v in p.values()) answer = answer*x + v;
+10    return answer;
+11 }
+\end{verbatim}
+
+{\tt makeRatFcn} and {\tt poly} present no surprises.  The algorithm in the
+latter is sometimes called ``{\em Horner's method}'' for evaluating a polynomial.
+It assumes, as written here, that if {\tt n} is the degree of {\tt p}, then
+{\tt p(k)} is coefficient of the term of degree {\tt n-k}.
+\footnote{
+Why not {\tt p(k)} the coefficient of the term of degree {\tt k}?  Two reasons,
+both a matter of taste (or if you prefer, custom):  (1) polynomials are normally
+written out with the highest degree term to the left, unless they are the
+start of an infinite power series.  The high order term is the ``most signficant''
+one.  And (2) the loop is cleaner if we order the array for {\tt p} this way.
+(2) is pretty feeble, but (1) really is the custom.
+}
+
+Using {\tt makeRatFcn}, we can easily write a {\tt main()} that transforms command
+line arguments into an arbitrary rational function, and then apply Simpson's
+rule to that function. Our version uses the syntax
+\begin{verbatim}
+   -num n1 n2 ... -den d1 d2 ... -x0 a -x1 b
+\end{verbatim}
+for the command line, with the {\tt nk}'s being the coefficients of the
+numerator, the {\tt dk}'s the coefficients of the denominator, and the interval
+over which we are integrating being from {\tt a} to {\tt b}.
+
+Let's assume that {\tt Simpson.x10} has been compiled using the Java backend. 
+Then running
+\begin{verbatim}
+x10 Simpson -num 1.0 0.0 2.0 -den 3.5 2.4 -x0 0.0 -xn 1.0
+\end{verbatim}
+will apply Simpson to $(x^{2} + 2.0) / (3.5x + 2.4)$ integrated from 0 to 1.
+ 
+Try $4.0/(1.0 + x^{2})$ from 0 to 1: you should get an answer very close to $\pi$.
+
+Another interesting class of functions are the
+so-called ``trigonometric polynomials'', which are functions of the form
+$$
+a_0 + a_1 \sin(\theta) + b_1\cos(\theta) + \ldots + a_n\sin(n\theta) +
+b_n\cos(n\theta)
+$$
+As an exercise, try adding a {\tt makeTrigPoly} method to {\tt Simpson} and experimenting
+with it.  Another worthwhile exercise is to create an extension of {\tt makeRatFcn}
+with a third argument that is a function {\tt f}:
+\begin{verbatim}
+   def makeRatFcnOfF(
+      num: Array[Double](1), 
+      den: Array[Double](1),
+      f:(Double)=>Double){ ... }
+\end{verbatim}
+that forms the ``rational function in $f$'', {\tt num(f(x))/den(f(x))}.   Once it
+is in place, you will have rational functions of a trigonometric polynomial
+for free. The power of closures is hard to overstate.
+
+Here's a little more involved---but still  sensible---closure.
+Consider the integral 
+$$\int_a^b f(x)dx$$
+If we think of $a$ and $f$ as being given and fixed, then
+the integral yields a function of $b$: 
+$$F(b) = \int_a^b f(x)dx$$
+$F(b)$ called
+either the {\em indefinite integral} or the {\em anti-derivative} of $f$ at $b$.
+To implement the anti-derivative as a closure, all we need is a static
+method {\tt antiD} added to {\tt Simpson.x10} that takes as its arguments
+\begin{quote}
+- a {\tt Double}-valued function $f$ of a {\tt Double} argument, and\\
+- the lower limit $a$ for the interval 
+\end{quote}
+and uses a call to Simpson's rule to return the approximate anti-derivative of
+$f$:
+\begin{verbatim}
+   val F: (b:Double)=>Double = Simpson.antiD(f, a); 
+\end{verbatim}
+
+If you want to see the anti-derivative in action, write some nicely
+parallelized code that checks whether Newton was correct in saying that ``the
+derivative of the anti-derivative of $f$ is $f$''. You can use {\tt
+(F(x+h) - F(x))/h} with small values of {\tt h} to approximate the derivative
+of any function {\tt F}, the anti-derivative in particular.
+If your reaction on reading this was ``I can produce a method
+{\tt derivative} that takes {\tt F} as argument and returns the function that
+is its approximate derivative'', you've absorbed the moral of this story.

@@ -1,0 +1,1606 @@
+\chapter{Dealing With Concurrency}\label{chap:concurrency}
+
+In our discussion of the Monte-Carlo computation of $\pi$, we introduced four
+of the five main constructs that \Xten{} uses to describe 
+concurrency:
+\begin{itemize}
+\item {\tt at} to do something at a different place;
+\item {\tt async} to start a parallel computation, or in \Xten{} terms, to
+spawn an activity;
+\item {\tt finish} to wait for a bunch of concurrent computations to be done;
+\item {\tt atomic} to keep things from happening at
+      times when they shouldn't---or if you prefer, to keep access to shared
+      resources orderly.
+\end{itemize}
+The missing construct is {\tt when}, which is related to {\tt atomic}, 
+in that it is used to have one activity wait for another one to do something.
+We'll give some examples in a moment---see
+section \ref{ssec:whenstmt}.
+
+There are a few other \Xten{} constructs, and some useful concurrent data
+structures, but if you know the five, the rest are easy.  For
+example, the {\tt AtomicInteger} class (section \ref{ssec:efficient}) gives you a
+way to work with an integer variable atomically at lower cost than
+the generic {\tt atomic} statement would incur.  Bottom line: what remains
+to be learned has more do with efficiency and grace than much fundamentally new.
+
+\section{Here, There, and Everywhere}
+
+Every bit of running \Xten{} has a {\em place} where it is running.  We've already
+seen places in use in Section \ref{sec:distwork}.  In most other
+parallel programming languages, each place has a unique integer id,
+and that is how you work with it in the running program.
+\Xten{} also provides a unique id, but as part of a larger object whose
+type is {\tt x10.lang.Place}.  Places are thus objects, so
+you can talk about them and compute with them as you would with any
+other object.  
+
+Why not just an integer?  One reason is that \Xten{}
+assumes that different places might be running on different kinds of 
+processors.
+Some places may be implemented on a subset
+of the cores in a graphics processing unit (a ``GPU''),
+others might be more conventional CPU's,
+and still others on special purpose chips perhaps associated with sensors of
+some kind. How nice, then, if you can ask a place whether it is a GPU by
+evaluating ``{\tt place.isCUDA()}''---CUDA is one of several architectures
+for GPUs, and {\tt isCUDA}, as it happens, really is a public method
+for {\tt Places}.  
+
+The concept of {\tt Place} has, therefore, been carefully kept abstract:
+an \Xten{} program's places partition its address space.  That's all they do.
+Places can correspond to processors, but they don't have to. If you are
+implementing \Xten{} on a multiprocessor, you would probably
+set it up to have one {\tt Place}
+per CPU. That would give your users precise control over where their data and
+computation goes.  
+
+But you needn't stop there.
+In principle, you could also implement a ``uniprocessor mode'' for the multiprocessor.
+You could then have a runtime flag that turns the mode on, with the effect that
+the multiprocessor
+and its memory are treated as a single place and the operating system's
+thread manager distributes the work among the available processors.
+From the point of view of the \Xten{} language, this is a perfectly reasonable
+thing to do.  
+
+You can also go the other direction and 
+arrange to have many {\tt Places} per processor, whether or not the
+physical processor is a multiprocessor.  For example,
+you might want to test your supercomputer code on a laptop by putting eight or
+sixteen {\tt Places} on its single core.  This may not run very fast, but it will
+run---or at least hobble---and will give you a chance to find some bugs.  
+
+
+\subsubsection{Getting Work Done At Other Places}
+
+The set of {\tt Place}s available to a program is fixed when the program starts.
+\footnote{
+\Xten{} isn't built for dealing with changes in the available hardware in 
+mid-application.  It can't handle what
+amounts to plugging new computers in in mid-run.  While there {\em are}
+applications for which plugging new computers in mid-run makes sense,
+handling a dynamic set of {\tt Place}s across all applications would slow
+down those computations that do not require that flexibility, and it is these
+more limited application's performance that is \Xten{}'s primary concern.
+}
+
+The constant {\tt Places.ALL\_PLACES} tells you how many places there are.
+The following program displays it on the console:
+%%START X10: src/concurrency/PlaceCounter.x10 placecounter
+\begin{verbatim}
+1  public class PlaceCounter {
+2    public static def main(argv:Array[String](1)) {
+3       Console.OUT.println("This is running on " + 
+4          Place.ALL_PLACES + " places.");
+5    }
+6  }
+7  
+\end{verbatim}
+%%END X10: src/concurrency/PlaceCounter.x10 placecounter
+
+
+\bard{WE NEED MORE HERE ABOUT THE COMMAND LINE AND ENVIRONMENT.
+Run this with a couple different sets of parameters, showing the
+parameters on a couple of settings and how you control the number of places.
+Evidently multi-place is broken on Macs just now, alas.}
+
+If an activity needs to get a computation {\tt S} done at another place {\tt p},
+it executes the statement {\tt at(p) S}.  The initiating activity's thread that 
+is requesting the {\tt at} is suspended, all necessary data from the initiating 
+place is copied to {\tt p}, and then {\tt S} is executed at {\tt p}.  For
+example, the {\tt for} loop here displays ``Hello...' from every available
+place exactly once:
+%%START X10: src/concurrency/HelloFromEveryPlace.x10 hfep
+\begin{verbatim}
+1  public class HelloFromEveryPlace {
+2    public static def main(argv:Array[String](1)) {
+3      for(p in Place.places()) { 
+4        at(p) {
+5          Console.OUT.println("Hello from " + here); 
+6          assert here == p;
+7        }
+8      }
+9    }
+10  }
+\end{verbatim}
+%%END X10: src/concurrency/HelloFromEveryPlace.x10 hfep
+
+\begin{description}
+\item[line \xlref{hfep-for}{3}] 
+Here we loop over a collection.
+We've already seen looping over a range like \xcd`1..N`.   
+In fact, X10 allows loops over anything that looks like a
+collection of things -- we'll see the details in Section \ref{sec:forinloops}.
+
+{\tt Place.places()} implements the
+interface {\tt Sequence}, which is the interface that C and Java arrays
+present: a fixed size and indexed by a single integer.  The entries in the
+{\tt Sequence} are all the {\tt Place}s available to the program, indexed
+by their {\tt ids}. 
+The {\tt for...in} loop i iterates over all the entries of the {\tt Sequence}
+in order.  In this example, that means each {\tt Place} should be visited in order
+by {\tt id}.  
+
+\item[line \xlref{hfep-at}{4}]
+The body of the loop is this single {\tt at(p)} statement.  Let's look carefully
+at what happens as the loop is executed.
+
+    {\em Startup:}  When
+    execution reaches the {\tt for} loop, the action is at a
+    {\tt Place} that we'll call {\tt pMain}.\footnote{
+    Normally, {\tt main} is called because the class is being invoked to do its thing
+    from the command line: ``{\tt x10 HelloFromEveryPlace}''.  In that case,
+    {\tt pMain} by convention is the {\tt Place} with {\tt id==0}.  But for our
+    purposes right now, it does not matter at what {\tt Place} {\tt main} is executing.
+    }
+    
+     {\em The top of the loop:}  {\tt p} gets assigned the next entry in the
+     {\tt Sequence} {\tt Place.places()}, unless none
+     remain, in which case we exit the loop.  
+     
+     {\em The transfer:} The thread executing the {\tt for} is suspended.
+     A new thread is spawned at {\tt p}.
+     
+     {\em The body:} The thread at {\tt p} executes the body of the loop.
+     
+     {\em The bottom of the loop:}. Once the thread executing the body
+     completes its work, it dies, and  the thread for the
+     {\tt for} loop is resumed at {\tt pMain}.
+     The effect is to go back to the top of the loop.
+
+ The important thing to understand here is that {\em there is no concurrency}.
+ Even though every {\tt Place} participates, and even though
+ there is one more thread than
+ there are {\tt Places}, {\em there is still only one thread active at a time.}
+ From the point of view of the \Xten{} language, what we are looking at here
+ is a single activity: it happens to involve a lot of {\tt Places} and threads,
+ but still: it is a single, serial set of operations.  
+ 
+\item[line \xlref{hfep-out}{5}] The identifier {\tt here} is reserved by \Xten.
+It always refers to the {\tt Place} where the computation is happening at
+the moment the occurrence of {\tt here} is accessed. On line \xlref{hfep-out}{5},
+that is the
+{\tt Place} {\tt p} to which the {\tt at} on line  \xlref{hfep-at}{4} sent us.  
+
+\item[line \xlref{hfep-assert}{6}] Just for the sake of the example,
+we check that {\tt p} really is the same as {\tt here}.  
+This is an assumption that we expect always to be true, and would be very
+upset if it turned out to be false.  The \xcd`assert` statement is designed
+for just that purpose.  
+
+(In this case, the rules of the language guarantee that the two really are the
+same.  We wouldn't check on it with an \xcd`assert` in most real programs --
+unless we suspected that the compiler was broken.)
+
+
+   {\tt assert E} checks that an expression {\tt E} whose value is a 
+   boolean (that is, whose value is either {\tt true} or {\tt false}) is {\tt true}, and, if it's not,
+   it reports the error to the standard error stream and {\em aborts the activity
+   that failed the assertion.}   Thus, {\tt assert} both documents and enforces
+   your assumptions in a nice, compact way.
+   Another virtue of using {\tt assert} over a plain
+   old {\tt if} is that there is a compiler switch ``{\tt -noassert}'' that turns off all
+   the {\tt assert} statements in your code.  
+
+
+By the way, something subtle has happened here that is easy to overlook.
+In order to compare {\tt p} with {\tt here}, {\em the thread at {\tt p} has to know
+the value of the variable {\tt p}}: the value of {\tt p} got
+sent from one place, {\tt pMain}, to another, {\tt p}.  We say that
+the {\tt at} statement ``captured the variable {\tt p}''.  
+We'll learn much more about what {\tt at} statements have to capture shortly.       
+\end{description}
+
+In {\tt HelloFromEveryPlace}, {\tt at(p)} is, in effect, being used as a command: 
+``go to {\tt p} and execute the statement that follows.''   It can also be used just to 
+compute an expression.  Again, there is no concurrency: ``{\tt x = at(p) e}'' suspends
+the thread computing {\tt x}, computes the expression {\tt e} at {\tt p}, copies the
+value back to {\tt x}'s {\tt Place}, and resumes {\tt x}'s thread, which
+stores the value into {\tt x}.  We saw this in action in our multi-place version
+of the Monte Carlo computation of $\pi$.  Here's another example:
+%%START X10: src/concurrency/AtExpr.x10 atexpr
+\begin{verbatim}
+1  public class AtExpr {
+2     public static def main(argv:Array[String](1)) {
+3        val pMain = here;                      
+4        val pNext = pMain.next();              
+5        val nextNext = at(pNext) here.next();  
+6        Console.OUT.println("The next next is "+nextNext.id);     
+7     }
+8  }
+\end{verbatim}
+%%END X10: src/concurrency/AtExpr.x10 atexpr
+
+\begin{description}
+\item[Line \xlref{atexpr-pmain}{3}:] 
+{\tt main} starts at somewhere that we'll call {\tt pMain} again.    
+\item[line \xlref{atexpr-pnext}{4}] 
+Whenever {\tt p} is a {\tt Place}, 
+{\tt p.next()} is the next one: the one whose id is 1 more than {\tt p}'s.  If
+{\tt p} is the {\em last} {\tt Place}, then {\tt p.next()} is the {\tt Place}
+with id 0: {\tt next()} wraps around.
+
+\item[Line \xlref{atexpr-nextnext}{5}] At {\tt pNext} we ask what the next {\tt Place}
+is and assign that value, back at {\tt pMain}, to the variable {\tt nextNext}.
+\end{description}
+
+\section{Concurrency: Walking {\em and} Chewing Gum}
+
+For those too young to remember, the gibe ``He wasn't smart enough to walk
+and chew gum at the same time'' was famously (and very unfairly) aimed at
+President Gerald Ford.  You don't want people saying that about your code.
+One of the main reasons for one processor sending a computation---particularly
+a big one---off to another processor is that while the second processor handles
+the computation, the first processor can continue working on other things.
+ 
+Now, {\tt at} gets you to other processors, but, as we have been
+emphasizing, by itself, {\tt at}  does not lead to a parallel, concurrent thread.
+For example, if the two calls to {\tt bigComputation} in\\
+{\tt
+\hspace*{2em}val big1 = at(Place.places(1)) bigComputation(100,200);\\ 
+\hspace*{2em}val big2 = at(Place.places(2)) bigComputation(200,100);\\ 
+}
+are independent of one another, there is no reason not to do them 
+concurrently.  But the code, as we have written it above, will wait for the
+assignment to {\tt big1} to complete before initiating the second, because the
+first {\tt at} will suspend its own thread until its remote thread finishes.  
+
+Getting  {\tt Places} 1 and 2 do most of the work using this straight-line
+code yields no
+speedup {\em per se}, and it won't do so no
+matter what {\tt bigComputation} is actually doing.  The two
+constructs that we need to get the two {\tt Places} working simultaneously are:
+\begin{quote}
+\begin{description}
+\item[ {\tt async} {\tt S}:] to start a new
+activity that runs in parallel with its originator.  The new activity executes the
+statement {\tt S} and then dies.
+\item[{\tt finish} {\tt S}:] to execute the statement {\tt S} and on reaching the
+end of {\tt S}, suspends its own activity until every activity spawned by
+executing {\tt S} has completed.  
+\end{description}
+\end{quote}
+If you come from the C world, this is an extension of the familiar ``{\tt fork/join}''
+duo, except that {\tt finish} allows you to wait for a whole set of activities,
+whereas {\tt wait} is a per-thread operation.
+Here's how \Xten's two work together to make our example hum:
+%%START X10: src/concurrency/WalkAndChew.x10 walkandchew
+\begin{verbatim}
+ 1        val n = 3;
+ 2        val big1: GlobalRef[Cell[String]] = GlobalRef[Cell[String]](new Cell[String]("!"));
+ 3        val big2: GlobalRef[Cell[String]] = GlobalRef[Cell[String]](new Cell[String]("2"));
+ 4        val pMain = here;   
+ 5        finish { 
+ 6           async at(Place.place(0)) { 
+ 7              val bc1 = bigComputation(n,n);
+ 8              at(big1.home) big1()() = bc1; 
+ 9           }
+10           async at(Place.place(0)) { 
+11              val bc2 = bigComputation(n,n);
+12              at(big2.home) big2()() = bc2; 
+13           }
+14        } 
+15        assert big1()().equals(big2()()); 
+\end{verbatim}
+%%END X10: src/concurrency/WalkAndChew.x10 walkandchew
+
+\bard{Picture!}
+\begin{description}
+\item[Line \xlref{walkandchew-pMain}{4}: ]
+We capture the {\tt Place} we are coming from, so we can let the {\tt Places}
+that are doing the dirty work know where to send their results.
+\item[Line \xlref{walkandchew-finish}{5}: ]
+This {\tt finish} guards two {\tt asyncs}.  When control reaches here, the two {\tt asyncs}
+will get executed.  Control will then reach the end of the {\tt finish}'s block
+at line \xlref{walkandchew-finishend}{14}. The {\tt finish}'s  activity will be stopped until the 
+two {\tt asyncs} have both finished.  Only then will line  \xlref{walkandchew-assert}{15}
+be reached.
+\item[Lines \xlref{walkandchew-async1}{6} and \xlref{walkandchew-async2}{10}: ]
+Each {\tt async} creates an activity that runs in parallel with the {\tt finish}.
+That activity computes its value at the remote {\tt Place}
+and then ``goes home'' to slam the result into memory there.
+\item[Lines \xlref{walkandchew-big1}{8} and \xlref{walkandchew-big2}{12}: ]
+Here we see the `` {\tt at}''s capturing {\tt bc1} at {\tt Place} 1 and {\tt bc2} at 
+{\tt Place} 2.
+and assigning their values back home, which is wherever the original activity was executing.
+\item[Line \xlref{walkandchew-assert}{15}: ]
+When we get here, we {\em know} that both {\tt big1} and {\tt big2} have been
+set to their new values, so the comparison is safe.
+\end{description}
+
+If you want to play with this code, we have provided the serial version in
+\href{src/concurrency/WalkThenChew.x10}{WalkThenChew.x10}, and the
+parallel version in \href{src/concurrency/WalkAndChew.x10}{WalkAndChew.x10}
+
+You might also want to experiment by changing line 
+\xlref{walkandchew-async2}{10} with ``{\tt at(Place.places(2))} {\tt async}'', in
+which the new activity is spawned at the {\em remote} {\tt Place}, rather than at
+the current one. 
+
+Finally, a more realistic example of this sort of program is a shared-memory
+(single {\tt Place}) version of the {\em Quicksort} algorithm, a working version
+of which you can find in
+\href{chapter-concurrency/QSortInts.x10}{QSortInts.x10}.:
+%%START X10: src/concurrency/QSortInts.x10 qsortints
+\begin{verbatim}
+ 1  public class QSortInts {   
+ 2     /**
+ 3      * top-level call: sorts the input array in place using the
+ 4      * quicksort algorithm.
+ 5      * @param data the array of Ints to be sorted.
+ 6      */
+ 7     public static def sort(data: Array[Int](1)) {
+ 8        val r = data.region;
+ 9        val first = r.min(0), last = r.max(0);
+10        sort(data, first, last); 
+11     }
+12     public static def sort(data:Array[Int](1), 
+13               left:Int, right:Int) {
+14        var i: Int = left, j: Int = right;
+15        val pivot = data(left + (right-left)/2);
+16        while (i <= j) {
+17           while (data(i) < pivot) i++;
+18           while (data(j) > pivot) j--;
+19           if (i <= j) {
+20              val tmp = data(i);
+21              data(i++) = data(j);
+22              data(j--) = tmp;
+23           }
+24        }
+25        finish { // when you are here i > j 
+26           if (left < j) async sort(data, left, j);
+27           if (i < right) async sort(data, i, right);
+28        }
+29     }
+\end{verbatim}
+%%END X10: src/concurrency/QSortInts.x10 qsortints
+\begin{description}
+\item[Line \xlref{qsortints-sort}{10}] 
+The algorithm is recursive: the call {\tt sort(data,left,right)} sorts the slice 
+of the array between the indices {\tt left} and {\tt right}.  We assume that
+{\tt left} {\tt <=} {\tt right}.
+
+\item[Line \xlref{qsortints-pivot}{15}]
+This is a naive choice of ``pivot'' point: we hope that the element in the middle
+of the slice is close to the median for the slice.
+This loop reorganizes the slice into
+two subarrays: (1) those elements less than the pivot, and (2) those greater.
+
+\begin{finepoint}
+If you're wondering why we wrote {\tt left} {\tt +} {\tt (right-left)/2} rather than
+the more natural {\tt (left+right)/2}, the answer is {\em integer overflow}: the intermediate sum
+{\tt left+right} may overflow, but if {\tt left} and {\tt right} are non-negative
+{\tt Ints} and {\tt left} {\tt <=} {\tt right}, then the difference {\tt right-left} is not
+going to overflow, and since {\tt left} {\tt +} {\tt (right-left)/2}
+{\tt <=} {\tt right}, our computation of the middle index is safe.
+\end{finepoint}
+
+\item[Lines \xlref{qsortints-while}{16}-\xlref{qsortints-endwhile}{24}] 
+This loop partitions the input slice of {\tt data} into two parts,
+and reorganizes {\tt data} so that the left part consists of the entries that
+should precede the pivot, and the right part consists of those that should
+follow it.  This is straightforward serial code. 
+
+\item[Lines \xlref{qsortints-finish}{25}-\xlref{qsortints-endfinish}{28}] 
+We can use two independent activities to sort the left- and right-hand
+portions of the slice.   The {\tt finish} guarantees that when control reaches
+the end of the method, the whole slice specified by its arguments has been sorted.  
+\end{description}
+
+{\bf Exercise:} If you stare at this code for a while, you'll probably realize several things.
+First, we don't really need {\em two} {\tt asyncs}: we only need an extra {\tt async}
+when we have
+to sort {\em two} subarrays.  If there's only one (which can happen if by some evil
+chance, the pivot turns out to be the largest or smallest element in the slice),
+there's no gain to spawning a new acitivity: the current activity can handle it.
+Also, we really don't have to put the ``{\tt finish}'' in the
+recursive call, {\em if we make that method {\tt private}, so no one will mistakenly call it
+directly}.  The {\tt finish} gets moved into the public, top-level {\tt sort} method, because
+we don't really care in what order the spawned activities finish: all we care is that {\em all}
+of them finish.  This brings up an important point: it does not matter how, when, or where the
+activities inside a {\tt finish} get spawned---all must be complete
+before the {\tt finish} will allow its own activity to resume.  So the activities spawned by the
+recursive calls are all monitored by the one {\tt finish} at the top level when
+you use it to guard the call to {\tt sort} in line \xlref{qsortints-sort}{10}.
+
+If you want to see our version of this improved code, you can find it in
+\href{chapter-concurrency/QSortInts2.x10}{QSortInts2.x10}.  In
+\href{chapter-concurrency/QSortInts3.x10}{QSortInts3.x10}, we push it one step
+farther with a less naive choice of pivot.
+
+\begin{finepoint}
+Finally, a different question, why just sort {\tt Ints}? 
+Why not sort data of any type whatever, so long as we know how to compare
+two things of that type using the  binary operators ``{\tt <}'' and ``{\tt >}''?   
+\begin{quote} 
+We need syntax that allows us to declare the operators ``{\tt <} '' and ``{\tt >}'',
+and  {\tt x10.util.Ordered[T]} that is exactly what we need.
+It requires its implementors to provide four ``methods'':
+\begin{quote}
+\begin{verbatim}
+operator this <  (that: T): Boolean;
+operator this >  (that: T): Boolean;
+operator this <=  (that: T): Boolean;
+operator this >=  (that: T): Boolean;
+\end{verbatim}
+\end{quote}
+These declarations are just like the abstract method declarations we've seen in interfaces
+before, except that the keyword phrase ``{\tt operator this}'' 
+is used rather than ``{\tt def}''.  Of course, there is nothing special about comparison
+operators.  You can also implement any of the arithmetic and bitwise operators for
+any class or struct you create.
+\footnote{
+For examples, take a look at {\tt x10.lang.Arithmetic.x10}, where all
+of the numeric operators are declared, and {\tt x10.lang.Bit\-wise.x10}, where you'll
+find the shifts, and's, and or's. 
+}
+
+If a class or struct {\tt T} implements {\tt Ordered[T]}, and if {\tt t1} and {\tt t2}
+are two instances of {\tt T}, then these declarations say we can
+execute  {\tt t1} {\tt <} {\tt t2} to determine whether {\tt t1} is less than {\tt t2},
+and of course the same for the other three operators..
+
+How do you declare concrete versions of these operators in your own classes
+and structs so that they can implement this interface?  It's as easy as you would think:
+add the keyword ``{\tt public}'' and provide the body of code that implements the 
+operator:
+\begin{verbatim}
+   public operator this  < (that: T): Boolean {
+      // your implementation comparing "this" to "that"
+      // goes here
+   }
+\end{verbatim}
+The only difference, once again, from a method declaration is that  ``{\tt operator this}''
+replaces ``{\tt def}''.
+
+There is one final problem: how does one say ``my class {\tt T} implements
+{\tt Ordered[T]}'' when you go to use {\tt T} in a declaration?
+The operator ``{\tt <:}'' that we introduced on page
+\pageref{subsub:type:anything} does the trick:
+
+\begin{verbatim}
+   public class QSort[T]{ T <: Ordered[T] }  { ... }
+\end{verbatim}
+\end{quote}
+
+You can find our version of the code with these modifications in 
+\href{chapter-concurrency/QSort.x10}{chapter-concur\-ren\-cy/QSort.x10}.
+
+It is a good exercise to run this code on some big examples in order to
+understand the cost for writing  generic code versus type-specific code.
+We provided some minimal wrappers
+for {\tt Int} and {\tt String} as examples to get you started using our generic code. 
+Strings are an interesting variant, because if they have an average length much
+greater than 8 or 10, then---unlike the story for Int---significantly more effort may be
+required to do the comparisons than the
+overhead of the array operations and {\tt async} management.  This should reduce
+the relative penalty for going generic (which should be independent of the item
+size and comparison cost).   We also 
+have provided a ``native'' Quicksort for strings, 
+\href{chapter-concurrency/QSortStrings.x10}{QSortStrings.x10},
+that you can use to compare with the generic.
+\end{finepoint}
+\subsection{More About Asyncs}\label{ssec:moreasyncs}
+
+When control reaches {\tt async S}, a new
+activity in parallel with the executing activity is spawned to execute {\tt S}.
+The two activities are both running in the same {\tt Place}  and have access
+to the same variables, but otherwise they are
+independent of one another, except for such synchronization as the originating
+activity imposes---for example, executing the {\tt async} within a {\tt finish}.
+
+The best way to think about multiple activities happening concurrently at a
+single {\tt Place} is to imagine there is one master activity, ``{\em the scheduler}'', 
+that runs with special privileges.  The
+scheduler alone gets to decide, at each point in time, which activity is going to run.
+It will generally limit the time the activity can be run before it interrupts
+the activity on behalf of the other waiting activities.  It may also choose to interrupt an
+activity part-way into its time slot, even in mid-statement, if it perceives a need, like
+an I/O operation that must be serviced promptly.  Finally, an activity can ask the
+scheduler to suspend it until some event occurs: ``As soon as the value of
+the variable {\tt x} is greater than 12, let me resume, please.'' 
+
+Having the scheduler around is a little like having a partner helping you by
+writing some of the code.  Sequential code that you write all by 
+yourself can be pretty bad, hard enough to get right.  Concurrent code
+can be much, much worse: it has all the problems of sequential 
+code plus a few really bad ones of its own because your co-author,
+the scheduler, neither knows nor cares about your intentions.
+
+We are going to look carefully at three problems that you don't find in
+sequential code:
+
+\begin{description}
+\item[1. Data races: ]
+As we saw when we went to implement the multi-cluster Monte-Carlo computation
+of $pi$ (page \pageref{verb:montepierror}), the scheduler can create situations
+where several activities sharing a resource (like a storage location or an I/O stream)
+can run into trouble because they failed to coordinate their actions.  We'll expand
+on that example in a moment.
+\item[2. Deadlock: ]
+Deadlock happens when some family of activities can make no progress because
+each one has asked the scheduler to  suspend it because it is waiting for one of
+the other activities to update some variable. We'll see an example of how this
+might happen in \Sref{ssec:queues}.
+\item[3. Error handling: ]
+Errors occur in serial code, too, of course.  But parallelism adds a level of 
+complexity.  Suppose an activity {\tt A} spawns an activity {\tt B} to do some
+job---store a row in a relational database, perhaps.  {\tt A} goes on doing
+whatever it has to do while {\tt B} does its thing.  
+Suppose that {\tt A} doesn't need any {\em result} returned by {\tt B},
+it just needs {\tt B} to do what it was asked to do.  What happens
+if  {\tt B}
+fails?  How does {\tt A} find out?  When?  It may or may not be okay for
+{\tt A} to continue when {\tt B} fails.  Somehow we've got to get 
+help from the scheduler, who is responsible for the overall management
+of our activities. We'll discuss all
+this in Section \ref{sec.???}
+\end{description} 
+
+None of these problems is \Xten{}'s fault.  In fact, \Xten{} has features that make
+writing parallel code safer and more readable than many high-performance languages.
+(There are languages that give even
+safer concurrency, but they pay for it by having programs run substantially
+more slowly.)  Our aim is that by the time you finish this book, you will be comfortable
+using \Xten{} to write serious concurrent code that's visibly---and in many
+cases, even {\em provably}---safe.
+
+\subsection{Finish Really Means ``Finish Everything Everywhere''}\label{ssec:finishmeans}
+
+The {\tt finish S} construct executes the statement {\tt S} and then
+waits until {\em all} activities started by {\tt S}
+are finished.  We've seen examples that show it waiting for the activities started
+by {\tt asyncs}
+appearing explicitly in {\tt S},  but you should be aware that it also waits
+for any activities spawned by those {\tt asyncs}, and even activities
+spawned by methods called while executing {\tt S}.  If you worked through all of
+the Quicksort examples, you will have seen this at work.  Here is a much simpler program,
+with a more direct example:
+%%START src/concurrency/NestAsyncs.x10 nestasyncs 
+\begin{verbatim}
+ 1   var a:Boolean = false, b:Boolean = false, c:Boolean = false;
+ 2   def nestAsyncs() {
+ 3     finish { 
+ 4        async {
+ 5          async { a = true; }
+ 6          async { b = true; }
+ 7        }
+ 8        async { c = true; }
+ 9     }
+10     assert a && b && c;
+11   }
+\end{verbatim}
+%%END src/concurrency/NestAsyncs.x10 nestasyncs 
+
+When {\tt nestAsyncs()} is invoked, four activities get started: one at 
+line \xlref{nestasyncs-async1}{4},
+which in turn starts the activities at lines \xlref{nestasyncs-async2}{5}.
+and \xlref{nestasyncs-async3}{6},
+and finally the original activity spawns another at line \xlref{nestasyncs-async5}{8}.
+The {\tt finish} beginning at line
+\xlref{nestasyncs-finish}{3} and ending at line \xlref{nestasyncs-endfinish}{11}
+waits for all four of these to finish before control
+proceeds to line \xlref{nestasyncs-assert}{10}.  
+So, the {\tt assert} there is always going to be succeed.
+
+We can rewrite the program so that some of the activities are spawned by
+a different method.  Even this does not fool {\tt finish}, which still waits
+for all of the activities to finish.
+%%START src/concurrency/IndirectAsyncs.x10 indasyncs 
+\begin{verbatim}
+ 1   var a:Boolean = false, b:Boolean = false, c:Boolean = false;
+ 2   def spawnAsyncs() { 
+ 3      async {a = true;}
+ 4      async {b = true;} 
+ 5   }
+ 6   def nestAsyncs() {
+ 7     finish { 
+ 8        async  spawnAsyncs();
+11       async { c = true; }
+12     }
+13     assert a && b && c;
+14   }
+\end{verbatim}
+%%END src/concurrency/IndirectAsyncs.x10 indasyncs 
+The activity started in line \xlref{indasyncs-async3}{8} calls {\tt spawnAsyncs},
+which spawns two {\tt asyncs}.  At the point where we reach the end of the
+{\tt finish} at line \xlref{indasyncs-endfinish}{10}, as many as 4 {\tt asyncs} may be
+alive.  The main activity is blocked until all 4 finish.
+
+\subsection{When To Use {\tt finish}}\label{ssec:whenusefinish}
+
+Most {\tt async}s should have a {\tt finish} controlling them.
+The usual idiom is: 
+\begin{verbatim}
+finish {
+   /*  start some async computations here */
+}
+/* use the results here */
+\end{verbatim}
+
+If you don't have a {\tt finish} around the {\tt asyncs}, then you have no way of
+dependably knowing when all of its results are available.
+Sometimes this may be exactly what you want---some examples:
+
+\begin{itemize}
+\item Perhaps you have just finished some big part of the computation and are
+      spawning off an activity to write the answer to a file. If the current activity
+      doesn't need the file, there's no need
+      to wait for the child activity to finish writing.
+
+\item Perhaps at some point there are several ways to get the result you need.
+	You might want to fire off one {\tt async} per way.  For example, ``compute from
+	scratch'', ``look it up in the database'', and ``search the Web''.
+	Here all you want is one  answer, so all you care about is when the {\em first}
+	computation in the set succeeds.  You will probably want to have some way
+       to kill the others then, rather than letting them run and
+       waste time and resources.   We'll look at this sort of pattern in section
+      \ref{sec.firstcomefirstserve}.
+
+\item Perhaps the activity is some kind of background chore, like listening
+	for incoming network traffic and servicing it.  It doesn't particularly have
+	a final answer.  On the contrary, it's supposed to run quietly doing its
+	thing forever.  Waiting for it to finish would be ridiculous.  It's not supposed to.
+
+\item Perhaps the newly spawned activity will run for a long time, but the main 
+      activity, although it {\em does} need the result, has to proceed with some
+      other work: you care  about the answer, you just don't want to be idle
+      while you wait for it.  Some other communication mechanism is needed
+      for the child activity to tell the
+      main activity when its result is available.  We'll worry about
+      this pattern in section \ref{sec:clocks}.
+\end{itemize}
+
+While none of these is particularly outr\'{e}, none of them is terribly common in \Xten{}
+programming, either.   Most activities should have a {\tt finish}.
+
+{\bf Basic Question:} Is there a point in the currently executing program that
+you {\em might} need to be sure a set of {\tt asyncs} has completed?  
+
+If the
+answer is ``Yes!'',   you obviously need put the {\tt asyncs} inside a {\tt finish}.
+If you're not sure the answer to that question is ``No!'', err on the side of caution:
+you probably want the {\tt finish}.   Remember that the scheduler will eventually
+cause you problems if it possibly can.
+
+{\bf A Less Obvious Question:} Can one or
+more of the {\tt asyncs} have terminated only because some unrecoverable
+error cause them to be aborted, not because they actually completed the task
+they were set to do?  
+
+From the point of view of the {\tt finish}, done is
+done: it does not ask {\em how} an {\tt async} terminated, it just wants to know
+that it {\em has} terminated.  Is there hope that if you knew why the abnormal
+termination (an ``{\em abend}'') occurred, could you recover? 
+Or the flip side: if an abend occurred, dare you continue?  We'll discuss ways
+to handle these questions in section \ref{sec:error-recovery}.  For the moment
+we just wanted to make sure you were aware of what {\tt finish} does {\em not} do for you.
+
+\section{Data Races}
+ Let's quickly review that story with a very simple example:
+\bard{The following needs to be checked when \Xten{} is buildable}
+%%START X10: src/concurrency/AsyncInc.x10 all
+\begin{verbatim}
+1  public class AsyncInc {
+2      public static def main(args: Array[String]) {
+3         var n : Int = 0;
+4         finish for (var m: Int = 0; m<2; m++) {
+5            async for(var k: Int = 0; k<10000; k++) n++; 
+6         }
+7         Console.OUT.println("n is "+n);
+8      }
+9  }
+\end{verbatim}
+%%END X10: src/concurrency/AsyncInc.x10 all
+This code appears to be incrementing the variable {\tt n} 20,000 times.  
+But does it?  We ran it several times on a 2-core laptop, and the console display
+for the third run was ``{\tt n is 17573}'', and not ``{\tt n is 20000}''.
+We then ran it a few more times and pretty consistently we got an answer
+near 17,500.  So we somehow lost roughly 2,500 out of 20,000 increments,
+or one in every eight.
+
+\begin{finepoint}  
+The reason for having the big {\tt for} loop in the {\tt async} is that we want the
+thread it creates to do enough work that there is a reasonable, if still small, probability
+that it {\em will} get interrupted.
+\end{finepoint}  
+
+As we described in parallelizing our Monte Carlo code (\Sref{ssec:montepierror}),
+the cause for our troubles is that while {\tt n+=1}
+may look like ``one operation'', it is not: it is not {\em atomic}.   The \Xten{}
+compiler is going to treat {\tt n+=1} as a 3 step process: (1) fetch the current
+value of {\tt n}, (2) add 1 to to get the new value,
+and (3) store the new value back in {\tt n}.  
+
+The problem is clear: if there really are three steps, then
+the scheduler is free to interrupt either activity after any one of them.  The way
+the outer loop is written here, there will be two activities $A$ and $B$ running at once.
+Some small percentage of the time, the scheduler will interrupt one of them----let's
+say it is $A$----before it completes step 3.  Suppose that $B$ then gets to run and happens
+to start by loading the current value of {\tt n}, which we'll call {\tt nStart}.
+It is the same value that $A$ was about
+to update, because $A$ never finished storing its update.
+Next suppose that the scheduler allows $B$ to run 1,000 iterations of the inner
+loop, and then suspends it to give some other activity a chance to run.  At 
+this point, {\tt n}'s value is  {\tt nStart} {\tt +} {\tt 1000}.
+If $A$ gets to run next, it will pick up where it left off, namely, by storing into {\tt n} 
+what it, $A$, thinks the updated value should be now: {\tt nStart+1}.
+So instead of {\tt n} being {\tt nStart} {\tt +} {\tt 1001}, {\tt n} is now
+{\tt nStart} {\tt +} {\tt 1}.  1000 increments have been lost.  Forever.
+
+Because we put everything in a big {\tt for} loop,
+we created 20,000 chances for the scheduler to interrupt at a bad spot.  Sure enough,
+by the third time we ran the program, it did: perhaps it did only once, but once was enough.   
+That is the true horror of this sort of bug: failures happen, but they happen only
+rarely and are therefore easily overlooked.  If we'd made the {\tt async}'s {\tt for} loop a lot smaller,
+say 2,500 as the limit rather than 10,000, we might have gone dozens or even
+hundreds of executions before seeing any failures at all.
+
+If your activities have any bugs in them of this sort, you should expect that
+the scheduler will eventually find and
+reveal them. If you are lucky, it will {\em not} happen during an important demo. If you
+are unlucky, your program will pass all the tests and demos just fine, and the
+error will happen when many peoples' lives are depending on the
+automobile, airplane, or medical equipment your program is controlling. 
+
+So: it is
+best to imagine that {\em the scheduler is a wicked, conscience-free gnome
+out to ruin everything if you let it}, and then make very sure that you never let it.
+
+We are, unfortunately, not just being facetious here. Concurrent and distributed
+programming is notoriously tricky, precisely because it is so hard to know
+what is going to happen next.  The structured patterns that \Xten{} provides for
+dealing with concurrency and the discipline these patterns enforce are based 
+on several decades of lessons too often learned the hard way.
+
+\subsection{Curing Races: Atomic Power}\label{ssec:curingraces}
+
+There are two basic constructs in \Xten{} that allow activities to 
+coordinate their access to shared data:
+\begin{description} 
+\item[{\tt atomic} {\tt S}: ]
+{\tt S} is an \Xten{} statement.
+Once one activity begins to execute {\tt S}, no other activity may enter that
+code until the first activity finishes.  In other words, at any one moment in
+time, {\em at most one activity can be running} {\tt S}.
+\item[{\tt when(expr)} {\tt S}:]
+Here {\tt expr} is a boolean expression and {\tt S} is a statement.
+When an activity's execution reaches the {\tt when}, 
+the expression {\tt expr} is evaluated, and if it is false, the activity is suspended.  
+Otherwise, the statement {\tt S} is executed.
+The scheduler resumes a blocked {\tt when} to execute {\tt S}  only after
+{\tt expr}, by virtue of some other activity's work, has become true.
+The whole construct {\tt when(expr)} {\tt S} is guaranteed to be executed
+atomically---as if you had written {\tt atomic} {\tt when( }{\tt expr} {\tt )} {\tt S}.
+\end{description}
+
+Let's be precise about what we are guaranteeing, because what is at stake
+is the behavior not just of one {\tt atomic} block, but the mutual behavior of
+a set of activities executing a set of {\tt atomic} and {\tt when} blocks:
+\begin{quote}
+   An X10 program in which all accesses (both reads and writes) of shared data 
+appear in {\tt atomic} or {\tt when} blocks is guaranteed to use that
+data atomically, and {\em no races involving those accesses can occur.}
+
+Atomic sections at the same {\tt Place} are mutually exclusive. 
+That is, if one activity $A$ at a {\tt Place} {\tt p} is executing
+an {\tt atomic} or a {\tt when} block, then no other activity $B$ at {\tt p} can also be 
+executing an {\tt atomic} or a {\tt when} block concurrently.
+If such a $B$ does attempt
+to execute an {\tt atomic} or a {\tt when} block before $A$ finishes the
+active block, $B$ will be suspended until $A$ finishes its block. 
+\end{quote}
+
+If some accesses to shared data are not protected by {\tt atomic}
+or by {\tt when},  there are no guarantees: you are on your own, and whatever
+happens to you happens to you.
+
+We'll look at a bunch of examples of these constructs in action in a moment.
+First, though, we want to say a few more words about their costs and correct
+use.
+
+The first and most important thing is that the guarantees do not come for
+free.  The statement {\tt S} in
+these two constructs cannot be arbitrary.  To begin with, {\tt S} cannot spawn
+another activity, nor can it use statements like {\tt finish} and {\tt when} 
+that might block an activity.\footnote{
+You may nest an {\tt atomic} block in {\tt S}, but it is not clear
+when that might be desirable.
+}
+Finally, {\tt S} cannot use {\tt at}.  There are rationales for all these
+restrictions.  For example, allowing something like a {\tt when} in
+{\tt S} might cause {\tt S} to deadlock the program, because it can get
+blocked at the {\tt when}, and our guarantees say that
+{\em no other atomic construct can
+execute at {\tt S}'s {\tt Place} until {\tt S} completes.}  Please take our word
+that the others have similar rationales.
+
+We need to say a little something about cost.  The point of these constructs
+to serialize access to shared data in a predictable way.  The choice was
+to serialize the atomic constructs themselves: at most one runs at a given
+time at a given {\tt Place}.  This flies in the face of our goal to exploit
+parallelism as much as we can.  It can be very expensive for programs
+in which multiple activities need frequent access to volatile shared data.
+One activity executing an {\tt atomic} block can stop 100
+other activities cold who want to use other {\tt atomic} blocks, {\em even
+if these other blocks share no data at all with the active block}.
+
+A classic example where one has to be careful is
+when one activity is pushing small jobs onto a queue for 
+some set of other activities to handle.  If the jobs are many but small,
+the queue maintenance is at
+the heart of the matter and has to be handled carefully to minimize the
+overhead due to the serialization.
+
+\subsection{Efficient Atomic Expressions}\label{ssec:efficient}
+\Xten{} provides some less expensive ways to get some of the same functionality
+in some common situations.  Our failing {\tt for} loop in \Sref{ssec:curingraces} 
+above is an example.  We can use {\tt atomic} to cure this race, as we did
+in Figure \ref{fig:mpmtmc} in \Sref{ssec:montepierror}, page
+\pageref{fig:mpmtmc}, for a similar problem with our Monte Carlo code:  
+%%START X10: src/concurrency/AtomicInc.x10 ait
+\begin{verbatim}
+1  public class AtomicInc {
+2  	public static def main(args: Array[String]) {
+3  	   var n : Int = 0;
+4  	   finish for (var m: Int = 0; m<2; m++) {
+5  	      async for(var k: Int = 0; k<10000; k++) atomic n++; 
+6  	   }
+7  	   Console.OUT.println("n is "+n);
+8  	}
+9  }
+\end{verbatim}
+%%END X10: src/concurrency/AtomicInc.x10 ait
+
+Forcing the {\tt n+=1} to be executed atomically guarantees that the sum is driven
+home to {\tt n} every time the expression is evaluated, and guarantees that no
+value of {\tt n} can be loaded by one thread while the other is processing it.
+
+Several activities accessing a shared variable is such a common event that \Xten{}
+provides a family of classes in the package {\tt x10.utils.concurrent} that make
+executing the update atomically more
+efficient than using an {\tt atomic} block.\footnote{
+The APIs are modeled on an analogous set of classes
+that are in the Java standard distribution in the package 
+\href{http://download.oracle.com/javase/1.5.0/docs/api/java/util/concurrent/atomic/package-summary.html}{java.util.concurrent}.  You may find the documentation there useful.
+}
+For example,
+the class {\tt x10.util.concurrent.AtomicInteger} can be used for our asynchronous
+increments:
+%%START X10: src/concurrency/AtomicIntInc.x10 aiit
+\begin{verbatim}
+1         val n = new AtomicInteger(0); 
+2         finish for (var m: Int = 0; m<2; m++) {
+3             async for(var k: Int = 0; k<10000; k++) n.getAndAdd(1); 
+4         }
+5         Console.OUT.println("n is "+n.get());
+\end{verbatim}
+%%END X10: src/concurrency/AtomicIntInc.x10 aiit
+\begin{description}
+\item[Line \xlref{aiit-n}{1}:]
+{\tt n} is now a {\em  reference} to an {\tt AtomicInteger} rather than in {\tt Int}. 
+The initial value of {\tt n} is {\tt 0}.  There are several methods for updating
+that value, all guaranteed to be atomic:
+\begin{quote}
+{\tt n.set(k:Int)} sets the value to {\tt k}.
+
+{\tt n.getAndAdd(k:Int)} returns the current value of {\tt n}, but before doing so
+adds {\tt k} to the current value and stores the result as the new value of {\tt n}.
+
+{\tt n.addAndGet(k:Int)} adds {\tt k} to the current value of {\tt n}, stores the
+result as the new value of {\tt n}, and returns the result.
+
+{\tt n.compareAndSet(expected:Int,} {\tt newValue:Int)} compares the current
+value of {\tt n} with {\tt expected}, and if the two are equal, sets 
+{\tt n}'s value to {\tt newValue}.  The return value is a {\tt Boolean}:
+{\tt true} if the expected and actual values were the same, {\tt false}
+otherwise.
+\end{quote}
+If you just need the current value---no update---you use {\tt n.get()}.
+\item[Line \xlref{aiit-async}{3}:]
+Since {\tt addAndGet} returns the updated value of {\tt n}, the call
+{\tt n.addAndGet(1)} is precisely the equivalent of ``{\tt atomic n+=1}''.
+\end{description}
+
+The timings on a dual core laptop showed the {\tt atomic} version running nearly
+three times as slowly as the {\tt AtomicInteger} version 
+for the C++ runtime.  Your experience may not be as dramatic,
+(and we'll show an example in a moment where a well-placed {\tt Atomic} sometimes wins),
+but it pays to at least try {\tt AtomicInteger} when you can.
+
+The other classes in {\tt x10.util.concurrent} are {\tt AtomicBoolean}, 
+{\tt AtomicDouble}, {\tt AtomicFloat}, {\tt AtomicLong}, and
+{\tt AtomicReference}.  These classes have methods similar to those for
+{\tt AtomicInteger}, with minor variations to accommodate the different
+types.
+
+{\bf Exercise}  Our first example of an atomic update was back in
+our discussion of the Monte-Carlo computation of $pi$.  Our final code,
+shown in Figure \ref{fig:mpmtmc}, uses an atomic update in the
+method {\tt countAtP} to protect the integrity of the final {\tt count}:
+%%START X10: src/intro/MontePiCluster.x10 countatp
+\begin{verbatim}
+ 1      public static def countAtP(pId: Int, threads: Int, n: Long) {
+ 2          var count: Long = 0;
+ 3          finish for (j in 1..threads)  {
+ 4              val jj = j;
+ 5              async {
+ 6                  val r = new Random(jj*Place.MAX_PLACES + pId);
+ 7                  val rand = () => r.nextDouble();
+ 8                  val jCount = countPoints(n, rand);
+ 9                  atomic count += jCount;
+10              }
+11          }
+12          return count;
+13      }
+14      /**
+\end{verbatim}
+%%END X10: src/intro/MontePiCluster.x10 countatp
+Try replacing {\tt count} with an {\tt AtomicLong} here.  You can use 
+either {\tt addAndGet} or {\tt getAndAdd} in line \xlref{countatp-atomic}{9}
+to update count, because the return value is ignored here:
+\begin{verbatim}
+11                 count.addAndGet(jCount);
+\end{verbatim}
+There might not be much of an effect on the running time, but why not try it
+and see?  We're not being coy here in not telling you what you wiil
+see.  That will be very much dependent
+on hardware, operating system, and implementation parameters for your system.
+
+To understand better the trade-offs of various ways to use {\tt atomic} and the
+atomic helper classes, we are going to look at a number of ways to implement
+a histogram for an {\tt Int}-valued data set.  Recall that a histogram tracks
+the number of occurrences of each value in a data set.  Here is
+a bar graph for the histogram of a collection of 9 integer values $\{1,2,2,1,3,1,3,3,4\}$.
+\begin{figure}[!htbp]
+\hrulefill
+\begin{center} 
+\includegraphics[width=1.5in]{"images/histogram"} 
+\caption{A Histogram For The Values $\{1,2,2,1,3,1,3,3,4\}$}
+\label{fig:histogram}
+\end{center}
+\hrulefill
+\end{figure}
+
+The main loop for computing a histogram serially is very simple:
+\begin{verbatim}
+      for (i in firstIn..lastIn) result(input(i))++; 
+\end{verbatim}
+The {\tt result} array has one entry per possible input value, and initially all
+of these entries are 0.  The {\tt for} loop contains a new idiom: it is
+read: ``for all integers {\tt i} in the range {\tt firstIn} to {\tt lastIn}
+(including these end points) do...''.  In this case, what we want to do  is
+for each entry {\tt input(i)} in the {\tt input} array, to increment the count in
+ {\tt result(input(i))} by 1.  When the loop terminates, {\tt result(k)} will be
+ the number of times {\tt k} appeared as {\tt input(i)} for some {\tt i}.
+ 
+ \begin{finepoint}
+ The syntax ``{\tt for(i} {\tt in} {\tt firstIn..lastIn)}''  is identical in meaning to the
+ older style ``{\tt for(var i:Int=firstIn;} {\tt i<=lastIn;} {\tt i++)}''.  So which to use?
+ The main advantage of the new syntax is that {\tt i} appears once instead
+ of three times, which makes for a more readable loop for most people,
+ and is a definite plus if you don't like to type.  But seriously, if the natural
+ name for the loop variable would be {\tt cancerCellCount}, writing it once
+ in all its glory is much better than collapsing it to {\tt cccnt} to avoid a
+ clumsy, overlong {\tt for} loop in the older style.
+ \end{finepoint}
+ 
+Back to histograms!
+Assume that we are working at a single {\tt Place}, but we can take
+advantage of multiple activities.  An obvious approach for parallelizing
+this loop would be to partition
+the {\tt input} array into disjoint slices, one slice per activity, and then combine
+the partial results in a shared {\tt result} array.  If there are {\tt N}
+activities and the input array is indexed from 0, then:
+\begin{verbatim}
+val sliceSize = input.size/N;
+finish {
+  for(i in 0 .. (N-1)) {
+    val sliceStart =  i*sliceSize;
+    val sliceEnd = i==N-1 ? input.size-1 : sliceStart+sliceSize;
+    async {
+      val partial = new Array[Int](result.region, 0);
+      for (i in sliceStart..sliceEnd) partial(this.input(i))++;
+      this.foldIntoResult(partial);
+    }
+  }
+}
+\end{verbatim}
+Computing the histogram for each slice is done serially.  The fun begins with folding
+the partial result into the final result, which we're going to realize as an instance field
+of ``{\tt this}''.   The field {\tt this.result}
+is accessed concurrently by all of the {\tt asyncs}, so we have an obvious data race to
+handle.  There is more than one way to do so, and we have provided several in
+the classes for this chapter with ``{\tt Histogram}'' in their name.
+The top-level
+class is \href{src/concurrency/Histogram.x10}{{\tt Histogram.x10}}.  It has a {\tt main} that
+exercises all of the other classes:
+
+\begin{description}
+\item[Make the whole folding operation atomic:]  What might seem a drastic
+approach to the problem is to let ``{\tt atomic}'' guard the whole operation of folding in the partial result:\\
+{\tt \hspace*{2em} atomic for (i in partial) this.result(i) += partial(i);}\\
+The effect is to serialize the
+folding of the partial results into {\tt N} sequential operations whose cost is proportional
+to the {\tt result.size}.   
+See 
+\href{src/concurrency/AtomicFoldHistogram.x10}{\tt AtomicFoldHistogram}.
+
+\item[Make each update of {\tt this.result} atomic:]  At the other extreme, we could
+guard each addition:\\
+{\tt \hspace*{2em} for (i in partial) atomic this.result(i) += partial(i); }\\
+This is done in \href{src/concurrency/AtomicHistogram.x10}{\tt AtomicHistogram}.
+
+\item[Use AtomicIntegers for {\tt this.result}:]  The folding loop becomes\\
+{\tt \hspace*{2em} for (i in partial) this.result(i).addAndGet(partial(i)); }\\
+See
+\href{src/concurrency/AtomicIntHistogram.x10}{AtomicIntHistogram}.
+
+\item[Don't partition the input's indices, partition its range:]
+Another approach to the whole problem is to partition the range of values, rather than the
+input data set.  You avoid synchronization problems that way: each {\tt async} reads
+the whole input array, but just updates
+its own slice of the {\tt results} array.  You can find this
+in \href{src/concurrency/RangeSplitHistogram.x10}{Range\-Split\-His\-to\-gram}.
+\end{description}
+
+Why so many variations?  There are two parameters that determine the problem
+size: the range of input values and the number of input values.  We've set up the
+command line arguments for {\tt Histogram}'s {\tt main} to allow you to compare the
+performance of these various approaches.  Our experience is that varying these
+parameters allowed us to make each approach a winner at least once.  We invite you
+to try it out yourself.  Even the serial code performs best in some surprising 
+in our case, because the operating system is allowing it to use both cores of
+our dual-core chip at one time effectively, even though this code is written
+serially. Bottom line:  what to guard and how to guard it is not a one-size
+fits all decision insofar as the effect on performance is concerned. Be
+prepared to experiment!
+
+
+\subsection{{\tt when}: Conditional Atomic Blocks}\label{ssec:whenstmt}
+
+Next, let's implement a class that we'll call {\tt AtomicCell}.  Think of it as
+a {\em very} small buffer. It can hold one value, which, for simplicity, we'll
+make an {\tt Int}. Since it only holds one {\tt Int}, an {\tt AtomicCell} can
+be either {\em empty} or {\em full}.  You can put a value into it, if it's
+empty; otherwise, you have to wait until someone else empties it.  You can take
+a value out of it, if it's full; otherwise, you have to wait until someone
+else fills it.  As we said: a very small buffer.
+
+Those clauses ``wait until someone else empties it'' and ``wait until someone
+else fills it'' are best coded using ``{\tt when}''.  
+%%START X10 src/concurrency/AtomicCell.x10 emptyfill
+\begin{verbatim}
+ 1  class AtomicCell {
+ 2    var full : Boolean;
+ 3    var contents : Int;
+ 4    def this(init:Int) {full = true; contents = init;}
+ 5    def fill(newVal:Int) {
+ 6      when(!full) {
+ 7        full = true; contents = newVal;
+ 8      }
+ 9    }
+10    def empty(): Int {
+11      when(full) { full = false; return contents; }
+12    }
+\end{verbatim}
+%%END X10 src/concurrency/AtomicCell.x10 emptyfill
+\begin{description}
+\item[Lines \xlref{emptyfill-fill}{8}-\xlref{emptyfill-endfill}{12}:]
+When {\tt fill} is called, the first thing that happens is that the expression
+{\tt !full} is evaluated atomically.  If the result is {\tt true}, execution 
+immediately continues to the assignments on line \xlref{emptyfill-setcontents}{10}.
+The whole process, test and assignments, is carried out as one atomic
+statement.  No other activity is able to act at this {\tt Place} from the moment
+the evaluation of the test expression {\tt !full} begins until the two assignments
+are both complete.  
+
+Of course, it might happen that on entry {\tt !full} is {\tt false}, in which case
+the executing activity will be suspended.
+It is probably best, once again, to think of there being a 
+scheduler who puts {\tt !full}
+on a ``watch list'' that it checks from time to time.  When the scheduler discovers that
+it has become {\tt true}, it {\em immediately and atomically} evaluates the
+assignments.
+There is no gap between the scheduler determines 
+that {\tt !full} is true and when it evaluates the assignments.
+
+\item[Lines \xlref{emptyfill-empty}{13}-\xlref{emptyfill-endempty}{15}:]
+{\tt empty} is the mirror image of {\tt fill}: the test is whether {\tt full} is
+{\tt true}, and if so the cell is emptied and what had been
+its contents are returned.
+\end{description}
+  You can exercise this
+code with:
+
+%%START X10 src/concurrency/AtomicCell.x10 main
+\begin{verbatim}
+   public static def main(Array[String](1)){
+      val c = new AtomicCell[Int](0);
+      async for([i] in 1 .. 10) c.fill(10*i);
+      async for([j] in 1..10) {
+         Console.OUT.println("value "+j" is " + c.empty());
+      }
+   }
+\end{verbatim}
+%%END X10 src/concurrency/AtomicCell.x10 all
+
+The full source is in
+\href{src/concurrency/AtomicCell.x10}{AtomicCell.x10}.
+
+There are two activities, one of
+which puts ten numbers into the cell, and the other takes the first nine of
+them out again, leaving the cell full:
+
+\begin{quote}
+The cell {\tt c} starts out full, with 0 as its {\tt contents}.
+
+On lines \xlref{main:async1}{3} and  \xlref{main:async1}{4}, two activities
+are spawned.  The scheduler will, as likely as not, give the first one
+(on line  \xlref{main:async1}{3}) the first shot at running.
+Since a full cell can't be added to, this activity will be blocked at the
+{\tt when} in {\tt fill()}.  
+
+At that point, the scheduler may allow the root activity to run to completion,
+or, on checking that state of {\tt c.full}, allow the second {\tt async}  a chance
+to run.   If it happens to favor the main activity, then almost instantaneously
+that activity, which, having spawned the two {\tt asyncs} already, now
+has nothing else to do and will terminate.
+The 
+scheduler is left with  only one activity it can run: the second
+{\tt async}, the emptier.  One way or another the emptier gets to run.
+
+It  immediately retrieves  {\tt c}'s contents and sets {\tt c.full} to false.
+It is then either interrupted by the scheduler or tries to empty {\tt c} again, which
+fails: there's nothing there, so it is suspended.
+
+But now the first {\tt async} can proceed again... From this time on,
+once the root activity has terminated, the scheduler has only two activities
+to worry about, and at any given moment, only one of them is not
+blocked.  So the two alternately run to completion.
+\end{quote}
+
+There is an important point here: notice that when the root activity---the
+one executing {\tt main()}---died, the other two activities remained 
+alive.  This is critical: the root activity for an \Xten{} program {\em always
+runs inside a {\tt finish} that is executed by the \Xten{} runtime.}  
+From the \Xten{} scheduler's point of view, therefore, the root activity is nothing
+special: it is just an {\tt async} like any other.    The
+{\tt asyncs} spawned by the root are all monitored by that {\tt finish}, which returns
+control to the runtime only when those activities have all terminated.  This is 
+exactly the same as the
+way that a {\tt finish} in your code returns to control to an activity when
+the activities spawned inside the {\tt finish}'s body have all terminated
+
+%\subsubsection{Using atomicity well}\label{sssec:usingatomicity}
+
+There are two guarantees that make {\tt when(expr)} {\tt S} statements work:
+\begin{description}
+\item[Timeliness:] If the expression  {\tt expr} becomes true and stays true for long
+      enough, eventually  {\tt S} will get executed.
+\item[Correctness:] Noticing {\tt expr} is true and evaluating {\tt S} are done atomically.
+\end{description}
+If we didn't have both of these, {\tt AtomicCell} wouldn't work.  
+The correctness guarantee says that if the scheduler every gets around to 
+seeing whether a blocked {\tt when} should be executed, it does the job of
+checking and executing it correctly (in this case, meaning atomically).  But
+this guarantee is only worth something if the runtime guarantees that the
+scheduler is {\em fair}, that it will check the blocked {\tt when} in a timely
+manner.  
+
+If you think about these guarantees for a moment, you will realize that to
+exploit them well requires some discipline on your part.  There are
+two governing principles, the first of which is:
+\begin{quote}
+If the statement {\tt S} in  {\tt when(expr)} {\tt S} does something
+(like remove some data from a buffer) that
+{\em might} affect the value of {\tt expr}, make sure that all changes to
+whatever variables affect {\tt expr} are also done as part of {\tt S}.
+
+Furthermore, any changes to the variables affecting {\tt expr} that
+occur elsewhere in the program should be done so that the effect on
+{\tt expr} is atomic and consistent with its semantics as the test in
+this and any other {\tt when} blocks in which it is the test.
+\end{quote}
+
+This is sometimes described as  ``assuring that the test for a 
+{\tt when} is {\em stable}''.   
+
+Here's the second principle, which is actually a variation on the first:
+\begin{quote}
+Never forget that if you are going to allow an activity to be blocked trying to
+enter a {\tt when}, you had better have at least one other activity around that eventually
+can free the blocked activity.
+\end{quote}
+
+Here is an extreme example of violating the first principle with an unstable
+test.  First we write a function that computes a {\tt Boolean}:
+\begin{verbatim}
+    private var flag: Boolean = true;
+    private def alternate() {
+       val oldFlag = flag;  flag = !flag;  return oldFlag;
+   }
+\end{verbatim}
+Evaluating {\tt alternate()} alternates between {\tt true} and {\tt false}.
+And for the very unstable {\tt when}:
+\begin{verbatim}
+   when(alternate()) {
+   	pleaseDoSomethingAboutThis();
+   }
+\end{verbatim}
+Suppose there are two activities with such {\tt whens} in them.
+No implementation of the \Xten{} scheduler could hope to guarantee that
+both of these two activities both get their chance to run.  You can imagine
+a sequence like
+\begin{quote}
+1. First activity is checked and sees the value to be {\tt true}, so it gets to run.
+The next call to {\tt alternate} will return {\tt false}.
+
+2. Next, the second activity is checked, and because this call to 
+{\tt alternate} returns {\tt false}, it continues to be
+blocked. Of course, its call to {\tt alternate} flipped the {\tt flag} again.
+
+3.  The first activity arrives at the {\tt when} again.  Good news: its
+call to {\tt alternate()} is going to return {\tt true}.
+
+4. ...  back to step 2 ...
+\end{quote}
+
+In short, unless the first activity terminates or gets interrupted for some other
+reason, the second activity might never be run, no matter how fair the 
+scheduler tries to be.  Notice that there is no activity around to help our
+indefinitely blocked second activity.
+
+In addition to be careful about what you test, there are also some good practices
+for engineering the body of a {\tt when} (and
+the bodies of atomic blocks more generally).
+
+{\tt atomic} blocks are expensive. When \Xten{} executes an {\tt atomic} block at a
+{\tt Place} {\tt p}, no other {\tt atomic} block can execute at {\tt p} at the same
+time. That can seriously cut down the concurrency in your program---as you
+might expect from a device that's intended to limit concurrency.
+
+{\tt when} blocks are even more expensive. The test expression will be
+evaluated atomically, repeatedly, whenever \Xten{}'s scheduler thinks it's a good
+idea. This can take lots of time, especially if the expression takes time to evaluate.
+And, since it's atomic, all other potentially active {\tt atomic} and 
+{\tt when} code will be idled
+while {\tt p} is evaluated, regardless of what the {\tt whens}' tests might yield. 
+
+\Xten{} does provide some lower level primitives:
+locks, latches and monitors are available in the {\tt x10.lang}
+package.  We won't say anything more about these tools here: they
+have been around for decades now, and most texts on
+concurrency in operating systems explain them in detail, since that is where
+the constructs were first introduced.
+Here are some rules of thumb about how to use {\tt atomic} and {\tt when}: 
+\begin{itemize}
+\item Do as little work as possible (but---need we say?---no less) in an {\tt atomic}
+      or {\tt when} block.  
+\item {\tt atomic} is cheaper than {\tt when}, and generally using classes like
+{\tt AtomicInteger} is cheaper than either.
+\item Don't be afraid, though, to use {\tt atomic} and {\tt when}, especially in early
+      versions of a program.  The more efficient mechanisms for concurrency
+      control, like locks, exact their own price in readability and robustness, 
+      so wait until you are sure you have a problem before you switch to them. 
+\item The more activities there are at a {\tt Place}, the more expensive 
+{\tt atomic} and {\tt when} tend to get at that {\tt Place}. 
+
+\item The issue isn't {\tt atomic} and {\tt when} by themselves---they don't take
+all that much time to do. The issue is the loss of concurrency when you have
+several activities with many {\tt atomic} and {\tt when} blocks trying to
+run concurrently at the same {\tt Place}.
+\end{itemize}
+
+{\tt atomic} and {\tt when} are excellent tools for getting your concurrent
+program started. They're easy to use, and they're very general. If your
+program works fine with them, you win. If it's too slow, switching to other
+concurrency-control devices is possible.
+
+\subsection{Putting It All Together: Implementing Queues}\label{ssec:queues}
+An example that expands on our original {\tt AtomicCell} provides an excellent
+chance to see the considerations that can arise in deciding whether to use
+{\tt atomic} or {\tt when}---or neither.  Instead of a single cell, we assume that
+we are given a buffer holding some number of items.  For the moment, we'll
+assume that the buffer, once allocated, cannot be enlarged.  The way we
+want to use the buffer is as a ``queue''.  Items arrive at one end and are
+removed from the other.  In other words, ``first in, first out.''
+
+The usual drill is to add at the end and remove from the beginning of the buffer.
+Here is some serial code to do the job as simply as possible:
+\begin{verbatim}
+   public def addLast(t: T) { // add instance of T to queue end
+      if (next < buffer.size) {
+         buffer(next++) = t;
+      }
+      else { /* you've got a problem: out of space */  }
+   }
+   public def removeFirst(): T { // remove and return first item
+      if (next > first) {
+         return buffer(first++);
+      }
+      else { /* you've got a problem: nothing left to remove */}
+   } 
+\end{verbatim}
+We're assuming here that we have a {\em very, very} big array as the buffer,
+and that, at any moment, the queue occupies the slice in that array from {\tt
+first} to {\tt next-1}, so it has size  {\tt next-first}.  We'll
+worry about the two ``problems'' in due course.
+
+The naive solution to parallelizing this code is simply to make the body of
+each method a single atomic statement.  Our take on the naive solution is
+\href{src/concurrency/NaiveQueue.x10}{NaiveQueue.x10}. The effect is to
+serialize the accesses to the buffer. On the surface, it might appear that one
+could do better, because adding an item does not involve {\tt first}.  The
+problem is that the two operations share two variables: {\tt next} and
+{\tt buffer}. To see why that causes us grief, let's try to improve
+{\tt addLast} by getting rid of the {\tt atomic} and using  an {\tt AtomicInteger},
+rather than an {\tt Int} for {\tt next}:
+
+\begin{verbatim}
+ 1    public def addLast(t: T) { // add instance of T to queue end
+ 2       buffer(next.getAndAdd(1)) = t;
+ 3   }
+\end{verbatim}
+
+From the {\em adder}'s point of view, each addition is guaranteed to get a new
+value for {\tt last}, and {\tt size} will be incremented exactly once for each
+addition, so all is as it should be. Even if an adder is interrupted before
+executing line 3, it does not matter, in the sense that we don't lose any
+updates, we may just be slow in acquiring them.  As for error handling, if you
+try to add an item to a full buffer, the \Xten{} runtime will see the
+out-of-range array index and abort the call---see \Sref{sec:exc} for an
+explanation of what happens then. This is crude, but effective, since you
+expect overflow to happen rarely, if at all.
+
+This all may look good from an adder's point of view, but a remover is not apt
+to be so happy.
+\begin{quote}
+Suppose that an adder gets interrupted before its store of {\tt t} into {\tt
+buffer} completes in line 2, but after the call to {\tt getAndAdd}.  Let 
+{\tt nt} be the index where {\tt t} is eventually to be stored in the
+{\tt buffer} array.
+
+Now, along comes a remover.  It will see {\tt next.get() > first}, thanks to the
+completed call to {\tt getAndAdd}.  But, if it has the bad luck that {\tt first
+== nt} now (which it easily could: this could be the first addition to the
+queue, followed by the first removal), the remover will return 
+{\tt buffer(nt)}, even though {\tt t} has not yet been stored there. The caller
+will therefore get whatever garbage value we used to initialize {\tt buffer}'s
+entries.
+\end{quote}
+
+This suggests a way to get the remover back into the game: block on getting
+garbage until the store of the real thing has completed:
+\begin{verbatim}
+ 1    public def removeFirst():T { // remove and return first item
+ 2       val firstNow = first.getAndAdd(1); // reserve our slot
+ 3       when(buffer(firstNow) != GARBAGE) {
+ 4             return buffer(firstNow);
+ 5        }
+ 6    }
+\end{verbatim}
+This is fine, so long as you {\em know} that eventually enough elements will be
+added to unblock the removing activity.  As for {\tt GARBAGE}, if {\tt T} is a
+class, {\tt null} will usually fill the bill.  For structs, you have to make
+the call.
+
+We are not quite done yet.  Using {\tt when} has created a pit into which we can
+fall if we are not careful.  Suppose that we have two activities $A$ and $B$. 
+Suppose that {\em both of them add and remove items from the queue.}  Consider
+the following scenario:
+
+\begin{quote}
+$A$ needs an item off the queue, so calls {\tt removeFirst}.  The queue is empty,
+so it is suspended at the {\tt when} until the queue end reaches the slot it is
+trying to read.
+
+There is still hope for $A$, because $B$ is still active.  But suppose we have
+some bad luck and $B$ also needs an item off the queue before it has any items
+to put on it.  $B$ calls {\tt removeFirst} and now both activities are blocked:
+a classic deadlock.
+\end{quote}
+
+This is not an unrealistic situation: suppose that $A$ and $B$ are servers that
+have incoming streams of job requests.  So long as each can handle the incoming 
+jobs, no queuing is done.  But if either server gets too busy, it pushes jobs
+it can't handle off onto the queue.  Later, if one becomes idle, it can go to
+the queue to ask for work to.  Two producers, both also consumers.
+
+Bottom line: we violated one of our two governing principles: we've allowed
+ourselves to create a {\tt when} that, potentially, can block {\em all} of the
+activities that affect the variables it tests.
+
+Here the cure is simple: no producer can consume from the queue it is feeding.
+
+There is more to be gained by looking at this problem carefully.  In the code
+samples for this chapter, we'ver provided several different implementations and
+a driver to exercise them.
+
+\section{Asynchronous Error Recovery}\label{sec:error-recovery}
+We've been pretty blas\'{e} so far about what happens when things go wrong in
+one of our activities and we need to bail out: to throw an exception.
+We covered the basics of exceptions in serial code in \Sref{sec:exc}.  The time
+has come to face up to handling exceptions in distributed code.
+
+Distributed computing and multi-threading add a level of complexity to the
+problem of dealing with exceptions.  On the one hand, there is a natural
+parent/child relationship between an activity and those activities that it
+spawns. On the other hand, the parent activity normally continues in parallel
+with its children, and such a parent cannot serve to catch any exceptions
+thrown by its children.  Let's look at an example:
+\begin{quote}
+Suppose that our program requires data from a number of sources: data\-bases,
+perhaps, or the Web, or even just plain files.  
+The list of inputs is in an array {\tt sources:} {\tt Array[String](1)}.
+The entries might by URLs, SQL queries, or file paths, or
+even a mixture of all three.  Let's make life easy and assume that the data from
+each of these sources can be captured as an instance of the class {\tt Stuff}.
+The key loop, guarded against trouble, could look like
+\begin{verbatim}
+try {
+   for(var n: Int = 0; n<sources.size; n++) {
+      async stuff(n) = at(getPlace(sources(n))) 
+                           readSource(sources(n));
+   }
+}
+catch(e: Exception) { ... }
+\end{verbatim}
+\end{quote}
+When an exception is thrown in an activity that is not handled by one of
+members of that activity's call chain, \Xten{} terminates the activity.  The
+question is: what happens then?  There may be more than one activity with the
+same parent alive.  Several of them might throw exceptions, and if so, the
+problems almost certainly will occur at different times.  One of two bad
+things might happen, both of which the X10's runtime, as we shall see, uses the
+{\tt finish} construct to avoid:
+\begin{quote}
+\begin{description}
+\item[Ignorance is bliss:]
+The runtime simply terminates the failed {\tt asyncs} and {\tt
+stuff(n)}, for those {\tt n}'s, winds up with whatever garbage in it that was
+there before the attempt to read the source.  The exceptions are effectively
+ignored, their information lost.
+
+\item[A race to the bottom:]
+Once the {\tt async} is terminated, the exception is immediately fed back to its
+parent, the spawning activity, which does\ldots some\-thing.  But what, exactly?
+If the parent had continued alongside the {\tt asyncs}, as it would if it is
+programmed as shown above, who knows where control would be in the parent when
+the exception was thrown? Even assuming that we did somehow manage to handle
+the first exception, what do we do if a second or third exception is thrown? 
+Just ignore them?  Interrupt the parent again? It looks like a classic race
+situation: what happens depends on who gets where when.
+\end{description}
+\end{quote}
+How does {\tt finish} help?  Let's stick a {\tt finish} in front of the {\tt for} 
+and see what happens:
+\begin{quote}
+\begin{verbatim}
+ 1 try {
+ 2    finish {
+ 3       for(var n: Int = 0; n<sources.size; n++) {
+ 4          async stuff(n) = at(getPlace(sources(n))) 
+ 5                            readSource(sources(n));
+ 6       }
+ 7    }
+ 8 }
+ 9 catch(e: Exception) { ... }
+\end{verbatim}
+\end{quote}
+
+Once control enters the {\tt for} loop, all of the {\tt asyncs} will be spawned
+and control will reach the end of the {\tt finish} that starts at line 2 and ends
+at line 7.  At that point, this activity will request the \Xten{} run-time's process
+scheduler to block it until all the {\tt asyncs} are done.  If they
+all completed normally, no problem: the scheduler will restart the activity at
+the statement following the {\tt catch} clause at line 9.  In other words,
+execution leaves the {\tt try} in exactly the same way it does for {\em serial}
+code that has to catch exceptions.
+
+Suppose, though, that one (or more!) of the {\tt asyncs} is terminated because
+an exception was thrown, but not caught inside the {\tt async}.  As part of
+cleaning up after now dead {\tt async}, the \Xten{} scheduler will save that
+exception information somewhere.  Later, when the last of the {\tt for}
+loop's {\tt asyncs} is done, the scheduler will see the saved exceptions, and 
+instead of returning control normally, it will execute code that appears to the
+activity being resumed to be an exception thrown inside the {\tt finish}.  This
+exception contains all the information the main activity needs to see what went
+wrong in its {\tt asyncs}. The {\tt try} statement in line 1 that surrounds the
+{\tt finish} will see the exception, just as it would see any exception thrown
+in serial code that it surrounds. The {\tt try} statement will thus give
+control to the {\tt catch} block on line 9, which says that it is willing to
+handle {\em any} sort of {\tt Exception}.
+
+For a working example, take a look at
+\href{chapter-concurrency=src/files/TwoFiles.x10}{TwoFiles.x10}.
+You'll see that what the scheduler throws is an instance of 
+{\tt x10.lang.MultipleExceptions}.  It has as instance data an array containing
+all of the exceptions that the process scheduler has saved. That is how the
+{\tt catch} can figure out what actually happened, but not necessarily to
+{\em whom} it happened: which {\tt async} failed may have to be encoded in its
+exception's message.
+
+Suppose an activity blows up, but it's immediate parent is {\em not} blocked
+inside a {\tt finish}.  How does \Xten{} handle that?  Because the parent is in
+no position to deal with the problem, the parent also has to be aborted.  The
+upshot is that the scheduler tries the activity's grandparent, great-grandparent,
+and so on, until it finds an activity $B$ that {\em is} blocked in a {\tt finish}.
+The scheduler will give $B$ the opportunity to cope by waking it up
+(so rudely!) with a thrown exception, as we described above.  
+Of course, $B$ may not have a {\tt try} statement that catches this sort of
+exception, in which case, $B$ will also be terminated, and the scheduler will
+continue to work back through $B$'s ancestors, until some activity {\em does} handle the
+exception.  In the worst case, the root activity will be reached that started
+the application by kicking off its {\tt main()}.  \Xten's startup regime
+guarantees that that activity is always blocked in a {\tt finish}, and that it
+is willing to field all exceptions.  So, as the saying goes, the buck is
+guaranteed to stop there.
+
+This is a good point to reiterate that the activities spawned by an activity $A$
+can outlive $A$, {\em with the exception of the root activity that executes {\tt
+main()}}.  At any moment in time, the activity running {\tt main()} is thus the
+ultimate ancestor of all of the program's live activities. It is helpful in this
+regard to keep in mind the distinction between {\em local} termination and {\em
+global} termination of an activity. An activity is terminates locally when that
+activity has finished executing the body of the {\tt async} that gave it birth. 
+It terminates globally when it has terminated locally, and in addition, all of
+the activities that it has spawned have also terminated {\em globally}.
+
+A good way, therefore, to think about the activities for a progam that are alive
+at any given moment is that they form a tree, rooted at the {\tt main()}
+activity, with two sorts of nodes:
+
+\begin{quote}
+``live'' nodes: nodes that are still executing, and
+
+``zombie'' nodes: nodes that have terminated locally (\ie have finished their
+execution), but that still have descendants which are ``live''. 
+\end{quote}
+
+When a leaf node activity terminates, it is removed from the
+tree, and when a zombie node no longer has any immediate children, it is
+removed from the tree.
+
+You may have been saying to yourself that there is another (better?) solution to
+dealing with exceptions that we forgot: {\em never write an {\tt async} that
+doesn't catch its own exceptions.}  Then we know that all {\tt asyncs} terminate
+``normally.''  In simple situations, like the one in our example, you may be
+able to operate that way.  It just means adding error information as an instance
+field in {\tt Stuff}, so that when you go to use some {\tt Stuff}, you will know
+that that {\tt Stuff} is okay. You might well have to add this sort of information
+for other reasons anyway, in which case the added work is minimal. If, at some
+point in the code, you are going to want to check whether any of the {\tt
+asyncs} failed, though, you still are going to need a {\tt finish} somewhere
+inside of which all of these {\tt asyncs} are being spawned---how else might
+you know that the store into {\tt stuff(n)} has completed?  So it is not clear
+that you've saved yourself much by moving the information about whatever
+problems there are out of the {\tt Exception} and into the application data.
+One could even argue that---particularly in large, complex programs---putting
+the error information in the data may make it easier to overlook errors that
+need to be handled in a timely way.
+
+That's enough for the moment about concurrency {\em per se}.  We'll look next in
+more detail at distributing computations---the {\tt at} statement revisited. 
+Then we'll put everthing together in a chapter on local and distributed arrays.

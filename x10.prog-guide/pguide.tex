@@ -1,0 +1,89 @@
+%\documentclass[10pt,twoside,twocolumn,notitlepage]{report}
+\documentclass[10pt,twoside,notitlepage]{book}
+\usepackage{x10}
+\usepackage{tenv}
+\usepackage{url}
+\usepackage{times}
+\usepackage{txtt}
+\usepackage{ifpdf}
+\usepackage{tocloft}
+\usepackage{bcprules}
+\usepackage{xspace}
+\usepackage{graphicx}  
+
+\newif\ifdraft
+%\drafttrue
+\draftfalse
+
+\pagestyle{headings}
+\showboxdepth=0
+\makeindex
+
+\usepackage{commands}
+
+\usepackage[
+pdfauthor={Jonathan Brezin and Stephen J. Fink},
+pdftitle={Programming With X10},
+pdfcreator={pdftex},
+pdfkeywords={X10},
+linkcolor=blue,
+citecolor=blue,
+urlcolor=blue
+]{hyperref}
+
+\ifpdf
+          \pdfinfo {
+              /Author   (Jonathan Brezin and Stephen J. Fink)
+              /Title    (Programming With X10)
+              /Keywords (X10)
+              /Subject  ()
+              /Creator  (TeX)
+              /Producer (PDFLaTeX)
+          }
+\fi
+
+\newcommand{\etc}{{\em etc.}}
+% Sizes and dimensions
+\columnsep 15pt          % Space between columns 
+\columnseprule 0pt       % Width of rule between columns.
+
+\parskip 5pt plus 2pt minus 2pt % Extra vertical space between paragraphs.
+\parindent 0pt                  % Width of paragraph indentation.
+\oddsidemargin  .5in    % Left margin on odd-numbered pages.
+\evensidemargin .5in    % Left margin on even-numbered pages.
+\input{macros}
+
+
+\begin{document}
+\frontmatter
+\input{title-page} 
+{\parskip 0pt
+\addtolength{\cftsecnumwidth}{0.5em}
+\addtolength{\cftsubsecnumwidth}{0.5em}
+\addtolength{\cftsecindent}{0.5em}
+} 
+\input{chapters/preface}
+\clearpage
+\tableofcontents
+
+\mainmatter
+\part{Basic X10}
+\input{chapters/intro}
+\input{chapters/types}
+\input{chapters/primitives}
+\input{chapters/concurrency}
+\input{chapters/remote}
+%\input{chapter-arrays}
+
+\ignore{
+\part{Advanced X10}
+}
+
+
+\renewcommand{\bibname}{References}
+\bibliographystyle{plain}
+\bibliography{master}
+
+\appendix
+\end{document}
+
