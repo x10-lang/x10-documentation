@@ -5,19 +5,19 @@ In this chapter, we'll look at a couple of quick examples that illustrate
 
 Enough suspense! You knew it was coming, and here it is!
 %%START X10: src/intro/HelloWorld.x10 hello
-\begin{verbatim}
- 1  // Copyright 1977 Greeter's Anonymous. All rights reserved 
- 2  /** classic first code example */ 
- 3  public class HelloWorld { 
- 4     /** //
- 5      * writes "Hello, World" to the console 
- 6      * @param args the command line arguments 
- 7      */ //
- 8     public static def main(args:Array[String](1)) { 
- 9        x10.io.Console.OUT.println("Hello, World"); 
-10     }
-11  }
-\end{verbatim}
+\begin{xtennum}[]
+// Copyright 1977 Greeter's Anonymous. All rights reserved 
+/** classic first code example */ 
+public class HelloWorld { 
+   /** //
+    * writes "Hello, World" to the console 
+    * @param args the command line arguments 
+    */ //
+   public static def main(args:Array[String](1)) { 
+      x10.io.Console.OUT.println("Hello, World"); 
+   }
+}
+\end{xtennum}
 %%END X10: src/intro/HelloWorld.x10 hello
 The working copy of this code is 
 \href{http://dist.codehaus.org/x10/documentation/guide/src/hello/HelloWorld.x10}{\xlfilename{hello}{intro/HelloWorld.x10}}.
@@ -215,23 +215,23 @@ parallel version.  You can find the source in
 \begin{figure}[!htbp]
 \hrulefill
 %%START X10: src/intro/MontePi1.x10 mpi1
-\begin{verbatim}
- 1  import x10.util.Random; 
- 2  public class MontePi1 {
- 3      static val N = 10000; 
- 4      public static def main(s: Array[String](1)) { 
- 5          val r = new Random();   
- 6          var inCircle:Double = 0.0; 
- 7          for (j in 1..N) { 
- 8              val x = r.nextDouble(); 
- 9              val y=  r.nextDouble(); 
-10              if (x*x +y*y <= 1.0) inCircle++; 
-11          }  
-12          val pi = 4*(inCircle/N); 
-13          Console.OUT.println("Our estimate for pi is " + pi); 
-14      }
-15  }
-\end{verbatim}
+\begin{xtennum}[]
+import x10.util.Random; 
+public class MontePi1 {
+    static val N = 10000; 
+    public static def main(s: Array[String](1)) { 
+        val r = new Random();   
+        var inCircle:Double = 0.0; 
+        for (j in 1..N) { 
+            val x = r.nextDouble(); 
+            val y=  r.nextDouble(); 
+            if (x*x +y*y <= 1.0) inCircle++; 
+        }  
+        val pi = 4*(inCircle/N); 
+        Console.OUT.println("Our estimate for pi is " + pi); 
+    }
+}
+\end{xtennum}
 %%END X10: src/intro/MontePi1.x10 mpi1
 \hrulefill
 \caption{Serial Monte Carlo Approximation of Pi}\label{fig:mcpi}
@@ -313,15 +313,15 @@ partial information.  If you were giving another name to \xcd`s`, the
 one-dimensional array of \xcd`String`s declared on line \xlref{mpi1-s}{4}, you
 have more choices:
 %%START X10: ArgvPartialInfo.x10 argvpartial
-\begin{verbatim}
-1  public class ArgvPartialInfo {
-2      public static def main(s: Array[String](1)) {
-3          val a <: Object = s; 
-4          val b <: Array[String] = s;
-5          val c <: Array[String]{rank != 3} = s;
-6      }
-7  }
-\end{verbatim}
+\begin{xtennum}[]
+public class ArgvPartialInfo {
+    public static def main(s: Array[String](1)) {
+        val a <: Object = s; 
+        val b <: Array[String] = s;
+        val c <: Array[String]{rank != 3} = s;
+    }
+}
+\end{xtennum}
 %%END X10: ArgvPartialInfo.x10 argvpartial
 
 On line \xlref{argvpartial-a}{3}, we give very little information, just saying
@@ -410,11 +410,11 @@ situations.
 X10 has old-style \xcd`for` loops too, like \xcd`C++` and \xcd`Java`'s
 traditional \xcd`for` loops.  We could have written this one:
 %%START X10: OldStyleFor.x10 oldstylefor
-\begin{verbatim}
-1      for(var j:Int = 1; j <= N; j++) {
-2         //...
-3      }
-\end{verbatim}
+\begin{xtennum}[]
+    for(var j:Int = 1; j <= N; j++) {
+       //...
+    }
+\end{xtennum}
 %%END X10: OldStyleFor.x10 oldstylefor
 (\xcd`j` needs to be declared as a \xcd`var`, not a \xcd`val`, because we're
 changing it.  \xcd`j++` means ``Add one to \xcd`j`,'' just as it does in C and
@@ -519,10 +519,10 @@ let us try 1,000,000 points right away to see how much better we could do than
 10,000. The code we need is simple enough:
 
 %%START X10: MontePi2.x10 mpi2-N
-\begin{verbatim}
-1     public static def main(args: Array[String](1)) {
-2         val N = args.size > 0 ? Int.parse(args(0)) : 10000;
-\end{verbatim}
+\begin{xtennum}[]
+   public static def main(args: Array[String](1)) {
+       val N = args.size > 0 ? Int.parse(args(0)) : 10000;
+\end{xtennum}
 %%END X10: MontePi2.x10 mpi2-N
 
 Some comments:
@@ -570,17 +570,17 @@ of them if we wanted to.  To get there, we are going pull the main loop
 out of {\tt main} and put it in its own method, one parameter of which is the
 random number generator:
 %%START X10:  src/intro/MontePi2.x10 mpi2cp
-\begin{verbatim}
-1     public static def countPoints(n: Int, rand: ()=>Double) {
-2        var inCircle: Int = 0;
-3        for (j in 1..n) {
-4           val x = rand();
-5           val y = rand();
-6           if (x*x +y*y <= 1.0) inCircle++;
-7        }
-8        return inCircle;
-9     }
-\end{verbatim}
+\begin{xtennum}[]
+   public static def countPoints(n: Int, rand: ()=>Double) {
+      var inCircle: Int = 0;
+      for (j in 1..n) {
+         val x = rand();
+         val y = rand();
+         if (x*x +y*y <= 1.0) inCircle++;
+      }
+      return inCircle;
+   }
+\end{xtennum}
 %%END X10:  src/intro/MontePi2.x10 mpi2cp
  
 
@@ -601,12 +601,12 @@ integer, so it makes sense to declare it as such.
 How do we create the function to pass in as {\tt rand}?  Here's one approach: in
 {\tt main()}, put
 %%START X10: src/intro/MontePi2.x10 mpi2main
-\begin{verbatim}
-1         val r = new Random();              
-2         val rand = () => r.nextDouble();   
-3         val inCircle = countPoints(N, rand); 
-4         val pi = (4.0 * inCircle)/N;       
-\end{verbatim}
+\begin{xtennum}[]
+       val r = new Random();              
+       val rand = () => r.nextDouble();   
+       val inCircle = countPoints(N, rand); 
+       val pi = (4.0 * inCircle)/N;       
+\end{xtennum}
 %%END X10: src/intro/MontePi2.x10 mpi2main
  
 \begin{description} 
@@ -670,28 +670,28 @@ We'll go through it line by line.
 \begin{figure}[!bthp]
 \hrulefill
 %%START X10: src/intro/MontePiAsync.x10 mpia
-\begin{verbatim}
- 1        val N = args.size > 0 ? Long.parse(args(0)) : 100000L;  
- 2        val threads : Int = args.size > 1 ? Int.parse(args(1)) :  4; 
- 3  
- 4        val nPerThread = N/threads; 
- 5        val inCircle = new Array[Long](1..threads);   
- 6   
- 7        finish for(k in 1..threads) { 
- 8           val r = new Random(k*k + k + 1);       
- 9           val rand = () => r.nextDouble();       
-10           val kval = k;                     
-11           async inCircle(kval) = countPoints(nPerThread, rand); 
-12        }                                 
-13  
-14        var totalInCircle: Long = 0;             
-15        for(k in 1..threads) {      
-16           totalInCircle += inCircle(k);         
-17           Console.OUT.println("ic("+k+") = "+inCircle(k)); 
-18        }                                 
-19  
-20        val pi = (4.0*totalInCircle)/(nPerThread*threads); 
-\end{verbatim}
+\begin{xtennum}[]
+      val N = args.size > 0 ? Long.parse(args(0)) : 100000L;  
+      val threads : Int = args.size > 1 ? Int.parse(args(1)) :  4; 
+
+      val nPerThread = N/threads; 
+      val inCircle = new Array[Long](1..threads);   
+ 
+      finish for(k in 1..threads) { 
+         val r = new Random(k*k + k + 1);       
+         val rand = () => r.nextDouble();       
+         val kval = k;                     
+         async inCircle(kval) = countPoints(nPerThread, rand); 
+      }                                 
+
+      var totalInCircle: Long = 0;             
+      for(k in 1..threads) {      
+         totalInCircle += inCircle(k);         
+         Console.OUT.println("ic("+k+") = "+inCircle(k)); 
+      }                                 
+
+      val pi = (4.0*totalInCircle)/(nPerThread*threads); 
+\end{xtennum}
 %%END X10: src/intro/MontePiAsync.x10 mpia
 \hrulefill
 \caption{Shared memory parallel code for computing $\pi$}\label{fig:mcpm}
@@ -742,14 +742,14 @@ spawned in the {\tt finish}'s statement have completed.  So when we get to line
 can be any statement, though.  If you want to start two activities and wait
 for them to finish, you can write: 
 
-%%START UX10: FinishTwo.x10 finishtwo
-\begin{verbatim}
+%%START X10: FinishTwo.x10 finishtwo [numbers=none]
+\begin{xtennum}[numbers=none]
       finish {
         async do_this();
         async do_that();
       }
-\end{verbatim}
-%%END UX10: FinishTwo.x10 finishtwo
+\end{xtennum}
+%%END X10: FinishTwo.x10 finishtwo
 
 
 \item[line \xlref{mpia-r}{8}:]  The constructor {\tt Random()}, if called with no arguments,
@@ -779,12 +779,12 @@ original activity.  The effect of the {\tt for} loop is, therefore, to get
 to start a multi-statement activity, use a \xcd`{` block \xcd`}`: 
 
 %%START X10: MultiLineAsyncExample.x10 multilineasync
-\begin{verbatim}
-1       async {
-2         do_this();
-3         do_that();
-4       }    
-\end{verbatim}
+\begin{xtennum}[]
+     async {
+       do_this();
+       do_that();
+     }    
+\end{xtennum}
 %%END X10: MultiLineAsyncExample.x10 multilineasync
 
 
@@ -1175,80 +1175,80 @@ in Figure \ref{fig:mpmtmc} on the next page.
 \begin{figure}[!htbp]
 \hrulefill
 %%START X10: src/intro/MontePiCluster.x10 mpicluster
-\begin{verbatim}
- 1  import x10.util.Random;
- 2  /**
- 3   * A parallel version of the Monte Carlo estimate for pi that uses 
- 4   * several Places and several threads at each place.
- 5   */
- 6  public class MontePiCluster {
- 7      /**
- 8       * At the current Place, spawn some threads, each of which
- 9       * generates n random points and return the total number
-10       * (combining all of the threads results) that fell inside
-11       * the circle.
-12       * @param pId: this process's id: used to create the seed for the
-13       *    random number generator.
-14       * @param threads: how many threads to use at this Place
-15       * @param n: how many points for each thread to generate
-16       * @return the total for all the threads of the number of points
-17       * that landed inside the circle. 
-18       */
-19      public static def countAtP(pId: Int, threads: Int, n: Long) {
-20          var count: Long = 0;
-21          finish for (j in 1..threads)  {
-22              val jj = j;
-23              async {
-24                  val r = new Random(jj*Place.MAX_PLACES + pId);
-25                  val rand = () => r.nextDouble();
-26                  val jCount = countPoints(n, rand);
-27                  atomic count += jCount;
-28              }
-29          }
-30          return count;
-31      }
-32      /**
-33       * Generate n points at random in the unit square, and return
-34       * the number that fell within the unit circle.
-35       * @param n the number of points to generate
-36       * @param rand the function generating the random numbers
-37       * @return the number of points that landed in the circle
-38       */
-39      public static def countPoints(n:Long, rand:()=>Double) {
-40          var inCircle: Long = 0;
-41          for (j in 1..n) {
-42              val x = rand();
-43              val y = rand();
-44              if (x*x +y*y <= 1.0) inCircle++;
-45          }
-46          return inCircle;
-47      }
-48     /**
-49      * There are three optional command line arguments: args(0) is the
-50      * number of points to generate, and args(1) is the number of
-51      * parallel activities to use, and args(2) is the number of 
-52      * threads to use at each Place.
-53      */
-54     public static def main(args: Array[String](1)) {
-55        val N = args.size > 0 ? Long.parse(args(0)) : 1000000L;
-56        val places = args.size > 1 ? Int.parse(args(1)) : Place.MAX_PLACES;
-57        val tPerP = args.size > 2 ? Int.parse(args(2)) : 4;
-58        val nPerT = N/(places * tPerP);
-59        val inCircle = new Array[Long](1..places);
-60        finish for(k in 1..places) {
-61           val kk = k;
-62           val pk = Place.place(k-1);
-63           async inCircle(kk) = at(pk) countAtP(kk, tPerP, nPerT);
-64        }
-65        var totalInCircle: Long = 0;
-66        for(k in 1..places) {
-67           totalInCircle += inCircle(k);
-68        }
-69        val pi = (4.0*totalInCircle)/(nPerT * tPerP * places);
-70        Console.OUT.println("Our estimate for pi is " + pi);
-71     }
-72  }
-\end{verbatim}
+\begin{xtennum}[]
+import x10.util.Random;
+/**
+ * A parallel version of the Monte Carlo estimate for pi that uses 
+ * several Places and several threads at each place.
+ */
+public class MontePiCluster {
+    /**
+     * At the current Place, spawn some threads, each of which
+     * generates n random points and return the total number
+     * (combining all of the threads results) that fell inside
+     * the circle.
+     * @param pId: this process's id: used to create the seed for the
+     *    random number generator.
+     * @param threads: how many threads to use at this Place
+     * @param n: how many points for each thread to generate
+     * @return the total for all the threads of the number of points
+     * that landed inside the circle. 
+     */
+    public static def countAtP(pId: Int, threads: Int, n: Long) {
+        var count: Long = 0;
+        finish for (j in 1..threads)  {
+            val jj = j;
+            async {
+                val r = new Random(jj*Place.MAX_PLACES + pId);
+                val rand = () => r.nextDouble();
+                val jCount = countPoints(n, rand);
+                atomic count += jCount;
+            }
+        }
+        return count;
+    }
+    /**
+     * Generate n points at random in the unit square, and return
+     * the number that fell within the unit circle.
+     * @param n the number of points to generate
+     * @param rand the function generating the random numbers
+     * @return the number of points that landed in the circle
+     */
+    public static def countPoints(n:Long, rand:()=>Double) {
+        var inCircle: Long = 0;
+        for (j in 1..n) {
+            val x = rand();
+            val y = rand();
+            if (x*x +y*y <= 1.0) inCircle++;
+        }
+        return inCircle;
+    }
+   /**
+    * There are three optional command line arguments: args(0) is the
+    * number of points to generate, and args(1) is the number of
+    * parallel activities to use, and args(2) is the number of 
+    * threads to use at each Place.
+    */
+   public static def main(args: Array[String](1)) {
+      val N = args.size > 0 ? Long.parse(args(0)) : 1000000L;
+      val places = args.size > 1 ? Int.parse(args(1)) : Place.MAX_PLACES;
+      val tPerP = args.size > 2 ? Int.parse(args(2)) : 4;
+      val nPerT = N/(places * tPerP);
+      val inCircle = new Array[Long](1..places);
+      finish for(k in 1..places) {
+         val kk = k;
+         val pk = Place.place(k-1);
+         async inCircle(kk) = at(pk) countAtP(kk, tPerP, nPerT);
+      }
+      var totalInCircle: Long = 0;
+      for(k in 1..places) {
+         totalInCircle += inCircle(k);
+      }
+      val pi = (4.0*totalInCircle)/(nPerT * tPerP * places);
+      Console.OUT.println("Our estimate for pi is " + pi);
+   }
+}
+\end{xtennum}
 %%END X10: src/intro/MontePiCluster.x10 mpicluster
 \hrulefill
 \caption{Multi-place, multi-threaded Monte Carlo:

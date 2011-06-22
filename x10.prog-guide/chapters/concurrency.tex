@@ -88,15 +88,15 @@ more limited application's performance that is \Xten{}'s primary concern.
 The constant {\tt Places.ALL\_PLACES} tells you how many places there are.
 The following program displays it on the console:
 %%START X10: src/concurrency/PlaceCounter.x10 placecounter
-\begin{verbatim}
-1  public class PlaceCounter {
-2    public static def main(argv:Array[String](1)) {
-3       Console.OUT.println("This is running on " + 
-4          Place.ALL_PLACES + " places.");
-5    }
-6  }
-7  
-\end{verbatim}
+\begin{xtennum}[]
+public class PlaceCounter {
+  public static def main(argv:Array[String](1)) {
+     Console.OUT.println("This is running on " + 
+        Place.ALL_PLACES + " places.");
+  }
+}
+
+\end{xtennum}
 %%END X10: src/concurrency/PlaceCounter.x10 placecounter
 
 
@@ -112,18 +112,18 @@ place is copied to {\tt p}, and then {\tt S} is executed at {\tt p}.  For
 example, the {\tt for} loop here displays ``Hello...' from every available
 place exactly once:
 %%START X10: src/concurrency/HelloFromEveryPlace.x10 hfep
-\begin{verbatim}
-1  public class HelloFromEveryPlace {
-2    public static def main(argv:Array[String](1)) {
-3      for(p in Place.places()) { 
-4        at(p) {
-5          Console.OUT.println("Hello from " + here); 
-6          assert here == p;
-7        }
-8      }
-9    }
-10  }
-\end{verbatim}
+\begin{xtennum}[]
+public class HelloFromEveryPlace {
+  public static def main(argv:Array[String](1)) {
+    for(p in Place.places()) { 
+      at(p) {
+        Console.OUT.println("Hello from " + here); 
+        assert here == p;
+      }
+    }
+  }
+}
+\end{xtennum}
 %%END X10: src/concurrency/HelloFromEveryPlace.x10 hfep
 
 \begin{description}
@@ -220,16 +220,16 @@ value back to {\tt x}'s {\tt Place}, and resumes {\tt x}'s thread, which
 stores the value into {\tt x}.  We saw this in action in our multi-place version
 of the Monte Carlo computation of $\pi$.  Here's another example:
 %%START X10: src/concurrency/AtExpr.x10 atexpr
-\begin{verbatim}
-1  public class AtExpr {
-2     public static def main(argv:Array[String](1)) {
-3        val pMain = here;                      
-4        val pNext = pMain.next();              
-5        val nextNext = at(pNext) here.next();  
-6        Console.OUT.println("The next next is "+nextNext.id);     
-7     }
-8  }
-\end{verbatim}
+\begin{xtennum}[]
+public class AtExpr {
+   public static def main(argv:Array[String](1)) {
+      val pMain = here;                      
+      val pNext = pMain.next();              
+      val nextNext = at(pNext) here.next();  
+      Console.OUT.println("The next next is "+nextNext.id);     
+   }
+}
+\end{xtennum}
 %%END X10: src/concurrency/AtExpr.x10 atexpr
 
 \begin{description}
@@ -286,23 +286,23 @@ duo, except that {\tt finish} allows you to wait for a whole set of activities,
 whereas {\tt wait} is a per-thread operation.
 Here's how \Xten's two work together to make our example hum:
 %%START X10: src/concurrency/WalkAndChew.x10 walkandchew
-\begin{verbatim}
- 1        val n = 3;
- 2        val big1: GlobalRef[Cell[String]] = GlobalRef[Cell[String]](new Cell[String]("!"));
- 3        val big2: GlobalRef[Cell[String]] = GlobalRef[Cell[String]](new Cell[String]("2"));
- 4        val pMain = here;   
- 5        finish { 
- 6           async at(Place.place(0)) { 
- 7              val bc1 = bigComputation(n,n);
- 8              at(big1.home) big1()() = bc1; 
- 9           }
-10           async at(Place.place(0)) { 
-11              val bc2 = bigComputation(n,n);
-12              at(big2.home) big2()() = bc2; 
-13           }
-14        } 
-15        assert big1()().equals(big2()()); 
-\end{verbatim}
+\begin{xtennum}[]
+      val n = 3;
+      val big1: GlobalRef[Cell[String]] = GlobalRef[Cell[String]](new Cell[String]("!"));
+      val big2: GlobalRef[Cell[String]] = GlobalRef[Cell[String]](new Cell[String]("2"));
+      val pMain = here;   
+      finish { 
+         async at(Place.place(0)) { 
+            val bc1 = bigComputation(n,n);
+            at(big1.home) big1()() = bc1; 
+         }
+         async at(Place.place(0)) { 
+            val bc2 = bigComputation(n,n);
+            at(big2.home) big2()() = bc2; 
+         }
+      } 
+      assert big1()().equals(big2()()); 
+\end{xtennum}
 %%END X10: src/concurrency/WalkAndChew.x10 walkandchew
 
 \bard{Picture!}
@@ -343,37 +343,37 @@ Finally, a more realistic example of this sort of program is a shared-memory
 of which you can find in
 \href{chapter-concurrency/QSortInts.x10}{QSortInts.x10}.:
 %%START X10: src/concurrency/QSortInts.x10 qsortints
-\begin{verbatim}
- 1  public class QSortInts {   
- 2     /**
- 3      * top-level call: sorts the input array in place using the
- 4      * quicksort algorithm.
- 5      * @param data the array of Ints to be sorted.
- 6      */
- 7     public static def sort(data: Array[Int](1)) {
- 8        val r = data.region;
- 9        val first = r.min(0), last = r.max(0);
-10        sort(data, first, last); 
-11     }
-12     public static def sort(data:Array[Int](1), 
-13               left:Int, right:Int) {
-14        var i: Int = left, j: Int = right;
-15        val pivot = data(left + (right-left)/2);
-16        while (i <= j) {
-17           while (data(i) < pivot) i++;
-18           while (data(j) > pivot) j--;
-19           if (i <= j) {
-20              val tmp = data(i);
-21              data(i++) = data(j);
-22              data(j--) = tmp;
-23           }
-24        }
-25        finish { // when you are here i > j 
-26           if (left < j) async sort(data, left, j);
-27           if (i < right) async sort(data, i, right);
-28        }
-29     }
-\end{verbatim}
+\begin{xtennum}[]
+public class QSortInts {   
+   /**
+    * top-level call: sorts the input array in place using the
+    * quicksort algorithm.
+    * @param data the array of Ints to be sorted.
+    */
+   public static def sort(data: Array[Int](1)) {
+      val r = data.region;
+      val first = r.min(0), last = r.max(0);
+      sort(data, first, last); 
+   }
+   public static def sort(data:Array[Int](1), 
+             left:Int, right:Int) {
+      var i: Int = left, j: Int = right;
+      val pivot = data(left + (right-left)/2);
+      while (i <= j) {
+         while (data(i) < pivot) i++;
+         while (data(j) > pivot) j--;
+         if (i <= j) {
+            val tmp = data(i);
+            data(i++) = data(j);
+            data(j--) = tmp;
+         }
+      }
+      finish { // when you are here i > j 
+         if (left < j) async sort(data, left, j);
+         if (i < right) async sort(data, i, right);
+      }
+   }
+\end{xtennum}
 %%END X10: src/concurrency/QSortInts.x10 qsortints
 \begin{description}
 \item[Line \xlref{qsortints-sort}{10}] 
@@ -701,17 +701,17 @@ we just wanted to make sure you were aware of what {\tt finish} does {\em not} d
  Let's quickly review that story with a very simple example:
 \bard{The following needs to be checked when \Xten{} is buildable}
 %%START X10: src/concurrency/AsyncInc.x10 all
-\begin{verbatim}
-1  public class AsyncInc {
-2      public static def main(args: Array[String]) {
-3         var n : Int = 0;
-4         finish for (var m: Int = 0; m<2; m++) {
-5            async for(var k: Int = 0; k<10000; k++) n++; 
-6         }
-7         Console.OUT.println("n is "+n);
-8      }
-9  }
-\end{verbatim}
+\begin{xtennum}[]
+public class AsyncInc {
+    public static def main(args: Array[String]) {
+       var n : Int = 0;
+       finish for (var m: Int = 0; m<2; m++) {
+          async for(var k: Int = 0; k<10000; k++) n++; 
+       }
+       Console.OUT.println("n is "+n);
+    }
+}
+\end{xtennum}
 %%END X10: src/concurrency/AsyncInc.x10 all
 This code appears to be incrementing the variable {\tt n} 20,000 times.  
 But does it?  We ran it several times on a 2-core laptop, and the console display
@@ -860,17 +860,17 @@ above is an example.  We can use {\tt atomic} to cure this race, as we did
 in Figure \ref{fig:mpmtmc} in \Sref{ssec:montepierror}, page
 \pageref{fig:mpmtmc}, for a similar problem with our Monte Carlo code:  
 %%START X10: src/concurrency/AtomicInc.x10 ait
-\begin{verbatim}
-1  public class AtomicInc {
-2  	public static def main(args: Array[String]) {
-3  	   var n : Int = 0;
-4  	   finish for (var m: Int = 0; m<2; m++) {
-5  	      async for(var k: Int = 0; k<10000; k++) atomic n++; 
-6  	   }
-7  	   Console.OUT.println("n is "+n);
-8  	}
-9  }
-\end{verbatim}
+\begin{xtennum}[]
+public class AtomicInc {
+	public static def main(args: Array[String]) {
+	   var n : Int = 0;
+	   finish for (var m: Int = 0; m<2; m++) {
+	      async for(var k: Int = 0; k<10000; k++) atomic n++; 
+	   }
+	   Console.OUT.println("n is "+n);
+	}
+}
+\end{xtennum}
 %%END X10: src/concurrency/AtomicInc.x10 ait
 
 Forcing the {\tt n+=1} to be executed atomically guarantees that the sum is driven
@@ -889,13 +889,13 @@ For example,
 the class {\tt x10.util.concurrent.AtomicInteger} can be used for our asynchronous
 increments:
 %%START X10: src/concurrency/AtomicIntInc.x10 aiit
-\begin{verbatim}
-1         val n = new AtomicInteger(0); 
-2         finish for (var m: Int = 0; m<2; m++) {
-3             async for(var k: Int = 0; k<10000; k++) n.getAndAdd(1); 
-4         }
-5         Console.OUT.println("n is "+n.get());
-\end{verbatim}
+\begin{xtennum}[]
+       val n = new AtomicInteger(0); 
+       finish for (var m: Int = 0; m<2; m++) {
+           async for(var k: Int = 0; k<10000; k++) n.getAndAdd(1); 
+       }
+       Console.OUT.println("n is "+n.get());
+\end{xtennum}
 %%END X10: src/concurrency/AtomicIntInc.x10 aiit
 \begin{description}
 \item[Line \xlref{aiit-n}{1}:]
@@ -940,22 +940,22 @@ our discussion of the Monte-Carlo computation of $pi$.  Our final code,
 shown in Figure \ref{fig:mpmtmc}, uses an atomic update in the
 method {\tt countAtP} to protect the integrity of the final {\tt count}:
 %%START X10: src/intro/MontePiCluster.x10 countatp
-\begin{verbatim}
- 1      public static def countAtP(pId: Int, threads: Int, n: Long) {
- 2          var count: Long = 0;
- 3          finish for (j in 1..threads)  {
- 4              val jj = j;
- 5              async {
- 6                  val r = new Random(jj*Place.MAX_PLACES + pId);
- 7                  val rand = () => r.nextDouble();
- 8                  val jCount = countPoints(n, rand);
- 9                  atomic count += jCount;
-10              }
-11          }
-12          return count;
-13      }
-14      /**
-\end{verbatim}
+\begin{xtennum}[]
+    public static def countAtP(pId: Int, threads: Int, n: Long) {
+        var count: Long = 0;
+        finish for (j in 1..threads)  {
+            val jj = j;
+            async {
+                val r = new Random(jj*Place.MAX_PLACES + pId);
+                val rand = () => r.nextDouble();
+                val jCount = countPoints(n, rand);
+                atomic count += jCount;
+            }
+        }
+        return count;
+    }
+    /**
+\end{xtennum}
 %%END X10: src/intro/MontePiCluster.x10 countatp
 Try replacing {\tt count} with an {\tt AtomicLong} here.  You can use 
 either {\tt addAndGet} or {\tt getAndAdd} in line \xlref{countatp-atomic}{9}

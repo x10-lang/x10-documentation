@@ -68,6 +68,10 @@
   {\lstset{language=X10,breaklines=false,captionpos=b}}
   {}
 
+\lstnewenvironment{xtennum}[1][]
+  {\lstset{language=X10, numbers=left, numberstyle=\tiny, numbersep=10pt,#1}}
+  {}
+
 %\newenvironment{x10}{\begin{xten}}{\end{xten}}
 
 \newcommand\inputxten[1]{\begin{minipage}{\textwidth}\lstinputlisting[language=X10,breaklines=false,captionpos=b,numbers=left,numberstyle=\tiny,xleftmargin=15pt]{#1}\end{minipage}}

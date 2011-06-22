@@ -1,7 +1,8 @@
 '''
 python3 bimport.py ../bard-pguide.ini -noCheck
 Prelude: certain behaviors can be controlled by command-line flags:
-  -v: verbose. *very* verbose.
+  -v or -verbose: verbose. *very* verbose.
+  -t or -talky: Talky.  Prints a few useful messages.
   -qc: Quiet Check -- don't say which X10 file is getting compiled.
   -silent: silent
   -noTex: don't update .tex files.
@@ -122,6 +123,7 @@ xlref2frag = {}
 fragName2Fragment = {}
 # verbosity
 verbose = False
+talky = True
 silent = False
 quietCheck = False
 # Parameters to the run
@@ -194,8 +196,8 @@ class Fragment:
         if relevantXlref != None: 
             xlref2lineNumber[relevantXlref] = self.currentLineNumber()
             xlref2frag[relevantXlref] = self
-    def writeToTexFile(self, new):
-        new.write("\\begin{xtennum}\n")
+    def writeToTexFile(self, new, params):
+        new.write("\\begin{xtennum}[" + params + "]\n")
         fmt = "{0}\n"
         for line in self.content:
             s = fmt.format(line)
@@ -394,7 +396,7 @@ XLREF_RE = re.compile("\\\\xlref{([-a-zA-Z0-9]+)}{([0-9]*)}")
 XLFILENAME_RE = re.compile("\\\\xlfilename{([-a-zA-Z0-9]+)}{([^}]*)}")
 XLINE_RE = re.compile("\\\\xl(?:(?:rawl)?)ine{([-a-zA-Z0-9]+)}{([^}]*)}")
 #XLINE_RE = re.compile("\\\\xline{([-a-zA-Z0-9]+)}{([^}]*)}")
-START_RE = re.compile("\\s*%%START\\s(?:U?X10:)?\\s+(.*)\\s+(.*)\\s$")
+START_RE = re.compile("\\s*%%START\\s(?:U?X10:)?\\s+(.*)\\s+([-a-zA-Z0-9]+)\\s(?:\\[(.*)\\])?$")
 END_RE = re.compile("\\s*%%END\\s+(?:U?X10:)?\\s+(.*)\\s+(.*)\\s$")
 
 class TexRewriter:
@@ -410,6 +412,7 @@ class TexRewriter:
                     self.rewrite(os.path.join(subdirpath, filename))
     def rewrite(self, texpath):
         global latexdir, silent
+        if verbose: print("rewrite(" + texpath + ")")
         beforeSize = os.path.getsize(texpath)
         nIncludes, nXlChanges = self.actuallyRewrite(texpath)
         afterSize = os.path.getsize(texpath)
@@ -460,20 +463,22 @@ class TexRewriter:
                         nXlChanges += nChanges
                     else:
                         inSTART = True
-                        
                         nIncludes += 1
                         new.write(line)
                         partialFileName = m.group(1)
                         inFile = partialFileName
                         fragmentName = m.group(2)
+                        params = m.group(3)
+                        #if params != None: print("PaRaM: '" + str(params) + "'")
+                        if params == None: params = ""
                         if verbose:
-                            print("Including fragment '{1}' at line {2}.".format(
-                                partialFileName, fragmentName, absLineNo))
+                            print("Including fragment '{1}' at line {2}, params='{3}'.".format(
+                                partialFileName, fragmentName, absLineNo, params))
                         inFragmentName = fragmentName
                         if fragmentName in fragName2Fragment:
                             frag = fragName2Fragment[fragmentName]
                             frag.confirmFileName(partialFileName, texpath, absLineNo)
-                            frag.writeToTexFile(new)
+                            frag.writeToTexFile(new, params)
                         else:
                             doom("Missing fragment named {0} in file {1} at line {2}!"
                                  .format(fragmentName, shortname, absLineNo))
@@ -490,7 +495,7 @@ class TexRewriter:
         line, a = self.rewriteXlrefs(line, texpath, absLineNo)
         line, b = self.rewriteXlfilenames(line, texpath, absLineNo)
         line, c = self.rewriteXline(line, texpath, absLineNo)
-        if not silent and (orig != line):
+        if (verbose or talky) and (orig != line):
             print("\nWAS: {0}NOW: {1}".format(orig,line))
         return line, a+b+c
     def rewriteXlrefs(self, line, texpath, absLineNo):
@@ -510,7 +515,7 @@ class TexRewriter:
             before = line[0:openbr]
             after = line[closebr:]
             nl = before + str(itsLineNumber) + after
-            if verbose:
+            if verbose or (talky and (nl != line)):
                 print("Rewriting line {0}, changing '{1}' to '{2}' due to xlref({3}).".format(
                     absLineNo, matcho.group(2), itsLineNumber, key))
             line = nl
@@ -532,7 +537,11 @@ class TexRewriter:
             before = line[0:openbr]
             after = line[closebr:]
             nl = before + str(relfn) + after
+            if verbose or (talky and (nl != line)):
+                print("Rewriting line {0}, changing '{1}' to '{2}' due to xlfilename({3}).".format(
+                absLineNo, matcho.group(2), str(relfn), key))
             line = nl
+            
         return line, n
     def rewriteXline(self, line, texpath, absLineNo):
         xlineMatches = [m for m in XLINE_RE.finditer(line)]
@@ -551,7 +560,7 @@ class TexRewriter:
             frag = xlref2frag[key]
             textOfThatLine = (frag.textOfLineNamed(key, texpath, absLineNo).strip())
             nl = before + quoteForTex(textOfThatLine) + after
-            if verbose:
+            if verbose or (talky and (nl != line)):
                 print("Rewriting line {0}, changing '{1}' to '{2}' due to xline({3}).".format(
                     absLineNo, matcho.group(2), textOfThatLine, key))
             line = nl
@@ -648,12 +657,14 @@ CMDFLAGS = {'-l': 'dirs.latex',
 
 
 def readIni():
-    global parms, verbose, pleaseCheckCompilation, pleaseRewriteTex, pleaseProduceTrimmedX10, quietCheck
+    global parms, verbose, talky, pleaseCheckCompilation, pleaseRewriteTex, pleaseProduceTrimmedX10, quietCheck
     ini = '../bard-pguide.ini'
     if '-i' in sys.argv: # use the next argument as the ini file path?
         ini = sys.argv[1 + sys.argv.index('-i')]
     parms = osutils.commandparms(KEYS, ini, ENV, CMDFLAGS)   
-    if '-v' in sys.argv:
+    if '-t' in sys.argv or '-talky' in sys.argv:
+        talky = True
+    if '-v' in sys.argv or '-verbose' in sys.argv:
         verbose = True
         for key in parms:
             print(key + " => " + parms[key])

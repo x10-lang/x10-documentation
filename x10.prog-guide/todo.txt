@@ -1,3 +1,66 @@
+Bard, add to the list of problems I should look at:
+
+RA: random access aka "GUPS"
+
+Otherwise, we are on the same page.
+
+Thanks,
+
+Jonathan
+
+
+
+Jonathan Brezin
+Research Staff Member
+IBM TJ Watson Research Labs
+19 Skyline Drive
+Hawthorne, NY 10532 
+
+Phone: (914) 784-6728 (Tie: 863-6728)
+Fax:       (914) 784-7279 (Tie: 863-7279)
+
+
+Bard Bloom/Watson/IBM 
+03/10/11 01:34 PM	
+	To
+	Jonathan Brezin/Watson/IBM@IBMUS
+	cc
+	
+	Subject
+	My notes...
+	
+	
+	
+	
+
+Chapter on Type System
+Chapter on I/O
+Chapter on Clocks - red-black thingies and systolic algorithms, cf. VJ's notes.
+
+Important idioms/algorithms to consider for the prog guide:
+
+* Parallel prefix - VJ's course
+* Bounded and unbounded buffers - VJ's course
+* Stream programming, using buffers - - VJ's course
+* Selection; e.g., the median of a set of lots (a billion) numbers.  Rajesh
+  Bordawekar = local expert.  VJ has the code somewhere too.
+* Histogram problem (on a billion numbres) - VJ 2010 lecture 4 or 5
+* Sparse and Dense Matrix stuff.  
+
+What to Do If atomic/when are not fast enough
+  (And often they won't be)
+  * clocks
+  * atomic objects
+  * x10.lang.Semaphore
+  > Note that 'when' spawns a thread, in the current impl.
+
+PERCS RA and UTS benchmark
+  UTS = unbalanced tree search. PPOPP 2011 paper by X10 team.  
+
+
+
+------------------------------------------------------------------------------
+
 * MontePi with Long.parse(args(0)) -- need 100000L, not 100000
 * size() is just size
 

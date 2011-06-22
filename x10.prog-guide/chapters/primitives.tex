@@ -823,15 +823,15 @@ few surprises, particularly to Java programmers, we suggest you bear with us and
 as the parallels are not exact.
 
 Consider, to begin with, the following attempt to pass some {\tt Int} arguments into a method.
- %%START X10: src/primitives/TryArgs.x10 tryargs
-\begin{verbatim}
-1  public class TryArgs {
-2     public static def tryargs(val a: Int, b: Int, var c: Int) {
-3        a = b = 1;  
-4        c = 1;       
-5     }
-6  }
-\end{verbatim}
+ %%START X10: src/primitives/TryArgs.x10 tryargs 
+\begin{xtennum}[]
+public class TryArgs {
+   public static def tryargs(val a: Int, b: Int, var c: Int) {
+      a = b = 1;  
+      c = 1;       
+   }
+}
+\end{xtennum}
 %%END X10:  src/primitives/TryArgs.x10 tryargs
 You'll find this code in 
 \xlfilename{tryargs}{primitives/TryArgs.x10}
@@ -858,16 +858,16 @@ method body.
 The next thing to try is modifying a {\tt var} argument in the body of the method, as in 
 \href{http://dist.codehaus.org/x10/documentation/guide/src/fcns/TryArgs2.x10}{fcns/TryArgs2.x10}: 
 %%START X10: src/primitives/TryArgs2.x10 tryargs2
-\begin{verbatim}
- 1  public class TryArgs2 {
- 2     public static def tryargs(var c: Int) {
- 3        c = 1;   
- 4        Console.OUT.print("In tryargs, c is "+c);
- 5     }
- 6     public static def main(args: Array[String](1)): Void {
- 7        var ta2: Int = 0;
- 8        tryargs(ta2);
- 9        Console.OUT.println(".  In main, ta2 is "+ta2);     
-10     }
-11  }
-\end{verbatim}
+\begin{xtennum}[]
+public class TryArgs2 {
+   public static def tryargs(var c: Int) {
+      c = 1;   
+      Console.OUT.print("In tryargs, c is "+c);
+   }
+   public static def main(args: Array[String](1)): Void {
+      var ta2: Int = 0;
+      tryargs(ta2);
+      Console.OUT.println(".  In main, ta2 is "+ta2);     
+   }
+}
+\end{xtennum}
