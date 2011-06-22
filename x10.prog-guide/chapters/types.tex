@@ -953,16 +953,20 @@ inheritance chain.
 
 Supporting inheritance does not come without costs when a program runs.
 Consider the class {\tt DblDbl}, a model of innocence:
+
+%%START X10: DblDbl_Class dbldblClass
 \begin{verbatim}
- 1 public def class DblDbl {
- 2    public val x: Double;
- 3    public val y: Double;
- 4    public def this(a: Double, b: Double) {
- 5       this.x = a; this.y = b;
- 6    }
- 7    public def normSq() = x*x + y*y;
- 8 }
-\end{verbatim} 
+1  public  class DblDbl {
+2     public val x: Double;
+3     public val y: Double;
+4     public def this(a: Double, b: Double) {
+5        this.x = a; this.y = b;
+6     }
+7     public def normSq() = x*x + y*y;
+8  }
+\end{verbatim}
+%%END X10: DblDbl_Class dbldblClass
+
 Let ``{\tt public def doIt(p:DblDbl) \{...\}}'' be a method declared in some
 other class, and suppose that in the body of {\tt doIt}
 we find the call {\tt p.normSq()}.  What does this call really cost?
@@ -1024,8 +1028,8 @@ whereever its value is useful.
 \Xten{} calls these things ``{\tt struct}s'', to distinguish them from
 classes.
 \footnote{
-This is a rather unfortunate choice of terminology, because \Xten{} structs  bear about the same
-relation to the familiar {\em C} {\tt struct} as \Xten{} classes do.
+They're not C++-style structs.  They're X10-style structs, which are pretty
+different from C++-style structs.
 }  
 \Xten{} made one other critical decision: when an instance of a
 struct appears as a field or is assigned to an identifier, it is the
@@ -1037,27 +1041,38 @@ you don't have ``follow a pointer'' to get to the value.
 Struct declarations are essentially the same as {\tt class} declarations.
 For example, we can
 change the class {\tt DblDbl} to be a struct just by replacing the keyword
-``{\tt class}'' with ``{\tt struct}'' in its declaration:
+``{\tt class}'' with ``{\tt struct}'' in its declaration:\footnote{You can't
+always turn a class to a struct this easily -- or at all.  
+For one difference, 
+structs don't support inheritance, so, 
+if your class uses
+inheritance, you've got some recoding to do.}
+
+%%START X10: DblDbl_Struct.x10 dbldblStruct
 \begin{verbatim}
- 1  public struct DblDbl {
- 2    public val x: Double;
- 3    public val y: Double;
- 4    public def this(a: Double, b: Double) {
- 5       this.x = a;  this.y = b
- 6    }
- 7    public def normSq() = x*x + y*y;
- 9 }
+1  public  struct DblDbl {
+2     public val x: Double;
+3     public val y: Double;
+4     public def this(a: Double, b: Double) { 
+5        this.x = a; this.y = b;
+6     }
+7     public def normSq() = x*x + y*y;
+8  }
 \end{verbatim}
+%%END X10: DblDbl_Struct.x10 dbldblStruct
+
+
+
 A few comments:
 \begin{description}
-\item{\bf line 1:} The accessibility rules for a struct are the same as for a
+\item{\bf line \xlref{dbldblStruct-struct}{1}:} The accessibility rules for a struct are the same as for a
 class.  We chose ``{\tt public}'' for the example, but default, {\tt protected} 
 and {\tt private} access may be assigned as appropriate.
 
 Structs may be generic---that is, they may, like {\tt Array}, have type
 parameters---although this one does not.
 
-\item{\bf lines 2 and 3:}  As we noted earlier, the instance members of a struct
+\item{\bf lines \xlref{dbldblStruct-x}{2} and \xlref{dbldblStruct-y}{3}:}  As we noted earlier, the instance members of a struct
 are always {\tt val}s. For that reason, you don't need to say ``{\tt
 val}'' as we did here.  It is okay if you do. If you are not sure whether in
 the long run you are going to want this type to be a struct or a class,
@@ -1069,23 +1084,27 @@ Indeed, one can also define classes, interfaces, and structs in the
 body of a struct, just as one can in a class.
 \item 
  
-\item{\bf line 7:} Unlike their C namesakes, \Xten{} structs can declare
+\item{\bf line \xlref{dbldblStruct-def}{4}:} Unlike their C namesakes, \Xten{} structs can declare
 methods, both instance methods and static methods. We've shown a public
 method here, but both private and default access can be used. Structs
 {\em never} have subclasses, so ``protected,'' which just broadens the default
-access by allowing access to subclasses, adds nothing in this context.
+access by allowing access to subclasses, is useless for structs.
 \end{description}
 
 The keyword {\tt new} is {\em not} required when creating
  a new instance of a struct---in contrast to the case for a class.
 Here is an example that assigns a {\tt DblDbl} value:
+%%START X10: DblDbl_Struct.x10 dbldblstructCtorCall
 \begin{verbatim}
-        var p: DblDbl = DblDbl(1.2, 3.4);
+1       var p: DblDbl = DblDbl(1.2, 3.4);
 \end{verbatim}
+%%END X10: DblDbl_Struct.x10 dbldblstructCtorCall
 The ``{\tt new}'' is gone from the right-hand side.
 If you put the ``{\tt new}'' in, though, the compiler will happily accept it.
 
-{\bf Important: } One important difference between struct and class
+\subsection{Equality, Classes, and Structs}
+
+One important difference between struct and class
 implementation is the treatment of ``{\tt ==}''.   If {\tt s1} and {\tt s2} are
 two instances of the same struct, then ``{\tt s1 == s2}'' is true exactly when
 when their instance fields have identical values.  If, for example, 
@@ -1095,6 +1114,30 @@ instances of a class, ``{\tt ==}'' tests for references to same instance,
 not equality of values. But: there are {\em no} references to instances of a
 struct, just the instance data itself.  Since the data is all there is, that's
 all you operate on---with ``{\tt ==}'' or anything else.
+
+
+Here's an example: \xcd`Class` and \xcd`Struct` are identical except that
+\xcd`Class` is a class and \xcd`Struct` is a struct.  Two \xcd`Class`es with
+the same data are not \xcd`==` to each other, but two \xcd`Struct`s with the
+same data are \xcd`==`.
+%%START X10: ClassVsStruct.x10 classvsstruct
+\begin{verbatim}
+ 1  public class ClassVsStruct {
+ 2    static class  Class(a:Int)  {}
+ 3    static struct Struct(a:Int) {}
+ 4    public static def main(argv:Array[String](1)) {
+ 5      val c <: Class  = new Class(1);
+ 6      val d <: Class  = new Class(1);
+ 7      val s <: Struct = Struct(1);
+ 8      val t <: Struct = Struct(1);
+ 9      assert c != d;
+10      assert s == t;
+11    }
+12  }
+\end{verbatim}
+%%END X10: ClassVsStruct.x10 classvsstruct
+
+\subsection{Fine Points}
 
 We close this section with some fine points about structs that are interesting
 and certainly part of the expert's toolkit, but are not critical for a first
@@ -1141,6 +1184,15 @@ Many classes override {\tt equals}.  A familiar example is the {\tt
 String} class: if {\tt a} and {\tt b} are {\tt Strings}, then {\tt a.equals(b)}
 is {\tt true} when the contents of their underlying byte arrays are the same.
 
+{\tt hashCode} is related to \xcd`equals`.  If two values are \xcd`equals`,
+then their \xcd`hashCode`s ought to be equal, too.  Some standard data
+structures rely on this fact, especially \xcd`HashMap`s -- the hash codes that
+the \xcd`HashMap`s use are \xcd`hashCode` values.
+
+If you aren't careful about this, you can write a program that looks like it
+puts a value in a \xcd`HashMap`, but it can't be found once it's there.
+\bard{Give this example, and describe the right way to do it}
+
 \finepoint{\bf structs really are values.}
 The rules for what can be part of a struct are designed so that the compiler
 can determine the size of an instance from the declaration.  The reason is
@@ -1159,28 +1211,31 @@ public struct DblDblListItem {
 \end{verbatim}
 so that we can form lists of {\tt DblDbl}s, the compiler will complain.
 To understand why, ask yourself, ``How big is a {\tt DblDbl\-List\-Item}?''
-Call the answer ``{\tt sizeOfDDI}.''
-\begin{quote}
+Suppose that it were {$n$} bytes.
+
 A {\tt DblDbl}
-itself is 16 bytes. So adding the sizes of {\tt p} and {\tt
-next}, we get a total of {\tt sizeOfDDI+16} bytes.
+itself is (say) {$16$} bytes. So adding the sizes of {\tt p} and {\tt
+next}, we get a total of $n+16$ bytes.
 But that has to be the same as the size of the whole {\tt DblDblList\-Item} in
-which these are the instance fields. That whole value is only {\tt sizeOfDDI},
-just like the size of {\tt next}.
-\end{quote}
-We cannot have {\tt  sizeOfDDI == sizeOfDDI+16}.  Something is wrong.
+which these are the instance fields. That whole value is only {$n$} bytes, 
+because it's a \xcd`DblDblListItem` and that's how big a \xcd`DblDblListItem`
+is.  So, {$n+16=n$}.   Something is wrong with this.
 
 The point is that we really wanted {\tt next} to be a reference to the next
-item: an address, and not the item itself---and if {\tt DblDbl\-List\-Item} were a
-class rather than a struct, that is exactly what {\tt next} would be: a
+item: an address, and not the item itself---and if {\tt DblDbl\-List\-Item}
+were a class rather than a struct, that is exactly what {\tt next} would be: a
 reference. C++ programmers would use a pointer in this sort of situation, a
-physical address: {\tt DblDbl\-List\-Item *next}.  Its size, like the size
-of any object reference, is some small number of bytes that is independent of
+physical address: {\tt DblDbl\-List\-Item *next}. Its size, like the size of
+any object reference, is some small number of bytes that is independent of
 what its target is. But in \Xten, there is no such thing as reference to a
-struct, nor can you take its ``address.''  A struct is a value. Period!
+struct, nor can you take its ``address.'' A struct is a value. Period!
 
-The short answer, then, to ``How {\em does} one design an \Xten{}
-struct that is a list?'' is that {\em one shouldn't try}.  
+The short answer, then, to ``How {\em does} one design an \Xten{} struct that
+is a linked list?'' is that {\em one doesn't}. Linked lists need pointers, and
+structs don't have pointers.  Linked lists are done using objects in X10, not
+structs. 
+
+
 \footnote{
 We wrote out some code for you to show that if you are really desperate, you 
 {\em can} do it, but be warned, this is very, very bad \Xten.  Do not use this
@@ -1189,12 +1244,16 @@ particularly ill-advised. See
 \href{http://dist.codehaus.org/x10/documentation/guide/src/list/DblDblList.x10}{list/DblDblList.x10}.
 }
 
-\finepoint{a final word about performance.}
-By exposing the mechanism that it uses to implement
-its primitive types, \Xten{} allows programmers to eke out similar
-efficiencies.  But there is no simple answer as to when structs are really
-to be preferred over classes.  The problem is that there is a potential down
-side to structs.  Consider the assignment: 
+\subsection{Performance of Structs}
+
+Since X10's primitive types, \xcd`Int` and \xcd`Double` and so forth, are
+largely defined by standard mechanisms of the language, you can define your
+own types that are nearly as efficient ... sometimes.  At the very least, you
+can avoid the biggest inefficiencies of objects by using structs.  But structs
+have a few slow spots of their own, and if you're not careful, you can lose
+everything you gained.
+
+Consider the assignment: 
 \begin{verbatim}
    var x: T;
    var y: T;
@@ -1202,14 +1261,17 @@ side to structs.  Consider the assignment:
    x = y;
 \end{verbatim}
 When {\tt T} is a class, the assignment copies a reference that is {\tt y}'s
-current value, to {\tt x}.  When {\tt T} is a struct, however, what gets copied
+current value, to {\tt x}.  This takes a fixed amount of time, independent of
+how big the class \xcd`T` is.  
+
+When {\tt T} is a struct, however, what gets copied
 is the entire current value of {\tt y}, not a pointer to the value.  To the
 extent that the  size of the value is greater than the size of a reference,
 copying the value is more expensive than the copying the reference.
 Our {\tt DblDbl} is a good example: its size is 16 bytes, and a reference
-could use as few as 4 bytes, if only an object id is kept.
+could use as few as 4 bytes.
 
-An analogous problem comes up when passing parameters:
+The same thing comes up when passing parameters:
 \begin{verbatim}
    public def doIt(t: T) { ... }
    var x: T;
@@ -1219,18 +1281,19 @@ When {\tt T} is a class, the value passed to {\tt doIt} is the reference.  If
 {\tt T} is a struct, the whole value of {\tt x} has to be copied.
  
 To summarize: the benefits of structs are:
-\begin{quote}
-- no cost for memory allocation,\\
-- no cost for garbage collection,\\
-- faster method invocation, and\\
-- better storage utilization for large aggregates.
-\end{quote}
+\begin{itemize}
+\item  no cost for memory allocation,
+\item  no cost for garbage collection,
+\item  faster method invocation, and
+\item  better storage utilization for large aggregates.
+\end{itemize}
 and the costs are:
-\begin{quote}
-- assignments and argument passing may be more expensive, and\\
-- you lose the benefits of the class hierarchy for organizing common
+
+\begin{itemize}
+\item  assignments and argument passing may be more expensive, and
+\item  you lose the benefits of the class hierarchy for organizing common
 functionality.
-\end{quote}  
+\end{itemize}
 
 The situation is further complicated by the tricks code optimization can use to
 minimize the assignment costs, so even knowing that there might be a problem, it
