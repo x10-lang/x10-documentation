@@ -144,6 +144,7 @@ The {\bf members} of a class are the fields, methods and other types defined wit
 \hrulefill
 
 %%START X10: Ship.x10 ship
+\fromfile{Ship.x10}
 \begin{xtennum}[]
 public class Ship {
     public static DEFAULT_SIZE = 500;
@@ -366,21 +367,22 @@ says that it extends {\tt Parent}:
 For example:
 
 %%START X10: DieselShip.x10 diesel
+\fromfile{DieselShip.x10}
 \begin{xtennum}[]
-  public class DieselShip extends Ship {
-    public val fuelTankCapacity: Double; 
-    public var gallonsRemaining: Double;
-    
-    public def this(name:String, maxPsgrs:Int, tankSize:Double) {
-       super(name, maxPsgrs);
-       fuelTankCapacity = gallonsRemaining = tankSize;
-    }
-    public def throwOverboard(name: String, why: String) {
-      super.throwOverboard(name, why);
-      /* more stuff here */
-    }
-    /* ... more methods can go here */
- }
+ public class DieselShip extends Ship {
+   public val fuelTankCapacity: Double; 
+   public var gallonsRemaining: Double;
+   
+   public def this(name:String, maxPsgrs:Int, tankSize:Double) {
+      super(name, maxPsgrs);
+      fuelTankCapacity = gallonsRemaining = tankSize;
+   }
+   public def throwOverboard(name: String, why: String) {
+     super.throwOverboard(name, why);
+     /* more stuff here */
+   }
+   /* ... more methods can go here */
+}
 \end{xtennum}
 %%END X10: DieselShip.x10 diesel
 
@@ -499,6 +501,7 @@ To convert {\tt Ship} to being an abstract class, one just adds the keyword
 
 
 %%START X10: AbstractShip.x10 absship
+\fromfile{AbstractShip.x10}
 \begin{xtennum}[]
 abstract public class AbstractShip {
     public static DEFAULT_SIZE = 500;
@@ -514,8 +517,9 @@ implement, but that any of its subclasses that
 are not themselves abstract {\em must} implement.  Here is an example. 
 Notice that there is no function body: there is just a trailing semicolon.
 %%START X10: AbstractShip.x10 absshipabs
+\fromfile{AbstractShip.x10}
 \begin{xtennum}[]
-  public abstract def costPerPassengerMile(): Double;
+public abstract def costPerPassengerMile(): Double;
 \end{xtennum}
 %%END X10: AbstractShip.x10 absshipabs
 
@@ -530,8 +534,9 @@ In {\tt DieselShip}, its declaration will
 look like:
 
 %%START X10: DieselShip2.x10 costPerPassengerMile
+\fromfile{DieselShip2.x10}
 \begin{xtennum}[]
-  public def costPerPassengerMile(): Double = 0.018;
+public def costPerPassengerMile(): Double = 0.018;
 \end{xtennum}
 %%END X10: DieselShip2.x10 costPerPassengerMile
 The keyword {\tt abstract} does {\em not} appear, because this version of
@@ -557,6 +562,7 @@ slickness, we could have programmed it so that the operations use the usual
 symbols: \xcd`a*b` instead of \xcd`a.multiply(b)`.  See \Sref{Operators} for
 how to do this.}
 %%START X10: Arithmetic.x10 arith
+\fromfile{Arithmetic.x10}
 \begin{xtennum}[]
 public interface Arithmetic[T] { 
    def add(t: T): T; 
@@ -625,6 +631,7 @@ is implied.  We'll say more about this when we discuss how you use interfaces.
 
 In fact, some interfaces do nothing but declare constants: 
 %%START X10: MathConst.x10 mathconst
+\fromfile{MathConst.x10}
 \begin{xtennum}[]
 public interface MathConst {
   val PI = 3.1415926535897932384626433;
@@ -649,6 +656,7 @@ Another common use is to give names to the legal values for
 the arguments of one or more of the methods.  Here are some names for some
 standard colors:
 %%START X10: Color.x10 color
+\fromfile{Color.x10}
 \begin{xtennum}[]
 interface Color {
   val RED = 0xFF0000;
@@ -660,6 +668,7 @@ interface Color {
 We can refer to these as \xcd`Color.RED` and so on: 
 
 %%START X10: Discoloration.x10 discoloration
+\fromfile{Discoloration.x10}
 \begin{xtennum}[]
 class Discoloration {
   static def example() {
@@ -673,6 +682,7 @@ If we're inside of a class that implements \xcd`Color`, we can leave off the
 \xcd`Color.` and refer to \xcd`Color.RED` as just plain \xcd`RED`:
 
 %%START X10: Colorizer colorizer
+\fromfile{Colorizer.x10}
 \begin{xtennum}[]
 public class Colorizer implements Color {
    static def example() {
@@ -695,6 +705,7 @@ can, even: one interface can extend several other interfaces, but a class can
 only extend a single other class. 
 
 %%START X10: ExtendingInterfaces.x10 extendinginterfaces
+\fromfile{ExtendingInterfaces.x10}
 \begin{xtennum}[]
 interface Colored {
   def color(): Int;
@@ -744,6 +755,7 @@ perhaps other types as well.
 
 
 %%START X10: Frac.x10 fracdef
+\fromfile{Frac.x10}
 \begin{xtennum}[]
 class Frac implements Arithmetic[Frac], 
                       Arithmetic[Double] 
@@ -763,14 +775,15 @@ The implementation is straightforward.  The constructor for
 \xcd`new Frac(10,20)` is the same as  \xcd`new Frac(1,2)`: 
 
 %%START X10: Frac.x10 fracctor
+\fromfile{Frac.x10}
 \begin{xtennum}[]
-  public def this(var n:Int, var d:Int) {
-    if (d < 0) { n = -n; d = -d; }
-    if (d == 0) throw new Exception("Division by zero!");
-    var gcd : Int = gcd(n,d);
-    this.n = n / gcd;
-    this.d = d / gcd;
-  }
+public def this(var n:Int, var d:Int) {
+  if (d < 0) { n = -n; d = -d; }
+  if (d == 0) throw new Exception("Division by zero!");
+  var gcd : Int = gcd(n,d);
+  this.n = n / gcd;
+  this.d = d / gcd;
+}
 \end{xtennum}
 %%END X10: Frac.x10 fracctor
 
@@ -778,14 +791,15 @@ Fraction arithmetic uses the familiar rules.  Since the constructor reduces
 everything to lowest terms, we don't need to do any extra work to do so: 
 
 %%START X10: Frac.x10 fraconfrac
+\fromfile{Frac.x10}
 \begin{xtennum}[]
-  
-  public def add(f:Frac) = new Frac(n * f.d + f.n * d, d * f.d);
-  public def negate() = new Frac(-n, d);
-  public def subtract(f:Frac) = this.add(f.negate());
-  public def multiply(f:Frac) = new Frac(n * f.n, d * f.d);
-  public def divide(f:Frac) = new Frac(n * f.d, d * f.n);  
-  
+
+public def add(f:Frac) = new Frac(n * f.d + f.n * d, d * f.d);
+public def negate() = new Frac(-n, d);
+public def subtract(f:Frac) = this.add(f.negate());
+public def multiply(f:Frac) = new Frac(n * f.n, d * f.d);
+public def divide(f:Frac) = new Frac(n * f.d, d * f.n);  
+
 \end{xtennum}
 %%END X10: Frac.x10 fraconfrac
 
@@ -793,12 +807,13 @@ The \xcd`Frac`-to-\xcd`Double` versions are easily implemented using
 a method to convert a fraction to a \xcd`Double`: 
 
 %%START X10: Frac.x10 fracondouble
+\fromfile{Frac.x10}
 \begin{xtennum}[]
-  public def asDouble():Double = (n as Double) /(d as Double);
-  public def add(dbl: Double) = this.asDouble() + dbl;
-  public def subtract(dbl: Double) = this.asDouble() - dbl;
-  public def multiply(dbl: Double) = this.asDouble() * dbl;
-  public def divide(  dbl: Double) = this.asDouble() / dbl;
+public def asDouble():Double = (n as Double) /(d as Double);
+public def add(dbl: Double) = this.asDouble() + dbl;
+public def subtract(dbl: Double) = this.asDouble() - dbl;
+public def multiply(dbl: Double) = this.asDouble() * dbl;
+public def divide(  dbl: Double) = this.asDouble() / dbl;
 \end{xtennum}
 %%END X10: Frac.x10 fracondouble
 
@@ -813,8 +828,9 @@ Arith\-me\-tic[Frac])}''. Since {\tt Frac} implements {\tt Arithmetic[Frac]},
 we can use a {\tt Frac} as the argument to {\tt doIt}, \eg:
 
 %%START X10: Frac.x10 fracdoit
+\fromfile{Frac.x10}
 \begin{xtennum}[]
-    doIt(new Frac(1,3));
+doIt(new Frac(1,3));
 \end{xtennum}
 %%END X10: Frac.x10 fracdoit
 
@@ -844,6 +860,7 @@ are subtypes of {\tt T}.  Also users of {\tt t} should only count on getting a
 For example, if we have an interface like \xcd`Caloried`, which tells how many
 calories something has: 
 %%START X10: NeedsNutrients.x10 needsnutrCaloried
+\fromfile{NeedsNutrients.x10}
 \begin{xtennum}[]
 interface Caloried {
   def calories():Int;
@@ -857,6 +874,7 @@ on \xcd`T`.  It is only that constraint that gives us permission to
 call the \xcd`calories()` method in line
 \xlref{needsnutrRecipe-usecalories}{7}.  
 %%START X10: NeedsNutrients.x10 needsnutrRecipe
+\fromfile{NeedsNutrients.x10}
 \begin{xtennum}[]
 class Recipe[T]{T <: Caloried} {
    val ingredients: List[T] = new ArrayList[T]();
@@ -873,6 +891,7 @@ class Recipe[T]{T <: Caloried} {
 
 A class, like \xcd`Flour`, can implement \xcd`Caloried` in the ordinary way: 
 %%START X10: NeedsNutrients.x10 needsnutrFlour
+\fromfile{NeedsNutrients.x10}
 \begin{xtennum}[]
 class Flour implements Caloried {
   private val name: String, cal:Int ;
@@ -886,6 +905,7 @@ class Flour implements Caloried {
 Then, we can use \xcd`Flour` in a \xcd`Recipe`: 
 
 %%START X10: NeedsNutrients.x10 needsnutrExample
+\fromfile{NeedsNutrients.x10}
 \begin{xtennum}[]
 static def example(): void = {
   val flours <: Recipe[Flour] = new Recipe[Flour]();
@@ -955,6 +975,7 @@ Supporting inheritance does not come without costs when a program runs.
 Consider the class {\tt DblDbl}, a model of innocence:
 
 %%START X10: DblDbl_Class dbldblClass
+\fromfile{DblDbl\_Class.x10}
 \begin{xtennum}[]
 public  class DblDbl {
    public val x: Double;
@@ -1049,6 +1070,7 @@ if your class uses
 inheritance, you've got some recoding to do.}
 
 %%START X10: DblDbl_Struct.x10 dbldblStruct
+\fromfile{DblDbl\_Struct.x10}
 \begin{xtennum}[]
 public  struct DblDbl {
    public val x: Double;
@@ -1095,8 +1117,9 @@ The keyword {\tt new} is {\em not} required when creating
  a new instance of a struct---in contrast to the case for a class.
 Here is an example that assigns a {\tt DblDbl} value:
 %%START X10: DblDbl_Struct.x10 dbldblstructCtorCall
+\fromfile{DblDbl\_Struct.x10}
 \begin{xtennum}[]
-     var p: DblDbl = DblDbl(1.2, 3.4);
+var p: DblDbl = DblDbl(1.2, 3.4);
 \end{xtennum}
 %%END X10: DblDbl_Struct.x10 dbldblstructCtorCall
 The ``{\tt new}'' is gone from the right-hand side.
@@ -1121,6 +1144,7 @@ Here's an example: \xcd`Class` and \xcd`Struct` are identical except that
 the same data are not \xcd`==` to each other, but two \xcd`Struct`s with the
 same data are \xcd`==`.
 %%START X10: ClassVsStruct.x10 classvsstruct
+\fromfile{ClassVsStruct.x10}
 \begin{xtennum}[]
 public class ClassVsStruct {
   static class  Class(a:Int)  {}

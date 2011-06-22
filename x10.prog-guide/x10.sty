@@ -32,10 +32,10 @@
       self,property,%
       future,to,has,as,var,val,def,where,in,%
       next,value,or,await,current,any},%
-   basicstyle=\normalfont\ttfamily\color{Red},%
-   keywordstyle=\normalfont\ttfamily\color{OliveGreen},%
-   commentstyle=\normalfont\ttfamily\color{Gray},%
-   identifierstyle=\normalfont\ttfamily\color{Red},%
+   basicstyle=\normalfont\ttfamily,%
+   keywordstyle=\bf\ttfamily,%
+   commentstyle=\normalfont\ttfamily,%
+   identifierstyle=\normalfont\ttfamily,%
    stringstyle=\normalfont\ttfamily,%
    tabsize=4,%
    showstringspaces=false,%
@@ -45,10 +45,10 @@
    morestring=[b]",%
    morestring=[b]',%
    columns=fullflexible,%
+   keepspaces=false,%
    mathescape=false,%
-   keepspaces=true,%
    showlines=false,%
-   breaklines=true,%
+   breaklines=false,%
    breakatwhitespace=true,%
    postbreak={},%
    %breakautoindent=true,%
@@ -69,7 +69,7 @@
   {}
 
 \lstnewenvironment{xtennum}[1][]
-  {\lstset{language=X10, numbers=left, numberstyle=\tiny, numbersep=10pt,#1}}
+  {\lstset{language=X10, numbers=left, numberstyle=\tiny, numbersep=6pt,#1}}
   {}
 
 %\newenvironment{x10}{\begin{xten}}{\end{xten}}
@@ -105,3 +105,5 @@
 \newenvironment{finepoint}{{\bf Fine Point: }}{}
 \newenvironment{specialized}[1]{{\bf Special Topic (#1):}}{}
 \newenvironment{nonquote}{}{}
+
+\def\fromfile#1{{\footnote{{ See file #1}}}}

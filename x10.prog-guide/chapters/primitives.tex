@@ -824,6 +824,7 @@ as the parallels are not exact.
 
 Consider, to begin with, the following attempt to pass some {\tt Int} arguments into a method.
  %%START X10: src/primitives/TryArgs.x10 tryargs 
+\fromfile{TryArgs.x10}
 \begin{xtennum}[]
 public class TryArgs {
    public static def tryargs(val a: Int, b: Int, var c: Int) {
@@ -858,6 +859,7 @@ method body.
 The next thing to try is modifying a {\tt var} argument in the body of the method, as in 
 \href{http://dist.codehaus.org/x10/documentation/guide/src/fcns/TryArgs2.x10}{fcns/TryArgs2.x10}: 
 %%START X10: src/primitives/TryArgs2.x10 tryargs2
+\fromfile{TryArgs2.x10}
 \begin{xtennum}[]
 public class TryArgs2 {
    public static def tryargs(var c: Int) {

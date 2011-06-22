@@ -140,6 +140,7 @@ pleaseCheckCompilation = True
 DECOMMENT_RE = re.compile("^(.*)//.*$")
 DECOMMENT_TEX_RE = re.compile("^(.*//)TeX:(.*)$", re.IGNORECASE)
 DECOMMENT_TEX_XLREF_RE = re.compile(".xlref{[a-zA-Z0-0\\-]*}")
+LEADING_SPACES_RE = re.compile("^( *)[^ ]")
 class Fragment:
     ''' 
     Represents a fragment of an X10 program, capable of being inserted into TeX.
@@ -196,13 +197,31 @@ class Fragment:
         if relevantXlref != None: 
             xlref2lineNumber[relevantXlref] = self.currentLineNumber()
             xlref2frag[relevantXlref] = self
+    def numberOfLeadingSpacesOnEveryLine(self):
+        '''If every line starts with at least 2 spaces, and some line with exactly 2, return 2.'''
+        n = 1000000
+        for line in self.content:
+            matcho = LEADING_SPACES_RE.match(line)
+            if matcho == None:
+                #print("numberOfLeadingSpacesOnEveryLine - huh? '{0}' didn't match??".format(line))
+                continue
+            m = len(matcho.group(1))
+            # print("I think {0} spaces, '{2}',  start '{1}'!".format(m, line, matcho.group(1)))
+            if n > m : n = m
+        return n
+            
     def writeToTexFile(self, new, params):
+        new.write("\\fromfile{" + quoteForTex(os.path.basename(self.x10FileName)) + "}\n");
         new.write("\\begin{xtennum}[" + params + "]\n")
         fmt = "{0}\n"
+        n = self.numberOfLeadingSpacesOnEveryLine();
         for line in self.content:
-            s = fmt.format(line)
+            trimline = line[n:]
+            # print("writeToTexFile [{0}] '{1}' ==> '{2}'".format(n,line,trimline))
+            s = fmt.format(trimline)
             new.write(s)
         new.write("\\end{xtennum}\n")
+
     def relativeFileName(self):
         global x10dir
         relfn = os.path.relpath(self.x10FileName, x10dir)
