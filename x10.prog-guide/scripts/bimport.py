@@ -46,7 +46,7 @@ In the TeX files, you import an x10 fragment, by inserting the markup
       ...
     %%END X10: fragment-id
 where the ellipsis will be replaced by the x10 fragment within a 
-"\begin{verbatim}", "\end{verbatim} block.  All text within the %%START
+"\begin{xtennum}", "\end{xtennum} block.  All text within the %%START
 %%END block will be replaced by the filter.  Thus the filter is 
 idempotent: running it a second time should not change the TeX source.
 
@@ -59,10 +59,13 @@ will always work. However, if you expect the fragment 'weasel' to come from
 The path and fragment id in the %%END must match the path and fragment
 id in the previous %%START.
 
-As a variation,
-%%START UX10: Ferret.x10 weasel
+You may pass optional arguments to the xtennum environment by putting them on
+the START line. For example, this makes unnumbered lines: 
+
+%%START X10: Ferret.x10 weasel numbers=none
 %%END   UX10: Ferret.x10 weasel
-doesn't put the line numbers in. (U for Unnumbered)
+
+
 
 In .tex files, the macro \\xlref{frag-line}{foo} is updated with the actual
 line number of the line 'line' in fragment 'frag'. The text (here, 'foo') in
@@ -85,7 +88,7 @@ Comments are removed from the .x10 imported into TeX unless they have
 the form "//TeX: ", in which case the "TeX:" is removed and the comment
 is passed through otherwise untouched, except for the removal of any
 "\\x10lref" macros in them (which must be cleaned out, because we are
-inside a "verbatim" block in the TeX and so TeX will not clean them
+inside a "xtennum" block in the TeX and so TeX will not clean them
 up.)
 
 Input Directories:
@@ -191,19 +194,13 @@ class Fragment:
         if relevantXlref != None: 
             xlref2lineNumber[relevantXlref] = self.currentLineNumber()
             xlref2frag[relevantXlref] = self
-    def writeToTexFile(self, new, isUnnumbered):
-        new.write("\\begin{verbatim}\n")
-        i = 1
-        n = math.ceil(math.log10(len(self.content)))        
-        if isUnnumbered: 
-            fmt = "{1}\n"
-        else:
-            fmt = "{0:" + str(n) + "d}  {1}\n"
+    def writeToTexFile(self, new):
+        new.write("\\begin{xtennum}\n")
+        fmt = "{0}\n"
         for line in self.content:
-            s = fmt.format(i, line)
+            s = fmt.format(line)
             new.write(s)
-            i += 1
-        new.write("\\end{verbatim}\n")
+        new.write("\\end{xtennum}\n")
     def relativeFileName(self):
         global x10dir
         relfn = os.path.relpath(self.x10FileName, x10dir)
@@ -399,7 +396,6 @@ XLINE_RE = re.compile("\\\\xl(?:(?:rawl)?)ine{([-a-zA-Z0-9]+)}{([^}]*)}")
 #XLINE_RE = re.compile("\\\\xline{([-a-zA-Z0-9]+)}{([^}]*)}")
 START_RE = re.compile("\\s*%%START\\s(?:U?X10:)?\\s+(.*)\\s+(.*)\\s$")
 END_RE = re.compile("\\s*%%END\\s+(?:U?X10:)?\\s+(.*)\\s+(.*)\\s$")
-UNNUMBERED = "UX10:"
 
 class TexRewriter:
     def __init__(self):
@@ -436,7 +432,6 @@ class TexRewriter:
         inFragmentName = None
         nIncludes = 0
         nXlChanges = 0
-        isUnnumbered = None
         with open(newVersionPath, "w") as new, open(texpath, "r") as old: 
             for line in old:
                 absLineNo += 1
@@ -446,10 +441,6 @@ class TexRewriter:
                         # It's an %%END line!  So write it and we're done with this fragment.
                         inSTART = False
                         new.write(line)
-                        # Make sure we don't close X10 with UX10
-                        endUnnumbered = line.find(UNNUMBERED) >= 0
-                        if isUnnumbered != endUnnumbered:
-                            doom("\n%%START and %%END must be both numbered (X10:), or both unnumbered (UX10:).\nIn TeX file {0} at line {1}\nfile name {2} and fragment name {3}".format(texpath, absLineNo, inFile, inFragmentName))
                         if inFile == m.group(1) and inFragmentName == m.group(2):
                             # %%START and %%END match, so reset them.
                             inFile = None
@@ -475,8 +466,6 @@ class TexRewriter:
                         partialFileName = m.group(1)
                         inFile = partialFileName
                         fragmentName = m.group(2)
-                        isUnnumbered = line.find(UNNUMBERED) >= 0
-                        # if isUnnumbered: print("UNN! {0} - {1}".format(partialFileName, fragmentName))
                         if verbose:
                             print("Including fragment '{1}' at line {2}.".format(
                                 partialFileName, fragmentName, absLineNo))
@@ -484,7 +473,7 @@ class TexRewriter:
                         if fragmentName in fragName2Fragment:
                             frag = fragName2Fragment[fragmentName]
                             frag.confirmFileName(partialFileName, texpath, absLineNo)
-                            frag.writeToTexFile(new, isUnnumbered)
+                            frag.writeToTexFile(new)
                         else:
                             doom("Missing fragment named {0} in file {1} at line {2}!"
                                  .format(fragmentName, shortname, absLineNo))
