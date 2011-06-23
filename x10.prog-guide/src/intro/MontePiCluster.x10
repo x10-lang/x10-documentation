@@ -58,6 +58,8 @@ public class MontePiCluster {
         }
         return inCircle;
     }
+//END TeX: mpicluster
+//START TeX: mpicluster2
    /**
     * There are three optional command line arguments: args(0) is the
     * number of points to generate, and args(1) is the number of
@@ -83,4 +85,4 @@ public class MontePiCluster {
       Console.OUT.println("Our estimate for pi is " + pi);
    }
 }
-//END TeX: mpicluster
+//END TeX: mpicluster2

@@ -96,12 +96,10 @@ Suppose, for instance, we needed to use both \Xten's class {\tt Random}
 and another class named {\tt Random} that was supplied by some other
 library.  How do we tell the compiler which one to use for any given call?
 Use package names in the code at every reference:
-\begin{quote}
-\begin{verbatim}
+\begin{xten}
 val ours = new x10.util.Random();
 val theirs = new com.foo.bar.Random();
-\end{verbatim}
-\end{quote}
+\end{xten}
 When we said the packages help avoid name clashes, it is this sort of
 example that we had in mind.
 
@@ -437,9 +435,9 @@ instance of {\tt DieselShip}.
 Suppose, for example, we have a class {\tt CruiseLine} whose instances have
 fleets of ships that sail the world with lots of passengers.  A {\tt CruiseLine}
 instance might want to add a {\tt Ship} to its fleet, so it has a method
-\begin{verbatim}
-     public def addShip(ship: Ship) { ... }
-\end{verbatim}
+\begin{xten}
+public def addShip(ship: Ship) { ... }
+\end{xten}
 Because a {\tt DieselShip} {\em is} a {\tt Ship}, we can call {\tt addShip}
 with a {\tt DieselShip} as the argument.
 
@@ -460,9 +458,9 @@ there is a public class {\tt Kitchen}, and suppose that in our declaration of
 the private field {\tt galley}.
 \item If a  class has a method whose signature is ``{\tt isWellEquipped(k: Kitchen)}'',
 and if {\tt anArk} is a {\tt Ship}, then the call
-\begin{verbatim}
-     isWellEquipped(anArk.getGalley())
-\end{verbatim}
+\begin{xten}
+isWellEquipped(anArk.getGalley())
+\end{xten}
 is perfectly okay, because a {\tt Galley}, wherever it came from, is a {\tt Kitchen}.
 In effect, {\tt galley} has ``leaked out'' to stand on its own in whatever class the
 method {\tt isWellEquipped} is declared.
@@ -570,7 +568,6 @@ public interface Arithmetic[T] {
    def multiply(t: T): T;
    def divide(t: T): T;
    public static VERSION = "1.1";   
-
 }
 \end{xtennum}
 %%END X10: Arithmetic.x10 arith
@@ -737,9 +734,9 @@ to minimize the problem.  Using fractions, which have exactly the right value
 with no round-off error, is one way.
 
 The syntax 
-\begin{verbatim}
+\begin{xten}
 class Frac implements Arithmetic[Frac] { ... }
-\end{verbatim}
+\end{xten}
 asserts that the class {\tt Frac} implements all of the methods 
 declared in the {\tt Arith\-me\-tic[Frac]} interface--with exactly the 
 argument types and return types shown there.
@@ -793,7 +790,6 @@ everything to lowest terms, we don't need to do any extra work to do so:
 %%START X10: Frac.x10 fraconfrac
 \fromfile{Frac.x10}
 \begin{xtennum}[]
-
 public def add(f:Frac) = new Frac(n * f.d + f.n * d, d * f.d);
 public def negate() = new Frac(-n, d);
 public def subtract(f:Frac) = this.add(f.negate());
@@ -1171,14 +1167,14 @@ reading.
 Both structs and classes can implement an interface, and there is one interface,
 called {\tt x10.lang.Any} that is the minimal interface that all structs and
 classes must implement.  As you would guess, it is not particularly rich:
-\begin{verbatim}
+\begin{xten}
 public interface Any {
    def toString():String;
    def typeName():String;
    def equals(that:Any):Boolean;
    def hashCode():Int;
 }
-\end{verbatim}
+\end{xten}
 The first three are the ones that most programmers care about.  The purpose of
 the fourth method, the hash code, is to give a compact way of identifying an
 object.
@@ -1227,12 +1223,12 @@ carry around size information for every instance.
 One consequence of the storage rules is that you cannot define the member
 fields of a struct in terms of the same struct or collections of that
 struct.  If, for instance we try to declare a struct {\tt DblDblList\-Item} 
-\begin{verbatim}
+\begin{xten}
 public struct DblDblListItem {
    public p: DblDbl;            // the point
    public next: DblDblListItem; // !!! no: illegal
 }
-\end{verbatim}
+\end{xten}
 so that we can form lists of {\tt DblDbl}s, the compiler will complain.
 To understand why, ask yourself, ``How big is a {\tt DblDbl\-List\-Item}?''
 Suppose that it were {$n$} bytes.
@@ -1278,12 +1274,12 @@ have a few slow spots of their own, and if you're not careful, you can lose
 everything you gained.
 
 Consider the assignment: 
-\begin{verbatim}
+\begin{xten}
    var x: T;
    var y: T;
    ...
    x = y;
-\end{verbatim}
+\end{xten}
 When {\tt T} is a class, the assignment copies a reference that is {\tt y}'s
 current value, to {\tt x}.  This takes a fixed amount of time, independent of
 how big the class \xcd`T` is.  
@@ -1296,11 +1292,11 @@ Our {\tt DblDbl} is a good example: its size is 16 bytes, and a reference
 could use as few as 4 bytes.
 
 The same thing comes up when passing parameters:
-\begin{verbatim}
+\begin{xten}
    public def doIt(t: T) { ... }
    var x: T;
    doIt(x);
-\end{verbatim}
+\end{xten}
 When {\tt T} is a class, the value passed to {\tt doIt} is the reference.  If
 {\tt T} is a struct, the whole value of {\tt x} has to be copied.
  

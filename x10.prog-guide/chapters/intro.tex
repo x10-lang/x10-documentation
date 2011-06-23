@@ -213,11 +213,10 @@ Let's look first at a serial version in Figure \ref{fig:mcpi},
 because it introduces a number of \Xten{} idioms that we'll need in the
 parallel version.  You can find the source in 
 \href{http://dist.codehaus.org/x10/documentation/guide/src/montePi/MontePi1.x10}{MontePi1.x10}.
-\begin{figure}[!htbp]
-\hrulefill
-%%START X10: src/intro/MontePi1.x10 mpi1
+%%%\begin{figure}[!htbp]
+%%START X10: src/intro/MontePi1.x10 mpi1 [frame=tb, caption={Serial Monte Carlo Approximation of Pi},label={fig:mcpi},float=tb]
 \fromfile{MontePi1.x10}
-\begin{xtennum}[]
+\begin{xtennum}[frame=tb, caption={Serial Monte Carlo Approximation of Pi},label={fig:mcpi},float=tb]
 import x10.util.Random; 
 public class MontePi1 {
     static val N = 10000; 
@@ -235,9 +234,7 @@ public class MontePi1 {
 }
 \end{xtennum}
 %%END X10: src/intro/MontePi1.x10 mpi1
-\hrulefill
-\caption{Serial Monte Carlo Approximation of Pi}\label{fig:mcpi}
-\end{figure}
+%%%\end{figure}
 \begin{description}
 \item[line \xlref{mpi1-imp}{1}:] 
 {\tt Random} is a class from the \Xten{}
@@ -338,16 +335,16 @@ four-dimensional or eighty-dimensional.
 The difference between ``\xcd`:`'' and ``\xcd`<:`'' in \xcd`val` declarations
 is that  ``\xcd`:`'' erases information and ``\xcd`<:`'' doesn't.  
 So, if you write 
-\begin{verbatim}
+\begin{xten}
 val b : Array[String] = s;
-\end{verbatim}
+\end{xten}
 \noindent
 all that X10 will know about \xcd`b` is that it is an array of strings, of
 some unknown dimensionality.  But if, as on line \xlref{argvpartial-b}{4}, you
 write 
-\begin{verbatim}
+\begin{xten}
 val b <: Array[String] = s;
-\end{verbatim}
+\end{xten}
 \noindent
 X10 will remember that \xcd`b`, like \xcd`s`, is one-dimensional. This is
 important information later on if you want to subscript it with a single
@@ -359,11 +356,11 @@ but wrong for an array whose dimensionality is unknown.
 You {\em do} need to provide the type when you don't want to initialize
 the {\tt val} in the declaration itself.  Typically this happens when the {\tt val}
 depends on some choices that you can't neatly write in one line:
-\begin{verbatim}
+\begin{xten}
      val howMany: Int;
      if (aBoolean) {/* howMany gets set one way here */}
      else {/* and gets set differently here */}    
-\end{verbatim}
+\end{xten}
 The {\tt if} and {\tt else} blocks are both free to do any calculation they
 need to in arriving at {\tt howMany}'s value, so long as they don't try to
 use {\tt howMany} itself before it has been set.  
@@ -472,11 +469,11 @@ loop}, so when you leave the loop, {\tt j} will be unavailable.
 %%FOR%% that says you {\em have} to declare the loop variable in the {\tt for} statement.
 %%FOR%% If you need the value once the loop completes, just declare it in a context surrounding
 %%FOR%% the loop, and set it to its initialize value wherever it is convenient to do so, \eg:
-%%FOR%% \begin{verbatim}
+%%FOR%% \begin{xten}
 %%FOR%%    var j: Int = 1;
 %%FOR%%    for( ; j <= N; j++) { ... }
 %%FOR%%    Console.OUT.println("Is "+j+" == "+(N+1)+"?");
-%%FOR%% \end{verbatim}
+%%FOR%% \end{xten}
 
 \item[line  \xlref{mpi1-pi}{12}:]
 On exit from the loop at line  \xlref{mpi1-pi}{12}, {\tt inCircle/N} is the fraction of points
@@ -493,17 +490,17 @@ loop has got to
 be more expensive than incrementing an {\tt Int}.  So let's declare {\tt inCircle} to be
 an {\tt Int}.''  That's fine, but when we get to line \xlref{mpi1-pi}{12}, we have to be careful to
 convert it to a {\tt Double}.  One way to do this is with \xcd`as`:
-\begin{verbatim}
-     val pi = 4 * (inCircle as Double / N);
-\end{verbatim}
+\begin{xten}
+val pi = 4 * (inCircle as Double / N);
+\end{xten}
 \end{description}
 
 Time to try compiling and running the code.  Here is our console log for the
 run:
-\begin{verbatim}
+\begin{xten}
 % x10 MonteCarloPi
 The value of pi is 3.1368
-\end{verbatim}
+\end{xten}
 Not a brilliant guess at $\pi$, but we didn't really try all that many points.  Your
 answer might vary: in fact, the answer will vary with each run because, whenever
 {\tt Random} creates a new generator, it
@@ -662,7 +659,7 @@ dual-processor CPUs, so a factor of 2 speedup is available right out of the box,
 {\em if} your code can effectively use both processors.
 
 For our $\pi$ calculator, the changes are simple: we just have to be able to
-say ``start $n$ threads going, each with its own independent random number
+say ``start $n$ activities going, each with its own independent random number
 generator, and when each has done it's share of the work, sum the hits from all
 $n$ and divide by the total number of points tried.''  
 
@@ -674,47 +671,45 @@ should be aware of \Xten's convention when reading other literature.
 
 Figure \ref{fig:mcpm} shows the relevant part of our new, parallel {\tt main}.
 We'll go through it line by line.
-\begin{figure}[!bthp]
-\hrulefill
-%%START X10: src/intro/MontePiAsync.x10 mpia
+
+%%START X10: src/intro/MontePiAsync.x10 mpia [frame=tb, caption={Shared-memory parallel code for computing $\pi$},label={fig:mcpm},float=tb]
 \fromfile{MontePiAsync.x10}
-\begin{xtennum}[]
+\begin{xtennum}[frame=tb, caption={Shared-memory parallel code for computing $\pi$},label={fig:mcpm},float=tb]
 val N = args.size > 0 ? Long.parse(args(0)) : 100000L;  
-val threads : Int = args.size > 1 ? Int.parse(args(1)) :  4; 
+val nAct : Int = args.size > 1 ? Int.parse(args(1)) :  4; 
 
-val nPerThread = N/threads; 
-val inCircle = new Array[Long](1..threads);   
+val nPerAct = N/nAct; 
+val inCircle = new Array[Long](1..nAct);   
 
-finish for(k in 1..threads) { 
+finish for(k in 1..nAct) { 
    val r = new Random(k*k + k + 1);       
    val rand = () => r.nextDouble();       
    val kval = k;                     
-   async inCircle(kval) = countPoints(nPerThread, rand); 
+   async inCircle(kval) = countPoints(nPerAct, rand); 
 }                                 
 
 var totalInCircle: Long = 0;             
-for(k in 1..threads) {      
+for(k in 1..nAct) {      
    totalInCircle += inCircle(k);         
    Console.OUT.println("ic("+k+") = "+inCircle(k)); 
 }                                 
 
-val pi = (4.0*totalInCircle)/(nPerThread*threads); 
+val pi = (4.0*totalInCircle)/(nPerAct*nAct); 
 \end{xtennum}
 %%END X10: src/intro/MontePiAsync.x10 mpia
-\hrulefill
-\caption{Shared memory parallel code for computing $\pi$}\label{fig:mcpm}
-\end{figure}
+
+
 \begin{description}
 \item[lines \xlref{mpia-N}{1}-\xlref{mpia-nperthread}{4}:] 
 If command-line arguments are supplied, we read the number of points to try, {\tt N},
 from the first, and
-the number of threads to use, {\tt threads}, from the second.  Otherwise we just use
-100,000 points and 4 threads. The number of points each thread will try is {\tt nPerThread}.  Since we
-are now using multiple threads, we've switched to {\tt Long} integers---64
+the number of activities to use, {\tt nAct}, from the second.  Otherwise we just use
+100,000 points and 4 activitiess. The number of points each thread will try is {\tt nPerThread}.  Since we
+are now using multiple activities, we've switched to {\tt Long} integers---64
 bits---instead of ordinary {\tt Ints}.
 \item[line \xlref{mpia-incircle}{5}:]
 The right-hand side is the \Xten{} idiom for constructing an array that is indexed
-by a single integer running from {\tt 1} to {\tt threads}.  
+by a single integer running from {\tt 1} to {\tt nActs}.  
 The
 entries in the array are initialized to {\tt 0L}, the \xcd`Long` way to say
 zero, which is the default value for a \xcd`Long` that doesn't have its value
@@ -739,7 +734,7 @@ elements of that array may be assigned to as needed.
 this line. The interesting part is the ``{\tt finish}''.  The whole
 point of this loop is to spawn some number of
 independent activities, each computing how many hits
-out of a possible  {\tt nPer\-Thread} land in the circle.  We can't do any
+out of a possible  {\tt nPer\-Act} land in the circle.  We can't do any
 further processing until we are sure that all of these activities have run to
 completion.  That is what ``{\tt finish}'' guarantees: control will not reach
 the statement after that guarded by a {\tt finish} until all of the activities
@@ -764,25 +759,25 @@ finish {
 \item[line \xlref{mpia-r}{8}:]  The constructor {\tt Random()}, if called with no arguments,
 uses the number of milliseconds from some fixed time as the ``seed'' to begin
 generating its random numbers. Alas, less than a millisecond may elapse between
-the creation of two or more of our threads, and when that happens, we get the
-same sequences in several threads, not the independent sequences we need.
+the creation of two or more of our activitiess, and when that happens, we get the
+same sequences in several activities, not the independent sequences we need.
 So we've spiced things up by using a simple
 polynomial in the loop counter {\tt k} to generate a unique seed for each activity.
 Why not just {\tt k}? Why {\tt k*k + k +1}?  Just to spread the starting points out
-a little more in the hope that our threads really
+a little more in the hope that our activitys really
 get independent sequences.
 
 \item[lines \xlref{mpia-kval}{10} and \xlref{mpia-async}{11}:]
 This is \Xten's idiom for spawning an activity
 at the current processor.
-The {\tt async} statement is readied for execution in its own thread, and control
+The {\tt async} statement is readied for execution in its own activity, and control
 may then be returned to the originating activity whenever the \Xten{} runtime's
 activity manager wishes: it could be immediately, or it could be after the new
 activity has been allowed some time. The important point---particularly if we
 are running on a multi-processor---is that we do not have
 to wait for the new activity to complete before returning control to the
 original activity.  The effect of the {\tt for} loop is, therefore, to get
-{\tt threads} activities up and running {\em concurrently}.
+{\tt nActs} activities up and running {\em concurrently}.
 
 \xcd`async`, like \xcd`finish`, can be applied to any statement.  If you want
 to start a multi-statement activity, use a \xcd`{` block \xcd`}`: 
@@ -810,7 +805,7 @@ array entry in line \xlref{mpia-async}{11}.
 
 Line  \xlref{mpia-async}{11}  ends by calling {\tt countPoints}, as in our serial code.
 We've allowed its first argument, the number of points to try, to be a {\tt Long}.
-64-bit integers are probably overkill here, but with so many threads at our.
+64-bit integers are probably overkill here, but with so many activities at our.
 command, we can afford to think {\em big}.
 
 \item[line \xlref{mpia-for2}{15}: ]
@@ -822,10 +817,10 @@ Once the loop in lines \xlref{mpia-for2}{15}-\xlref{mpia-endfor2}{18}
 has computed the total number of hits in the circle, 
 we have to normalize the result to get the final answer.  
 {\tt N} is the total number of points
-we wanted to try, and each thread actually got {\tt N/threads == nPerThread}
+we wanted to try, and each activity actually got {\tt N/nAct == nPerAct}
  points to try.
-If {\tt threads} doesn't divide {\tt N} evenly, though, we only wind up using
-{\tt nPerThread*threads} points, which explains the denominator here.
+If {\tt nAct} doesn't divide {\tt N} evenly, though, we only wind up using
+{\tt nPerAct*nAct} points, which explains the denominator here.
 Using a {\tt Double}, {\tt 4.0}, as the first term in the right hand side forces
 the compiler to generate code for converting the two {\tt Long}s to {\tt Doubles} before
 the arithmetic is performed.
@@ -836,7 +831,7 @@ The Unix {\tt time} command
 executes the program and then produces three time estimates: total CPU usage (``real''),
 wall-clock elapsed time (``user''), and system overhead (``sys'').
 This timing is for a 3GHz dual-processor laptop.   
-\begin{verbatim}
+\begin{xten}
 % time x10 MontePiAsync 10000000 1
 The value of pi is 3.1402504
 
@@ -849,7 +844,7 @@ The value of pi is 3.1405268
 real	0m1.370s
 user	0m1.893s
 sys	0m0.109s
-\end{verbatim}
+\end{xten}
 Not bad: an overall factor of  $3.368/1.893 = 1.78$ speed-up for the observed time-to-completion
 out of a best possible of $2$.  
 
@@ -897,51 +892,52 @@ the program's {\tt main()}.  The root activity's home {\tt Place} is called
 {\tt Place.FIRST\_PLACE}, and by convention, it is the {\tt Place} whose id is
 {\tt 0}.
 
- So the question is: how does information at one {\tt Place} get to another? 
- One simple way is to use an ``{\tt at(p)}''  statement: if the identifier {\tt
- p} names a {\tt Place}, and if {\tt compute\-An\-Int()} is a method that
- computes an {\tt Int}, then
- \begin{verbatim}
-      val anInt = at(p) computeAnInt();
- \end{verbatim} 
- means: 
- \begin{quote}
- Pause the thread for this activity.  Go to the {\tt Place p}, and resume the activity
- by calling {\tt compute\-An\-Int()} in a thread at {\tt p}. 
- Send the result back here to the original {\tt
- Place}, restart the thread there for the activity by assigning the value to {\tt anInt}.
- The activity then continues at the original {\tt Place}.
- \end{quote}
- If you like to think about implementation, you can think of the single
- \Xten{} activity being built out of two threads: the thread for the requesting
- activity and the thread for the remote activity. From the point of view
- of the \Xten{} programmer, though, exactly one activity is going on here,
- because the requesting thread is blocked
- while the remote thread does its thing, so no matter how many ``hardware
- threads'' we use to carry out this computation, it is strictly serial:
- it is one activity. This is one reason why \Xten{} uses the term
- ``activity'' for a serial computation, rather than ``thread.''
- 
- If you do not want to wait around for the value to be computed and assigned,
- things are not so simple.  You might think, for instance,
- that something like the obvious ``{\tt async val anInt =  at(p) computeAnInt();}''
- might work, but it doesn't.   Just as with variables declared in {\tt for}  loops,
- the declaration of {\tt anInt} 
- in an {\tt async}'s body means that it is not available outside of it.  This
- is consistent with Java and C++ (and just about every other language): a
- declaration within a statement's body is visible only in that body.
+So the question is: how does information at one {\tt Place} get to another? 
+One simple way is to use an ``{\tt at(p)}''  statement: if the identifier {\tt
+p} names a {\tt Place}, and if {\tt compute\-An\-Int()} is a method that
+computes an {\tt Int}, then
+\begin{xten}
+val anInt = at(p) computeAnInt();
+\end{xten} 
+means: 
+\bard{s/thread/activity/ in the following}
+\begin{quote}
+Pause the thread for this activity.  Go to the {\tt Place p}, and resume the activity
+by calling {\tt compute\-An\-Int()} in a thread at {\tt p}. 
+Send the result back here to the original {\tt
+Place}, restart the thread there for the activity by assigning the value to {\tt anInt}.
+The activity then continues at the original {\tt Place}.
+\end{quote}
+If you like to think about implementation, you can think of the single
+\Xten{} activity being built out of two threads: the thread for the requesting
+activity and the thread for the remote activity. From the point of view
+of the \Xten{} programmer, though, exactly one activity is going on here,
+because the requesting thread is blocked
+while the remote thread does its thing, so no matter how many ``hardware
+threads'' we use to carry out this computation, it is strictly serial:
+it is one activity. This is one reason why \Xten{} uses the term
+``activity'' for a serial computation, rather than ``thread.''
+
+If you do not want to wait around for the value to be computed and assigned,
+things are not so simple.  You might think, for instance,
+that something like the obvious ``{\tt async val anInt =  at(p) computeAnInt();}''
+might work, but it doesn't.   Just as with variables declared in {\tt for}  loops,
+the declaration of {\tt anInt} 
+in an {\tt async}'s body means that it is not available outside of it.  This
+is consistent with Java and C++ (and just about every other language): a
+declaration within a statement's body is visible only in that body.
  
 The secret is to separate the assignment from the declaration:
 %\begin{figure}[!hbtp]
- \begin{verbatim}
- 1    val anInt: Int;
- 2    finish { 
- 3       /* some code not using anInt can go here */
- 4       async { anInt = at(p) computeAnInt(); }
- 5       /* maybe more code not using anInt here, too! */
- 6    }
- 7    /* at last: anInt can be used here! */
- \end{verbatim} 
+\begin{xten}
+val anInt: Int;
+finish { 
+   /* some code not using anInt can go here */
+   async { anInt = at(p) computeAnInt(); }
+   /* maybe more code not using anInt here, too! */
+}
+/* at last: anInt can be used here! */
+\end{xten} 
 % \caption{Passing a {\tt val} into an {\tt async}}\label{fig:vina}
 %\end{figure} 
 As the comments in this code suggest, the {\tt async} has to be inside a
@@ -955,12 +951,12 @@ present in the same scope as the {\tt var} that is used in the {\tt async}.
 That is, you cannot just spawn an activity into which you pass a variable 
 unless that activity has a visible bound on its lifetime.  For example, the
 code
-\begin{verbatim} 
- 1    def syncIt() {
- 2       var anInt: Int;
- 3       async anInt = 3;  // compiler won't accept this
- 4   }
-\end{verbatim}
+\begin{xten} 
+def syncIt() {
+    var anInt: Int;
+    async anInt = 3;  // compiler won't accept this
+}
+\end{xten}
 will cause the compiler to complain:
 \begin{quote}{\tt
 Local variable "anInt" cannot be captured in an async if\\
@@ -970,26 +966,26 @@ as "anInt"; consider changing "anInt" from var to val.}
 What the compiler wants is a {\tt finish} surrounding the {\tt async} within the
 scope of the declaration of {\tt anInt}.  To be precise, what will {\em not}
 work is:
-\begin{verbatim} 
- 1    def syncIt() {
- 2       finish {
- 3         var anInt: Int; // anInt is local to the finish block
- 4         async anInt = 3;
- 5       }
- 6       use(anInt);  // no! anInt is not defined here!
- 7    }
-\end{verbatim}
+\begin{xten} 
+def syncIt() {
+   finish {
+     var anInt: Int; // anInt is local to the finish block
+     async anInt = 3;
+   }
+   use(anInt);  // no! anInt is not defined here!
+}
+\end{xten}
 What {\em will} work is inserting the {\tt finish} so that {\tt anInt} is alive
 and visible when the {\tt finish} completes:
-\begin{verbatim} 
- 1    def syncIt() {
- 2       var anInt: Int;
- 3       finish {
- 4         async anInt = 3;
- 5       }
- 6       use(anInt);
- 7    }
-\end{verbatim}
+\begin{xten} 
+def syncIt() {
+   var anInt: Int;
+   finish {
+     async anInt = 3;
+   }
+   use(anInt);
+}
+\end{xten}
 
 Now that we know how to move data around and in and out of {\tt asyncs}, we are
 ready to rework our code.
@@ -1024,20 +1020,20 @@ When we only have two or three integers to add together, it might make sense to
 use a single {\tt var count:Long} to accumulate the total count, rather than using
 an array (as we did in the {\tt main} for {\tt MontePiAsync}).
 Here's a first cut:
-\begin{verbatim}
- 1 public static def countAtP(pId:Int, threads:Int, n:Long) {
- 2    var count: Long = 0L;  // 0L == Long integer literal 0
- 3    finish for (var j: Int = 1; j<= threads; j++)  {
- 4       val jj = j;
- 5       async {
- 6          val r = new Random(jj*Place.MAX_PLACES + pId));
- 7          val rand = () => r.nextDouble();
- 8          count +=  countPoints(n,rand); // trouble, as we'll see
- 9       }
-10    }
-11    return count;
-12 }
-\end{verbatim}
+\begin{xtennum}
+public static def countAtP(pId:Int, threads:Int, n:Long) {
+   var count: Long = 0L;  // 0L == Long integer literal 0
+   finish for (var j: Int = 1; j<= threads; j++)  {
+      val jj = j;
+      async {
+         val r = new Random(jj*Place.MAX_PLACES + pId));
+         val rand = () => r.nextDouble();
+         count +=  countPoints(n,rand); // trouble, as we'll see
+      }
+   }
+   return count;
+}
+\end{xtennum}
 Sadly, this code has a very nasty bug, which is due to the variable
 {\tt count} being shared by the whole set of threads.
 The trouble is in line 8, where {\tt count}'s value is updated.  Broken
@@ -1111,9 +1107,9 @@ That's life!
 The cure is simple enough: we just need to replace line 8 with some code
 that ensures that once one activity starts executing that code, {\em no other
 activity can begin that code until the first one finishes.}
-\begin{verbatim}
- 8          atomic count += countPoints(n, rand));
-\end{verbatim}
+\begin{xtennum}[firstnumber=8]
+atomic count += countPoints(n, rand));
+\end{xtennum}
 Guarding an \Xten{} statement this way, with the keyword {\tt atomic},
 does just what we want: we are guaranteed that once an activity enters the
 statement, no other activity may enter it until the original activity
@@ -1135,10 +1131,10 @@ two executing the call to {\tt countPoints} concurrently.
 The only shared resource is {\tt count}, which
 doesn't appear in {\tt countPoints} at all.  So what we really need
 to do is to split the line into two:
-\begin{verbatim}
- 8       val countForJ =  countPoints(n, rand);
- 8*      atomic count += countForJ;
-\end{verbatim}
+\begin{xtennum}[firstnumber=8]
+val countForJ =  countPoints(n, rand);
+atomic count += countForJ;
+\end{xtennum}
 Because only one activity at a time can execute an atomic statement,
 clearly the smart thing is to keep it as small as possible.
 
@@ -1150,7 +1146,7 @@ it depends! Or perhaps better: ``We're off to the races!''  Sometimes each line
 will print as desired, sometimes the two lines will be interleaved, and
 sometimes all three will be. Try the following code, for example, on your
 machine a bunch of times:
-\begin{verbatim}
+\begin{xten}
 public class HelloAsync {
    public static def main(argv:Rail[String]!) {
       async Console.OUT.println("Hello, World");
@@ -1158,14 +1154,14 @@ public class HelloAsync {
       async Console.OUT.println("Bonjour, Monde");
    }
 }
-\end{verbatim}
+\end{xten}
 Here's our console log for our own first shot at running it:
-\begin{verbatim}
+\begin{xten}
 % x10 HelloAsync
 BHelonlo,j oWuorr,l dM
 onde
 Hola, Mundo
-\end{verbatim}
+\end{xten}
 ``Hola, Mundo'', got delivered intact, but ``Hello, World'' and
 ``Bonjour, Monde'' got pretty well interleaved.  Who knows what might have
 happened on another run!  Even more amusing: why was the {\em second} of the
@@ -1181,12 +1177,10 @@ statement makes it easy for the programmer to enforce atomicity, and that's
 really the best thing.
 
 Putting all this discussion to use, we get a first cut at {\tt MontePiCluster}
-in Figure \ref{fig:mpmtmc} on the next page.
-\begin{figure}[!htbp]
-\hrulefill
-%%START X10: src/intro/MontePiCluster.x10 mpicluster
+in \figref{fig:mcpmtmc}. 
+%%START X10: src/intro/MontePiCluster.x10 mpicluster [frame=tb, caption={Multi-Place, Multi-Activity Monte Carlo Approximation of {$\pi$}},label={fig:mcpmtmc},float=tb]
 \fromfile{MontePiCluster.x10}
-\begin{xtennum}[]
+\begin{xtennum}[frame=tb, caption={Multi-Place, Multi-Activity Monte Carlo Approximation of {$\pi$}},label={fig:mcpmtmc},float=tb]
 import x10.util.Random;
 /**
  * A parallel version of the Monte Carlo estimate for pi that uses 
@@ -1234,6 +1228,11 @@ public class MontePiCluster {
         }
         return inCircle;
     }
+\end{xtennum}
+%%END X10: src/intro/MontePiCluster.x10 mpicluster
+%%START X10: src/intro/MontePiCluster.x10 mpicluster2 [frame=tb, caption={Multi-Place, Multi-Activity Monte Carlo Approximation of {$\pi$}, continued},label={fig:mcpmtmc},float=tb]
+\fromfile{MontePiCluster.x10}
+\begin{xtennum}[frame=tb, caption={Multi-Place, Multi-Activity Monte Carlo Approximation of {$\pi$}, continued},label={fig:mcpmtmc},float=tb]
    /**
     * There are three optional command line arguments: args(0) is the
     * number of points to generate, and args(1) is the number of
@@ -1260,12 +1259,9 @@ public class MontePiCluster {
    }
 }
 \end{xtennum}
-%%END X10: src/intro/MontePiCluster.x10 mpicluster
-\hrulefill
-\caption{Multi-place, multi-threaded Monte Carlo:
-\href{http://dist.codehaus.org/x10/documentation/guide/src/montePi/MontePiCluster.x10}{\em
-montePi/MontePiCluster.x10}}\label{fig:mpmtmc}
-\end{figure}
+%%END X10: src/intro/MontePiCluster.x10 mpicluster2
+
+
 
 You've now seen almost all of the principal ingredients for writing multi-threaded
 \Xten{} code: {\tt async} to spawn activities, {\tt finish} to know when a

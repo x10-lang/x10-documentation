@@ -16,9 +16,9 @@
 \contentsline {subsection}{\numberline {2.2.2}Concrete classes versus wishful thinking}{35}{subsection.2.2.2}
 \contentsline {section}{\numberline {2.3}Interfaces: More Abstract Than Abstract}{36}{section.2.3}
 \contentsline {subsection}{\numberline {2.3.1}How interfaces get used}{40}{subsection.2.3.1}
-\contentsline {subsubsection}{ Anything you can do\dots }{41}{section*.7}
+\contentsline {subsubsection}{ Anything you can do\dots }{42}{section*.7}
 \contentsline {subsubsection}{ Why interface methods are public:}{43}{section*.8}
-\contentsline {subsubsection}{ A matter of convention: }{43}{section*.9}
+\contentsline {subsubsection}{ A matter of convention: }{44}{section*.9}
 \contentsline {subsubsection}{ For C++ programmers: }{44}{section*.10}
 \contentsline {section}{\numberline {2.4}Giving Up Inheritance To Get Efficiency}{44}{section.2.4}
 \contentsline {subsection}{\numberline {2.4.1}The Problem}{44}{subsection.2.4.1}

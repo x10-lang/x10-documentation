@@ -24,8 +24,8 @@ class Frac implements Arithmetic[Frac],
   }
 //END TeX: fracctor
 
-//START TeX: fraconfrac
   // Fraction arithmetic.
+//START TeX: fraconfrac
   public def add(f:Frac) = new Frac(n * f.d + f.n * d, d * f.d);
   public def negate() = new Frac(-n, d);
   public def subtract(f:Frac) = this.add(f.negate());

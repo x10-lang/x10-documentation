@@ -44,25 +44,25 @@ public class MontePiAsync {
    public static def main(args: Array[String](1)) {
       //START TeX: mpia
       val N = args.size > 0 ? Long.parse(args(0)) : 100000L;  //\xlref{mpia-N}
-      val threads : Int = args.size > 1 ? Int.parse(args(1)) :  4; //\xlref{mpia-threads}
+      val nAct : Int = args.size > 1 ? Int.parse(args(1)) :  4; //\xlref{mpia-threads}
 
-      val nPerThread = N/threads; //\xlref{mpia-nperthread}
-      val inCircle = new Array[Long](1..threads);   //\xlref{mpia-incircle}
+      val nPerAct = N/nAct; //\xlref{mpia-nperthread}
+      val inCircle = new Array[Long](1..nAct);   //\xlref{mpia-incircle}
  
-      finish for(k in 1..threads) { //\xlref{mpia-for}
+      finish for(k in 1..nAct) { //\xlref{mpia-for}
          val r = new Random(k*k + k + 1);       //\xlref{mpia-r}
          val rand = () => r.nextDouble();       //\xlref{mpia-rand}
          val kval = k;                     //\xlref{mpia-kval}
-         async inCircle(kval) = countPoints(nPerThread, rand); //\xlref{mpia-async}
+         async inCircle(kval) = countPoints(nPerAct, rand); //\xlref{mpia-async}
       }                                 //\xlref{mpia-endfor}
 
       var totalInCircle: Long = 0;             //\xlref{mpia-total}
-      for(k in 1..threads) {      //\xlref{mpia-for2}
+      for(k in 1..nAct) {      //\xlref{mpia-for2}
          totalInCircle += inCircle(k);         //\xlref{mpia-total2}
          Console.OUT.println("ic("+k+") = "+inCircle(k)); //\xlref{mpia-out}
       }                                 //\xlref{mpia-endfor2}
 
-      val pi = (4.0*totalInCircle)/(nPerThread*threads); //\xlref{mpia-pi}
+      val pi = (4.0*totalInCircle)/(nPerAct*nAct); //\xlref{mpia-pi}
       //END TeX: mpia
       Console.OUT.println("Our estimate for pi is " + pi);
    }
