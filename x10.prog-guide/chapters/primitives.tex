@@ -190,16 +190,21 @@ calling its method {\tt toString()}, and there is always a default implemention
 that is provided and does something sensible.  You are free, of course, to
 provide your own implementation in the classes and structs you create.  For
 example:
-\begin{verbatim}
- 1 public class Cast {
- 2     public static def main(args: Array[String](1)): Void {
- 3        Console.OUT.println("I am a "+ new Cast());
- 4     }
- 5     public def toString() { return "Cast of Thousands"; }
- 6 }
-\end{verbatim}
 
-In line 3, the effect of the ``{\tt +}'' operation is to concatenate the two
+%%START X10: Cast.x10 castofthousands
+\fromfile{Cast.x10}
+\begin{xtennum}[]
+public class Cast {
+    public static def main(args: Array[String](1)): Void {
+       Console.OUT.println("I am a "+ new Cast()); 
+    }
+    public def toString() { return "Cast of Thousands"; }
+}
+\end{xtennum}
+%%END X10: Cast.x10 castofthousands
+
+
+In line \xlref{castofthousands-plus}{3}, the effect of the ``{\tt +}'' operation is to concatenate the two
 {\tt Strings}.  When the code is run, the console output is:
 \begin{verbatim}
 %x10 Cast 
@@ -216,7 +221,7 @@ character to keep.  For example, , if we have {\tt val s = "misguided"}, then
 {\tt s.substring(3)} will be  {\tt "guided"}.
 \item[{\tt substring(from:Int, to:Int)}:] The first argument is again the starting
 index, and the second, {\tt to}, is the index 1 greater than where you
-wish to stop.  Thus if {\tt val s = "misguided"} as before, then
+wish to stop.  Thus if  \xcd`val s = "misguided"` as before, then
 {\tt s.substring(3, length(s)-1)} will be {\tt \"guide"}---and not (as one might
 think) {\tt "guided"}.
 \item[{\tt trim()}] Remove leading and trailing white-space: {\tt "  abc ".trim()}
@@ -238,10 +243,10 @@ is {\tt s.substring(start, end+1)}.
 }
 \item[{\tt split(s: String)}]  If you need to break up a comma-separated
 list, or something like that, use the {\tt split()} method:
-\begin{verbatim}
-   val s = "a,b, c,  d";
-   val parts = s.split(",");
-\end{verbatim}
+\begin{xten}
+val s = "a,b, c,  d";
+val parts = s.split(",");
+\end{xten}
 yields an array of four substrings: {\tt "a", "b", " c"} and {\tt "  d"}.
 The argument for {\tt split}  in the C++ runtime is currently a {\tt String},
 but in the Java runtime, it is a regular expression.   
@@ -297,21 +302,17 @@ appears at the beginning or end of {\tt s}.
 
 For those with fond memories of C's {\tt printf} or Java's {\tt format}, \Xten{}
 gives you
-\begin{quote}
-\begin{verbatim}
+\begin{xten}
 format(fmt:String, args:Array[Any]):String
-\end{verbatim}
-\end{quote}
+\end{xten}
 whose first
 argument is a format string like those of its C and Java ancestors, and whose
 second argument is the array of whatever is to be formatted.\footnote{The type {\tt
 Any}, as we discussed in section \ref{ssec:wasacs}, page \pageref{ssec:wasacs},
 is the interface all values have in common.}  For example, executing
-\begin{quote}
-\begin{verbatim}
+\begin{xten}
 s = String.format("%s %d %s %10.2f", ["int",32,"dbl",3.2]);
-\end{verbatim}
-\end{quote}
+\end{xten}
 leaves {\tt s} with the value {\tt "int 32 dbl\ \ \ \ \ \ \ 3.20"}.
 
 Support for the formatting options is limited at the moment, but, as in our
@@ -328,46 +329,44 @@ practical purposes, a {\tt StringBuilder} has two methods: {\tt add(a: Any)} and
 to compute the {\tt String} to append, and {\tt result} simply returns the {\tt
 String} you have been accumulating. Here's an example of how one uses a {\tt
 StringBuilder}:
-\begin{quote}
-\begin{verbatim}
+%%START X10: StringBuilding.x10 stringbuilding
+\fromfile{StringBuilding.x10}
+\begin{xtennum}[]
 val sb = new StringBuilder();
 sb.add(2);
 sb.add(" and ");
 sb.add(3.0);
 sb.add(" is "+5.0);
 val s = sb.result();
-\end{verbatim}
-\end{quote}
-The value of {\tt s} will be {\tt "2 and 3.0 is 5.0"}.  
+assert s.equals("2 and 3.0 is 5.0");
+\end{xtennum}
+%%END X10: StringBuilding.x10 stringbuilding
+
 
 \section{Files}\label{sec:files}
 Let's start simply, with the program in figure \ref{fig:flc}.  
-\begin{figure}[!htbp]
-\hrulefill
-\begin{verbatim}
- 1 import x10.io.File;
- 2 
- 3 public class FileIO {
- 4    public static def main(args: Array[String](1)) {
- 5       val inputPath  = args(0);
- 6       val outputPath = args(1);
- 7       val I = new File(inputPath);
- 8       val O = new File(outputPath);
- 9       val P = O.printer();
-10       for (line in I.lines()) {
-11          P.print(line);
-12       }
-13       P.flush();
-14    }
-15 }
-\end{verbatim}
-\caption{A simple line-reader file copy program,
-\href{http://dist.codehaus.org/x10/documentation/guide/src/files/FileIO.x10}{files/FileIO.x10}}\label{fig:flc}
-\hrulefill
-\end{figure}
-The fun begins with line 7.
+%%START X10: FileIO.x10 fileio [frame=tb, caption={A simple line-reading file copier},label={fig:flc},float=tb]
+\fromfile{FileIO.x10}
+\begin{xtennum}[frame=tb, caption={A simple line-reading file copier},label={fig:flc},float=tb]
+public static def main(args: Array[String](1)) {
+   val inputPath  = args(0);
+   val outputPath = args(1);
+   val I = new File(inputPath); 
+   val O = new File(outputPath); 
+   val P = O.printer(); 
+   for (line in I.lines()) {
+      P.print(line);
+   }
+   P.flush();
+}
+\end{xtennum}
+%%END X10: FileIO.x10 fileio
+
+
+
+The fun begins with line \xlref{fileio-I}{4}.
 \begin{description}
-\item[lines 7 and 8:] 
+\item[lines \xlref{fileio-I}{4} and \xlref{fileio-O}{5}:] 
 The basic drill for reading and writing files is to get hold of a {\tt File}
 object, and use it to get a stream either inbound or outbound. 
 Executing ``{\tt I = new File(in\-put\-Path)}'' converts
@@ -389,7 +388,7 @@ Most of the time, you will wind up using an instance of {\tt File} as an argumen
 to a constructor that builds an input or output stream with some desirable
 properties like buffering, or handling line enders appropriately in text files.
 
-\item[line 9:] The call {\tt O.printer()} returns an output stream that is an
+\item[line \xlref{fileio-P}{6}:] The call {\tt O.printer()} returns an output stream that is an
 instance of the class {\tt
 Printer}.  This is the class to which the familiar {\tt Console} streams {\tt
 OUT} and {\tt ERR} belong, and it is an example of a stream that helps you
@@ -406,8 +405,8 @@ to format, you can just string them out, C-style, as extra arguments.}
 When the {\tt Printer P} is created, the file to which {\tt P} refers is opened for
 writing {\em and is created if need be.}  If the file exists already, its contents are
 discarded.
-\item[line 10:]  There's no mystery, we hope, about what the loop in lines 10 to
-12 does: iterate over the lines in {\tt I}, copying each to {\tt O} via the stream
+\item[line \xlref{fileio-for}{7} to \xlref{fileio-rof}{9}:]
+                                                                           There's no mystery, we hope, about what the loop does: iterate over the lines in {\tt I}, copying each to {\tt O} via the stream 
 {\tt P}.  While it is clear that {\tt I.lines()} represents the sequence of lines in
 {\tt I}, it is probably not obvious {\em how} it does.  The answer is that it 
 implements the interface {\tt x10.lang.Iterator}.
@@ -423,18 +422,18 @@ collection.
 point will succeed.
 \end{quote}
 Written in terms of {\tt Iterator}'s methods, our {\tt for} loop looks like
-\begin{verbatim}
-         for(lines = I.lines(); lines.hasNext(); ) {
-             P.print(lines.next());
-         }
-\end{verbatim}
+\begin{xten}
+for(lines = I.lines(); lines.hasNext(); ) {
+  P.print(lines.next());
+}
+\end{xten}
 Although there is some chance that, for some {\tt Iterators},
 a smart implementation might generate better
 code for the {\tt for...in} loop than for the loop written out explicitly
 in terms of the iterator,
 one should view the {\tt for...in} loop as
 a concise, readable way of writing the loop, not as an optimization.
-\item[line 13:] We call {\tt flush()} to make sure that, in case the {\tt
+\item[line \xlref{fileio-flush}{10}:] We call {\tt flush()} to make sure that, in case the {\tt
 Printer} has been buffering our output, all of it gets sent {\em now}.  Do not
 count on the output stream being flushed when the program terminates---even when
 it terminates normally. Better safe than sorry here.
@@ -457,26 +456,27 @@ reader.  Our goal is to create a file whose contents is a sequence of
 {\tt Doubles}.  We don't want the {\tt String} literals, we really want to store
 the numeric values as they appear in memory.  We'll read the {\tt Strings} in
 from the keyboard (the ``standard input stream''):
-\begin{verbatim}
- 1 public class WriteDBL { // see the file files/WriteDBL.x10
- 2    public static def main(args: Array[String](1)) {
- 3       val I  = new File(args(0));
- 4       val W  = new FileWriter(I);
- 5       while(true) {
- 6         val line = Console.IN.readLine().trim();
- 7         if (line.length() == 0) break;
- 8         val dbl = Double.parse(line);
- 9         W.writeDouble(dbl);
-10       }
-11       W.close();
-12     } 
-13  }
-\end{verbatim}
+%%START X10: WriteDBL.x10 writedbl
+\fromfile{WriteDBL.x10}
+\begin{xtennum}[]
+  val I  = new File(args(0));
+  val W  = new FileWriter(I); 
+  while(true) {
+    val line = Console.IN.readLine().trim();
+    if (line.length() == 0) break; 
+    val dbl = Double.parse(line); 
+    W.writeDouble(dbl);
+  }
+  W.close(); 
+} 
+\end{xtennum}
+%%END X10: WriteDBL.x10 writedbl
+
 We've skipped the imports here---by now, you know what's needed there, and the
 working file is available in
 \href{http://dist.codehaus.org/x10/documentation/guide/src/files/WriteDBL.x10}{files/WriteDBL.x10}.
 \begin{description}
-\item[line 4:] We use the class {\tt x10.io.FileWriter} to stream the output. 
+\item[line \xlref{writedbl-W}{2}:] We use the class {\tt x10.io.FileWriter} to stream the output. 
 It has methods like {\tt writeInt}, {\tt writeFloat}, and so on, that allow you
 to write binary data easily out to a file.  In this example, we are going to use
 {\tt writeDouble}.
@@ -485,7 +485,7 @@ Just as when one creates a new {\tt Printer}, when one creates a new {\tt
 FileWriter}, either a new file will be created, or if a file of that
 name already exists, all of its contents will be discarded.  In either event,
 you start with an empty file.
-\item[line 5:] The keyword {\tt while} introduces a loop.  The loop's syntax is
+\item[line \xlref{writedbl-while}{3}:] The keyword {\tt while} introduces a loop.  The loop's syntax is
 {\tt while({\em boolean\-Expres\-sion}) {\em statement}}.  The expression is
 called the {\em loop's test}, and the statement is the {\em loop's body}. 
 When execution reaches the test, it is evaluated, and if the value is {\tt
@@ -494,15 +494,15 @@ body---is continued until the test fails: \ie{} evaluates to {\tt false}.
 Execution then passes to the code that immediately follows the body.
 
 In our example, the test is {\em always} true, so the loop is 
-terminated from within its body, by the {\tt break} statement on line 7.  
-\item[lines 6-7:] We read a line of ordinary text from the standard input
+terminated from within its body, by the {\tt break} statement on line \xlref{writedbl-break}{5}.  
+\item[lines \xlref{writedbl-trim}{4} to \xlref{writedbl-break}{5}:] We read a line of ordinary text from the standard input
 stream and trim any white-space characters from the beginning and end of the
 line.  If the line is now empty, we break out of the loop.  The statement ``{\tt
 break;}'' causes execution to continue at the first statement following the
 loop's body.
-\item[lines 8-9:] The input line is converted to a {\tt Double}, and that
+\item[lines \xlref{writedbl-dbl}{6} to \xlref{writedbl-write}{7}:] The input line is converted to a {\tt Double}, and that
 value is written, bit-for-bit, to the output file.
-\item[line 11:] We explicitly close the stream here.  This should guarantee that
+\item[line \xlref{writedbl-close}{9}:] We explicitly close the stream here.  This should guarantee that
 any output that has been buffered, but not yet actually written out, does
 get written: in other words, it should guarantee that {\tt flush()} is called
 before the file's info is discarded.  You can, of course, call {\tt flush}
@@ -523,23 +523,23 @@ Since $1.25 = 5/4$ in hex is 0x$1.4$, this is about what we'd expect: some
 exponent stuff followed by {\tt 0x14}.
 
 Now it's the reader's turn.  
-\begin{verbatim}
- 1 public class ReadDBL { // see the file files/ReadDBL.x10
- 2    public static def main(args: Array[String](1)) {
- 3       val inputPath  = args(0);
- 4       val I  = new File(inputPath);
- 5       val R  = new FileReader(I);
- 6       while(true) {
- 7         Console.OUT.println(R.readDouble());
- 8       }
- 9     } 
-10  }
-\end{verbatim}
-The working copy is in
-\href{http://dist.codehaus.org/x10/documentation/guide/src/files/ReadDBL.x10}{files/ReadDBL.x10}.
+
+%%START X10: ReadDBL.x10 readdbl
+\fromfile{ReadDBL.x10}
+\begin{xtennum}[]
+public static def main(args: Array[String](1)) {
+   val inputPath  = args(0);
+   val I  = new File(inputPath);
+   val R  = new FileReader(I);
+   while(true) {
+     Console.OUT.println(R.readDouble());
+   }
+ } 
+\end{xtennum}
+%%END X10: ReadDBL.x10 readdbl
 You can see that it is almost line-for-line the same
 as the writer---no surprise, really.  The one thing that is different is
-figuring out how to terminate the {\tt while} loop in lines 6-8.  The problem is
+figuring out how to terminate the {\tt while} loop in lines \xlref{readdbl-while}{5}-\xlref{readdbl-ehilw}{7}.  The problem is
 that {\tt FileReader} does not offer a method for testing when we are at the end
 of a stream.  You might think, therefore, that {\tt readDouble} might return a
 nonsense value on end-of-stream, so we could test for that.  It does not.  To
@@ -600,14 +600,14 @@ The lingo of the trade is that exceptions are either ``thrown'' or ``raised.''
 exception are said to ``catch'' it.
 To say that an \Xten{} method ``throws an exception'' means that execution
 reaches an \Xten{} {\tt throw} statement, which looks like:
-\begin{quote}
-{\tt throw new {\em ExceptionSubclass}({\em explanation});}
-\end{quote}
+\begin{xtenmath}
+throw new $ExceptionSubclass(explanation)$
+\end{xtenmath}
 For example, if a file open failed because an incorrect path was provided, you
 might see
-\begin{verbatim}
-   throw new x10.io.FileNotFoundException("Bad path '"+path+"'");
-\end{verbatim}
+\begin{xten}
+throw new x10.io.FileNotFoundException("Bad path '"+path+"'");
+\end{xten}
 What happens when this statement is executed is that an instance of the
 class being thrown, {\tt x10.io.FileNotFoundException} in our example,
 is constructed.  The class whose name appears in the {\tt throw} must be a
@@ -630,50 +630,53 @@ subclass of the type named in the {\tt throw}.  Control is returned to that
 method at an appropriate point---we'll see where in our next example.
 
 Let's rewrite our {\tt ReadDbl.main} so that it handles all its I/O
-problems gracefully (see
-\href{http://dist.codehaus.org/x10/documentation/guide/src/files/ReadDBL2.x10}{files/ReadDBL2.x10}).
-\begin{verbatim}
- 1  public class ReadDBL2 {
- 2    public static def main(args: Array[String](1)) {
- 3       val inputPath  = args(0);
- 4       val I  = new File(inputPath);
- 5       var r: FileReader = null;
- 6       try {
- 7          r = new FileReader(I);
- 8          while(true) {
- 9             Console.OUT.println(r.readDouble());
-10          }
-11       } catch(eof: x10.io.EOFException) {
-12             Console.OUT.println("Done!");
-13       } catch(ioe: x10.io.IOException) {
-14         Console.ERR.println(ioe);
-15       } finally {
-16         if (r != null) r.close();
-17      }
-18    } 
-19 }
-\end{verbatim}
+problems gracefully: 
+%%START X10: ReadDBL2.x10 readdbl2
+\fromfile{ReadDBL2.x10}
+\begin{xtennum}[]
+public static def main(args: Array[String](1)) {
+   val inputPath  = args(0);
+   val I  = new File(inputPath);
+   var r: FileReader = null; 
+   try {
+      r = new FileReader(I);
+      while(true) { 
+         Console.OUT.println(r.readDouble());
+      }
+   } catch(eof: x10.io.EOFException) { 
+         Console.OUT.println("Done!"); 
+   } catch(ioe: x10.io.IOException) {
+     Console.ERR.println(ioe);
+   } finally {
+     if (r != null) r.close(); 
+  }
+} 
+\end{xtennum}
+%%END X10: ReadDBL2.x10 readdbl2
+
+
 
 Here's the line-by-line:
 \begin{description}
-\item[line 5:]  Our reader {\tt r} is now a {\tt var}, not a {\tt val}, because
-we are going to use it when we reach line 16, and we cannot be sure that the
-assignment in line 7 will succeed.  Remember, a mistyped input file path will
+\item[line \xlref{readdbl2-r}{4}:]  Our reader {\tt r} is now a {\tt var}, not a {\tt val}, because
+we are going to use it when we reach line \xlref{readdbl2-user}{15}, and we cannot be sure that the
+assignment in line \xlref{readdbl2-setr}{6} will succeed.  Remember, a mistyped input file path will
 cause the constructor to throw an exception---an
 {\tt x10.io.File\-Not\-Found\-Excep\-tion} in fact, which happens to be a
-subclass of {\tt x10.io.IO\-Excep\-tion}.  So the assignment in line 7 may be
+subclass of {\tt x10.io.IO\-Excep\-tion}.  So the assignment in line \xlref{readdbl2-setr}{6} may be
 aborted.
-\item[line 6:] This is the beginning of the {\tt try} statement, the ``try block''.
+\item[line \xlref{readdbl2-try}{5}:] This is the beginning of the {\tt try} statement, the ``try block''.
 The brace following the keyword {\tt try} is required.  The catch blocks in
-lines 11 and 13 describe the types of exceptions that this {\tt try} statement
-promises to handle.  For example, if the assignment in line 7 does {\em not}
+lines \xlref{readdbl2-catch1}{10} and \xlref{readdbl2-catch2}{12} describe the types of exceptions that this {\tt try} statement
+promises to handle.  For example, if the assignment in line \xlref{readdbl2-setr}{6} does {\em not}
 complete normally, the exception thrown will be an {\tt
-x10.io.IO\-Excep\-tion}, which will cause control to go to line 14, the body of
+x10.io.IO\-Excep\-tion}, which will cause control to go to line \xlref{readdbl2-printdone}{11}, the body of
 the catch block that promises to handle {\tt x10.io.IO\-Excep\-tions}.
-\item[lines 8-10:] The {\tt while} loop is unchanged.  It goes its merry way
+\item[lines \xlref{readdbl2-while}{7}-\xlref{readdbl2-elihw}{9}:] The {\tt while} loop is unchanged.  It goes its merry way
 until the end of file exception is thrown, but now, since there is a catcher at
-line 11, control will go to line 12 when the exception is thrown.
-\item[line 11:] The try block is ended by the closing brace, ``{\tt \}}''. 
+line \xlref{readdbl2-catch1}{10}, control will go to line
+\xlref{readdbl2-printdone}{11} when the exception is thrown. 
+\item[line \xlref{readdbl2-catch1}{10}:] The try block is ended by the closing brace, ``{\tt \}}''. 
 What follows is a catch block, which, in English, says: ``if an exception
 was thrown in the try block that is an {\tt x10.io.EOFException}, or is an
 instance of a subclass of {\tt x10.io.EOFException}, then return control to my
@@ -684,11 +687,11 @@ We're just done!
 
 All that remains, once the {\tt println} completes, is to be polite and
 close up the {\tt FileReader r}.  Because there is a ``finally block'' at line
-15, control goes to its body, and the close is done there.  Control then falls
+\xlref{readdbl2-finally}{14}, control goes to its body, and the close is done there.  Control then falls
 through to whatever statement (if any) comes next.  If there had been no finally block,
 then once the body of the catch block had been executed, control would have
 passed to the first statement following the {\em last} catch block.
-\item[line 13:] Here we have a second catch block, one that is intended to
+\item[line \xlref{readdbl2-catch2}{12}:] Here we have a second catch block, one that is intended to
 catch errors.  When you have several catch blocks, they behave like ``{\tt
 if\ldots else if \ldots else if \ldots}'' sequences: the first one that can do
 the job is the one that the run-time picks: later blocks are ignored.  {\em
@@ -707,14 +710,16 @@ compiling
 \href{http://dist.codehaus.org/x10/documentation/guide/src/files/ReadDBL3.x10}{files/ReadDBL3.x10}
 to see this in action.
 \end{quote}
-\item[line 14: ] The argument to {\tt println} is just the exception {\tt ioe},
+\item[line \xlref{readdbl2-printioe}{13}: ] The argument to {\tt println} is just the exception {\tt ioe},
 which may seem surprising: why not {\tt ioe.getMessage()}?  The answer is that
 since {\tt ioe} is not a {\tt String}, but is in a context here where a {\tt
 String} is expected, the compiler replaces {\tt ioe} with {\tt ioe.toString()}. 
 For all exceptions, the method {\tt toString()} simply calls {\tt getMessage()},
 so {\tt println(ioe)} winds up being the same thing as {\tt
 println(ioe.getMessage())}.
-\item[line 15: ] The statement following the keyword {\tt finally} will be
+\bard{This digression seems a bit misplaced -- and easy to lose.  Could we
+make it larger and more clear?  give it its own section somewhere?}
+\item[line \xlref{readdbl2-finally}{14}: ] The statement following the keyword {\tt finally} will be
 executed whether or not the try block terminates without throwing an exception.
 The {\tt finally} block will be executed even if an exception was thrown that is
 {\em not} one we have a catcher for in this try statement. One of the catch
@@ -723,12 +728,12 @@ catcher for the error that occurred, but no matter what, control will
 reach the {\tt finally} before leaving the method.
 
 That is why we had to be careful to provide an initial value for {\tt r}: if the
-constructor in line 7 aborted, control would have gone to the second catch block,
-and when it completed, control would wind up in the ``finally'' at line 16.
-Because we were careful to initialize {\tt r} in line 5, we are on safe ground
+constructor in line \xlref{readdbl2-setr}{6} aborted, control would have gone to the second catch block,
+and when it completed, control would wind up in the ``finally'' at line \xlref{readdbl2-finally}{14}.
+Because we were careful to initialize {\tt r} in line \xlref{readdbl2-setr}{6}, we are on safe ground
 accessing its value here, no matter how we got here.  Actually, the compiler
 would have complained if {\tt r} had {\em not} been set along some path that
-starts at its declaration and reaches its use in line 16.  It is an error in
+starts at its declaration and reaches its use in line \xlref{readdbl2-user}{15}.  It is an error in
 \Xten{} for code to read an identifier's value before the identifier has been
 initialized.
 \end{description}
@@ -756,9 +761,9 @@ the syntax for specific method or closure definitions---is:
 {\tt ({\em arg1Type, arg2Type, \ldots}) => {\em returnType}}
 \end{quote}
 For example, we could declare
-\begin{verbatim}
- var doSum: (Array[Double](1)) => Double;
-\end{verbatim}
+\begin{xten}
+var doSum: (Array[Double](1)) => Double;
+\end{xten}
 The value of {\tt doSum}, when it is assigned, will be a function that
 takes a single argument, of type a singly-indexed array of {\tt Doubles}, and
 returns a value of type {\tt Double}.  When it is helpful for people reading the
@@ -780,18 +785,18 @@ Because {\tt Double} is a {\tt struct} we cannot set it to {\tt null}.
 For {\tt Doubles} the closest thing to {\tt null} is the value ``not a number!'',
 {\tt Double.NaN}---not {\tt 0.0}, which is often
 a reasonable value after the fact, as well as initially.
-\begin{verbatim}
- var doSum: (Array[Double](1)) => Double
+\begin{xten}
+ var doSum:    (Array[Double](1)) => Double
           = (a: Array[Double](1)) => Double.NaN;
-\end{verbatim}
+\end{xten}
 or to let it throw an exception:
-\begin{verbatim}
+\begin{xten}
  var doSum: (Array[Double](1)) => Double
        = (a: Array[Double](1)): Double => {
             val msg = "doSum called before being set.";
             throw new IllegalOperationException(msg);
           };
-\end{verbatim}
+\end{xten}
 These two examples show the two patterns for creating function ``values''.
 One is exemplified by the right-hand side of the first assignment, in which
 the arrow ``{\tt =>}'' is followed by an expression that is the return value of
@@ -837,13 +842,13 @@ public class TryArgs {
 You'll find this code in 
 \xlfilename{tryargs}{primitives/TryArgs.x10}
 When you compile it, you will get a pair of error messages:
-\begin{verbatim}
+\begin{xten}
 % x10c  TryArgs.x10
 TryArgs.x10:3: Final variable "b" might already have been
                initialized
 TryArgs.x10:3: Final variable "a" might already have been
                initialized
-\end{verbatim}
+\end{xten}
 The complaint about attempting to reset ``{\tt a}'' after you declared it to be a
 {\tt val} is what you would expect: you cannot assign a value to an already initialized
  {\tt val}.
@@ -856,8 +861,7 @@ obvious, but now you know: {\em unless you explicitly say that an argument is a 
 going to be a {\tt val}.}   Thus, of the three arguments, only {\tt c} may be reset in the
 method body.
 
-The next thing to try is modifying a {\tt var} argument in the body of the method, as in 
-\href{http://dist.codehaus.org/x10/documentation/guide/src/fcns/TryArgs2.x10}{fcns/TryArgs2.x10}: 
+The next thing to try is modifying a {\tt var} argument in the body of the method, as in: 
 %%START X10: src/primitives/TryArgs2.x10 tryargs2
 \fromfile{TryArgs2.x10}
 \begin{xtennum}[]
