@@ -1,0 +1,130 @@
+\chapter{Fancy Types}
+
+X10's types are a lot more powerful than we've seen so far.  They can do a lot
+for you that types in Java and C++ can't do, if you want.   
+
+Now, most of what types do for you is to prevent mistakes.  Here's a mistake: 
+\begin{xten}
+var total : Int = 0; 
+total += "3";
+\end{xten}
+\xcd`total` is an integer.  You can't add a \xcd`String` value into it. 
+This is a bit tricky, because you can add a \xcd`String` {\em to} it: 
+\xcd`0 + "3"` evaluates to the string \xcd`"03"`.  In some languages, you {\em
+can} add a string into an integer if the string contains a number, so adding
+\xcd`"3"` into \xcd`total` would behave just like adding \xcd`3` into
+\xcd`total`.  
+
+A good type system will catch this mistake as early as possible, and tell you
+about it in as useful a way as possible.  For X10, this means that it'll catch
+the mistake when you try to compile your program -- or even sooner, if you're
+using the programming environment X10DT -- and it'll print out a message
+telling you that the code doesn't fit together right.   
+
+The other thing that well-designed types do is try not to bother you too much.
+This is a bit tricky. The ultimate purpose of types {\em is} to bother you --
+to get in your face when you're about to goof up. At the very least, you have
+to do some work in order to get any value of them. You have to write down some
+types in your program, enough to tell X10 what you mean, so it can catch when
+you don't do what you meant.  But X10 often lets you leave types off, so
+they're not {\em too} much in your face.
+
+\section{Constrained Types}
+
+X10 has {\em constrained} types, sometimes called {\em dependent} types. 
+You can use them to keep track of things you know about your data, \eg, that a
+particular variable isn't \xcd`null`.  You can also take advantage of things
+you know.
+
+One common problem in programs (in most object-oriented languages) is that
+some parts of code assume that some objects aren't \xcd`null`, but other parts
+of code don't know about this assumption and set them to \xcd`null`.  This can
+cause \xcd`NullPointerException`s and considerable premature gray hair.  
+For example, 
+
+%%START X10: NeedsNullCheck.x10 needsnullcheck
+\fromfile{NeedsNullCheck.x10}
+\begin{xtennum}[]
+val x : Person = lookUp("Kim Geep");
+Console.OUT.println("Kim's phone number is " + x.phoneNumber());
+\end{xtennum}
+%%END X10: NeedsNullCheck.x10 needsnullcheck
+
+If Kim isn't in the database, \xcd`x.phoneNumber()` will throw an exception.  
+
+If you want to protect yourself against this in X10, you can.  Declare \xcd`x`
+with a type that says ``\xcd`x` is a \xcd`Person`, but not \xcd`null`''.  
+Using this type obligates you to convince X10 that whatever value you give
+\xcd`x` is not null.  Three good ways to convince X10 are: (1) use a
+constructor call, since constructors never return \xcd`null`. 
+(2) use a method declared to return a non-null value, though you will have to
+convince X10 that method is defined properly. (3) Check the value at runtime
+and make sure it's not \xcd`null` there.\footnote{Method 3, checking values at
+runtime, is pretty familiar from defensive programming in Java or C++.  X10's
+types, if used this way, have the advantage that you can't {\em forget} to do
+the check -- if you forget, your program won't compile.}
+
+For our sample program, we choose a version of database lookup that is
+guaranteed never to return \xcd`null`.  If \xcd`lookUpOrCreate(name)` doesn't
+find \xcd`name` in the database, it creates a new record for that name.  This
+approach doesn't make sense for all applications\footnote{Not even for this
+one -- how do we really know the phone number of a newly-created
+\xcd`Person`?}.  (In many cases, if some crucial datum really is missing,
+there's no way to figure it out, and the best thing that can be done is to
+report the error and ask a human for help.  Throwing a
+\xcd`NullPointerException` is a greatly inferior choice.)
+
+The code that uses non-null \xcd`Person`s is very much like the code that used
+possibly-\xcd`null` ones: 
+%%START X10: HasNullCheck.x10 hasnullcheck
+\fromfile{HasNullCheck.x10}
+\begin{xtennum}[]
+val x : Person{self!=null} = lookUpOrCreate("Kim Geep");
+Console.OUT.println("Kim's phone number is " + x.phoneNumber());
+\end{xtennum}
+%%END X10: HasNullCheck.x10 hasnullcheck
+
+The code of \xcd`lookUpOrCreate` keeps track of the fact that its values are
+never \xcd`null`.  The database \xcd`db` is a hash-table of
+non-\xcd`null`\xcd`Person`s.  \xcd`lookUpOrCreate` itself returns a non-null
+\xcd`Person`.  The constructor call at line \xlref{hasnullcheckDB-ctor}{6}
+always produces a non-\xcd`null` value, and X10 knows that, so it works out
+fine too.
+%%START X10: HasNullCheck.x10 hasnullcheckDB
+\fromfile{HasNullCheck.x10}
+\begin{xtennum}[]
+static val db = new HashMap[String, Person{self!=null}]();
+static def lookUpOrCreate(name:String) : Person{self!=null} = {
+  if( db.containsKey(name)) {
+     return db.getOrThrow(name) ;
+  }
+  val p = new Person(); 
+  db.put(name, p);
+  return p;
+}
+\end{xtennum}
+%%END X10: HasNullCheck.x10 hasnullcheckDB
+
+
+\subsection{{\tt self}, {\tt this}, and all that}
+
+\subsection{Legal Constraints}
+\subsection{Nulls and Constraints}
+\subsection{Constraints and Subtyping}
+\subsection{STATIC\_CHECKS}
+\subsection{Incompleteness}
+\subsection{Why Generics Lose Constraints At Runtime}
+
+\section{Type Declarations}
+\bard{do this}
+\section{Type Inference}
+\bard{do this!}
+\section{Generics}
+\bard{do this!}
+\section{Default Values}
+\bard{do this!}
+\section{Common Ancestors of Types}
+\bard{do this!}
+\section{When Types Don't Work}
+\bard{do this!}
+

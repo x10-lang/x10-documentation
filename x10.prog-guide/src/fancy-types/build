@@ -1,0 +1,1 @@
+x10c -VERBOSE_CHECKS *.x10 -d ~/x10/tmp/pguide
