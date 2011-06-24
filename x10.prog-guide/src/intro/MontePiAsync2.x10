@@ -51,9 +51,10 @@ public class MontePiAsync2 {
         finish for(k in 1..threads) {
             val r = new Random(k*k + k + 1);   
             val rand = () => r.nextDouble();
+//START TeX: montepiasync2Addandget
             async inCircle.addAndGet(countPoints(nPerThread, rand));
+//END TeX: montepiasync2Addandget
         }
-
         val pi = 4.0 * inCircle.get()/(nPerThread*threads);
         Console.OUT.println("Our estimate for pi is " + pi);
     }

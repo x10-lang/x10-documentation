@@ -415,8 +415,8 @@ XLREF_RE = re.compile("\\\\xlref{([-a-zA-Z0-9]+)}{([0-9]*)}")
 XLFILENAME_RE = re.compile("\\\\xlfilename{([-a-zA-Z0-9]+)}{([^}]*)}")
 XLINE_RE = re.compile("\\\\xl(?:(?:rawl)?)ine{([-a-zA-Z0-9]+)}{([^}]*)}")
 #XLINE_RE = re.compile("\\\\xline{([-a-zA-Z0-9]+)}{([^}]*)}")
-START_RE = re.compile("\\s*%%START\\s(?:U?X10:)?\\s+(.*)\\s+([-a-zA-Z0-9]+)\\s(?:\\[(.*)\\])?$")
-END_RE = re.compile("\\s*%%END\\s+(?:U?X10:)?\\s+(.*)\\s+(.*)\\s$")
+START_RE = re.compile("\\s*%%START\\s(?:X10:)?\\s+(.*)\\s+([-a-zA-Z0-9]+)\\s(?:\\[(.*)\\])?$")
+END_RE = re.compile("\\s*%%END\\s+(?:X10:)?\\s+(.*)\\s+([-a-zA-Z0-9]+)\\s(?:\\[(.*)\\])?$")
 
 class TexRewriter:
     def __init__(self):
@@ -468,7 +468,7 @@ class TexRewriter:
                             inFile = None
                             inFragmentName = None
                         else:
-                            raise Exception("\n%%START/%%END mismatch\nIn TeX file {0},\nat line {1}, is the %%END of a fragment with file\n'{2}'\nand fragment name '{3}'.\nHowever, this matches a %%BEGIN with file \n'{4}'\nand fragment name '{5}'.\nThis is not to be endured!".format(
+                            raise Exception("\n%%START/%%END mismatch\nIn TeX file {0},\nat line {1}, is the %%END of a fragment with file\n'{2}'\nand fragment name '{3}'.\nHowever, this matches a %%START with file \n'{4}'\nand fragment name '{5}'.\nThis is not to be endured!".format(
                             texpath, absLineNo, inFile, inFragmentName,
                             m.group(1), m.group(2)))
                     else:
