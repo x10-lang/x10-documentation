@@ -11,8 +11,6 @@
 \usepackage{url}
 
 
-% http://en.wikibooks.org/wiki/LaTeX/Packages/Listings
-\usepackage{listings}
 
 \usepackage[ruled]{algorithm} % [plain]
 \usepackage[noend]{algorithmic} % [noend]
@@ -42,20 +40,80 @@
 \date{}
 
 
+
+%\input{../x10.prog-guide/x10.sty} %/x10.man/v2.2/tex/
+% http://en.wikibooks.org/wiki/LaTeX/Packages/Listings
+%ftp://ftp.tex.ac.uk/tex-archive/macros/latex/contrib/listings/listings.pdf
+\usepackage{listings}
+
+%\usepackage{color}
+%
+%\definecolor{Brown}{cmyk}{0,0.49,0.71,0.37}
+%\definecolor{RoyalBlue}{cmyk}{0.71,0.53,0,0.12}
+%\definecolor{OliveGreen}{cmyk}{0.64,0,0.95,0.40}
+%\definecolor{Red}{cmyk}{0,0.80,0.80,0.10}
+%\definecolor{Gray}{cmyk}{0.2,0.2,0.2,0.2}
+%\definecolor{Black}{cmyk}{0,0,0,1}
+\lstdefinelanguage{X10}%
+  {morekeywords={abstract,break,case,catch,class,%
+      const,continue,default,do,else,extends,false,final,%
+      finally,for,goto,if,implements,import,instanceof,%
+      interface,label,native,new,null,package,private,protected,%
+      public,return,static,super,switch,synchronized,this,throw,%
+      throws,transient,true,try,volatile,while,%
+      async,atomic,when,foreach,ateach,finish,clocked,%
+      type,here,%
+      self,property,%
+      future,to,has,as,var,val,def,where,in,%
+      next,value,or,await,current,any},%
+   basicstyle=\normalfont\ttfamily,%\color{Red},%
+   keywordstyle=\bf\ttfamily,%\color{OliveGreen},%
+   commentstyle=\normalfont\ttfamily,%\color{Gray},%
+   identifierstyle=\normalfont\ttfamily,%\color{Red},%
+   stringstyle=\normalfont\ttfamily,%
+   tabsize=4,%
+   showstringspaces=false,%
+   sensitive,%
+   morecomment=[l]//,%
+   morecomment=[s]{/*}{*/},%
+   morestring=[b]",%
+   morestring=[b]',%
+   columns=fullflexible,%
+   mathescape=false,%
+   keepspaces=true,%
+   showlines=false,%
+   breaklines=true,%
+   breakatwhitespace=true,%
+   postbreak={},%
+   %breakautoindent=true,%
+   %breakindent=0pt,%
+   %prebreak={},%
+  }
+
+\lstnewenvironment{xtenmath}
+  {\lstset{language=X10,breaklines=false,captionpos=b,xleftmargin=2em,mathescape=true}}
+  {}
+
+\lstnewenvironment{xten}
+  {\lstset{language=X10,breaklines=false,captionpos=b,xleftmargin=2em}}
+  {}
+
+%{numbers=left, numberstyle=\tiny, stepnumber=2, numbersep=5pt
+\lstset{numbers=left,language=x10,basicstyle=\ttfamily\small}
+
+
+
 \begin{document}
 
 
 \maketitle
 
 
-\lstset{language=java,basicstyle=\ttfamily\small}
-
-
 \begin{abstract}
 X10 is an object oriented (OO) programming language with a sophisticated
     type system (constraints, class invariants, non-erased generics, closures)
     and concurrency constructs (asynchronous activities, multiple places, global references).
-This paper introduces people to X10, and in particular,
+This paper is a brief introduction to X10, and in particular,
     its motivation, goals,
     contributions, design, domains of applicability, and availability.
 X10 is a Java-style OO language with additional constructs that support concurrent and distributed programming.
@@ -77,23 +135,23 @@ This introduction paper describes the motivation and design behind X10,
 We will first present a simple \code{HelloWorld} program in X10,
     and then transform it into a distributed \code{HelloWholeWorld} program.
 
-\begin{lstlisting}
+\begin{xten}
 public class HelloWorld {
   public static def main(args:Array[String]):void {
      Console.OUT.println("First argument: " + args(0));
   }
 }
-\end{lstlisting}
+\end{xten}
 X10 is a Java-style object oriented (OO) language.
 A program in X10 consists of classes that may
     declare fields and methods.
 As in Java, the start of execution is the static \code{main} method
-    that has a single parameter \code{args} which is an array the program arguments.
+    that has a single parameter \code{args} which is an array containing the program arguments.
 The program prints the first such argument.
 
 We will now explain the differences in this program syntax between X10 and Java.
 (i)~The return type in X10 is specified after the method parameters, and it may be automatically inferred and therefore omitted.
-E.g., \code{:void} could have been omitted and because there are no \code{return} statements the compiler infers that the return type is \code{void}.
+E.g., \code{:void} can be omitted, in which case the compiler will infer it because there are no \code{return} statements.
 (ii)~Arrays in X10 and Java are different in many ways.
 In Java, arrays are one-dimensional, indexed by an integer (\code{args[0]}), and use the special syntax \code{String[]}.
 In X10, arrays are multi-dimensional, indexed by integers or a point (\code{args(0)}), and use the normal syntax for a generic class \code{Array[String]}.
@@ -105,7 +163,7 @@ This incurs a runtime overhead but it increases type-safety, security, and flexi
 We will now present a distributed and concurrent program in X10,
     that prints the first argument in all places.
 
-\begin{lstlisting}
+\begin{xten}
 public class HelloWholeWorld {
   public static def main(args:Array[String]):void {
      finish
@@ -115,7 +173,7 @@ public class HelloWholeWorld {
               Console.OUT.println("(At " + p + ") First argument: " + args(0));
   }
 }
-\end{lstlisting}
+\end{xten}
 
 This program demonstrates the two most basic X10 concepts: \emph{places} and \emph{activities}.
 Places enable distributed programming by using the \code{at} construct,
@@ -144,8 +202,40 @@ An activity \emph{globally terminated} after it locally terminated and
 The \code{finish S} construct waits until all activities spawned in \code{S} have globally terminated.
 
 \subsection{How to parallelize a sequential program?}
+We will now describe how to scale a sequential program that calculates the fibonacci numbers.
+We will do it in 3 phases:
+(i)~add fine-grained concurrency (but still use a single place),
+(ii)~statically distribute the computation over multiple places (but not in a balanced way),
+(iii)~use a library for dynamic load balancing.
 
-\begin{lstlisting}
+First consider the serial version \code{serialFib} in lines 2--7.
+We recursively calculate the \code{n-1} and \code{n-2} fibonacci numbers, and return their sum.
+Note that the type for the locals \code{fib1} and \code{fib2} was omitted, and the compiler infers it to be \code{Int}.
+
+Local variables were defined by using the \code{val} keyword, meaning the local has a final value
+    and cannot be reassigned.
+Final locals have a single value during their lifetime, i.e., they may not be re-assigned.
+In contrast, \code{var} means the local is a variable that can be re-assigned.
+
+The concurrent version \code{concurrentFib} uses \code{finish} and \code{async} (lines 12--13)
+    to calculate \code{fib1} and \code{fib2} in parallel:
+    \code{fib1} is calculated by a new activity (lines 13--14)
+    while \code{fib2} is calculated by the current activity.
+We call the pattern that initializes \code{fib1} \emph{asynchronous initialization}
+    because the variable is initialized in an \code{async}.
+It is possible to read \code{fib1} only after the \code{finish} (which guarantees that the initialization terminated).
+
+The distributed version \code{distributedFib} uses \code{at} (line~25) to calculate \code{fib1} at the next place.
+This is the order of execution for this \code{at} expression:
+    (i)~it captures only the variable \code{n} which is copied to the next place,
+    (ii)~it evaluates the expression in line~26 at the next place,
+    (iii)~it copies the result back to the original place and assigns it to \code{fib1}.
+Note that \code{at} is a synchronous construct, i.e., the current activity is blocked until the \code{at} finishes.
+Therefore, we started a new activity on line~24 to calculate both \code{fib1} and \code{fib2} in parallel.
+
+Finally, the last version \code{loadBalancingFib} uses a library to dynamically balance the load between all places.
+
+\begin{xten}
 public class Fib {
   public static def serialFib(n:Int):Int {
     if (n<=1) return n;
@@ -170,8 +260,8 @@ public class Fib {
     val fib2:Int;
     finish {
       async
-        at (here.next())
-          fib1 = concurrentFib(n-1);
+        fib1 = at (here.next())
+          concurrentFib(n-1);
       fib2 = concurrentFib(n-2);
     }
     return fib1+fib2;
@@ -180,12 +270,8 @@ public class Fib {
     todo: how to use UTS?
   }
 }
-\end{lstlisting}
+\end{xten}
 
-Local variables are defined by using \code{val}, meaning the local is final value or immutable
-    and cannot be reassigned.
-Final locals have a single value during their lifetime, i.e., they may not be re-assigned.
-In contrast, \code{var} means the local is a variable that can be re-assigned.
 
 \subsection{X10 motivation}
 X10 is an evolution of Java for concurrency and heterogeneity.
@@ -252,12 +338,12 @@ For example, \code{(x:Int)=>x+1} is a function that receives an integer and retu
 Closures are useful for array manipulation (mapping/scanning/reducing values of an array),
     e.g., suppose you have an array of grades (\code{Array[Double]}) and you want to give all students
         an increase by some factor:
-\begin{lstlisting}
+\begin{xten}
 def giveFactor(gradesArray:Array[Double], factor:Double) {
   val newGrades = gradesArray.map( (x:Double) => x*factor );
   return newGrades;
 }
-\end{lstlisting}
+\end{xten}
 Note how the closure can refer to variables in the outside scope (\code{factor}),
     but only if they are immutable (\code{val} and not \code{var}).
 
@@ -267,9 +353,9 @@ Java has 8 primitive types (\code{boolean}, \code{char}, \code{byte}, \code{shor
 X10 does not have primitive types, but instead it uses \emph{structs}.
 A struct has more restrictions than classes, but it is more efficient for small objects.
 A struct is defined in a similar way to a class but it has 2 restrictions:
-    (i)~it cannot extend or be extended (it can implement interfaces),
+    (i)~it cannot extend or be extended (but it can implement interfaces),
     and (ii)~all its fields must be \code{val}.
-\begin{lstlisting}
+\begin{xten}
 struct RGB {
   val r:Byte;
   val g:Byte;
@@ -280,45 +366,75 @@ struct RGB {
     this.b = b;
   }
 }
-\end{lstlisting}
-You create a struct value like creating an object, by calling a constructor \code{new RGB(1,2)};
-    in the case of a struct the keyword \code{new} is optional.
+\end{xten}
+A struct value is created in the same way as an object is created, by calling a constructor \code{new RGB(1,2)}.
+Moreover, in the case of a struct, the keyword \code{new} is optional.
 A struct value is header-less, i.e., it does not carry any type information.
 Therefore, an \code{RGB} value will require only 3 bytes (if you ignore alignment issues).
 It is also inlinable, i.e., it does not require an extra level of indirection like normal objects.
 % no reference to a struct value,
-Thus, a \code{Array[RGB]} will not store pointers to \code{RGB} objects, but instead these objects will be inlined
-    directly in the array, thus saving the extra level of indirection of a lot of extra storage space.
+Thus, a \code{Array[RGB]} will not store pointers to \code{RGB} objects, but instead these values will be inlined
+    directly in the array, thus saving the extra level of indirection and also saving space.
 Structs do not have object-identity, and therefore they are compared by value and not by reference.
 Specifically, the compiler will automatically create an \code{equals} method in \code{RGB} that
     checks that all fields are equal.
-
 If a struct is upcasted to an interface, then the compiler automatically boxes it and adds the required type-information.
-For example, \code{(new RGB(1,2)) as Any}.
+For example, the following will box a struct value \code{(new RGB(1,2)) as Any}.
 
 
 \subsection{Type inference}
-Method return types.
-Constructor return types
-Types for initialized val’s can be omitted
+X10 has a type-inference mechanism that can save the programmer from explicitly writing types.
+X10 can infer the type for:
+(i)~method, constructor, and closures return types,
+(ii)~a \code{val} local or field that has an initializer.
+In the following example, all the types can be omitted (and the compiler will infer them):
+\begin{xten}
+class A {
+  val field:Double = Math.sqrt(2);
+  def this():A {} // constructor
+  def m():String {
+    val s:String = "a"+"b";
+    return s;
+  }
+}
+\end{xten}
+% Discuss "<:" ?
 
 
-\subsection{Constrained types}
+\subsection{Constrained types and type definitions}
+In X10, types can specify constraints between values,
+    e.g., \code{Int\{self!=0\}} is an integer that is not 0,
+        and \code{String\{self!=null\}} is a non-null string.
+Constraints are simple expressions that may refer to final variables, fields and constants,
+    and compare them with either equality (\code{==}) or inequality (\code{!=}).
+The keyword \code{self} can only be used in constraints, and it refers to the current value.
+(The \code{Matrix} example below show the difference between \code{self} and \code{this}.)
+
+Classes (and structs) can define properties
+    \code{Matrix\{self.rows==5,self.cols==3\}} is a 5 x 3 matrix.
+%abstract operator this + (y:Mat(this.rows,this.cols)):Mat(this.rows, this.cols);
+%abstract operator this * (y:Mat) {this.cols == y.rows}:Mat(this.rows, y.cols);
+\begin{xten}
+class Matrix(rows:Int, cols:Int) {
+  static type Mat(r:Int, c:Int) = Mat{rows==r&&cols==c};
+  def this(r:Int, c:Int) {
+    property(r,c);
+  }
+  def multiply(y:Mat{this.cols == self.rows}):Mat(this.rows, y.cols) {
+    return new Mat(rows,y.cols);
+  }
+}
+\end{xten}
 Matrix example.
-Types can specify constraints between values
-E.g. Matrix{self.I==M,self.J==N} is an M x N matrix.
 Can only be multiplied with an N1 x O matrix if N1==N: def mult(a:Matrix{self.I==this.J}):Matrix{self.I==this.I, self.J==a.J}
 Constraints can be used as class invariants and method guards
 
 
-\subsection{Type definitions}
-Type
-type Matrix(M,N)=Matrix{self.M==M,self.N==N}
 
 \subsection{Reified generics}
 
-\section{Implementation}
-Two back-ends: Java and C++.
-Compilation flow - include the image on slide 7.
+%\section{Implementation}
+%Two back-ends: Java and C++.
+%Compilation flow - include the image on slide 7?
 
 \end{document}
