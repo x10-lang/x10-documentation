@@ -29,6 +29,7 @@ types in your program, enough to tell X10 what you mean, so it can catch when
 you don't do what you meant.  But X10 often lets you leave types off, so
 they're not {\em too} much in your face.
 
+
 \section{Constrained Types}
 
 X10 has {\em constrained} types, sometimes called {\em dependent} types. 
@@ -107,6 +108,8 @@ static def lookUpOrCreate(name:String) : Person{self!=null} = {
 %%END X10: HasNullCheck.x10 hasnullcheckDB
 
 
+
+
 \subsection{{\tt self}, {\tt this}, and all that}
 
 Now, it's time to learn what that \xcd`self!=null` means.  You already know
@@ -161,6 +164,8 @@ static def useRecip(m:Int, n:Int{self!=0}) {
 }
 \end{xtennum}
 %%END X10: ConstraintExamples.x10 constraintexUseRecip
+
+
 \begin{description}
 \item [Line \xlref{constraintexUseRecip-a}{2}:] Use an argument which has been
       declared to be the right type.  That's an ordinary way to call methods
@@ -263,11 +268,319 @@ which is much easier to read.
 
 \subsection{{\tt val} variables instead of {\tt self}}
 
+Another way of making constrained types in \xcd`val` declarations easier to
+read is to use the name of the variable being declared instead of \xcd`self`.  
+So, you can write 
+%%START X10: ConstraintExamples.x10 constraintexVal
+\fromfile{ConstraintExamples.x10}
+\begin{xtennum}[]
+val n : Int{n != 0} = 3;
+\end{xtennum}
+%%END X10: ConstraintExamples.x10 constraintexVal
+instead of
+%%START X10: ConstraintExamples.x10 constraintexNoval
+\fromfile{ConstraintExamples.x10}
+\begin{xtennum}[]
+val n : Int{self != 0} = 3;
+\end{xtennum}
+%%END X10: ConstraintExamples.x10 constraintexNoval
+This isn't quite a circular definition.  It's saying that \xcd`n` is an
+\xcd`Int` and \xcd`n!=0`.  
 
-\bard{Another way of making it easier to read is variables...}
+There are a few restrictions on this.  
+\begin{itemize}
+
+\item It only works on \xcd`val`s.  \xcd`var`s can never appear in
+      constraints, as we see in \Sref{sect:LegalConstraints}.
+
+\item It only works for the variable being declared.  For example, 
+you can declare that the whole array of strings is non-\xcd`null`: 
+\begin{xten}
+val a : Array[String]{a!=null};
+\end{xten}
+which you might prefer to using \xcd`self` to say the same thing.
+\begin{xten}
+val a : Array[String]{self!=null};
+\end{xten}
+
+But the entries in the array don't have names, so, to make them be
+non-\xcd`null`,  you have to write
+\begin{xten}
+val b : Array[String{self!=null}];
+\end{xten}
+
+If you want both the array and each entry to be non-\xcd`null` (which you
+often do), you can write: 
+\begin{xten}
+val c : Array[String{self!=null}]{a!=null};
+\end{xten}
+which at least uses \xcd`self` for only one thing, unlike the equivalent 
+\begin{xten}
+val c : Array[String{self!=null}]{self!=null};
+\end{xten}
+
+\end{itemize}
+
+\subsection{Guards}
+\label{sect:Guards}
+
+Guards are constraint-like expressions that control what can be done with a
+class or method.  We've seen them in \Sref{subsub:type:anything}.  
+
+A guard on a class can be specific about the generic parameters.   For
+example, if we've got an interface \xcd`Flavored`: 
+%%START X10: ConstraintExamples.x10 constraintGuardFlavored
+\fromfile{ConstraintExamples.x10}
+\begin{xtennum}[]
+interface Flavored {
+  def flavor():Int;
+}
+\end{xtennum}
+%%END X10: ConstraintExamples.x10 constraintGuardFlavored
+We can demand that a generic type variable implement \xcd`Flavored`: 
+%%START X10: ConstraintExamples.x10 constraintexGuardOnClass
+\fromfile{ConstraintExamples.x10}
+\begin{xtennum}[]
+class Tasting[X] {X <: Flavored} {
+   def taste(x:X) = x.flavor();
+}
+\end{xtennum}
+%%END X10: ConstraintExamples.x10 constraintexGuardOnClass
+The clause \xcd`{X <: Flavored}` is a guard.
+
+A method can have a guard too. For example, consider a method to find the
+biggest element in an array of \xcd`Int`s.  What's it supposed to do if the
+array is empty and has no biggest element?  One way to deal with the problem
+is to forbid it entirely, and to require that the array not be empty.  It
+could be done with a guard, like this: 
+%%START X10: ConstraintExamples.x10 constraintexMethodGuard
+\fromfile{ConstraintExamples.x10}
+\begin{xtennum}[]
+def max(a:Array[Int]){a.size != 0} { 
+\end{xtennum}
+%%END X10: ConstraintExamples.x10 constraintexMethodGuard
+The guard \xcd`{a.size != 0}` insists that the array not be empty.
+It could just as well be phrased as a constrained type: 
+%%START X10: ConstraintExamples.x10 constraintexMethodGuard2
+\fromfile{ConstraintExamples.x10}
+\begin{xtennum}[]
+def min(a:Array[Int]{a.size!=0}) { 
+\end{xtennum}
+%%END X10: ConstraintExamples.x10 constraintexMethodGuard2
+Use whichever way you like more.
+
 
 \subsection{Legal Constraints}
+\label{sect:LegalConstraints}
+
+It would be very nice if you could write any sort of Boolean expression in
+your constraints.  In fact, it would be way, way {\em too} nice.  You could
+write constraints which no computer program could understand. 
+
+\begin{finepoint}
+Basic theory of computability says that there is no computer program that (1)
+always halts, and (2) can accept any nullary Boolean function \xcd`f` as
+input, and tell whether \xcd`f()==true`.  (Remember that \xcd`f()` might run
+forever, but the tester would have to halt in finite time, so it can't just
+run \xcd`f()` and see what happens.  It has to look at the code of \xcd`f`,
+and any computability theory textbook will explain why that cannot work.)
+
+So, if we allowed expressions liike \xcd`f()` in constraints, X10 would have
+some trouble.  Does this compile?
+\begin{xten}
+val a : Int{f()} = 1;
+\end{xten}
+Well, if \xcd`f()==true`, it does compile, and otherwise it doesn't.  So the
+X10 compiler would have to solve that unsolvable problem in order to do basic
+type checking. 
+\end{finepoint}
+
+So, to keep type-checking deciable --- and fast --- only a scant handful of
+things are allowed in constraints.  
+
+\subsection{Constraints can be...}
+
+\begin{description}
+\item [Equalities:] As we've seen, we can have equalities in constraints, like
+      \xcd`Int{self==3}`.
+\item [Non-Equalities:] As we've seen, we can say that two things have to be
+      different, like \xcd`String{self!=null}`.  (We can't use other kinds of
+      inequalities, like \xcd`Int{self > 0}`.)
+\item [Type Equalities and Non-Equalities:] We can require that two types
+      either be the asme (\xcd`T==U`) or be different (\xcd`T!=U`), too.
+      These aren't used very often.
+\item [Subtyping:] We can require that one type \xcd`T` be a subtype of
+      another type \xcd`U`.  This {\em is} useful, especially 
+      for the guard of a class. We've seen it used already, back in
+      \Sref{subsub:type:anything} and \Sref{sect:Guards}. 
+\item [Property Method Invocations:] ``Property methods''
+      (\Sref{sect:PropertyMethods}) are very limited sorts of methods -- they
+      can say just the sorts of things that belong in constraints.
+\item [Conjuctions:]  You can put several constraints together, but only with
+      \xcd`&&`.  See \Sref{sect:conjunction} for details.
+\item [Zero Test:] You can test to see if a type has a default value, with 
+      \xcd`T haszero`.  See \Sref{sect:DefaultValue} for some examples.
+\item [\xcd`true` and \xcd`false`:] A true constraint is always true; a false
+      constraint never is.  
+\end{description}
+
+\subsubsection{Expressions Allowed In Constraints} 
+
+When you compare expressions for equality, or invoke property methods, you re
+restricted to only a few sorts of expressions.  You can write \xcd`n==0`, but
+not \xcd`n == m+1`.
+
+\begin{description}
+\item [Constants:] \xcd`3` and \xcd`"fish"` and \xcd`null` and so on.
+\item [\xcd`val`s:] You can use \xcd`val` variables.   Not \xcd`var`s, which
+      change too much for X10's constraints to understand.
+\item [\xcd`this`:] If the constraint is at a point in the program where
+      \xcd`this` makes sense, like in a method, you can use \xcd`this` in a
+      constraint.
+\item [\xcd`here`:] The same goes for \xcd`here`.
+\item [\xcd`self`:] If you are constraining a {\em type}, you can use
+      \xcd`self`.  If you are writing a guard, there's no \xcd`self` to be
+      found. 
+\item [Properties of \xcd`self`:] If \xcd`p` is a property field of
+      \xcd`self`, then you can write \xcd`self.p` in a constraint.  
+      Just \xcd`p` alone can mean \xcd`self.p`, if that is the only choice.
+\item [\xcd`val` fields of anything else:] You can extract \xcd`val` fields of anything
+      else. 
+\item [Property Method Invocations:] You can use a property method in a
+      constraint expression, if the property method's actual expansion works
+      there too.
+\end{description}
+
+\subsubsection{Having your cake and eating it too}
+\label{sect:conjunction}
+
+If you want \xcd`n` to be neither zero nor one, you can write it in one of three
+ways. 
+\begin{itemize}
+\item \xcd`val n : Int{ n!=0,  n!=1 }`, using a comma to separate multiple
+      constraints.  Commas don't mean ``and'' anywhere but constraints.  
+
+\item \xcd`val n : Int{ n!=0 && n!=1 }`, using the regular \xcd`&&` operator
+      to mean ``and''.
+
+\item \xcd`val n : Int{ n!= 0} {n!=1}`, putting one constraint on top of
+      another.  
+\end{itemize}
+We usually use commas, but it doesn't matter.
+
+(You can't say ``or'' or ``not'' in constraints at all. \xcd`x||y` and \xcd`!x`
+are perfectly good anywhere else, but they're not allowed in constraints.)
+
+\subsubsection{Unrelated Constraints}
+
+There's no requirement that the constraint involves \xcd`self`, or that a
+constraint on a variable  \xcd`v` has anything to do with \xcd`v`.  
+%%START X10: ConstraintExamples.x10 constraintexEnv
+\fromfile{ConstraintExamples.x10}
+\begin{xtennum}[]
+val a = 1;
+val b = 2;
+val v : Int{a!=b} = 3;
+//ERROR: val d : Int{a==b} = 4; 
+\end{xtennum}
+%%END X10: ConstraintExamples.x10 constraintexEnv
+
+The constraint on line \xlref{constraintexEnv-cright}{3} says that \xcd`v` is
+an integer such that the \xcd`val`s \xcd`a` and \xcd`b` are different.  Well,
+looking at the code, \xcd`a` and \xcd`b` are indeed different.  So the
+constraint \xcd`a!=b` is always true, no matter what \xcd`Int` value \xcd`v`
+has.  In other words, \xcd`v` can be any \xcd`Int` value.
+
+On the other claw, if the constraint {\em isn't} true, then {\em no} value
+works.  You can't even use the type \xcd`Int{a==b}` on line
+\xlref{constraintexEnv-dwrong}{4} --- or the type \xcd`Int{false}` anywhere.
+No matter what value you assign to \xcd`d`, it won't make \xcd`a==b`, and
+won't make \xcd`false` be true.  
+
+These unrelated constraints are a way of enforcing that certain facts are true
+at {\em compile time}.  \xcd`assert` statements, like
+\begin{xten}
+assert a != b;
+\end{xten}
+can check that \xcd`a` and \xcd`b` are different at {\em runtime}.  But if you
+need to know that they're different at {\em compile time}, you'll need to put
+the fact into a constraint.  
+
+(Why might you need to know that?  Some other constraint might use it.  
+If you have a method \xcd`recipDiff(x,y) = 1.0/(x-y)`, 
+and you're calling \xcd`recipDiff(a,b)`, 
+you might need to persuade X10 that \xcd`a!=b`.)
+
+\subsection{Using Properties}
+
+The {\em properties} of a class or struct are the values that X10 keeps the
+closest track of at compile time.  They can be used in constraints on a class.
+Let's do a concrete example: points and triangles in plane geometry.
+We'll call the points \xcd`Pt` to keep them from getting confused with
+\xcd`x10.array.Point`.  Here it is:
+%%START X10: Geometry.x10 geompoint
+\fromfile{Geometry.x10}
+\begin{xtennum}[]
+struct Pt(x:Double, y:Double) { 
+  public operator this - (that:Pt) = Pt(this.x-that.x, this.y-that.y); 
+  public def len() = Math.sqrt(x*x-y*y); 
+}
+\end{xtennum}
+%%END X10: Geometry.x10 geompoint
+
+\begin{description}
+\item [line \xlref{geompoint-props}{1}:] \xcd`x` and \xcd`y` are properties of
+      \xcd`Pt`.  \bard{Do we discuss this elsewhere?}
+      Making them properties like this, and not giving any other constructor,
+      means that X10 will automatically give us the obvious constructor
+      \xcd`Pt(xx,yy)`. 
+\item [line \xlref{geompoint-op}{2}:] This line defines a binary operator of
+      subtraction on \xcd`Pt`s.  We're treating them as two-dimensional
+      vectors.   This isn't essential, but it does make using them very slick. 
+
+\item [line \xlref{geompoint-len}{3}:] This is a perfectly ordinary method,
+      giving the length of a vector.
+\end{description}
+
+The code for triangles will use a constraint to ensure that all triangles are
+non-degenerate --- that they all have three distinct points. 
+%%START X10: Geometry.x10 geomtriangle
+\fromfile{Geometry.x10}
+\begin{xtennum}[]
+struct Triangle(p:Pt, q:Pt, r:Pt) {p != q, p != r, q != r} {
+  public def area() {
+     val a = (p-q).len();
+     val b = (q-r).len();
+     val c = (r-p).len();
+     val s = (a + b + c)/2;
+     val area = Math.sqrt(s * (s-a) * (s-b) * (s-c) );
+     return area;
+  }
+}
+\end{xtennum}
+%%END X10: Geometry.x10 geomtriangle
+
+Triangles have three \xcd`Pt`s, which we're phrasing as properties. The
+\xcd`Triangle` class has a guard on line \xlref{geomtriangle-struct}{1}, saying
+that \xcd`p`, \xcd`q`, and \xcd`r` are all different. (Obviously this approach
+is going to get pretty troublesome by the time we get to heptagons, where we'd
+have to write 7 variables and 28 non-equalities, and won't work at all if
+we're trying to use arbitrary {$n$}-gons.  But it's a very slick approach when
+it does work.)
+
+
+
+\bard{explain why struct}
+
+
 \subsection{Nulls and Constraints}
+
+Sometimes you want to forbid \xcd`null` values in your object types.  You can
+do this with the constraint \xcd`{self != null}`.
+
+If you don't have that constraint, though, \xcd`null` is allowed. 
+\bard{finish this section}
+
 \subsection{Constraints and Subtyping}
 \subsection{STATIC\_CHECKS}
 \subsection{Incompleteness}
