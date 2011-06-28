@@ -58,7 +58,8 @@ Using this type obligates you to convince X10 that whatever value you give
 \xcd`x` is not null.  Three good ways to convince X10 are: (1) use a
 constructor call, since constructors never return \xcd`null`. 
 (2) use a method declared to return a non-null value, though you will have to
-convince X10 that method is defined properly. (3) Check the value at runtime
+convince X10 that method is defined properly. (3) Check the value at runtime,
+with a type-cast (``\xcd`as`'') operation, 
 and make sure it's not \xcd`null` there.\footnote{Method 3, checking values at
 runtime, is pretty familiar from defensive programming in Java or C++.  X10's
 types, if used this way, have the advantage that you can't {\em forget} to do
@@ -108,6 +109,163 @@ static def lookUpOrCreate(name:String) : Person{self!=null} = {
 
 \subsection{{\tt self}, {\tt this}, and all that}
 
+Now, it's time to learn what that \xcd`self!=null` means.  You already know
+\xcd`!=` and \xcd`null`, but \xcd`self` is new.  
+
+When we're using a type, we can think of it as a test, asking if some thing
+under consideration is a member of the type or not.  So, for the type
+\xcd`Int`, imagine asking if \xcd`true` is a member (no), or \xcd`18` is
+(yes).  With types that come from classes and such, like \xcd`Int`, we don't
+need to have a name for the thing under consideration.
+When we write a constraint, we do need a name for it -- and that name is
+a special X10 keyword, \xcd`self`.  
+
+So, we can write some other constraints.  Like this one, which says that the
+variable \xcd`three` is an \xcd`Int` which is equal to \xcd`3`.  
+%%START X10: ConstraintExamples.x10 constraintex1
+\fromfile{ConstraintExamples.x10}
+\begin{xtennum}[]
+val three : Int{self==3} = 3;
+\end{xtennum}
+%%END X10: ConstraintExamples.x10 constraintex1
+Of course, if you try to set it to something that {\em isn't} three, it won't
+work.  This doesn't compile:
+%%START X10: ConstraintExamples.x10 constraintex2
+\fromfile{ConstraintExamples.x10}
+\begin{xtennum}[]
+val four : Int{self==3} = 4; 
+\end{xtennum}
+%%END X10: ConstraintExamples.x10 constraintex2
+
+Not-equals constraints are sometimes useful for excluding a few problem
+values.    For example, if you're defining a reciprocal function, you might
+want to constrain the input to avoid dividing by zero:
+%%START X10: ConstraintExamples.x10 constraintexrecip
+\fromfile{ConstraintExamples.x10}
+\begin{xtennum}[]
+static def recip(n:Int{self!=0}) = 1.0/n; 
+\end{xtennum}
+%%END X10: ConstraintExamples.x10 constraintexrecip
+
+This isn't a terrible idea, though it does require you to prove to X10 that
+numbers are non-zero when you take their reciprocals.  Here are a few ways
+that you can do it: 
+%%START X10: ConstraintExamples.x10 constraintexUseRecip
+\fromfile{ConstraintExamples.x10}
+\begin{xtennum}[]
+static def useRecip(m:Int, n:Int{self!=0}) {
+  val a = recip(n); 
+  val three : Int{self==3} = 3; 
+  val b = recip(three);
+  val c = recip(m as Int{self!=0});
+}
+\end{xtennum}
+%%END X10: ConstraintExamples.x10 constraintexUseRecip
+\begin{description}
+\item [Line \xlref{constraintexUseRecip-a}{2}:] Use an argument which has been
+      declared to be the right type.  That's an ordinary way to call methods
+      anyhow.  Here, the right type is \xcd`Int{self!=0}`.  Since \xcd`n` has
+      that type, it's fine.
+\item [Line \xlref{constraintexUseRecip-b}{4}:] Use an argument which has a
+      {\em more specific} type.  You're used to doing this too, when you have
+      a method that takes a \xcd`Person` as an argument and you give it a
+      subclass, like \xcd`Dentist`.  
+
+      Here we're doing the same thing, in a
+      slightly different way. 
+      The type of \xcd`three` is \xcd`Int{self==3}`.  That's a subtype of 
+      \xcd`Int{self!=0}`, because every number that {\em is} three {\em isn't}
+      zero.    The official word for this is {\em subtyping by strengthening}.  
+      \xcd`self==3` is logically {\em stronger} than \xcd`self!=0` --- also
+      pronounced ``\xcd`self==3` implies \xcd`self!=0`''.  
+      A constrained type with a stronger constraint is always a subtype of a
+      type with the same base and a weaker one.  
+
+      (As usual, we didn't have to write the type on line
+      \xlref{constraintexUseRecip-decl}{3}.  We  just wrote it to make the
+      example clearer.)
+      
+\item [Line \xlref{constraintexUseRecip-c}{5}:] 
+      Use a {\em cast}.  
+      At some point, you're going to
+      have a value like \xcd`m`, which you don't know in advance is not zero,
+      and you're going to have to tell X10 that it's not zero.  The way you
+      say ``it's not zero'', here, is to use a type cast  
+      \xcd`m as Int{self!=0}`.  This is just the same as any other time you
+      have a value of one type and need it to be another type.
+
+      Of course, \xcd`m` might be zero.  If \xcd`m` is zero, this cast fails
+      -- \xcd`m as Int{self!=0}` first makes sure that \xcd`m` is an integer
+      (which it can do at compile-time), and then that it's not zero (which
+      has to be done at runtime).    If \xcd`m` is zero, this throws an
+      exception, the same as any other attempt to cast a value to some type it
+      isn't.   
+
+      This isn't much of an improvement over getting a division-by-zero error.
+      It might even be worse: the division by zero error is obviously about
+      division by zero, but the cast error is a bit further removed from the
+      problem.  
+
+      The improvement comes earlier, when you try to write this: 
+\begin{xten}
+    val c = recip(m); 
+\end{xten}
+      This is wrong, because \xcd`m` could be zero.  
+      X10 will give you a warning or an error here (depending on the 
+      \xcd`STATIC_CHECKS` compiler flag -- see \Sref{sect:StaticChecks}).  
+
+      At this point, you have been alerted to the problem. It's your
+      responsibility as an intelligent programmer to figure out the right
+      thing and do it.  Testing \xcd`m` and printing a comprehensible error
+      message if it's zero, while untraditional in some circles, would not be
+      out of the question.
+
+\end{description}
+
+\subsubsection{{\tt self} in nested types}
+
+If you have a constrained type that looks like \xcd`T{c}`, where \xcd`T` is
+some type and \xcd`c` some constraint, then \xcd`self` inside \xcd`c` means
+{\em ``the value of type T that we're wondering whether it might be a member
+of \xcd`T{c}` or not''}.  So, in \xcd`Int{self!=0}`, \xcd`self` is the
+\xcd`Int` that we're saying had better not be zero.
+
+That's a simple rule.  But it has some implications that might be brainhurty.
+If you have a complicated type, there might be two \xcd`self`s inside it that
+mean different things -- and are even of different types.
+
+For example, \xcd`Array[U]{self!=null}` means ``A non-\xcd`null` array of
+\xcd`U`'s''. The array itself isn't \xcd`null`. The \xcd`U`'s inside of it
+might be \xcd`null`, depending on what \xcd`U` is.
+\xcd`a:Array[String]{self!=null}` makes \xcd`a` be a non-\xcd`null` array of
+strings, but \xcd`a` might have a \xcd`null` inside of it.
+
+Similarly, \xcd`String{self!=null}` is the type of strings that aren't
+\xcd`null`.  
+
+So, we can use \xcd`String{self!=null}` for \xcd`U`.  
+\xcd`Array[String{self!=null}]{self!=null}` is a non-\xcd`null` array of
+non-\xcd`null` strings.  The first \xcd`self` refers to the \xcd`String` that
+isn't null. The second one refers to the \xcd`Array` that isn't \xcd`null`.
+
+It's easy to write an utterly incomprehensible type expression using this.  If
+you find yourself tempted to do so, look at the \xcd`type` declaration
+(\Sref{sect:TypeDecl}).  A couple of definitions and you can write
+this: 
+%%START X10: ConstraintExamples.x10 constraintexNotNull
+\fromfile{ConstraintExamples.x10}
+\begin{xtennum}[]
+var a : ArrayNotNull[StringNotNull]; 
+\end{xtennum}
+%%END X10: ConstraintExamples.x10 constraintexNotNull
+which is much easier to read.
+
+
+\subsection{{\tt val} variables instead of {\tt self}}
+
+
+\bard{Another way of making it easier to read is variables...}
+
 \subsection{Legal Constraints}
 \subsection{Nulls and Constraints}
 \subsection{Constraints and Subtyping}
@@ -116,7 +274,8 @@ static def lookUpOrCreate(name:String) : Person{self!=null} = {
 \subsection{Why Generics Lose Constraints At Runtime}
 
 \section{Type Declarations}
-\bard{do this}
+\label{sect:TypeDecl}
+\bard{do this -- note non-null type decl for niceifying Array[String{self!=null}]{self!=null} }
 \section{Type Inference}
 \bard{do this!}
 \section{Generics}
