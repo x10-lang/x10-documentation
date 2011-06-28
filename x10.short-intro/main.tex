@@ -33,9 +33,15 @@
 \newcommand{\myCOMMENT}[1]{\COMMENT{\small #1}}
 \newcommand{\code}[1]{\texttt{\textup{\codesmaller #1}}}
 
+
+\newcommand{\ttlcb}{\texttt{\char "7B}}
+\newcommand{\ttrcb}{\texttt{\char "7D}}
+\newcommand{\lb}{\ttlcb}
+\newcommand{\rb}{\ttrcb}
+
 \title{A Brief Introduction to X10}
 
-\author{Yoav Zibin and Nathaniel Clinger and Vijay Saraswat}
+\author{Yoav Zibin and Vijay Saraswat}
 
 \date{}
 
@@ -272,6 +278,7 @@ public class Fib {
 }
 \end{xten}
 
+% Another example? Parallel quick sort?
 
 \subsection{X10 motivation}
 X10 is an evolution of Java for concurrency and heterogeneity.
@@ -291,7 +298,7 @@ X10 has the following features:
         including classes, inner classes, interface, inheritance, overloading, etc.
     OO programming facilitates building libraries and frameworks that promotes reuse.
     Additionally, X10 has a richer type-system that allows the programmer
-        to specify constraints over types, e.g., \code{Int\{self!=0\}}.
+        to specify constraints over types, e.g., \code{Int\lb{}self!=0\rb{}}.
     Other novel X10 features include closures, structs, and reified generics.
   \item[Interoperability with Java]
     X10 code can be compiled into Java classes and run on any JVM.
@@ -335,7 +342,7 @@ Next we go into the various X10 features that increase productivity and performa
 Closures are in X10 are first-class values that represent functions.
 For example, \code{(x:Int)=>x+1} is a function that receives an integer and returns an integer,
     thus its type is \code{(Int)=>Int}.
-Closures are useful for array manipulation (mapping/scanning/reducing values of an array),
+Closures are useful for array manipulation (mapping, scanning, and reducing values of an array),
     e.g., suppose you have an array of grades (\code{Array[Double]}) and you want to give all students
         an increase by some factor:
 \begin{xten}
@@ -344,7 +351,7 @@ def giveFactor(gradesArray:Array[Double], factor:Double) {
   return newGrades;
 }
 \end{xten}
-Note how the closure can refer to variables in the outside scope (\code{factor}),
+Similarly to inner classes, a closure can refer to variables in the outside scope (\code{factor}),
     but only if they are immutable (\code{val} and not \code{var}).
 
 
@@ -403,35 +410,148 @@ class A {
 
 \subsection{Constrained types and type definitions}
 In X10, types can specify constraints between values,
-    e.g., \code{Int\{self!=0\}} is an integer that is not 0,
-        and \code{String\{self!=null\}} is a non-null string.
+    e.g., \code{Int\lb{}self!=0\rb{}} is an integer that is not 0,
+        and \code{String\lb{}self!=null\rb{}} is a non-null string.
 Constraints are simple expressions that may refer to final variables, fields and constants,
     and compare them with either equality (\code{==}) or inequality (\code{!=}).
 The keyword \code{self} can only be used in constraints, and it refers to the current value.
 (The \code{Matrix} example below show the difference between \code{self} and \code{this}.)
 
-Classes (and structs) can define properties
-    \code{Matrix\{self.rows==5,self.cols==3\}} is a 5 x 3 matrix.
-%abstract operator this + (y:Mat(this.rows,this.cols)):Mat(this.rows, this.cols);
-%abstract operator this * (y:Mat) {this.cols == y.rows}:Mat(this.rows, y.cols);
+Classes (and structs) can define properties,
+    e.g., \code{Matrix} below defines two properties called \code{rows} and \code{cols}.
+Properties are final fields that can be used in constraints, e.g.,
+    \code{Matrix\lb{}self.rows==5,self.cols==3\rb{}} is a 5 x 3 matrix.
+X10 also supports type definitions, which create a new (shorter) name for a type, thus promoting readability.
+For instance, the type definition in line~2 enables us to write a 5 x 3 matrix type conveniently as \code{Matrix(5,3)}.
+
+Properties are initialized first using \code{property(\ldots)} call syntax (see line~4),
+    then the other fields may be initialized (line~5).
+(Field initializers are executed after the property call.)
+
+%abstract operator this + (y:Matrix(this.rows,this.cols)):Matrix(this.rows, this.cols);
+%abstract operator this * (y:Matrix) {this.cols == y.rows}:Matrix(this.rows, y.cols);
 \begin{xten}
 class Matrix(rows:Int, cols:Int) {
-  static type Mat(r:Int, c:Int) = Mat{rows==r&&cols==c};
+  static type Matrix(r:Int, c:Int) = Matrix{rows==r&&cols==c};
+  val size:Int;
   def this(r:Int, c:Int) {
     property(r,c);
+    size = rows * cols;
   }
-  def multiply(y:Mat{this.cols == self.rows}):Mat(this.rows, y.cols) {
-    return new Mat(rows,y.cols);
+  def multiply(y:Matrix{this.cols == self.rows}):Matrix(this.rows, y.cols) {
+    return new Matrix(rows,y.cols);
   }
 }
 \end{xten}
-Matrix example.
-Can only be multiplied with an N1 x O matrix if N1==N: def mult(a:Matrix{self.I==this.J}):Matrix{self.I==this.I, self.J==a.J}
-Constraints can be used as class invariants and method guards
 
+Type constraints can be used to express pre- and post- conditions on method calls.
+For example, consider the method \code{multiply} on line 8,
+    and consider a method call \code{x.multiply(y)}.
+Then, this call is legal only if the number of columns of \code{x} equals the number of rows of \code{y},
+    i.e., \code{x.cols==y.rows} (this is the pre-condition).
+This example also shows the difference between \code{this} and \code{self}:
+    \code{this} is the method receiver (in our example the receiver is \code{x}),
+    whereas \code{self} is the argument \code{y}.
+The return type \code{Matrix(this.rows, y.cols)} is equivalent (according to the type definition in line~2)
+    to %a synonym
+    \code{Matrix\lb{}self.rows==this.rows\&\&self.cols==y.cols\rb{}}.
+This can be thought of as a post-condition where the returned matrix is of size \code{x.rows} by \code{y.cols}.
+
+Constraints can also be used in \emph{class invariants},
+    e.g., a rectangular matrix will have an invariant that the number of rows and columns are equal:
+\begin{xten}
+class RectMatrix extends Matrix {rows==cols} {
+  def this(r:Int) {
+    super(r,r);
+  }
+}
+\end{xten}
+
+Type constraints will be checked statically if the compiler is given the argument
+    \code{-STATIC\_CHECKS}.
+In the \code{RectMatrix} example, the compiler can statically verify that the class invariant always holds.
+However, often it is convenient to perform some checks dynamically,
+    i.e., assert at runtime that a constraint hold.
+By default, the compiler will insert such dynamic checks and issue a warning specifying how many such checks were inserted.
+For example, the following code will produce such a warning:
+\begin{xten}
+def dynamicallyCheckMultiply(x:Matrix,y:Matrix) {
+  return x.multiply(y); // will dynamically check that x.cols==y.rows
+}
+\end{xten}
 
 
 \subsection{Reified generics}
+X10's generics are similar to Java's generics with one major difference:
+    Java's generics are based on erasure (i.e., generics are erased at runtime),
+    whereas X10's generics are reified (i.e., generic info is kept and checked at runtime).
+Java's primitive types cannot be used with generics (e.g., \code{ArrayList<int>} is illegal, but \code{ArrayList<Integer>} is legal in Java).
+In X10, any type (including classes, structs or interfaces) can substitute a generic type parameter,
+    e.g., both \code{Box[Double]} and \code{Box[Any]} are legal in X10.
+Furthermore, the code will be specialized according to the type argument,
+    i.e., \code{Box[Byte]} will have a field of type \code{Byte} taking 1 byte,
+    and \code{Box[Int]} will have a field of type \code{Int} taking 4 bytes.
+%class Matrix[T](rows:Int, cols:Int) {T <: Arithmetic[T]} {  val cells:Array[T];
+%class MyList[T] implements List[T] {  val nodes:Array[T];
+\begin{xten}
+class Box[T] {
+  var value:T;
+  def this(t:T) { value = t; }
+}
+\end{xten}
+
+
+\subsection{Arrays and operators}
+Arrays in X10 are multi-dimensional, where the number of dimensions is called \code{rank}.
+For example, an array of \code{rank==2} where every dimension has 10 elements will have 20 elements in total.
+The total
+{rank==2}
+\begin{xten}
+def twoDimensionalExample(arr:Array[String](2), p:Point(2)) {
+  arr(p) = "a";
+  return arr(0,0);
+}
+\end{xten}
+
+
+\subsection{Exceptions}
+In Java, a method must specify in its \code{throws} clause all the exceptions that it might throw,
+    except for unchecked exceptions (RuntimeException, Error, and their subclasses).
+This may cause a bloat in the size of the \code{throws} clause because a client of two libraries usually have to
+    specify the checked exceptions of both libraries.
+In contrast, X10 does not have a \code{throws} clause, i.e.,  all exceptions are unchecked.
+Methods do not declare which exceptions they might throw; any method can, potentially, throw any exception.
+
+In Java, if a thread does not catch an exception, then it is printed on the error stream.
+In X10, if an activity does not catch an exception, then that exception propagates to the closest \code{finish}.
+The \code{finish} accumulates all the thrown exceptions and when it globally terminated it throws
+    a single exception (of type \code{MultipleExceptions}) that is formed from the collection of exceptions that were accumulated.
+%Phrased differently, X10 has a rooted exception model where activities are organized in a tree structure,
+For example, the following \code{finish} will wait for the two activities to finish,
+    it will accumulate two exceptions and throw a single \code{MultipleExceptions}
+    that will be caught in line~6:
+\begin{xten}
+try {
+  finish {
+    async { throw new RuntimeException(); }
+    async { throw new ArithmeticException(); }
+  }
+} catch (e:MultipleExceptions) {
+  Console.OUT.println(e.exceptions);
+}
+\end{xten}
+
+ todo: data races and atomic?
+
+ deep copying in an "at"?
+
+Object initialization?
+
+% Like in Java:
+% package and imports
+% static
+% main
+% inheritance, overloading, overriding, interfaces, inner classes
 
 %\section{Implementation}
 %Two back-ends: Java and C++.
