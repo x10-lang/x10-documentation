@@ -48,7 +48,7 @@ A method cannot assign to any \hval fields (no matter what the target is):
 
 A constructor can assign to a \hval field at most once and only if the target is \this:
 \beqs{ctorVal}
-    &\ctorVal([\he_0,\ldots,\he_n],F)= \ctorVal(\he_0,F) \hand \ctorVal(\he_1,\AW([\he_0]) \cup F) \hand \ldots \hand  \ctorVal(\he_n,\AW([\he_0,\ldots,\he_{n-1}]) \cup F)\\
+    &\ctorVal([\he_0,\ldots,\he_n],F)= \ctorVal(\he_0,F) \hand \ctorVal(\he_1,\AW{[\he_0]} \cup F) \hand \ldots \hand  \ctorVal(\he_n,\AW{[\he_0,\ldots,\he_{n-1}]} \cup F)\\
     &\ctorVal(\he",F)=
         \begin{cases}
         \htrue & \he" \equiv \hl \\
@@ -70,7 +70,7 @@ We need to check that we do not assign to a \hval field ($\methodVal(\he)$).
   \methodVal(\he)
 }{
   \hMM ~ \hm(\ol{\hx}:\ol{\hD}):\hD=\he ~~\OK~\IN~\hC
-}~\RULE{(T-Method-val)}
+}~\RULE{(T-Method)}
 \eeq
 
 Similarly, we need to check for constructors that \hval fields are treated correctly (assigned at most once).

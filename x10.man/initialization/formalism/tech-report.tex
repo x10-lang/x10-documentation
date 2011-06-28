@@ -22,9 +22,11 @@
 
 \mynewcommand{\async}{\code{async}}
 \mynewcommand{\finish}{\code{finish}}
-\mynewcommand{\R}{\code{R}_\Gamma}
-\mynewcommand{\SW}{\code{SW}_\Gamma}
-\mynewcommand{\AW}{\code{AW}_\Gamma}
+\newcommand{\R}[2]{\code{R}(#1,#2,\hC)}
+
+%\newcommand{\Ofn}[1]{\ensuremath{O(#1)}}
+\newcommand{\SW}[1]{\code{SW}(#1,\hC)}
+\newcommand{\AW}[1]{\code{AW}(#1,\hC)}
 \mynewcommand{\Read}{\code{Read}}
 \mynewcommand{\SyncWrite}{\code{SyncWrite}}
 \mynewcommand{\AsyncWrite}{\code{AsyncWrite}}
@@ -56,10 +58,10 @@
 \section{Introduction}
 This technical report formalizes the hardhat initialization rules in X10
     using \emph{Featherweight X10} (FX10).
-Read first the paper ``Object Initialization in X10" to understand
-    the terminology (e.g., raw and cooked objects),
-    the initialization rules of X10,
-    and their connection with X10's concurrent and distributed constructs (\finish, \async, and \code{at}).
+Read first the paper ``Object Initialization in X10" to understand the motivation behind the hardhat rules.
+    %the terminology (e.g., raw and cooked objects),
+%    the initialization rules of X10,
+%    and their connection with X10's concurrent and distributed constructs (\finish, \async, and \code{at}).
 
 FX10 is similar to Featherweight Java (FJ), however it is both imperative (using a heap) and it
     models X10 specific constructs such as \finish and \async.
@@ -71,7 +73,7 @@ FX10 does \emph{not} model other aspects of X10 such as:
   \item[Places] X10 can run code in multiple places, and the \code{at} keyword is used to execute code in a different place.
     Because the only raw object is \this,
         and a raw \this cannot be captured by an \code{at},
-        then only cooked objects cross places.
+        then only cooked objects can cross places.
     Therefore, there is no initialization issues with \code{at} and FX10 does not model it.
   \item[Inference]
     X10 uses inference in various places:
@@ -88,8 +90,10 @@ FX10 does \emph{not} model other aspects of X10 such as:
     FX10 guarantees that all fields are assigned when the object becomes cooked,
         and that fields are read only after written to.
     Therefore, \hnull is no longer needed.
+    In the formalism, an object is represented as a mapping from initialized fields to their values
+    (so initially the mapping is empty because no field is initialized).
 
-  \item[Misc]
+  \item[Miscellaneous]
     Generics, constraints, casting, inner classes, overloading, co-variant return type, private/final,
     locals, field initializers, etc.
 \end{description}
@@ -146,14 +150,14 @@ $\he ::= \hl ~|~ \hx ~|~ \he.\hf ~|~ \he.\hf = \he ~|~ \he.\hm(\ol{\he}) ~|~ \hn
 The syntax is similar to X10 real syntax with the following difference:
     instead of doing inference, we explicitly write the fields of \this that are initialized and read in
     every initializing method
-    (using 3 sets: $\Read(\ol{\hf})~~\SyncWrite(\ol{\hf})~~\AsyncWrite(\ol{\hf})$).
+    (using 3 sets: $\Read(\ol{\hf})$, $\SyncWrite(\ol{\hf})$, and $\AsyncWrite(\ol{\hf})$).
 Initializing methods (also called non-escaping methods) cannot leak \this and they can only read fields of \this that are in the \Read set.
 Non-initializing methods (whose receiver is always a cooked object) are marked with \hescaping
     because they can escape \this (e.g., pass \this as an argument to another method).
 
 Every class has a single constructor that must initialize all the fields of \this,
-    and it can only call only non-escaping methods.
-The constructor first calls \super to initialize the superclass fields,
+    and it can only call non-escaping methods.
+The constructor first calls \super to initialize the superclass's fields,
     and only then initialize the other fields.
 
 The following is an example program in this syntax:
@@ -216,72 +220,74 @@ Finally, because FX10 have constructors, we define:
 (Note that constructors do not have a modifier, because they implicitly must write to all fields and cannot read any field.)
 
 
-Function~$\R(\he,F)$ returns whether
-    \he only reads fields of \this that are in F or that have been previously written in e
+Function~$\R{\he}{F}$ returns whether
+    \this does not escape from \he (i.e., \this can be used only as a field or method receiver),
     and whether
-    \this does not escape from \he (i.e., \this can be used only as a field or method receiver).
+    \he only reads fields of \this that are in F or that have been previously written in e.
 For example,
 \beqs{R-example}
-    \R(\this.\hf,\{\hf\})&=\htrue\\
-    \R(\code{new Seq(this.f=new Object(), this.f)}, \emptyset)&=\htrue\\
+    \R{\this.\hf}{\{\hf\}}&=\htrue\\
+    \R{\code{new Seq(this.f=new Object(), this.f)}}{ \emptyset}&=\htrue\\
 \eeq
 
 \beqs{R}
-    &\R([\he_0,\ldots,\he_n],F)= \R(\he_0,F) \hand \R(\he_1,\SW([\he_0]) \cup F) \hand \ldots \hand  \R(\he_n,\SW([\he_0,\ldots,\he_{n-1}]) \cup F)\\
-    &\R(\he",F)=
+    &\R{[\he_0,\ldots,\he_n]}{F}= \R{\he_0}{F} \hand \R{\he_1}{\SW{[\he_0]} \cup F} \hand \ldots \hand  \R{\he_n}{\SW{[\he_0,\ldots,\he_{n-1}]} \cup F}\\
+    &\R{\he"}{F}=
         \begin{cases}
         \htrue & \he" \equiv \hl \\
         \hfalse & \he" \equiv \this \\
         \htrue & \he" \equiv \hx \\
         \hf \in F & \he" \equiv \this.\hf \\
-        \R(\he,F) & \he" \equiv \he.\hf \\
-        \R(\he',F) & \he" \equiv \this.\hf = \he' \\
-        \R([\he,\he'],F) & \he" \equiv \he.\hf = \he' \\
-        R \subseteq F \hand \R([\ol{\he}],F) & \he" \equiv \this.\hm(\ol{\he}) \gap \mmodifier{}(\hm,\Gamma(\this))=\Read(R) \ldots  \\
-        \R([\he',\ol{\he}],F) & \he" \equiv \he'.\hm(\ol{\he}) \\
-        \R([\ol{\he}],F) & \he" \equiv \hnew ~ \hC(\ol{\he}) \\
-        \R(\he,F) & \he" \equiv \hfinish~\he \\
-        \R(\he,F) \hand \R(\he',F) & \he" \equiv \hasync~\he;\he' \\
+        \R{\he}{F} & \he" \equiv \he.\hf \\
+        \R{\he'}{F} & \he" \equiv \this.\hf = \he' \\
+        \R{[\he,\he']}{F} & \he" \equiv \he.\hf = \he' \\
+        \hfalse & \he" \equiv \this.\hm(\ol{\he}) \gap \mmodifier{}(\hm,\hC)=\hescaping  \\
+        R \subseteq F \hand \R{[\ol{\he}]}{F} & \he" \equiv \this.\hm(\ol{\he}) \gap \mmodifier{}(\hm,\hC)=\Read(R) \ldots  \\
+        \R{[\he',\ol{\he}]}{F} & \he" \equiv \he'.\hm(\ol{\he}) \\
+        \R{[\ol{\he}]}{F} & \he" \equiv \hnew ~ \hC(\ol{\he}) \\
+        \R{\he}{F} & \he" \equiv \hfinish~\he \\
+        \R{\he}{F} \hand \R{\he'}{F} & \he" \equiv \hasync~\he;\he' \\
         \end{cases}
 \eeq
 
 
-$\SW(\he)$ is the set of fields of \this that are definitely-(synchronously)-written in \he.
+$\SW{\he}$ is the set of fields of \this that are definitely-(synchronously)-written in \he.
+(The function is undefined if there is a call to an \hescaping method.)
 \beqs{SW}
-    &\SW([\he_0,\ldots,\he_n])= \SW(\he_0) \cup \ldots \cup  \SW(\he_n)\\
-    &\SW(\he")=
+    &\SW{[\he_0,\ldots,\he_n]}= \SW{\he_0} \cup \ldots \cup  \SW{\he_n}\\
+    &\SW{\he"}=
         \begin{cases}
         \emptyset & \he" \equiv \hl \\
         \emptyset & \he" \equiv \hx \\
-        \SW(\he) & \he" \equiv \he.\hf \\
-        \{ \hf \} \cup \SW(\he') & \he" \equiv \this.\hf = \he' \\
-        \SW([\he,\he']) & \he" \equiv \he.\hf = \he' \\
-        SW \cup \SW([\ol{\he}]) &
-            \he" \equiv \this.\hm(\ol{\he}) \gap \mmodifier{}(\hm,\Gamma(\this))=\ldots \SyncWrite(SW) \ldots  \\
-        \SW([\he',\ol{\he}]) & \he" \equiv \he'.\hm(\ol{\he}) \\
-        \SW([\ol{\he}]) & \he" \equiv \hnew ~ \hC(\ol{\he}) \\
-        \AW(\he) & \he" \equiv \hfinish~\he \\
-        \SW(\he') & \he" \equiv \hasync~\he;\he' \\
+        \SW{\he} & \he" \equiv \he.\hf \\
+        \{ \hf \} \cup \SW{\he'} & \he" \equiv \this.\hf = \he' \\
+        \SW{[\he,\he']} & \he" \equiv \he.\hf = \he' \\
+        S \cup \SW{[\ol{\he}]} &
+            \he" \equiv \this.\hm(\ol{\he}) \gap \mmodifier{}(\hm,\hC)=\ldots \SyncWrite(S) \ldots  \\
+        \SW{[\he',\ol{\he}]} & \he" \equiv \he'.\hm(\ol{\he}) \\
+        \SW{[\ol{\he}]} & \he" \equiv \hnew ~ \hC(\ol{\he}) \\
+        \AW{\he} & \he" \equiv \hfinish~\he \\
+        \SW{\he'} & \he" \equiv \hasync~\he;\he' \\
         \end{cases}
 \eeq
-$\AW(\he)$ is the set of fields of \this that are asynchronously written in \he.
-Note that in $\AW(\hasync~\he;\he')$ we collect writes to fields in both \he and $\he'$,
-    whereas in $\SW$ we only consider writes in $\he'$.
+$\AW{\he}$ is the set of fields of \this that are asynchronously written in \he.
+Note that in $\AW{\hasync~\he;\he'}$ we collect writes to fields in both \he and $\he'$,
+    whereas in $\SW{\hasync~\he;\he'}$ we only consider writes in $\he'$.
 \beqs{AW}
-    &\AW([\he_0,\ldots,\he_n])= \AW(\he_0) \cup \ldots \cup  \AW(\he_n)\\
-    &\AW(\he")=
+    &\AW{[\he_0,\ldots,\he_n]}= \AW{\he_0} \cup \ldots \cup  \AW{\he_n}\\
+    &\AW{\he"}=
         \begin{cases}
         \emptyset & \he" \equiv \hl \\
         \emptyset & \he" \equiv \hx \\
-        \AW(\he) & \he" \equiv \he.\hf \\
+        \AW{\he} & \he" \equiv \he.\hf \\
         \{ \hf \} \cup \AW(\he') & \he" \equiv \this.\hf = \he' \\
-        \AW([\he,\he']) & \he" \equiv \he.\hf = \he' \\
-        AW \cup \AW([\ol{\he}]) &
-            \he" \equiv \this.\hm(\ol{\he}) \gap \mmodifier{}(\hm,\Gamma(\this))=\ldots \AsyncWrite(AW) \ldots  \\
-        \AW([\he',\ol{\he}]) & \he" \equiv \he'.\hm(\ol{\he}) \\
-        \AW([\ol{\he}]) & \he" \equiv \hnew ~ \hC(\ol{\he}) \\
-        \AW(\he) & \he" \equiv \hfinish~\he \\
-        \AW(\he) \cup \AW(\he') & \he" \equiv \hasync~\he;\he' \\
+        \AW{[\he,\he']} & \he" \equiv \he.\hf = \he' \\
+        A \cup \AW{[\ol{\he}]} &
+            \he" \equiv \this.\hm(\ol{\he}) \gap \mmodifier{}(\hm,\hC)=\ldots \AsyncWrite(A) \ldots  \\
+        \AW{[\he',\ol{\he}]} & \he" \equiv \he'.\hm(\ol{\he}) \\
+        \AW{[\ol{\he}]} & \he" \equiv \hnew ~ \hC(\ol{\he}) \\
+        \AW{\he} & \he" \equiv \hfinish~\he \\
+        \AW{\he} \cup \AW{\he'} & \he" \equiv \hasync~\he;\he' \\
         \end{cases}
 \eeq
 
@@ -296,7 +302,7 @@ $\typerule{
     \Gdash \he : \hC
 }{
   \Gdash \finish~\he~:~\hC
-}$~\RULE{(T-finish)}
+}$~\RULE{(T-Finish)}
 \quad
 $\typerule{
     \Gdash \he : \hC
@@ -304,18 +310,18 @@ $\typerule{
     \Gdash \he' : \hC'
 }{
   \Gdash \async~\he;~\he'~:~\hC'
-}$~\RULE{(T-async)}\\\\
+}$~\RULE{(T-Async)}\\\\
 
 
 $\typerule{
 }{
   \Gdash \hl : \Gamma(\hl)
-}$~\RULE{(T-location)}
+}$~\RULE{(T-Location)}
 \quad
 $\typerule{
 }{
   \Gdash \hx : \Gamma(\hx)
-}$~\RULE{(T-parameter)}\\\\
+}$~\RULE{(T-Parameter)}\\\\
 
 
 $\typerule{
@@ -379,22 +385,28 @@ Unlike FJ, we also check that the method modifier (whether it is \hescaping or i
 \beqst %{method-ok}
 \typerule{
   \Gamma = \{ \ol{\hx}:\ol{\hD},\this:\hC \} \\
-  \hclass~\hC~\hextends~\hC'~\lb~\ldots~\rb\\
   \Gdash \he : \hD' \gap
     \hD' \st \hD \\
   \code{if }\hMM=\Read(R)~\SyncWrite(W_s)~\AsyncWrite(W_a)\\
-    ~~\code{then } \R(\he,R) \hand W_s \subseteq W_a  \hand \SW(\he) \supseteq W_s \hand \AW(\he) \supseteq W_a\\
+    ~~\code{then } \R{\he}{R} \hand W_s \subseteq W_a  \hand \SW{\he} \supseteq W_s \hand \AW{\he} \supseteq W_a
+}{
+  \hMM ~ \hm(\ol{\hx}:\ol{\hD}):\hD=\he ~~\OK~\IN~\hC
+}~\RULE{(T-Method)}
+\eeq
+\beqst %{method-ok}
+\typerule{
+  \hclass~\hC~\hextends~\hC'~\lb~\ldots~\rb\\
   \code{if }\mtype{}(\hm,\hC')=\ol{\hD'} \mapsto \hD'\\
     ~~\code{then } \ol{\hD'}\equiv\ol{\hD} \hand \hD'\equiv\hD \\
   \code{if }\mmodifier{}(\hm,\hC')=\hMM'\\
     ~~\code{then } \hMM=\hescaping \Rightarrow \hMM'=\hescaping \hand \\
     \gap \hMM=\Read(R)~\SyncWrite(W_s)~\AsyncWrite(W_a) \Rightarrow\\
-        (\hMM'=\hescaping  \hor
+        (\hMM'=\hescaping  \hor\\
         (\hMM'=\Read(R')~\SyncWrite(W'_s)~\AsyncWrite(W'_a) \hand
             (R \subseteq R' \hand W_s \supseteq W'_s \hand W_a \supseteq W'_a))
 }{
-  \hMM ~ \hm(\ol{\hx}:\ol{\hD}):\hD=\he ~~\OK~\IN~\hC
-}~\RULE{(T-Method)}
+  \hMM ~ \hm(\ol{\hx}:\ol{\hD}):\hD=\he ~~\code{Override-OK}~\IN~\hC
+}~\RULE{(T-Method-Override)}
 \eeq
 
 Similarly, we need to check that constructor declarations are ok by checking the \hsuper call,
@@ -410,9 +422,9 @@ Obviously, the constructor of \hObject has no parameters.
   \Gdash \ol{\he} : \ol{\hB} \gap
     \ctortype{}(\hC')=\ol{\hB"} \mapsto \hC'
     \gap \ol{\hB} \st \ol{\hB"} \\
-  \R([\ol{\he}],\emptyset) \hand
-  \R(\he',F_s) \hand
-    \SW(\he') \supseteq F_d
+  \R{[\ol{\he}]}{\emptyset} \hand
+  \R{\he'}{F_s} \hand
+    \SW{\he'} \supseteq F_d
 }{
   \ctor(\ol{\hx}:\ol{\hD}) \lb~\super(\ol{\he});\he'; \rb ~~\OK~\IN~\hC
 }\gap \RULE{(T-Ctor)}
@@ -535,33 +547,33 @@ $\typerule{
 }{
   \finish~\he,H \reduce \finish~\he',H'
 }$~\RULE{(RC-Finish)}
-\\\\
+\\
 
 $\typerule{
 }{
   (\async~\he;\hl).\hm(\ol{\he}),H \reduce \async~\he; \hl.\hm(\ol{\he}),H
 }$~\RULE{(RA-Receiver)}
-\\\\
+\\
 $\typerule{
 }{
   \hl.\hm(\ol{\hl},(\async~\he;\hl'),\ol{\he}),H \reduce \async~\he; \hl.\hm(\ol{\hl},\hl',\ol{\he}),H
 }$~\RULE{(RA-Arguments)}
-\\\\
+\\
 $\typerule{
 }{
   \hnew ~ \hC(\ol{\hl},(\async~\he;\hl'),\ol{\he}),H \reduce \async~\he; \hnew ~ \hC(\ol{\hl},\hl',\ol{\he}),H
 }$~\RULE{(RA-Ctor)}
-\\\\
+\\
 $\typerule{
 }{
   (\async~\he;\hl).\hf,H \reduce \async~\he; \hl.\hf,H
 }$~\RULE{(RA-Field-Access)}
-\\\\
+\\
 $\typerule{
 }{
   (\async~\he;\hl).\hf=\he",H \reduce \async~\he; \hl.\hf=\he",H
 }$~\RULE{(RA-Field-Assign1)}
-\\\\
+\\
 $\typerule{
 }{
   \hl.\hf=(\async~\he;\hl'),H \reduce \async~\he; \hl.\hf=\hl',H
@@ -594,7 +606,7 @@ An object~$\ho = \code{C}(\ol{\hf}\mapsto\ol{\hl'})$ is an instance of some clas
 A heap~$H$ is a mapping from locations~\hl to objects~$\ho$.
 A heap-typing~$\Gamma_H$ maps locations to their type,
     i.e., if~$H[\hl] = \code{C}(\ldots)$ then~$\Gamma_H[\hl] = \code{C}$.
-Heap is \emph{well-typed} iff
+A heap~$H$ is \emph{well-typed} iff
     each field location is a subtype (using~$\Gamma_H$) of the declared field type,
     i.e., for every location in the heap~$\hl \in \dom(H)$,
         where $H[\hl] = \code{C}(\ol{\hf}\mapsto\ol{\hl'})$
@@ -604,7 +616,7 @@ Heap is \emph{well-typed} iff
 
 
 An expression~\he is called \emph{closed} if it does not contain
-    any free variables (i.e., method parameters \hx that include the variable~\this).
+    any free variables (i.e., it does not contain method parameters \hx nor~\this).
 
 
 Consider a program \hP and a closed expression \he.
@@ -614,14 +626,14 @@ If a program is well-typed, then the expression can always be reduced to a locat
 
 \begin{Theorem}[preservation]
   \textbf{(Progress and Preservation)}
-    For every closed expression~$\he \neq \hl$, and $H$,
-        if $\Gamma_{H} \vdash \he : \hC$ and $H$ is well-typed,
+    For every closed expression~$\he \neq \hl$, and a well-typed heap~$H$,
+        if $\Gamma_{H} \vdash \he : \hC$,
         then there exists~$H',\he',\hC'$ such that
         (i)~$H,\he \reducesto H',\he'$,
         (ii)~$\Gamma_{H'} \vdash \he':\hC'$,
         and~$\hC' \st \hC$,
         (iii)~$H'$ is well-typed,
-        (iv)~\hC, \hC', and $\he'$ are closed.
+        (iv)~$\he'$ is closed.
 \end{Theorem}
 \begin{proof}
 \ldots
