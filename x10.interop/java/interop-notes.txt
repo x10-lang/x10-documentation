@@ -1,0 +1,186 @@
+--------------------- Requirements
+
+X10->Java
+
+use type
+  primitive
+  class
+  array
+  enum
+generic type arguments
+-- extend class (not possible, due to hierarchy clashes)
+--   non-generic
+--   generic
+implement interface
+  non-generic
+  generic
+access field
+  static
+  instance
+invoke method
+  static
+    non-generic
+    generic
+  instance
+    non-generic
+    generic
+  super
+construct class instance
+  non-generic
+  generic
+construct array
+  multi-dimensional
+
+Java->X10
+
+all of the above, plus
+
+create struct
+box/unbox
+reflection/introspection (RTT)
+  including instanceof and casts
+
+--------------------- Challenges
+
+Java array mapping
+  syntax?  x10 type?
+  covariant arrays
+
+Proposal:
+  Java types as nested (native) types in an exposed X10 library class?
+    class x10.interop.Java
+    arrays: X[] -> Java.array[X]  (covariant!)
+    primitives: Java.int (==x10.lang.Int?), Java.char (numeric!)
+  Explicit conversion of primitives, arrays, strings via overloaded Java.convert() methods
+  Implicit conversion for certain primitive types (e.g., Java.int<->Int) ?
+
+Java classes in the typesystem (limited, !<: Any)
+  read from class files
+  in the same namespace as the X10 types (use FQNs or regular import)
+  classpath rules
+  what are the limitations on usage?
+    no RTTs
+
+Overloading on Java types vs. X10 types!
+
+Name clashes between Java interface methods and X10 class/interface methods
+  Same parameter types but different return type, e.g., toString()
+  Can name mangle at code generation time, but need a solution for typechecking
+
+X10 built-in structs as type argumnents to Java generics
+  X10 boxed classes vs. Java boxed classes
+  Mechanism for preventing those structs from being used as type arguments?
+
+Mutable static fields?
+
+Java enums
+  represented as classes?
+  use in switches?
+
+Overriding generic methods
+
+--------------------- Design summary
+
+_Invoking Java from X10_
+
+X10 users may use Java classes and interfaces by referencing their
+fully-qualified names from the X10 program.  The classes will be read from
+class files and integrated into the X10 type system.  Java classes do not
+implement the Any interface, and thus are not required to have the methods
+specified there, most notably typeName().  Their toString() returns
+java.lang.String, not x10.lang.String (a different class).  Java classes
+also do not have run-time types in the X10 sense, so they cannot be used
+as type arguments to X10 generic classes.
+
+Java nested and inner classes may be accessed in the same manner as X10
+nested/inner classes.  References to them will be written into the generated
+code as-is, without being expanded by the inner class removal phase.
+Java local and anonymous classes are not accessible.
+
+For accessing primitive types and arrays, special nested types are provided in
+a helper class x10.interop.Java.  That class also contains explicit conversion
+methods that are always guaranteed to work.  There may be additional implicit
+conversions to/from Java primitive types.  All manifestations of Java primitive
+types in the Java APIs are via the nested types of x10.interop.Java, not X10
+built-in types.
+
+Java arrays are represented by an X10 generic class x10.interop.Java.array with
+a covariant type parameter, to reflect the Java covariant array subtyping.
+Java.array is the only generic class that accepts Java classes as type
+arguments, and the only covariant generic.
+
+An X10 class may implement a Java interface by defining methods with the
+exact same signatures as the mapping of the interface to X10.  The signatures
+of these methods will be written into the generated code in unmangled form
+(possibly in addition to the mangled form needed for X10).  If implementing a
+generic Java interface, boxed Java types have to be used explicitly in the
+signatures (e.g., java.lang.Integer instead of x10.interop.Java.int).
+
+Note that it is not possible for an X10 class to extend an existing Java class,
+because all X10 classes must subclass x10.lang.Object.
+
+To access a static field of a Java class or interface, the X10 user will simply
+refer to it by name.  Static fields of Java classes are mutable.  Instance
+fields of Java classes are accessible by name as well.  Java fields will be
+written into the generated code in their unmangled form.
+
+To invoke a method (static or instance) of a Java class or interface, the X10
+user will refer to it by name, and it will be generated in its unmangled form.
+The syntax for invoking a Java generic method is the same as for X10 generic
+methods, but Java generic methods may hava type arguments that are Java classes
+and interfaces.  We may initially disallow overriding Java generic methods with
+X10 generic methods.  Since X10 classes cannot extend Java classes, super
+method invocation is not an issue.
+
+Constructing instances of Java classes has the same syntax as the corresponding
+X10 idiom: "new C(a,b)".  These statements will be written into the generated
+code as regular "new" statements with constructor arguments, and will not
+undergo the expansion and rewriting that the X10 constructor invocations do.
+Since X10 classes cannot extend Java classes, super constructor invocation is
+not an issue.
+
+To construct a Java array, the X10 user may construct an instance of
+x10.interop.Java.array with the appropriate type argument.  If the type
+argument is a Java primitive type, an array of primitives will be constructed.
+There will also be helper methods in x10.interop.Java to construct
+multi-dimensional arrays.  Routines will be provided to convert X10 arrays
+(including array literals) into Java arrays.
+
+
+_Invoking X10 from Java_
+
+All X10 classes will contain unmangled generated signatures of methods where
+possible, in addition to the mangled forms needed for X10.  In case of
+overloading on unsigned types, there will be an overloaded unmangled method in
+the generated code that uses the boxed form of the unsigned type.  If two
+methods with the same Java erasure are overloaded, the first one in program
+order will be generated with an unmangled name.  Mangling scheme for the rest
+is TBD.  X10 generic methods will take an extra argument per generic type
+parameter.  The values of those arguments will be X10-level run-time types of
+the type argument types.
+
+Constraints are not exposed to the Java programmer at all -- they are
+effectively erased from the signatures.  This includes method guards and type
+guards.  The unmangled method generated above will also check the guard if
+the source-level method has one.
+
+All X10 constructors for non-generic classes will be exposed as Java
+constructors with corresponding signatures (the default constructor used in X10
+object allocation will take a dummy parameter).  Generic class constructors
+will take one argument per class type parameter, prepended to the regular
+argument list.  The values of those arguments will be X10-level run-time types
+of the type argument types.
+
+X10 structs (except built-in primitive ones) will be represented as Java
+classes with unmangled names.  The above statement about constructors applies
+to struct constructors.  The user may construct an instance of a struct using
+the same "new" syntax used in Java.
+
+The X10-level run-time types are available through the getRTT() helper method
+in one of the runtime classes.  For X10-level instanceof and cast operations,
+helper methods will be provided in the exposed RuntimeType object.
+
+X10 primitive values will not be automatically boxed.  The Java programmer
+would have to use the explicit overloaded $box()/$unbox() methods in one of the
+helper classes in the X10 runtime.
+
