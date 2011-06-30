@@ -30,12 +30,53 @@ you don't do what you meant.  But X10 often lets you leave types off, so
 they're not {\em too} much in your face.
 
 
+
+
 \section{Constrained Types}
 
-X10 has {\em constrained} types, sometimes called {\em dependent} types. 
-You can use them to keep track of things you know about your data, \eg, that a
-particular variable isn't \xcd`null`.  You can also take advantage of things
-you know.
+Here's a perfectly innocuous bit of code that looks just fine: 
+%%START X10: ArrayRef.x10 arrayrefRank
+\fromfile{ArrayRef.x10}
+\begin{xtennum}[]
+val a : Array[Int] = [1,2,3];
+Console.OUT.println("a(1)=" + a(1));
+\end{xtennum}
+%%END X10: ArrayRef.x10 arrayrefRank
+But when you go to compile it, you get a warning message: 
+\begin{verbatim}
+Generated a dynamic check for the method call.
+\end{verbatim}
+(Or, if you are using \xcd`STATIC_CHECKS`, it won't compile at all.)  
+
+What's wrong here is that \xcd`Array[Int]` covers arrays of many different
+ranks -- one-dimensional ones like \xcd`[1,2,3]`, two-dimensional,
+ten-dimensional, or whatever you like.  When \xcd`a` was declared to have
+type \xcd`Array[Int]`, we told X10 to forget what rank \xcd`a`
+had.\footnote{This is why you should use \xcd`val a <: Array[Int]...` 
+whenever you can -- \xcd`<:` in a \xcd`val` doesn't lose track of this kind of
+thing.}
+
+So, when X10 goes to use \xcd`a`, it doesn't know how many subscripts it
+takes.   Giving it one subscript, in \xcd`a(1)`, might be right, or it might
+be wrong. X10 doesn't know.  So, with dynamic checks on, it sticks in a test
+to find out.  
+
+And, since X10 doesn't know, it will do the same thing for \xcd`a(1,2)`.
+That will fail at runtime, since \xcd`a` is one-dimensional.  
+
+It would be nice if X10 could handle this sensibly -- if X10 could know that
+\xcd`a` was one-dimensional, that one subscript was right, and two were wrong.  
+
+Well, it can do that --- that, and a whole lot more.  The mechanism it uses is
+called {\em constrained types}.  Constrained types track things that the
+compiler knows about your data, like the ranks of arrays, or that particular
+variables aren't \xcd`null`.  
+
+
+\subsubsection{Tracking Nulls}
+
+
+
 
 One common problem in programs (in most object-oriented languages) is that
 some parts of code assume that some objects aren't \xcd`null`, but other parts
@@ -420,7 +461,7 @@ things are allowed in constraints.
       \xcd`&&`.  See \Sref{sect:conjunction} for details.
 \item [Zero Test:] You can test to see if a type has a default value, with 
       \xcd`T haszero`.  See \Sref{sect:DefaultValue} for some examples.
-\item [\xcd`true` and \xcd`false`:] A true constraint is always true; a false
+\item [{\tt true} and {\tt false}:] A true constraint is always true; a false
       constraint never is.  
 \end{description}
 
@@ -432,19 +473,19 @@ not \xcd`n == m+1`.
 
 \begin{description}
 \item [Constants:] \xcd`3` and \xcd`"fish"` and \xcd`null` and so on.
-\item [\xcd`val`s:] You can use \xcd`val` variables.   Not \xcd`var`s, which
+\item [{\tt val}s:] You can use \xcd`val` variables.   Not \xcd`var`s, which
       change too much for X10's constraints to understand.
-\item [\xcd`this`:] If the constraint is at a point in the program where
+\item [{\tt this}:] If the constraint is at a point in the program where
       \xcd`this` makes sense, like in a method, you can use \xcd`this` in a
       constraint.
-\item [\xcd`here`:] The same goes for \xcd`here`.
-\item [\xcd`self`:] If you are constraining a {\em type}, you can use
+\item [{\tt here}:] The same goes for \xcd`here`.
+\item [{\tt self}:] If you are constraining a {\em type}, you can use
       \xcd`self`.  If you are writing a guard, there's no \xcd`self` to be
       found. 
-\item [Properties of \xcd`self`:] If \xcd`p` is a property field of
+\item [Properties of {\tt self}:] If \xcd`p` is a property field of
       \xcd`self`, then you can write \xcd`self.p` in a constraint.  
       Just \xcd`p` alone can mean \xcd`self.p`, if that is the only choice.
-\item [\xcd`val` fields of anything else:] You can extract \xcd`val` fields of anything
+\item [{\tt val} fields of anything else:] You can extract \xcd`val` fields of anything
       else. 
 \item [Property Method Invocations:] You can use a property method in a
       constraint expression, if the property method's actual expansion works
@@ -570,7 +611,15 @@ it does work.)
 
 
 
-\bard{explain why struct}
+\begin{finepoint}
+We rather sneakily made \xcd`Pt` a struct rather than a class.   This matters
+because \xcd`==` means different things for structs and objects.  For structs,
+\xcd`p==q` is true if \xcd`p.x==q.x` and \xcd`p.y==q.y`.  For classes,
+\xcd`p==q` is true if \xcd`p` and \xcd`q` are the same object.  
+If \xcd`Pt` had been an object, we could have a \xcd`Triangle` with three
+corners each made by a call to \xcd`new Pt(0,0)` -- three \xcd`Pt`s in the
+same place, but different objects.
+\end{finepoint}
 
 
 \subsection{Nulls and Constraints}
@@ -578,8 +627,64 @@ it does work.)
 Sometimes you want to forbid \xcd`null` values in your object types.  You can
 do this with the constraint \xcd`{self != null}`.
 
-If you don't have that constraint, though, \xcd`null` is allowed. 
-\bard{finish this section}
+If you don't have that constraint on an object type, though, \xcd`null` is
+allowed. And that goes even if you do have other constraints -- {\em any}
+other constraints. The point of this is that it's useful to have \xcd`null` as
+a default value for object types, so you get to have it unless you
+specifically say you don't. 
+
+So, the following program is fine: 
+%%START X10: ConstraintsAndNulls.x10 constraintsandnulls
+\fromfile{ConstraintsAndNulls.x10}
+\begin{xtennum}[]
+ class Trunk(length:int){}
+ class Elephant(trunk:Trunk){}
+ def example() {
+  val dumbo: Elephant{self.trunk.length == 3} = null;
+  assert e == null;
+  val jumbo: Elephant{self.trunk.length ==11} = null;
+}
+\end{xtennum}
+%%END X10: ConstraintsAndNulls.x10 constraintsandnulls
+
+This makes for some surprises about constraints. At least, they're surprising
+if you are under the mistaken impression that \xcd`==`'s in constraints mean
+the same thing they mean everywhere else --- they don't! The difference is
+that, in a constraint, \xcd`a.f==b` and \xcd`a.f!=b` both mean \xcd`true` if
+\xcd`a==null`. Outside of a constraint, it means ``null pointer exception'',
+neither true nor false.
+
+One way you could get confused, if you don't keep this special meaning in
+mind, is that \xcd`dumbo : Elephant{self.trunk.length == 3}` does {\bf not}
+mean that \xcd`dumbo.trunk.length` is three!  It means, ``{\bf If}
+\xcd`dumbo!=null` and \xcd`dumbo.trunk!=null`, {\bf then}
+\xcd`dumbo.trunk.length` is three.''  Or, to phrase it another way, ``If
+\xcd`dumbo.trunk.length` means anything at all, what it means is three.''
+
+Another way to get confused is to notice that that \xcd`dumbo` and \xcd`jumbo`
+have types that look like they couldn't possibly have any values in common.
+One is for short-trunked elephants, the other for long-trunked ones, and
+there's no way that the same elephant's trunk could be both three and eleven
+feet long.  
+
+Well, of course there's no such elephant.  \xcd`null` isn't an \xcd`Elephant`.
+It's a non-value that can be used in place of an \xcd`Elephant`.  And
+\xcd`null.trunk.length` isn't three, or eleven, or any other number -- it's an
+error.
+
+All you need to remember about this is three things: 
+\begin{itemize}
+\item \xcd`null` is allowed in constrained object types, unless you
+      specifically say it's not.
+\item Constraints on fields get fudged so that they're true for \xcd`null`,
+      and don't throw null pointer exceptions.
+\item You need to check for \xcd`null`s when you use constrained object types --
+      the same way you need to when you use ordinary object types.  (Unless
+      you constrained them to never be \xcd`null`.)
+\end{itemize}
+
+
+
 
 \subsection{Constraints and Subtyping}
 \subsection{STATIC\_CHECKS}

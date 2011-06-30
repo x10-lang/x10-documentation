@@ -17,6 +17,18 @@ In the .x10 files, fragments of code are delimited as follows
       ...
    //END TeX: fragname
 These comments take an entire line.
+
+We have a mechanism for modifying the behavior of the fragment, by
+putting some tweaks in braces just before the ':' on the START line:
+  //START TeX{s/static//}: thingie
+    static class Thing() {}
+  //END TeX: thingie
+There's currently only one tweak: s/X/Y/, which changes all occurrances
+of regexp X to Y.  So this one deletes 'static' modifiers, which is nice
+if we've got several classes packaged together as static classes inside
+of some example file.
+We don't currently support it, but if we want multiple
+tweaks I suggest we do them as {tweak1}{tweak2}
    
 Within a fragment, text of the form
    \\xlref{fragname-linename} 
@@ -151,12 +163,13 @@ class Fragment:
       The line numbers are *not* indices into frag.content, since they 
       need to be 1-based, and the list is 0-based.
     '''
-    def __init__(self, fragName, x10FileName, startLine):
+    def __init__(self, fragName, x10FileName, startLine, tweaks):
         self.fragName = fragName
         self.x10FileName = x10FileName
         self.content = []
         self.lineName2LineNumber = {}
         self.startLine = startLine
+        self.tweaks = tweaks
         # This is a pattern good for looking for xlrefs to this fragment in X10 code
         self.seekXlref = re.compile("\\\\xlref{(" + self.fragName + "-[a-zA-Z0-9]*)}")
         fragName2Fragment[fragName] = self
@@ -193,6 +206,8 @@ class Fragment:
     def addLine(self, contentLine, filepath, absLineNo):
         printableLine, relevantXlref = self.separateOutLineNames(contentLine)
         # print("addLine({0})\nprintableLine={1}\n relevantXlref={2}".format(contentLine, printableLine, str(relevantXlref)))
+        for t in self.tweaks:
+            printableLine = t.tweaked(printableLine)
         self.content.append(printableLine)
         if relevantXlref != None: 
             xlref2lineNumber[relevantXlref] = self.currentLineNumber()
@@ -243,6 +258,25 @@ def doom(s):
     raise Exception(s)
 
 
+class Tweak:
+    def __init__(self):
+        pass
+    def tweaked(self, line):
+        return line
+
+TWEAK_SUBST_RE = re.compile("{s/(.*)/(.*)/}")
+
+class SubstitiTweak (Tweak):
+    def __init__(self, fr, to):
+        self.fr = re.compile(fr)
+        self.to = to;
+        self.srcfrom = fr
+    def tweaked(self, line):
+        line2 = re.sub(self.fr, self.to, line)
+        return line2
+        
+
+
 class SortOfLine:
     def __init__(self):
         ''' nothing here'''
@@ -281,8 +315,19 @@ class FragmentControlLine(SortOfLine):
         pass
 
 class StartLine(FragmentControlLine):
-    def __init__(self, fragName):
+    def __init__(self, fragName, tweaks):
         self.fragName = fragName
+        if tweaks != None: 
+            self.tweaks = [self.parseTweak(tweaks)]
+        else:
+            self.tweaks = []
+    def parseTweak(self, tweaktext):
+        tweak = None
+        matcho = re.match(TWEAK_SUBST_RE, tweaktext)
+        if matcho != None:
+            tweak = SubstitiTweak(matcho.group(1), matcho.group(2))
+        return tweak
+            
     def kindName(self):
         return "START"
     def bookkeep(self, inFragment, pausedFragments, filepath, absLineNo):
@@ -292,7 +337,7 @@ class StartLine(FragmentControlLine):
             doom("Duplicate fragment name ({0})\nUsed in file {1} at line {2}\nAnd in file {3} at line {4}"
                  .format(fragName, filepath, absLineNo, extantFragment.x10FileName, extantFragment.startLine))
         else:
-            newFragment = Fragment(fragName, filepath, absLineNo)
+            newFragment = Fragment(fragName, filepath, absLineNo, self.tweaks)
             inFragment.add(newFragment)
         self.blip(inFragment, pausedFragments)
             
@@ -350,7 +395,7 @@ class ResumeLine(FragmentControlLine):
     
 
 # Patterns
-X10_START_PAT = re.compile("\\s*//\\s*START\\s+TeX\\s*:\\s*([a-zA-Z0-9\-]*)\\s*$", re.IGNORECASE)
+X10_START_PAT = re.compile("\\s*//\\s*START\\s+TeX\\s*({[^}]*})?:\\s*([a-zA-Z0-9\-]*)\\s*$", re.IGNORECASE)
 X10_END_PAT = re.compile("\\s*//\\s*END\\s+TeX\\s*:\\s*([a-zA-Z0-9\\-]*)\\s*$", re.IGNORECASE)
 X10_PAUSE_PAT = re.compile("\\s*//\\s*PAUSE\\s+TeX\\s*:\\s*([a-zA-Z0-9\\-]*)\\s*$", re.IGNORECASE)
 X10_RESUME_PAT = re.compile("\\s*//\\s*RESUME\\s+TeX\\s*:\\s*([a-zA-Z0-9\\-]*)\\s*$", re.IGNORECASE)
@@ -385,7 +430,7 @@ class X10FileIngester:
         # I wanna search
         matcho = X10_START_PAT.match(line)
         if matcho != None:
-            return StartLine(matcho.group(1))
+            return StartLine(matcho.group(2), matcho.group(1))
         matcho = X10_END_PAT.match(line)
         if matcho != None:
             return EndLine(matcho.group(1))
