@@ -683,13 +683,59 @@ All you need to remember about this is three things:
       you constrained them to never be \xcd`null`.)
 \end{itemize}
 
-
-
-
 \subsection{Constraints and Subtyping}
+
+Constrained types are types. So, sometimes, they are subtypes and supertypes
+of other types. 
+
+As always, \xcd`T <: U` if every element of \xcd`T` is also an element of
+\xcd`U`.    That's all you need to remember to figure out subtypes for
+constrained types.
+
+Is \xcd`Int{self==3} <: Int`?  Well, if {$n$} is an \xcd`Int{self==3}`, then
+{$n$} is an \xcd`Int` which is equal to three. (\xcd`null` isn't an \xcd`Int`,
+so we don't need to worry about that special case.)  An \xcd`Int` which is
+equal to three is an \xcd`Int`: being three doesn't stop it from being one. 
+So, yes, \xcd`Int{self==3} <: Int`.
+
+How about \xcd`Int{self!=3} <: Int`?  The elements of 
+\xcd`Int{self!=3}` are all the \xcd`Int`s except for three -- which means
+they're all \xcd`Int`s.  So, yes, \xcd`Int{self!=3} <: Int`.
+
+In fact, \xcd`Int{c} <: Int`  for {\em any} constraint \xcd`c`.
+The elements of \xcd`Int{c}` are \xcd`Int`s which satisfy \xcd`c`, so they're
+\xcd`Int`s, so they're elements of \xcd`Int`.  
+
+Some other examples: 
+
+\begin{itemize}
+
+\item \xcd`Int{self!=1, self!=2} <: Int{self!=1}`. 
+
+\item \xcd`Int{self==3} <: Int{self!=4}`.  Three is one of the numbers which
+      isn't four.
+
+\item \xcd`Int{self==3}` is {\em not} a subtype of \xcd`Long{self!=3}` -- nor
+      of \xcd`Long` for that matter.  \xcd`Int`s and \xcd`Long`s are different
+      kinds of numbers.  Sure, \xcd`Int`s represent the same numbers as some 
+      \xcd`Long`s --- but they're not the same X10 values!  
+
+\item Adding more constraints makes a subtype.  \xcd`T{c,d} <: T{c}`.  In
+      fact, if \xcd`T <: U`, then \xcd`T{c} <: U` too. 
+
+\end{itemize}
+
 \subsection{STATIC\_CHECKS}
+
+\bard{Write this!}
+
 \subsection{Incompleteness}
+
+\bard{write this}
+
 \subsection{Why Generics Lose Constraints At Runtime}
+
+
 
 \section{Type Declarations}
 \label{sect:TypeDecl}
