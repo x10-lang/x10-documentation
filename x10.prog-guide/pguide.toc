@@ -71,11 +71,12 @@
 \contentsline {subsection}{\numberline {6.1.7}Nulls and Constraints}{112}{subsection.6.1.7}
 \contentsline {subsection}{\numberline {6.1.8}Constraints and Subtyping}{113}{subsection.6.1.8}
 \contentsline {subsection}{\numberline {6.1.9}STATIC\_CHECKS}{113}{subsection.6.1.9}
-\contentsline {subsection}{\numberline {6.1.10}Incompleteness}{113}{subsection.6.1.10}
-\contentsline {subsection}{\numberline {6.1.11}Why Generics Lose Constraints At Runtime}{114}{subsection.6.1.11}
-\contentsline {section}{\numberline {6.2}Type Declarations}{114}{section.6.2}
-\contentsline {section}{\numberline {6.3}Type Inference}{114}{section.6.3}
-\contentsline {section}{\numberline {6.4}Generics}{114}{section.6.4}
-\contentsline {section}{\numberline {6.5}Default Values}{114}{section.6.5}
-\contentsline {section}{\numberline {6.6}Common Ancestors of Types}{114}{section.6.6}
-\contentsline {section}{\numberline {6.7}When Types Don't Work}{114}{section.6.7}
+\contentsline {subsubsection}{Dynamic Checks}{115}{section*.17}
+\contentsline {subsection}{\numberline {6.1.10}Incompleteness}{116}{subsection.6.1.10}
+\contentsline {subsection}{\numberline {6.1.11}Why Generics Lose Constraints At Runtime}{117}{subsection.6.1.11}
+\contentsline {section}{\numberline {6.2}Type Declarations}{117}{section.6.2}
+\contentsline {section}{\numberline {6.3}Type Inference}{117}{section.6.3}
+\contentsline {section}{\numberline {6.4}Generics}{117}{section.6.4}
+\contentsline {section}{\numberline {6.5}Default Values}{117}{section.6.5}
+\contentsline {section}{\numberline {6.6}Common Ancestors of Types}{118}{section.6.6}
+\contentsline {section}{\numberline {6.7}When Types Don't Work}{118}{section.6.7}

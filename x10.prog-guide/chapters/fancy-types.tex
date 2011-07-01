@@ -641,7 +641,7 @@ So, the following program is fine:
  class Elephant(trunk:Trunk){}
  def example() {
   val dumbo: Elephant{self.trunk.length == 3} = null;
-  assert e == null;
+  assert dumbo == null;
   val jumbo: Elephant{self.trunk.length ==11} = null;
 }
 \end{xtennum}
@@ -727,14 +727,204 @@ Some other examples:
 
 \subsection{STATIC\_CHECKS}
 
-\bard{Write this!}
+X10 can seem a bit fussy about type checking at times.  For example, when you
+subscript an \xcd`Array[Int]`, X10 will complain if it doesn't know that the
+number of subscripts is right.  That's a perfectly sensible thing for a
+compiler to complain about --- you'd be pretty unhappy if your program quietly
+did something insane because an array was subscripted wrong.  Still, X10's
+complaints can get annoying, especially if you know you're
+right.\footnote{How often are you actually right when you know you're right?
+How often do you {\em stay} right when someone else who doesn't understand
+comes in two years later and changes the program around?}
+
+So, code like this is vulnerable: 
+%%START X10: ArrayInc1.x10 arrayinc
+\fromfile{ArrayInc1.x10}
+\begin{xtennum}[]
+def fiddle(a:Array[Int]) {
+  a(2) += 1;
+}
+\end{xtennum}
+%%END X10: ArrayInc1.x10 arrayinc
+The array \xcd`a` might have one subscript (and the code will work right -- if
+\xcd`2` is a legitimate subscript for it, anyhow), or it might have several
+(and the code will be wrong).  
+
+You've got a choice of what to do. The \xcd`-STATIC_CHECKS` compiler flag
+controls them -- so you get to decide how you want each file compiled.
+
+What X10 and good software engineering practice want you to do is to explain
+that \xcd`a` has to be a one-dimensional array, like this:
+%%START X10: ArrayInc1.x10 arrayincA
+\fromfile{ArrayInc1.x10}
+\begin{xtennum}[]
+def fiddle_A(a:Array[Int]{a.rank==1}) {
+  a(2) += 1;
+}
+\end{xtennum}
+%%END X10: ArrayInc1.x10 arrayincA
+This is a bit wordy, so you can abbreviate it like this.  See
+\Sref{sect:Typedef} for how to arrange this kind of abbreviation in general. 
+%%START X10: ArrayInc1.x10 arrayincB
+\fromfile{ArrayInc1.x10}
+\begin{xtennum}[]
+def fiddle_B(a:Array[Int](1)) {
+  a(2) += 1;
+}
+\end{xtennum}
+%%END X10: ArrayInc1.x10 arrayincB
+If you want to be sure you're following good practices, use the
+\xcd`-STATIC_CHECKS` compiler flag.  It will mark the original \xcd`fiddle`
+method as a compiler error.
+
+The error message looks like this:
+\begin{verbatim}
+fancy-types/ArrayInc1.x10:4: Cannot assign expression to array element of given type.    
+     	 Expression: 1    
+     	 Type: x10.lang.Int{self==1}    
+     	 Array element: a(2)    
+     	 Type: x10.lang.Int    
+     	 Cause: Call invalid; calling environment does not entail the method guard.    
+     	 arg types:[x10.lang.Int{self==2}]    
+     	 query residue: {a.rank==1}
+
+\end{verbatim}
+The \xcd`Cause:` line is your best clue.  It says that the ambient information
+(the ``calling environment'') isn't enough to tell (``entail'') that the guard
+on the method call \xcd`a(2)` is true.  
+(Array subscripting {\em is} a method call; see
+\Sref{sect:OperatorOverloading} for why.)  
+
+The \xcd`arg types:` line says what X10 knows about the arguments.  The
+argument \xcd`2` is a thing of type \xcd`Int{self==2}`.  Hopefully this does
+not come as a surprise.  This information isn't directly helpful, but it will
+keep you oriented.
+
+The \xcd`query residue` line explains what X10 needs to know that it doesn't
+know.  In this case, it needs \xcd`a.rank==1`.  
+
+So, somewhere around there, you need to add the constraint that
+\xcd`a.rank==1`.\footnote{Or at least, you need to add a constraint strong
+enough to prove it.  You could add {\em more} information.}
+This will lead you to write \xcd`fiddle_A` or \xcd`fiddle_B`.
+
+
+
+\subsubsection{Dynamic Checks}
+
+
+But if you don't want to do that, for some reason, you can still write the
+original \xcd`fiddle`.  
+
+By default, \xcd`-STATIC_CHECKS=false`.  X10 will create {\em dynamic checks}
+whenever it realizes that some constraints are missing but
+satisfiable.\footnote{``satisfiable'' means that it's {\em possible} that the
+constraints are right.  If X10 knows that constraints are unsatisfiable --
+that they couldn't possibly be right -- X10 will mercilessly refuse to compile
+your program.  But if the constraints {\em might} be right, you have more
+leeway.} 
+It will cast things to the types they need to be.  
+In this case, \xcd`a` needs to be rank-1.  So the code behaves like this:
+%%START X10: ArrayInc1.x10 arrayincdyn
+\fromfile{ArrayInc1.x10}
+\begin{xtennum}[]
+def fiddle_dynamic(a:Array[Int]) {
+  val aa : Array[Int]{self.rank==1} 
+         = a as Array[Int]{self.rank==1};
+  aa(2) += 1;
+}
+\end{xtennum}
+%%END X10: ArrayInc1.x10 arrayincdyn
+
+There are two upsides:
+\begin{enumerate}
+\item This compiles, and, if \xcd`fiddle` is always called
+with a one-dimensional array, it always runs right.  
+\item It's quicker to write if you don't bother with the details of the types.
+      This can be important if you're tossing together a program in a hurry,
+      especially one that will only be used once or twice. 
+\end{enumerate}
+
+There are two downsides: 
+\begin{enumerate}
+\item You're paying the performance cost for the dynamic checks.  Every time
+      \xcd`fiddle` is called, X10 has to make sure at runtime that
+      \xcd`a` is the right size.  It wouldn't have to do this if the check
+      were done at compile time.
+\item If, say, some other programmer doesn't read the requirements on
+      \xcd`fiddle` carefully, and stupidly passes a
+      fourteen-dimensional array to it, it will fail at runtime with an error
+      message, like this: 
+\begin{verbatim}
+x10.lang.FailedDynamicCheckException: x10.array.Array[x10.lang.Int]{self.rank==1}
+	at ArrayInc1.$closure_apply820_0_$_x10$lang$Int_$(ArrayInc1.java:239)
+	at ArrayInc1.fiddle_dynamic_0_$_x10$lang$Int_$(ArrayInc1.java:37)
+	at ArrayInc1.main(ArrayInc1.java:94)
+	at ArrayInc1$$Main.runtimeCallback(ArrayInc1.java:82)
+	at x10.runtime.impl.java.Runtime$$Closure$Main.$apply(Runtime.java:118)
+	at x10.lang.Runtime$$Closure$141.$apply(Runtime.java:3676)
+	at x10.lang.Activity.run(Activity.java:410)
+	at x10.lang.Runtime$Worker.loop$O(Runtime.java:1767)
+	at x10.lang.Runtime$Worker.$apply(Runtime.java:1714)
+	at x10.lang.Runtime$Pool.$apply(Runtime.java:2068)
+	at x10.lang.Runtime.start(Runtime.java:2519)
+	at x10.runtime.impl.java.Runtime.$apply(Runtime.java:162)
+	at x10.runtime.impl.java.Thread.run(Thread.java:64)
+\end{verbatim}
+Sometimes, this sort of error message is a bit hard to figure out.  
+If you look around in your program, you won't find the dynamic check that
+X10 claims is failing.  There's a good reason -- X10 generated the dynamic
+check itself, so it's not actually visible in your code.  
+\end{enumerate}
+
+These disadvantages are serious enough so that X10 won't just silently insert
+those dynamic checks.  It will {\em noisily} insert them.  It prints
+compile-time warnings, like this:
+\begin{verbatim}
+x10c: 3 dynamically checked calls or field accesses, 
+  run with -VERBOSE_CHECKS for more details.
+\end{verbatim}
+And, if you do so, you see messages like: 
+\begin{verbatim}
+% fancy-types/ArrayInc1.x10:4: Generated a dynamic check for the method call.
+\end{verbatim}
+So you can be as aware of just what X10 is doing on your behalf as you want to
+be.  
+
+
 
 \subsection{Incompleteness}
 
-\bard{write this}
+X10 knows a lot when it works with constraints, but there are a few things it
+doesn't know.  If you run into one of these, you'll get a situation where (in
+a perfect world) your program ought to type-check correctly, but (in X10's
+approximation of perfect)  it doesn't.  These limitations won't make your
+program run wrong -- they won't let it run at all.
+
+The constraints are pretty obscure.  You probably won't run into them, and, if
+you do, there's generally something simple to do about it.
+
+The first limitation is that X10 doesn't understand very much about any
+particular type.  For example, there are only two \xcd`Boolean` values,
+\xcd`true` and \xcd`false`.  X10 doesn't know that.  So, if you write a
+constraint like \xcd`{a!=b, b!=c, a!=c}`, where \xcd`a`, \xcd`b`, and \xcd`c`
+are \xcd`Boolean`s, {\em you} know that the constraint is false.  There aren't
+three different \xcd`Booleans`, so two of \xcd`a`, \xcd`b`, and \xcd`c` have
+to be the same.  X10's constraint solver, unaware of this point about
+\xcd`Boolean`s, can't tell that this constraint is false. 
+If, somehow, you arrange for this to be a problem for you, use \xcd`false`
+instead of 
+\xcd`{a!=b, b!=c, a!=c}`.
+
+The second limitation is that X10's constraint solver doesn't know that
+\xcd`{x.a==1, x.a==2}` (or \xcd`{x.a==1, x.a!=1}`) implies \xcd`x==null`.
+If you ever have written something like one of the first two forms, write
+\xcd`x==null` instead.  It's much easier to understand, for you and for X10.
+
 
 \subsection{Why Generics Lose Constraints At Runtime}
 
+\bard{do this}
 
 
 \section{Type Declarations}
@@ -742,10 +932,56 @@ Some other examples:
 \bard{do this -- note non-null type decl for niceifying Array[String{self!=null}]{self!=null} }
 \section{Type Inference}
 \bard{do this!}
+
 \section{Generics}
 \bard{do this!}
+
 \section{Default Values}
-\bard{do this!}
+\label{sect:DefaultValues}
+
+Some X10 types have {\em default values}.  The default value for an \xcd`Int`
+is zero; the default value for an unconstrained object type is \xcd`null`.  
+
+
+The default value of a constrained type is the default value of the
+unconstrained type if that satisfies the constraint; the constrained type
+doesn't have a default otherwise. 
+For example, the default value of \xcd`Int{self != 3}` is zero, just like
+\xcd`Int`.  \xcd`Int{self != 0}` doesn't have a default value, since the
+default value of \xcd`Int`, zero, is constrained away. 
+
+\xcd`Int{self==4}` also doesn't have a default value.  The default value for
+any constrained \xcd`Int` type is zero if that works, and \xcd`0!=4`, so it
+doesn't have one.  You might want its default value to be \xcd`4`, since
+that's the only value that an \xcd`Int{self==4}` could have. But no, the
+only choice for a default value of any sort of \xcd`Int` is zero.
+
+
+Default values show up once in a while.  Not as often as you might think --
+local variables need to be initialized before you can use them, so X10 never
+uses their default values.  \xcd`val` fields of objects and struct also need
+to get initialized before they are used.  But \xcd`var` fields of objects
+don't necessarily need to get initialized before they are used, and, if they
+aren't initialized, they get the default value of their type.
+
+
+%%START X10: Default.x10 defaultex
+\fromfile{Default.x10}
+\begin{xtennum}[]
+ class Fault {
+  public var d : Int;
+  static def example() {
+    val f = new Fault();
+    assert f.d == 0; 
+  }
+}
+\end{xtennum}
+%%END X10: Default.x10 defaultex
+
+
+\bard{hasdefault}
+
+
 \section{Common Ancestors of Types}
 \bard{do this!}
 \section{When Types Don't Work}
