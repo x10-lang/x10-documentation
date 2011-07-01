@@ -8,6 +8,8 @@ use type
   array
   enum
 generic type arguments
+  instantiate X10 generics on Java types
+  instantiate Java generics on X10 types
 -- extend class (not possible, due to hierarchy clashes)
 --   non-generic
 --   generic
@@ -30,6 +32,9 @@ construct class instance
   generic
 construct array
   multi-dimensional
+catch exception/throw exception
+primitive conversions without boxing
+Java array/IMC conversions without copying
 
 Java->X10
 
@@ -46,6 +51,9 @@ Java array mapping
   syntax?  x10 type?
   covariant arrays
 
+Java primitive mapping
+  are the types equivalent?  if not, what are the overloading rules?
+
 Proposal:
   Java types as nested (native) types in an exposed X10 library class?
     class x10.interop.Java
@@ -61,6 +69,9 @@ Java classes in the typesystem (limited, !<: Any)
   what are the limitations on usage?
     no RTTs
 
+Java types as type arguments to X10 generics
+  Java types <: Any?  change typechecking?  split Any into Any and X10Any?
+
 Overloading on Java types vs. X10 types!
 
 Name clashes between Java interface methods and X10 class/interface methods
@@ -72,12 +83,16 @@ X10 built-in structs as type argumnents to Java generics
   Mechanism for preventing those structs from being used as type arguments?
 
 Mutable static fields?
+  Java statics are per-JVM (=per-place?)
 
 Java enums
   represented as classes?
   use in switches?
 
 Overriding generic methods
+
+Java locking/synchronization in X10 activities?
+
 
 --------------------- Design summary
 
@@ -145,6 +160,10 @@ argument is a Java primitive type, an array of primitives will be constructed.
 There will also be helper methods in x10.interop.Java to construct
 multi-dimensional arrays.  Routines will be provided to convert X10 arrays
 (including array literals) into Java arrays.
+
+Java classes that implement java.io.Serializable can captured by "at" -- their
+X10-level serialization is the Java serialized form.  Attempting to capture
+other Java classes will result in a run-time exception.
 
 
 _Invoking X10 from Java_
