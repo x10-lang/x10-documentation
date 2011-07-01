@@ -75,8 +75,8 @@
 \contentsline {subsection}{\numberline {6.1.10}Incompleteness}{116}{subsection.6.1.10}
 \contentsline {subsection}{\numberline {6.1.11}Why Generics Lose Constraints At Runtime}{117}{subsection.6.1.11}
 \contentsline {section}{\numberline {6.2}Type Declarations}{117}{section.6.2}
-\contentsline {section}{\numberline {6.3}Type Inference}{117}{section.6.3}
-\contentsline {section}{\numberline {6.4}Generics}{117}{section.6.4}
-\contentsline {section}{\numberline {6.5}Default Values}{117}{section.6.5}
-\contentsline {section}{\numberline {6.6}Common Ancestors of Types}{118}{section.6.6}
-\contentsline {section}{\numberline {6.7}When Types Don't Work}{118}{section.6.7}
+\contentsline {section}{\numberline {6.3}Type Inference}{119}{section.6.3}
+\contentsline {section}{\numberline {6.4}Generics}{119}{section.6.4}
+\contentsline {section}{\numberline {6.5}Default Values}{119}{section.6.5}
+\contentsline {section}{\numberline {6.6}Common Ancestors of Types}{120}{section.6.6}
+\contentsline {section}{\numberline {6.7}When Types Don't Work}{120}{section.6.7}

@@ -269,6 +269,7 @@ static def useRecip(m:Int, n:Int{self!=0}) {
 \end{description}
 
 \subsubsection{{\tt self} in nested types}
+\label{sect:NullTestsNested}
 
 If you have a constrained type that looks like \xcd`T{c}`, where \xcd`T` is
 some type and \xcd`c` some constraint, then \xcd`self` inside \xcd`c` means
@@ -929,7 +930,126 @@ If you ever have written something like one of the first two forms, write
 
 \section{Type Declarations}
 \label{sect:TypeDecl}
-\bard{do this -- note non-null type decl for niceifying Array[String{self!=null}]{self!=null} }
+
+X10 types can carry a great deal of information around with them, like the
+non-null array of non-null strings we saw in \Sref{sect:NullTestsNested}.
+This means that X10 types can get ridiculously long -- a type carrying a lot
+of information has to write a lot of information down.  
+
+Long type expressions are hard to write, and hard to read.  This isn't just a
+matter of convenience -- though your convenience {\em does} matter.  It's hard
+to get a program right if the types it uses take several lines to write down.
+Here's a scrap of a program which manipulates one-dimensional non-null arrays
+of two-dimensional non-null arrays of non-null strings.  We don't even know
+who to format that type readably: 
+%%START X10: TypeDefless.x10 typedefless
+\fromfile{TypeDefless.x10}
+\begin{xtennum}[]
+static def first(a : Array[Array[
+       String{self!=null}]{rank==2,self!=null}]
+       {self!=null,rank==1})
+ : String{self!=null} = a(0)(0,0); 
+\end{xtennum}
+%%END X10: TypeDefless.x10 typedefless
+
+So, X10 allows you to abbreviate types, with the \xcd`type` statement.
+A local \xcd`val` declaration lets you write down a long {\em computation} and
+give its value a name.  A \xcd`type` declaration does the same thing, only
+with a type rather than a value.  Here's one way to write the same code 
+with one typedef: 
+%%START X10: TypeDef1.x10 typedef1
+\fromfile{TypeDef1.x10}
+\begin{xtennum}[]
+public static type Firstable = Array[Array[
+   String{self!=null}]{rank==2,self!=null}]
+   {self!=null,rank==1};
+static def first(a : Firstable) = a(0)(0,0);
+\end{xtennum}
+%%END X10: TypeDef1.x10 typedef1
+
+That helps a little.  The method call is down to something short, which is
+good.  If there were a dozen other methods in the program working with
+\xcd`Firstable`s, they all would be down to something short.  And if you were
+trying to read this program, you could tell at a glance that all the
+\xcd`Firstable`s were the same type, which wouldn't have been at all clear if
+the types were written out in full.
+
+But we can make matters clearer. \xcd`type` definitions can have generic
+arguments and value parameters, much the same way that methods can.  So we can
+do this:
+%%START X10: TypeDeffed.x10 typedeffedDefs
+\fromfile{TypeDeffed.x10}
+\begin{xtennum}[]
+static def first(a : Firstable) = a(0)(0,0);
+
+static type Nonnull[T]{T <: Object} = T{self!=null};
+static type StringNN = Nonnull[String];
+static type ArrayNN[T](n:Int) = Array[T]{self!=null, rank==n};
+static type ArrayNN1[T] = ArrayNN[T](1);
+static type ArrayNN2[T] = ArrayNN[T](2);
+static type Firstable = ArrayNN1[ArrayNN2[StringNN]];
+\end{xtennum}
+%%END X10: TypeDeffed.x10 typedeffedDefs
+
+\begin{description}
+
+\item [line \xlref{typedeffedDefs-nonnull}{}:]  \xcd`Nonnull[T]` is a variant
+      of \xcd`T`, restricted to be not \xcd`null`.  The \xcd`[T]` part is a
+      generic parameter, just like on a class or method. The 
+      \xcd`{T <: Object}` is a guard, just like on a method.  Only objects can
+      possibly 
+      be \xcd`null`, so we should only be applying \xcd`Nonnull` to object ---
+      that is, to types \xcd`T` which are subtypes of \xcd`Object`.  
+
+\item [line \xlref{typedeffedDefs-stringnn}{}:] This defines \xcd`StringNN` as
+      a non-null string.  This is probably a useful type for this program,
+      which seems to want to work a lot with non-null strings.  We used it on
+      line \xlref{typedeffedDefs-first}{}, as the return type of \xcd`first`,
+      as well as in the definition of \xcd`Firstable` on line
+      \xlref{typedeffedDefs-firstable}{}. 
+
+\item [line \xlref{typedeffedDefs-arraynn}{}:] \xcd`ArrayNN[T](n)` is an
+      \xcd`n`-dimensional, non-\xcd`null` array of \xcd`T`'s.  The \xcd`[T]`
+      is a generic parameter, as usual. The \xcd`(n:Int)` is an {\em integer}
+      parameter. On the right-hand side, we use \xcd`n` in the constraint on
+      the rank of the array.
+
+\item [line \xlref{typedeffedDefs-array1}{}:] Using \xcd`ArrayNN[T](n)`, we'll
+      define the kinds of array we actually use.  We could have skipped this
+      step, writing \xcd`ArrayNN[ArrayNN[StringNN](2)](1)` for line 
+      \xlref{typedeffedDefs-firstable}{}.  Providing the extra abstraction
+      seemed a bit nicer, albeit wordier. It doesn't take too many nested
+      brackets and parentheses to make it hard to tell which \xcd`(2)` goes
+      with which \xcd`ArrayNN`.  
+
+\item [line \xlref{typedeffedDefs-firstable}{}:] The definition of
+      \xcd`Firstable`, using the constructs we've introduced, is about as
+      clear as it could be.   
+\end{description}
+
+While \xcd`Nonnull` isn't part of the stardard X10 library, there is a
+standard \xcd`type` for \xcd`Array`: 
+\begin{xten}
+public type Array[T](r:Int) = Array[T]{self.rank==r};
+\end{xten}
+So, \xcd`Array[Int](3)` is a three-dimensional array of \xcd`Int`s, and so on.  
+Some related types do the same thing: 
+\begin{xten}
+public type Point(r: Int) = Point{self.rank==r};
+\end{xten}
+\bard{Give example of use}
+
+
+{\bf True Confession:} If you're working with a complicated structure like the
+\xcd`Firstable` in this section, you might be better off encapsulating it as a
+class or a struct, and defining a clear interface for it, rather than keeping
+it as one devastating type expression.  Even breaking the type into a series
+of clean abstractions with \xcd`type` definitions is often an inferior choice.
+Elaborate types are likely to need to be changed as the program evolves, and
+all the code using them is going to have to change as well.  A class or struct
+can encapsulate the changeable bits inside a stable and readable inteface.
+
+
 \section{Type Inference}
 \bard{do this!}
 
