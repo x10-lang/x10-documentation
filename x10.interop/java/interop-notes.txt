@@ -71,6 +71,7 @@ Java classes in the typesystem (limited, !<: Any)
 
 Java types as type arguments to X10 generics
   Java types <: Any?  change typechecking?  split Any into Any and X10Any?
+  Java types coercible to Any
 
 Overloading on Java types vs. X10 types!
 
@@ -101,11 +102,16 @@ _Invoking Java from X10_
 X10 users may use Java classes and interfaces by referencing their
 fully-qualified names from the X10 program.  The classes will be read from
 class files and integrated into the X10 type system.  Java classes do not
-implement the Any interface, and thus are not required to have the methods
-specified there, most notably typeName().  Their toString() returns
-java.lang.String, not x10.lang.String (a different class).  Java classes
-also do not have run-time types in the X10 sense, so they cannot be used
-as type arguments to X10 generic classes.
+implement the x10.lang.Any interface, and thus are not required to have the
+methods specified there, most notably typeName().  Their toString() returns
+java.lang.String, not x10.lang.String (a different class).  However, Java
+classes are coercible to x10.lang.Any, and the implementation wrapper takes
+care of providing the default implementations of the methods of x10.lang.Any
+and the implementation of == that preserves object identity.
+
+Java classes have X10 run-time types that can be retrieved using the Class
+object.  They can be used as type arguments to X10 generic classes and
+methods.
 
 Java nested and inner classes may be accessed in the same manner as X10
 nested/inner classes.  References to them will be written into the generated
