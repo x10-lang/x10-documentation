@@ -113,7 +113,7 @@ find \xcd`name` in the database, it creates a new record for that name.  This
 approach doesn't make sense for all applications\footnote{Not even for this
 one -- how do we really know the phone number of a newly-created
 \xcd`Person`?}.  (In many cases, if some crucial datum really is missing,
-there's no way to figure it out, and the best thing that can be done is to
+there's no way to figure it out, and the best thing that can be done is  to
 report the error and ask a human for help.  Throwing a
 \xcd`NullPointerException` is a greatly inferior choice.)
 
@@ -980,7 +980,7 @@ do this:
 %%START X10: TypeDeffed.x10 typedeffedDefs
 \fromfile{TypeDeffed.x10}
 \begin{xtennum}[]
-static def first(a : Firstable) = a(0)(0,0);
+static def first(a : Firstable) : StringNN = a(0)(0,0);
 
 static type Nonnull[T]{T <: Object} = T{self!=null};
 static type StringNN = Nonnull[String];
@@ -993,7 +993,7 @@ static type Firstable = ArrayNN1[ArrayNN2[StringNN]];
 
 \begin{description}
 
-\item [line \xlref{typedeffedDefs-nonnull}{}:]  \xcd`Nonnull[T]` is a variant
+\item [line \xlref{typedeffedDefs-nonnull}{3}:]  \xcd`Nonnull[T]` is a variant
       of \xcd`T`, restricted to be not \xcd`null`.  The \xcd`[T]` part is a
       generic parameter, just like on a class or method. The 
       \xcd`{T <: Object}` is a guard, just like on a method.  Only objects can
@@ -1001,28 +1001,28 @@ static type Firstable = ArrayNN1[ArrayNN2[StringNN]];
       be \xcd`null`, so we should only be applying \xcd`Nonnull` to object ---
       that is, to types \xcd`T` which are subtypes of \xcd`Object`.  
 
-\item [line \xlref{typedeffedDefs-stringnn}{}:] This defines \xcd`StringNN` as
+\item [line \xlref{typedeffedDefs-stringnn}{4}:] This defines \xcd`StringNN` as
       a non-null string.  This is probably a useful type for this program,
       which seems to want to work a lot with non-null strings.  We used it on
-      line \xlref{typedeffedDefs-first}{}, as the return type of \xcd`first`,
+      line \xlref{typedeffedDefs-first}{1}, as the return type of \xcd`first`,
       as well as in the definition of \xcd`Firstable` on line
-      \xlref{typedeffedDefs-firstable}{}. 
+      \xlref{typedeffedDefs-firstable}{8}. 
 
-\item [line \xlref{typedeffedDefs-arraynn}{}:] \xcd`ArrayNN[T](n)` is an
+\item [line \xlref{typedeffedDefs-arraynn}{5}:] \xcd`ArrayNN[T](n)` is an
       \xcd`n`-dimensional, non-\xcd`null` array of \xcd`T`'s.  The \xcd`[T]`
       is a generic parameter, as usual. The \xcd`(n:Int)` is an {\em integer}
       parameter. On the right-hand side, we use \xcd`n` in the constraint on
       the rank of the array.
 
-\item [line \xlref{typedeffedDefs-array1}{}:] Using \xcd`ArrayNN[T](n)`, we'll
+\item [line \xlref{typedeffedDefs-array1}{6}:] Using \xcd`ArrayNN[T](n)`, we'll
       define the kinds of array we actually use.  We could have skipped this
       step, writing \xcd`ArrayNN[ArrayNN[StringNN](2)](1)` for line 
-      \xlref{typedeffedDefs-firstable}{}.  Providing the extra abstraction
+      \xlref{typedeffedDefs-firstable}{8}.  Providing the extra abstraction
       seemed a bit nicer, albeit wordier. It doesn't take too many nested
       brackets and parentheses to make it hard to tell which \xcd`(2)` goes
       with which \xcd`ArrayNN`.  
 
-\item [line \xlref{typedeffedDefs-firstable}{}:] The definition of
+\item [line \xlref{typedeffedDefs-firstable}{8}:] The definition of
       \xcd`Firstable`, using the constructs we've introduced, is about as
       clear as it could be.   
 \end{description}
@@ -1037,7 +1037,20 @@ Some related types do the same thing:
 \begin{xten}
 public type Point(r: Int) = Point{self.rank==r};
 \end{xten}
-\bard{Give example of use}
+For example, here's a method which swaps two elements of an array.  It works
+for arrays of any size and element type --- but the \xcd`Point`s telling which
+elements to swap have to have the same dimension as the array.  
+%%START X10: ArraySwap.x10 arrayswap
+\fromfile{ArraySwap.x10}
+\begin{xtennum}[]
+static def swap[T](a:Array[T], p:Point(a.rank), q:Point(a.rank)) {
+   val tmp = a(p);
+   a(p) = a(q);
+   a(q) = tmp;
+}
+\end{xtennum}
+%%END X10: ArraySwap.x10 arrayswap
+
 
 
 {\bf True Confession:} If you're working with a complicated structure like the
@@ -1099,7 +1112,188 @@ aren't initialized, they get the default value of their type.
 %%END X10: Default.x10 defaultex
 
 
-\bard{hasdefault}
+You can test to see if a type \xcd`T` has a default value, by the expression 
+\xcd`T haszero`.   This is especially useful with generic types -- you don't
+need X10 to tell you that \xcd`Int` has a zero value and \xcd`Int{self!=0}`
+doesn't.  It is also especially useful in constraints.  Here's a program which
+makes an \xcd`n`-element one-dimensional array of \xcd`T`'s, with all the
+elements having their default value:
+%%START X10: ZeroArray.x10 zeroarray
+\fromfile{ZeroArray.x10}
+\begin{xtennum}[]
+public static def zeroarray[T](n:Int){T haszero} 
+  = new Array[T](1..n);
+\end{xtennum}
+%%END X10: ZeroArray.x10 zeroarray
+The constraint \xcd`{T haszero}` makes sure that we only try to use this
+method on \xcd`T`'s which have a zero value.  (In fact, one of the
+constructors for arrays in \xcd`x10/array/Array.x10` does just
+this:\footnote{The actual constructor has an \xcd`@Inline` annotation too,
+saying that it ought to be done without a method call for a bit of extra
+efficiency on this common operation.}
+\begin{xten}
+public final class Array[T] {
+    // [lots of stuff omitted] 
+    public def this(size:int) {T haszero}
+\end{xten}
+
+Default values are defined, or undefined, like this:
+\begin{itemize}
+\item The fundamental numeric types (\xcd`Int`, \xcd`UInt`,
+      \xcd`Long`, \xcd`ULong`, 
+  \xcd`Short`, \xcd`UShort`, \xcd`Byte`,
+   \xcd`UByte`, 
+      \xcd`Float`, \xcd`Double`) all have default value 0.
+\item \xcd`Boolean` has default value \xcd`false`.
+\item \xcd`Char` has default value \xcd`'\0'`, the character numbered zero
+      (and not the character \xcd`'0'`, which is number 48). 
+\item If every field of a struct type \xcd`T` has a default value, then
+      \xcd`T` has a default value.  If any field of \xcd`T` has no default
+      value, then \xcd`T` does not. 
+\item A function type has a default value of \xcd`null`.
+\item A class type has a default value of \xcd`null`.
+\item The constrained type \xcd`T{c}` has the same default value as \xcd`T` if
+      that default value satisfies \xcd`c`.  If the default value of \xcd`T`
+      doesn't satisfy \xcd`c`, then \xcd`T{c}` has no default value.
+\end{itemize}
+
+Here's a struct with a default value.  The library class \xcd`Zero` gives you
+a method to get the default value of any type \xcd`T` that has one, alarmingly
+called \xcd`Zero.get[T]()`.  Here's how to use it: 
+%%START X10: Zerish.x10 zerish
+\fromfile{Zerish.x10}
+\begin{xtennum}[]
+public struct Zerish {
+  val cypher : Int;
+  val nihil : String;
+  public def this(c:Int, n:String) {
+    this.cypher=c; this.nihil = n;
+  }
+  public static def main(argv:Array[String](1)) {
+     val z = Zero.get[Zerish]();
+     assert z.cypher==0 && z.nihil==null;
+  }
+}
+\end{xtennum}
+%%END X10: Zerish.x10 zerish
+
+\subsection{How Default Values Can Make Your Brain Explode}
+
+Sometimes, a field of an object can get its default value, even though your
+code emphatically says that it gets some other value.  (Fortunately, this only
+happens with \xcd`transient` fields.  Regular non-\xcd`transient` fields are
+safe.)
+
+The way this happens is, suppose you have a class with a \xcd`transient`
+field.  Remember, from  \Sref{sect:transient}, that transient fields don't get
+copied when values are copied from place to place -- instead they get set to
+their default values.  (Transient fields need to have types that have default
+values.)
+
+So here's a program with some transient fields and copying: 
+%%START X10: TwoTrue.x10 twotrue
+\fromfile{TwoTrue.x10}
+\begin{xtennum}[]
+public class TwoTrue {
+  transient val a : Boolean = true; 
+  transient val b : Boolean; 
+  val c : Boolean = true;
+  val d : Boolean; 
+  public def this() { b = true; d = true; }
+  
+  public static def main(argv:Array[String](1)) {
+     val tt = new TwoTrue(); 
+     assert tt.a && tt.b && tt.c && tt.d;
+     at(here) { 
+       
+       assert tt.a == false && tt.b == false && tt.c && tt.d;
+     }
+  }
+}
+\end{xtennum}
+%%END X10: TwoTrue.x10 twotrue
+
+\begin{description}
+\item [lines \xlref{twotrue-a}{2}, \xlref{twotrue-c}{4}:] 
+      Since \xcd`a` and \xcd`c` have initializers of \xcd`true`, it looks as
+      if \xcd`tt.a` and \xcd`tt.c` ought to be \xcd`true` for every
+      \xcd`TwoTrue` value.  
+\item [lines \xlref{twotrue-b}{3}, \xlref{twotrue-d}{5}, \xlref{twotrue-ctor}{6}:]
+      Since there's only one constructor, and it makes the fields \xcd`b` and
+      \xcd`d` both be \xcd`true`, it looks as if \xcd`tt.b` and \xcd`tt.d`
+      ought to be \xcd`true for every \xcd`TwoTrue` value too.
+
+\item [line \xlref{twotrue-tt}{9}-\xlref{twotrue-testhere}{10}:] Here we make a \xcd`TwoTrue` value
+      \xcd`tt`, and check that its \xcd`a`, \xcd`b`, \xcd`c`, and \xcd`d`
+      fields are all \xcd`true`. They are.
+
+\item [line \xlref{twotrue-copy}{11}:] Now, we copy it with an \xcd`at`
+      statement.  (Remember that \xcd`at` copies {\em everything} mentioned in
+      its body, even if you're just going from \xcd`here` to \xcd`here`, like
+      this one.)
+
+\item [line \xlref{twotrue-testthere}{13}:] And now we look at the copy, which
+      is also called \xcd`tt` because that's how \xcd`at` names the things it
+      copies.  The normal fields \xcd`c` and \xcd`d` are \xcd`true`.  The
+      transient fields are \xcd`false` -- they have been set to their default
+      values.  
+\end{description}
+
+So, despite our best efforts to make \xcd`a` and \xcd`b` always be \xcd`true`,
+those transient fields can get set to \xcd`false` when an object is copied.  
+
+The right way to think about this is, \xcd`transient` is a keyword which means
+``sometimes this field gets initialized to its default value, even if some
+other bits of the program seem to say it shouldn't.''
+
+The wrong way to think about this is that an initializer setting a field to
+\xcd`true` is always going to make that field be \xcd`true`.  Sure, it always
+makes the field be \xcd`true` {\em if the initializer runs}.  But initializers
+don't run when values are copied.  The original value tells what the fields
+should be -- or, for transient fields, the field is just set to the default
+value.
+
+\subsection{How To Use This Oddity}
+
+For the most part, you shouldn't take advantage of this behavior of transient
+fields.  The real point of transient fields is to hold a chunk of information
+that shouldn't get copied --- often a big data structure that won't be needed
+everywhere that the object is needed. So, if you've got a \xcd`Car` object,
+and a \xcd`Washer` object that has a pointer back to the \xcd`Car` that uses
+it,  you might make that back pointer be transient, to avoid copying the whole
+\xcd`Car` whenever you need to talk about just the \xcd`Washer`. 
+
+But, you {\em can} use transient fields to detect which objects are originals
+and which are copies. 
+Give them a field like \xcd`original` on line \xlref{copydetection-orig}{2}.  
+The original's field is initialized to \xcd`true`.    Since the field is
+transient, if the object is ever copied, the copy's \xcd`original` field is
+set to \xcd`false` -- the copy isn't an original.
+%%START X10: CopyDetection.x10 copydetection
+\fromfile{CopyDetection.x10}
+\begin{xtennum}[]
+public class CopyDetection {
+  public transient original : Boolean = true; 
+  public static def main(argv:Array[String](1)) {
+     val x = new CopyDetection();
+     assert x.original;  
+     at (here) {
+       assert ! x.original; 
+     }
+  }
+}
+\end{xtennum}
+%%END X10: CopyDetection.x10 copydetection
+
+This only detects copying by \xcd`at` statements.  Other kinds of copying,
+like the assignment on line \xlref{copydetection-y}{} (remember, assignment of
+structs copies all the fields -- {\em including} transient ones) isn't marked
+this way.  
+
+
+
+
+
 
 
 \section{Common Ancestors of Types}

@@ -78,5 +78,7 @@
 \contentsline {section}{\numberline {6.3}Type Inference}{119}{section.6.3}
 \contentsline {section}{\numberline {6.4}Generics}{119}{section.6.4}
 \contentsline {section}{\numberline {6.5}Default Values}{119}{section.6.5}
-\contentsline {section}{\numberline {6.6}Common Ancestors of Types}{120}{section.6.6}
-\contentsline {section}{\numberline {6.7}When Types Don't Work}{120}{section.6.7}
+\contentsline {subsection}{\numberline {6.5.1}How Default Values Can Make Your Brain Explode}{121}{subsection.6.5.1}
+\contentsline {subsection}{\numberline {6.5.2}How To Use This Oddity}{123}{subsection.6.5.2}
+\contentsline {section}{\numberline {6.6}Common Ancestors of Types}{123}{section.6.6}
+\contentsline {section}{\numberline {6.7}When Types Don't Work}{123}{section.6.7}
