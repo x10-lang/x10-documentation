@@ -150,7 +150,11 @@
 \mynewcommand{\hsuper}{\code{super}} % this
 \mynewcommand{\hclass}{\code{class}}
 \mynewcommand{\hreturn}{\code{return}}
-\mynewcommand{\hnew}{\code{new}}
+\mynewcommand{\hhnew}{\code{new}}
+\newcommand{\myinit}[2]{<#1,#2>}
+\mynewcommand{\mycooked}{\ \myinit{\emptyset}{\emptyset}}
+\newcommand{\hnew}[1]{\code{new}~#1()}
+
 \newcommand{\lt}{\code{<}}%{\mathop{\textrm{\tt <}}}
 \newcommand{\gt}{\code{>}}%{\mathop{\textrm{\tt >}}}
 
@@ -227,14 +231,10 @@
 \mynewcommand{\mtype}{\func{mtype}}
 \mynewcommand{\mmodifier}{\func{mmodifier}}
 \mynewcommand{\fmodifier}{\func{fmodifier}}
-\mynewcommand{\ctortype}{\func{ctortype}}
-\mynewcommand{\ctorbody}{\func{ctorbody}}
 \mynewcommand{\mbody}{\func{mbody}}
 \mynewcommand{\ftype}{\func{ftype}}
 \mynewcommand{\fields}{\func{fields}}
 \DeclareMathOperator{\dom}{dom}
-\mynewcommand{\methodVal}{\func{methodVal}_\Gamma} % val not assigned
-\mynewcommand{\ctorVal}{\func{ctorVal}_\Gamma} % val assigned at most once
 \mynewcommand{\reductionVal}{\func{reductionVal}} % val assigned at most once
 
 

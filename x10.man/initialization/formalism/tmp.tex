@@ -1,0 +1,328 @@
+\RULE{R-Finish}
+\RULE{R-Async}
+\RULE{R-Seq}
+\RULE{R-Field-Access}
+\RULE{R-Field-Assign}
+\RULE{R-New-Object}
+\RULE{R-New}
+\RULE{R-Invoke}
+\RULE{RC-Receiver}
+\RULE{RC-Arguments}
+\RULE{RC-Ctor}
+\RULE{RC-Seq}
+\RULE{RC-Field-Access}
+\RULE{RC-Field-Assign1}
+\RULE{RC-Field-Assign2}
+\RULE{RC-Async1}
+\RULE{RC-Async2}
+\RULE{RC-Finish}
+\RULE{RA-Receiver}
+\RULE{RA-Arguments}
+\RULE{RA-Ctor}
+\RULE{RA-Seq}
+\RULE{RA-Field-Access}
+\RULE{RA-Field-Assign1}
+\RULE{RA-Field-Assign2}
+
+$\typerule{
+}{
+  \finish~\hl,H \reduce \hl,H
+}$~\RULE{(R-Finish)}
+\quad
+$\typerule{
+}{
+  \async~\hl;\he,H \reduce \he,H
+}$~\RULE{(R-Async)}
+\\\\
+
+$\typerule{
+    H(\hl)=\hC(\ol{\hf}\mapsto\ol{\hl'})
+}{
+  \hl.\hf_i,H \reduce \hl_i',H
+}$~\RULE{(R-Field-Access)}
+\quad
+$\typerule{
+    H(\hl)=\hC(F)
+        \gap
+    F' = F[ \hf \mapsto \hl"]
+}{
+  \hl.\hf=\hl",H \reduce \hl",H[ \hl \mapsto \hC(F')]
+}$~\RULE{(R-Field-Assign)}
+\\\\
+
+$\typerule{
+    \hl" \not \in \dom(H)
+}{
+  \hnew ~ \hObject(),H \reduce \hl",H[ \hl" \mapsto \hObject()]
+}$~\RULE{(R-New-Object)}
+\\\\
+
+$\typerule{
+    \ctorbody{}(\hC) = \ol{\hx}.\hsuper(\ol{\he});\he";
+        \gap
+    \hclass~\hC~\hextends~\hD
+        \gap
+    \hnew ~ \hD([\ol{\hl}/\ol{x}]\ol{\he}),H \reduce \hl',H'
+        \gap
+    H'[\hl']=\hD(F)
+}{
+  \hnew ~ \hC(\ol{\hl}),H \reduce [\ol{\hl}/\ol{x},\hl'/\this]\he",H'[ \hl' \mapsto \hC(F)]
+}$~\RULE{(R-New)}
+\\\\
+$\typerule{
+    H(\hl')=\hC(\ldots)
+        \gap
+    \mbody{}(\hm,\hC)=\ol{x}.\he
+}{
+  \hl'.\hm(\ol{\hl}),H \reduce [\ol{\hl}/\ol{x},\hl'/\this]\he,H
+}$~\RULE{(R-Invoke)}
+\\\\
+
+$\typerule{
+    \he,H \reduce \he',H'
+}{
+  \he.\hm(\ol{\he}),H \reduce \he'.\hm(\ol{\he}),H'
+}$~\RULE{(RC-Receiver)}
+\\\\
+$\typerule{
+    \he,H \reduce \he',H'
+}{
+  \hl.\hm(\ol{\hl},\he,\ol{\he}),H \reduce \hl.\hm(\ol{\hl},\he',\ol{\he}),H'
+}$~\RULE{(RC-Arguments)}
+\\\\
+$\typerule{
+    \he,H \reduce \he',H'
+}{
+  \hnew ~ \hC(\ol{\hl},\he,\ol{\he}),H \reduce \hnew ~ \hC(\ol{\hl},\he',\ol{\he}),H'
+}$~\RULE{(RC-Ctor)}
+\\\\
+$\typerule{
+    \he,H \reduce \he',H'
+}{
+  \he.\hf,H \reduce \he'.\hf,H'
+}$~\RULE{(RC-Field-Access)}
+\\\\
+$\typerule{
+    \he,H \reduce \he',H'
+}{
+  \he.\hf=\he",H \reduce \he'.\hf=\he",H'
+}$~\RULE{(RC-Field-Assign1)}
+\qquad
+$\typerule{
+    \he,H \reduce \he',H'
+}{
+  \hl.\hf=\he,H \reduce \hl.\hf=\he',H'
+}$~\RULE{(RC-Field-Assign2)}
+\\\\
+$\typerule{
+    \he,H \reduce \he',H'
+}{
+  \async~\he;\he",H \reduce \async~\he';\he",H'
+}$~\RULE{(RC-Async1)}
+\qquad
+$\typerule{
+    \he,H \reduce \he',H'
+}{
+  \async~\he";\he,H \reduce \async~\he";\he',H'
+}$~\RULE{(RC-Async2)}
+\\\\
+$\typerule{
+    \he,H \reduce \he',H'
+}{
+  \finish~\he,H \reduce \finish~\he',H'
+}$~\RULE{(RC-Finish)}
+\\
+
+$\typerule{
+}{
+  (\async~\he;\hl).\hm(\ol{\he}),H \reduce \async~\he; \hl.\hm(\ol{\he}),H
+}$~\RULE{(RA-Receiver)}
+\\
+$\typerule{
+}{
+  \hl.\hm(\ol{\hl},(\async~\he;\hl'),\ol{\he}),H \reduce \async~\he; \hl.\hm(\ol{\hl},\hl',\ol{\he}),H
+}$~\RULE{(RA-Arguments)}
+\\
+$\typerule{
+}{
+  \hnew ~ \hC(\ol{\hl},(\async~\he;\hl'),\ol{\he}),H \reduce \async~\he; \hnew ~ \hC(\ol{\hl},\hl',\ol{\he}),H
+}$~\RULE{(RA-Ctor)}
+\\
+$\typerule{
+}{
+  (\async~\he;\hl).\hf,H \reduce \async~\he; \hl.\hf,H
+}$~\RULE{(RA-Field-Access)}
+\\
+$\typerule{
+}{
+  (\async~\he;\hl).\hf=\he",H \reduce \async~\he; \hl.\hf=\he",H
+}$~\RULE{(RA-Field-Assign1)}
+\\
+$\typerule{
+}{
+  \hl.\hf=(\async~\he;\hl'),H \reduce \async~\he; \hl.\hf=\hl',H
+}$~\RULE{(RA-Field-Assign2)}
+\\\\
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+The following is an example program in this syntax:
+
+\begin{lstlisting}
+class E extends Object {}
+class C2 extends Object {
+  f1:E;
+  f2:E;
+  Read() SyncWrite(f1,f2) AsyncWrite(f1,f2) build(a1:E, a2:E) =
+    finish
+      async this.f2 = a2;
+      m(a1);
+  Read() SyncWrite() AsyncWrite(f1) m(a:E):E =
+    async this.f1 = a;
+    new E();
+  escaping m2():C2 = this;
+}
+class C3 extends Object {
+  f:E;
+  Read() SyncWrite(f) AsyncWrite(f) build(a:E) =
+    f=a;
+    f; // ok
+}
+class C4 extends Object {
+  fVar:E;
+  ctor(a:E) =
+    super();
+    fVar;
+    fVar=a; // ERR (read before write)
+}
+\end{lstlisting}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+\newcommand{\R}[2]{\code{R}(#1,#2,\hC)}
+\newcommand{\SW}[1]{\code{SW}(#1,\hC)}
+\newcommand{\AW}[1]{\code{AW}(#1,\hC)}
+
+Function~$\R{\he}{F}$ returns whether
+    \this does not escape from \he (i.e., \this can be used only as a field or method receiver),
+    and whether
+    \he only reads fields of \this that are in F or that have been previously written in e.
+For example,
+\beqs{R-example}
+    \R{\this.\hf}{\{\hf\}}&=\htrue\\
+    \R{\code{new Seq(this.f=new Object(), this.f)}}{ \emptyset}&=\htrue\\
+\eeq
+
+\beqs{R}
+    &\R{[\he_0,\ldots,\he_n]}{F}= \R{\he_0}{F} \hand \R{\he_1}{\SW{[\he_0]} \cup F} \hand \ldots \hand  \R{\he_n}{\SW{[\he_0,\ldots,\he_{n-1}]} \cup F}\\
+    &\R{\he"}{F}=
+        \begin{cases}
+        \htrue & \he" \equiv \hl \\
+        \hfalse & \he" \equiv \this \\
+        \htrue & \he" \equiv \hx \\
+        \hf \in F & \he" \equiv \this.\hf \\
+        \R{\he}{F} & \he" \equiv \he.\hf \\
+        \R{\he'}{F} & \he" \equiv \this.\hf = \he' \\
+        \R{[\he,\he']}{F} & \he" \equiv \he.\hf = \he' \\
+        \R{[\he,\he']}{F} & \he" \equiv \he;\he' \\
+        \hfalse & \he" \equiv \this.\hm(\ol{\he}) \gap \mmodifier{}(\hm,\hC)=\hescaping  \\
+        R \subseteq F \hand \R{[\ol{\he}]}{F} & \he" \equiv \this.\hm(\ol{\he}) \gap \mmodifier{}(\hm,\hC)=\Read(R) \ldots  \\
+        \R{[\he',\ol{\he}]}{F} & \he" \equiv \he'.\hm(\ol{\he}) \\
+        \R{[\ol{\he}]}{F} & \he" \equiv \hnew{\hC}{\hr}{\ol{\he}} \\
+        \R{\he}{F} & \he" \equiv \hfinish~\he \\
+        \R{\he}{F} \hand \R{\he'}{F} & \he" \equiv \hasync~\he;\he' \\
+        \end{cases}
+\eeq
+
+
+$\SW{\he}$ is the set of fields of \this that are definitely-(synchronously)-written in \he.
+(The function is undefined if there is a call to an \hescaping method.)
+\beqs{SW}
+    &\SW{[\he_0,\ldots,\he_n]}= \SW{\he_0} \cup \ldots \cup  \SW{\he_n}\\
+    &\SW{\he"}=
+        \begin{cases}
+        \emptyset & \he" \equiv \hl \\
+        \emptyset & \he" \equiv \hx \\
+        \SW{\he} & \he" \equiv \he.\hf \\
+        \{ \hf \} \cup \SW{\he'} & \he" \equiv \this.\hf = \he' \\
+        \SW{[\he,\he']} & \he" \equiv \he.\hf = \he' \\
+        \SW{[\he,\he']} & \he" \equiv \he;\he' \\
+        S \cup \SW{[\ol{\he}]} &
+            \he" \equiv \this.\hm(\ol{\he}) \gap \mmodifier{}(\hm,\hC)=\ldots \SyncWrite(S) \ldots  \\
+        \SW{[\he',\ol{\he}]} & \he" \equiv \he'.\hm(\ol{\he}) \\
+        \SW{[\ol{\he}]} & \he" \equiv \hnew{\hC}{\hr}{\ol{\he}} \\
+        \AW{\he} & \he" \equiv \hfinish~\he \\
+        \SW{\he'} & \he" \equiv \hasync~\he;\he' \\
+        \end{cases}
+\eeq
+$\AW{\he}$ is the set of fields of \this that are asynchronously written in \he.
+Note that in $\AW{\hasync~\he;\he'}$ we collect writes to fields in both \he and $\he'$,
+    whereas in $\SW{\hasync~\he;\he'}$ we only consider writes in $\he'$.
+\beqs{AW}
+    &\AW{[\he_0,\ldots,\he_n]}= \AW{\he_0} \cup \ldots \cup  \AW{\he_n}\\
+    &\AW{\he"}=
+        \begin{cases}
+        \emptyset & \he" \equiv \hl \\
+        \emptyset & \he" \equiv \hx \\
+        \AW{\he} & \he" \equiv \he.\hf \\
+        \{ \hf \} \cup \AW(\he') & \he" \equiv \this.\hf = \he' \\
+        \AW{[\he,\he']} & \he" \equiv \he.\hf = \he' \\
+        \AW{[\he,\he']} & \he" \equiv \he;\he' \\
+        A \cup \AW{[\ol{\he}]} &
+            \he" \equiv \this.\hm(\ol{\he}) \gap \mmodifier{}(\hm,\hC)=\ldots \AsyncWrite(A) \ldots  \\
+        \AW{[\he',\ol{\he}]} & \he" \equiv \he'.\hm(\ol{\he}) \\
+        \AW{[\ol{\he}]} & \he" \equiv \hnew{\hC}{\hr}{\ol{\he}} \\
+        \AW{\he} & \he" \equiv \hfinish~\he \\
+        \AW{\he} \cup \AW{\he'} & \he" \equiv \hasync~\he;\he' \\
+        \end{cases}
+\eeq
