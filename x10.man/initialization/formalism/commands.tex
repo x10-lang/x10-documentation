@@ -143,6 +143,11 @@
 \mynewcommand{\hS}{\code{S}}
 \mynewcommand{\hsub}{\code{/}} % substitute (reduction rules)
 
+
+\mynewcommand{\hp}{\code{p}} % path: either l or x
+\mynewcommand{\hs}{\code{s}}
+\mynewcommand{\hT}{\code{T}}
+
 \mynewcommand{\hand}{\code{~and~}}
 \mynewcommand{\hor}{\code{~or~}}
 \mynewcommand{\hthis}{\code{this}} % this
@@ -153,7 +158,8 @@
 \mynewcommand{\hhnew}{\code{new}}
 \newcommand{\myinit}[2]{<#1,#2>}
 \mynewcommand{\mycooked}{\ \myinit{\emptyset}{\emptyset}}
-\newcommand{\hnew}[1]{\code{new}~#1()}
+\newcommand{\hnew}[1]{\code{new}~#1}
+\newcommand{\hlet}[3]{\code{let}~#1~=~#2~\code{in}~#3}
 
 \newcommand{\lt}{\code{<}}%{\mathop{\textrm{\tt <}}}
 \newcommand{\gt}{\code{>}}%{\mathop{\textrm{\tt >}}}
@@ -237,6 +243,9 @@
 \DeclareMathOperator{\dom}{dom}
 \mynewcommand{\reductionVal}{\func{reductionVal}} % val assigned at most once
 
+
+\mynewcommand{\finishG}{\func{finish}}
+\mynewcommand{\asyncG}{\func{async}}
 
 
 \mynewcommand\xth{\xX{th}}

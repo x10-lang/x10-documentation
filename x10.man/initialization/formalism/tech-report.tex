@@ -127,15 +127,24 @@ $\hM ::= \hMM ~ \hm(\ol{\hx}:\ol{\hC}):\hC=\he;$
 $\hMM ::= \hescaping ~~|~~ \Read(\ol{\hf})~~\SyncWrite(\ol{\hf})~~\AsyncWrite(\ol{\hf})$
 & Method Modifier. \\
 
-$\he ::= \hl ~|~ \hx ~|~ \he.\hf ~|~ \he.\hf = \he ~|~ \he.\hm(\ol{\he}) ~|~ \hnew{\hC}~|~ \hfinish~\he~|~ \hasync~\he;\he~|~ \he;\he$
+$\hp ::= \hl ~~|~~ \hx$
+& Path (location or parameter). \\
+
+$\he ::= \hl ~|~ \hx ~|~ \hp.\hf ~|~ \hp.\hf = \hp ~|~ \hp.\hm(\ol{\hp}) ~|~ \hnew{\hC}~|~ \hfinish~\he~|~ \hasync~\he;\he~|~ \hlet{\hx}{\he}{\he}$
 & Expressions. \\ %: locations, parameters, field access\&assignment, invocation, \code{new}
+
+$\hs ::= \hf ~|~ *$
+& Mask. \\
+
+$\hT ::= \hC\myinit{\ol{\hs}}{\ol{\hs}}$
+& Masked types. \\
 
 \hline
 \end{tabular}
 \end{center}
 \caption{FX10 Syntax.
     The terminals are locations (\hl), parameters and \this (\hx), field name (\hf), method name (\hm), class name (\hB,\hC,\hD,\hObject),
-        and keywords/symbols (\super, \hescaping, \Read, \SyncWrite, \AsyncWrite, \hhnew, \finish, \async, $;$, $.$, $(\ldots)$).
+        and keywords/symbols (\super, \hescaping, \Read, \SyncWrite, \AsyncWrite, \hhnew, \finish, \async, \code{let}, \code{in}, $;$, $.$, $(\ldots)$).
     The program source code cannot contain locations (\hl), because locations are only created during execution/reduction in \RULE{R-New} of \Ref{Figure}{reduction}.
     }
 \label{Figure:syntax}
@@ -169,6 +178,7 @@ Similarly, we define:
 Because methods have a modifier (\hMM) in FX10, we also define:
 (iv)~$\mmodifier(\hm,\hC) = \hMM$ returns the method modifier of \hm in class \hC.
 
+The type of \this is flow-sensitive, i.e., it changes after fields are initialized.
 
 
 \begin{figure*}[t]
@@ -176,26 +186,28 @@ Because methods have a modifier (\hMM) in FX10, we also define:
 \begin{tabular}{|c|}
 \hline
 $\typerule{
-    \Gdash \he : \hC
+    \Gdash \he : \hT, \Gamma'
 }{
-  \Gdash \finish~\he~:~\hC
+  \Gdash \finish~\he~:~\hT, \finishG(\Gamma,\Gamma')
 }$~\RULE{(T-Finish)}
 \quad
 $\typerule{
-    \Gdash \he : \hC
+    \Gdash \he : \hT, \Gamma'
         \gap
-    \Gdash \he' : \hC'
+    \Gdash \he' : \hT', \Gamma"
 }{
-  \Gdash \async{}~\he;~\he'~:~\hC'
+  \Gdash \async{}~\he;~\he'~:~\hT', \asyncG(\Gamma,\Gamma',\Gamma")
 }$~\RULE{(T-Async)}
-\quad
+\\\\
+
 $\typerule{
-  \Gdash \he_0:\hC_0
+  \Gdash \he:\hT,\Gamma'
     \gap
-  \Gdash \he':\hC'
+  \Gamma',\hx:\hT \vdash \he':\hT',\Gamma"
 }{
-  \Gdash \he_0;\he' : \hC'
-}$~\RULE{(T-Seq)}\\\\
+  \Gdash \hlet{\hx}{\he}{\he'} : \hT',\Gamma"
+}$~\RULE{(T-Let)}
+\\\\
 
 $\typerule{
 }{
@@ -209,23 +221,25 @@ $\typerule{
 
 
 $\typerule{
-  \Gdash \he_0:\hC_0
+  \Gdash \hp_0:\hC_0\myinit{\ol{f_s}}{\ol{f_a}},\Gamma
     \gap
   \fields{}(\hC_0)=\ol{\hf}:\ol{\hC}
+    \gap
+  \hf_i \not \in \ol{f_s}
 }{
-  \Gdash \he_0.\hf_i : \hC_i
+  \Gdash \hp_0.\hf_i : \hC_i\mycooked,\Gamma
 }$~\RULE{(T-Field-Access)}\\\\
 
 $\typerule{
-  \Gdash \he_0:\hC_0
+  \Gdash \hp_0:\hC_0\myinit{\ol{f_s}}{\ol{f_a}},\Gamma
     \gap
   \fields{}(\hC_0)=\ol{\hf}:\ol{\hC}
     \gap
-  \Gdash \he':\hC'
+  \Gdash \hp':\hT',\Gamma
     \gap
-  \hC' \st \hC_i
+  \hT' \st \hC_i\mycooked
 }{
-  \Gdash \he_0.\hf_i = \he' : \hC'
+  \Gdash \hp_0.\hf_i = \hp' : \hT',\Gamma
 }$~\RULE{(T-Field-Assign)}\\\\
 
 
@@ -251,9 +265,9 @@ $\typerule{
 \hline
 \end{tabular}
 \end{center}
-\caption{FX10 Expression Typing Rules ($\Gdash \he:\hC$).
+\caption{FX10 Expression Typing Rules ($\Gdash \he:\hC, \Gamma'$).
     Rules \RULE{(T-finish)} and \RULE{(T-async)} handle the new constructs in FX10,
-        while the other rules are identical to those in FJ.}
+        while the other rules are similar to those in FJ.}
 \label{Figure:expression-typing}
 \end{figure*}
 
