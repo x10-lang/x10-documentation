@@ -76,9 +76,15 @@
 \contentsline {subsection}{\numberline {6.1.11}Why Generics Lose Constraints At Runtime}{117}{subsection.6.1.11}
 \contentsline {section}{\numberline {6.2}Type Declarations}{117}{section.6.2}
 \contentsline {section}{\numberline {6.3}Type Inference}{119}{section.6.3}
-\contentsline {section}{\numberline {6.4}Generics}{119}{section.6.4}
-\contentsline {section}{\numberline {6.5}Default Values}{119}{section.6.5}
-\contentsline {subsection}{\numberline {6.5.1}How Default Values Can Make Your Brain Explode}{121}{subsection.6.5.1}
-\contentsline {subsection}{\numberline {6.5.2}How To Use This Oddity}{123}{subsection.6.5.2}
-\contentsline {section}{\numberline {6.6}Common Ancestors of Types}{123}{section.6.6}
-\contentsline {section}{\numberline {6.7}When Types Don't Work}{123}{section.6.7}
+\contentsline {subsection}{\numberline {6.3.1}Type Inference in {\tt val}}{119}{subsection.6.3.1}
+\contentsline {subsection}{\numberline {6.3.2}Type Inference in {\tt def}}{120}{subsection.6.3.2}
+\contentsline {subsection}{\numberline {6.3.3}Type Inference in Arrays and Conditionals}{120}{subsection.6.3.3}
+\contentsline {subsection}{\numberline {6.3.4}Type Inference in Calls to Generic Methods}{120}{subsection.6.3.4}
+\contentsline {subsection}{\numberline {6.3.5}When Inference Fails}{120}{subsection.6.3.5}
+\contentsline {section}{\numberline {6.4}Generics}{121}{section.6.4}
+\contentsline {subsection}{\numberline {6.4.1}Nonvariance}{122}{subsection.6.4.1}
+\contentsline {section}{\numberline {6.5}Default Values}{123}{section.6.5}
+\contentsline {subsection}{\numberline {6.5.1}How Default Values Can Make Your Brain Explode}{125}{subsection.6.5.1}
+\contentsline {subsection}{\numberline {6.5.2}How To Use This Oddity}{126}{subsection.6.5.2}
+\contentsline {section}{\numberline {6.6}Common Ancestors of Types}{127}{section.6.6}
+\contentsline {section}{\numberline {6.7}When Types Don't Work}{127}{section.6.7}

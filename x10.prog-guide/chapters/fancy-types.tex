@@ -1064,10 +1064,199 @@ can encapsulate the changeable bits inside a stable and readable inteface.
 
 
 \section{Type Inference}
-\bard{do this!}
+\label{sect:TypeInference}
+
+As part of its ongoing program to make types less obnoxious to use, X10 lets
+you skip writing types in some common places, and does its best to figure out
+what you meant.  
+
+\subsection{Type Inference in {\tt val}}
+
+We've used type inference in \xcd`val`s in nearly every program.   
+X10 can figure out the type of any expression.  So, when 
+you want to have a typical \xcd`val` statement\footnote{The atypical \xcd`val`
+is one with delayed initialization; see
+\Sref{sect:DelayedInitialization}\bard{write this section}.}
+that evaluates an expression and gives it a name, you don't have to explain
+what type you want.
+X10 will use the type of the expression.
+
+The type of \xcd`1` is \xcd`Int{self==1}`.  So, the statement
+\begin{xten}
+val x = 1;
+\end{xten}
+is the same as 
+\begin{xten}
+val x : Int{self==1} = 1;
+\end{xten}
+
+It is {\em not} the same as 
+\begin{xten}
+val x : Int = 1;
+\end{xten}
+which leaves out the constraint on the type.
+
+Most of the time, there's no value to leaving out that information.  
+
+\bard{<: some more}
+
+
+\subsection{Type Inference in {\tt def}}
+\bard{Do me!}
+\subsection{Type Inference in Arrays and Conditionals}
+\bard{Do me!}
+\subsection{Type Inference in Calls to Generic Methods}
+\bard{Do me!}
+
+
+
+
+
+
+\bard{here}
+
+\subsection{When Inference Fails}
+X10's type inference is not perfect.  Once in a while, it will infer the wrong
+type for something.  When it does, there's a simple solution: write down the
+correct type.
+
+The most common case where type inference is allowed and does the wrong thing
+is defining a method to override.  You might be tempted to write this: 
+\begin{xten}
+class Super {
+  def superstitious() = true;
+}
+class Sub extends Super {
+  def superstitious() = false;
+}
+\end{xten}
+\xcd`Super`'s definition of \xcd`superstitious` gives it the best type it can.
+That's the type of the expression \xcd`false`, which is
+\xcd`Boolean{self==false}`.  \xcd`Sub`'s definition of \xcd`superstitious`
+doesn't match this type, since \xcd`true` isn't a member of 
+\xcd`Boolean{self==false}`.
+
+So you need to write it like this, with \xcd`:Boolean` in line
+\xlref{superstitious-super}{2}: 
+%%START X10: InferredMethod.x10 superstitious
+\fromfile{InferredMethod.x10}
+\begin{xtennum}[]
+ class Super {
+  def superstitious() : Boolean = true;
+}
+ class Sub extends Super {
+  def superstitious() = false;
+}
+\end{xtennum}
+%%END X10: InferredMethod.x10 superstitious
+
+Another occasional failure of inference is array expressions, like 
+\xcd`[1]`.  The type of \xcd`1` is \xcd`Int{self==1}`, 
+so the type of \xcd`[1]` is approximately 
+\xcd`Array[Int{self==1}](1)` --- a one-dimensional array of 1's.  
+Which makes this program fail to compile: 
+\begin{xten}
+static def use(a:Array[Int](1)) = a(0);
+public static def main(argv:Array[String](1)) {
+  use([1]);
+}
+\end{xten}
+(See \Sref{sect:ArrayNonvariance} for an explanation of why 
+this must not work.)
+
+Fortunately, the type of \xcd`[1,2]` is \xcd`Array[Int](1)`, instead of
+something crazy -- but correct! -- like
+\xcd`Array[Int{self!=43}](1)`.\footnote{This type is even more accurate than
+the correct type.  If you know that it's an array of \xcd`Int`s that aren't
+43, you know it's an array of \xcd`Int`s.  Of course, they aren't 781 either,
+nor are they 3313. This process can go on for far too long.  X10 stops with
+the simpler \xcd`Int`.}
+
+Still, if you really want just \xcd`[1]`, or \xcd`[1,1,1]`, or some such
+thing, to be an array of \xcd`Int`s rather than an array of ones, you can
+put an explicit type cast on one of the \xcd`1`'s, to make X10 forget that it
+is anything but just some \xcd`Int`.  
+%%START X10: InferredArray.x10 inferredarray
+\fromfile{InferredArray.x10}
+\begin{xtennum}[]
+static def use(a:Array[Int](1)) = a(0);
+public static def main(argv:Array[String](1)) {
+  use([1 as Int, 1, 1, 1]);
+}
+\end{xtennum}
+%%END X10: InferredArray.x10 inferredarray
+Notice that we only needed to cast {\em one} element of the array to the type
+we wanted.  
+
 
 \section{Generics}
 \bard{do this!}
+
+\subsection{Nonvariance}
+\label{sect:ArrayNonvariance}
+
+What's the relationship between \xcd`Array[Int]` and \xcd`Array[Any]`?  Or,
+more broadly, if \xcd`T <: U`, what's the relationship between \xcd`Array[T]`
+and \xcd`Array[U]`?
+
+At first glance, it might seem that \xcd`Array[Int]` should be a subtype of
+\xcd`Array[Any]`.  After all, if you have an array of integers, you've
+certainly got an array of anythings. 
+
+Unfortunately, that doesn't work.  Here's why. 
+
+First of all, the basic property of an \xcd`Array[Int]` is that anything
+stored in it had better be an \xcd`Int`, and anything we get out of it had
+better be an \xcd`Int`.  If we ever store anything but an
+\xcd`Int` in it, something is seriously wrong.  
+
+Suppose that \xcd`Array[Int]` were a subtype of \xcd`Array[Any]`.  Then the
+following code would typecheck:
+\begin{xten}
+// This will not compile!
+val ai : Array[Int](1) = [1, 2, 3];
+val aa : Array[Any](1) = ai as Array[Any](1);
+aa(1) = "I am not a number";
+assert aa(1) == ai(1);
+\end{xten}
+\xcd`ai` is an array of integers.  \xcd`aa` is the same object as \xcd`ai`,
+except that it's got the type \xcd`Array[Any]` --- which is legitimate in the
+hypothetical alternate world where \xcd`Array[Int]<:Array[Any]`.  
+It's perfectly fine to set \xcd`aa(1)` to a string -- \xcd`aa`, being
+\xcd`Array[Any]`, can hold anything at all.  But, since \xcd`aa` is the same
+as \xcd`ai`, we've set \xcd`ai(1)` to a string, which is not allowed for an
+\xcd`Array[Int]`. 
+
+So, we can't have \xcd`Array[Int] <: Array[Any]`.
+
+How about the other way around.  Could we have \xcd`Array[Any] <: Array[Int]`?  
+
+That doesn't work either, for a similar reason.   If 
+\xcd`Array[Any]` were a subtype of \xcd`Array[Int]`
+\begin{xten}
+// This will not compile!
+val aa : Array[Any](1) = [true, "fish"];
+val ai : Array[Int](1) = aa as Array[Int](1);
+val i  : Int = ai(0);
+\end{xten}
+\xcd`aa` is an array of anythings, in this case containing a Boolean and a
+string. In this hypothetical alternate world, every \xcd`Array[Any]` is an
+\xcd`Array[Int]` too, so we can coerce \xcd`aa` to \xcd`ai`. Again, the two
+are the same array, just under different names.  But then, when
+we go to get an element out of \xcd`ai`, we get a Boolean value out, which is
+repugnant to the nature of an \xcd`Array[Int]`.  
+
+So, there's no subtyping in either direction between \xcd`Array[Int]` and
+\xcd`Array[Any]`. The same sort of examples show that, even if \xcd`S <: T`,
+there should never be any subtyping between \xcd`Array[S]` and \xcd`Array[T]`.  
+The technical term for this is that \xcd`Array` is {\em nonvariant}.  
+
+In fact, the same problem happens for nearly all generic types.  So, in X10,
+there's {\em never}  any subtyping relationship between \xcd`Fiddle[A]` and 
+\xcd`Fiddle[B]`, for {\em any} generic type \xcd`Fiddle` and {\em any}
+pair of different classes \xcd`A` and \xcd`B`.
+
+
 
 \section{Default Values}
 \label{sect:DefaultValues}
@@ -1272,7 +1461,7 @@ set to \xcd`false` -- the copy isn't an original.
 %%START X10: CopyDetection.x10 copydetection
 \fromfile{CopyDetection.x10}
 \begin{xtennum}[]
-public class CopyDetection {
+public struct CopyDetection {
   public transient original : Boolean = true; 
   public static def main(argv:Array[String](1)) {
      val x = new CopyDetection();
@@ -1280,13 +1469,15 @@ public class CopyDetection {
      at (here) {
        assert ! x.original; 
      }
+     val y = x;
+     assert y.original; 
   }
 }
 \end{xtennum}
 %%END X10: CopyDetection.x10 copydetection
 
 This only detects copying by \xcd`at` statements.  Other kinds of copying,
-like the assignment on line \xlref{copydetection-y}{} (remember, assignment of
+like the assignment on line \xlref{copydetection-y}{10} (remember, assignment of
 structs copies all the fields -- {\em including} transient ones) isn't marked
 this way.  
 
