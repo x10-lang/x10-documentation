@@ -109,6 +109,34 @@ classes are coercible to x10.lang.Any, and the implementation wrapper takes
 care of providing the default implementations of the methods of x10.lang.Any
 and the implementation of == that preserves object identity.
 
+<MT>
+x10.lang.Any has the following methods.
+
+    def toString():String;
+    def typeName():String;
+    def equals(that:Any):Boolean;
+    def hashCode():Int;
+
+Please note that x10.lang.{Int,Boolean,String,Any} are mapped to
+int,boolean,java.lang.{String,Object} respectively.
+
+If we consider the above mapping, we will see that the following methods of
+x10.lang.Any directly correspond to the methods of java.lang.Object.
+
+x10.lang.Any                             java.lang.Object
+---------------------------------------------------------------------------
+toString():x10.lang.String               java.lang.String toString()
+equals(x10.lang.Any):x10.lang.Boolean    boolean equals(java.lang.Object)
+hashCode():x10.lang.Int                  int hashCode()
+
+For typeName():String, we can provide a default implementation as
+this.getClass().getName() + "[x10.lang.Any, x10.lang.Any, ..., x10.lang.Any]".
+For operations such as instanceof or cast, we can also provide default
+implementations of $getRTT() and $getParam(int) by using Java reflection.
+
+Therefore we don't see difficulties for making Java classes as subtype of x10.lang.Any.
+</MT>
+
 Java classes have X10 run-time types that can be retrieved using the Class
 object.  They can be used as type arguments to X10 generic classes and
 methods.
@@ -139,6 +167,19 @@ signatures (e.g., java.lang.Integer instead of x10.interop.Java.int).
 
 Note that it is not possible for an X10 class to extend an existing Java class,
 because all X10 classes must subclass x10.lang.Object.
+
+<MT>
+x10.lang.Object is mapped to interface x10.core.RefI. 
+Although x10.core.RefI doesn't introduce additional methods over x10.core.Any,
+all X10 classes including hand-written XRJ must implement x10.core.RefI (for
+overloading Any and Object). But fortunately, since RefI is an interface,
+we can create an X10 class by extending an existing Java class, by implementing
+x10.core.RefI and providing proper implementations of the methods of x10.core.Any.
+This is the way we create x10.core.concurrent.AtomicInteger by extending
+java.util.concurrent.atomic.AtomicInteger.
+We can provide a wrapper class and delegate all methods to the wrapped Java object,
+but wrapping is an overhead we should avoid across the boundary.
+</MT>
 
 To access a static field of a Java class or interface, the X10 user will simply
 refer to it by name.  Static fields of Java classes are mutable.  Instance
