@@ -1170,6 +1170,10 @@ and \xcd`x>y ? 0 : 1`, where the results have similar types.  (Even in these
 cases, the results don't have the {\em same} types.)  But X10 allows 
 arrays with mixed-up element types, like this: 
 %%START X10: InferredCUB.x10 inferredcuba
+\fromfile{InferredCUB.x10}
+\begin{xtennum}[]
+val a = [1, true, "yes"];
+\end{xtennum}
 %%END X10: InferredCUB.x10 inferredcuba
 In fact, there's nothing unusual for X10 going on here.  Every type in X10,
 including the  \xcd`Int`, \xcd`Boolean`, and \xcd`String` represented here, is
@@ -1216,14 +1220,91 @@ anything could be.
 
 
 \subsection{Type Inference in Calls to Generic Methods}
-\bard{Do me!}
 
+X10 can infer type parameters, too.  This can save a lot of typing and
+clutter.  Start with a \xcd`Pair` class, like this: 
+%%START X10: GenericInference.x10 geninfdef
+\fromfile{GenericInference.x10}
+\begin{xtennum}[]
+static struct Pair[X,Y]{
+  public val x:X;
+  public val y:Y;
+  public def this(x:X, y:Y) {
+    this.x = x; this.y = y;
+  }
+}
+static def useIntStr(p:Pair[Int, String]){}
+\end{xtennum}
+%%END X10: GenericInference.x10 geninfdef
 
+It can get tiresome to write the types whenever we make a new \xcd`Pair`: 
+%%START X10: GenericInference.x10 geninflong
+\fromfile{GenericInference.x10}
+\begin{xtennum}[]
+val p = Pair[Int, String](2, "long");
+useIntStr(p);
+\end{xtennum}
+%%END X10: GenericInference.x10 geninflong
 
+X10 can perfectly well figure out the types by itself, like this: 
+%%START X10: GenericInference.x10 geninfok
+\fromfile{GenericInference.x10}
+\begin{xtennum}[]
+static def useItOK(i:Int, s:String) {
+  val p = Pair(i+1, s + "!");
+  useIntStr(p);
+}
+\end{xtennum}
+%%END X10: GenericInference.x10 geninfok
 
+In this example, the generic types \xcd`X` and \xcd`Y` were the types of the
+arguments, and X10 could just use the argument types.  The situation doesn't
+need to be that simple.  The actual type could be buried several levels down;
+X10 will happily excavate to find it.
+In the following example, the \xcd`rip` method has to strip off the
+\xcd`Array` type and break apart the \xcd`=>` type to find out what \xcd`X`
+and \xcd`Y` ought to be: 
+%%START X10: GenericInference.x10 geninfRip
+\fromfile{GenericInference.x10}
+\begin{xtennum}[]
+static def rip[X,Y](a: Array[(Y)=>X]) = "deep";
+static def useRip(i:Int){
+   type myX = Byte;
+   type myY = Long;
+   val a : Array[(myY)=>myX] = null;
+   val r = rip(a);
+}
 
+\end{xtennum}
+%%END X10: GenericInference.x10 geninfRip
 
-\bard{here}
+This kind of type inference works pretty well for methods.  It doesn't work
+nearly as well for structs and classes.  It's quite easy to trip up and give
+\xcd`Pair` arguments whose types aren't just \xcd`Int` and \xcd`String`, like
+this: 
+%%START X10: GenericInference.x10 geninfail
+\fromfile{GenericInference.x10}
+\begin{xtennum}[]
+static def useItFail(){
+  val p = Pair(2, "short");
+  // ERROR --  useIntStr(p);
+}
+\end{xtennum}
+%%END X10: GenericInference.x10 geninfail
+\xcd`2`'s type is \xcd`Int{self==2}`, and similarly for \xcd`"short"`, so 
+\xcd`p` gets type \xcd`Pair[Int{self==2},String{self=="short"}]`.  This can't
+be passed to \xcd`useIntStr`.  As usual when this happens, you need to use
+explicit types: 
+%%START X10: GenericInference.x10 geninunfail
+\fromfile{GenericInference.x10}
+\begin{xtennum}[]
+static def useItFail(){
+  val p = Pair[Int, String](2, "short");
+  useIntStr(p);
+}
+\end{xtennum}
+%%END X10: GenericInference.x10 geninunfail
+
 
 \subsection{When Inference Fails}
 X10's type inference is not perfect.  Once in a while, it will infer the wrong

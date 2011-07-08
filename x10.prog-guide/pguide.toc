@@ -79,12 +79,12 @@
 \contentsline {subsection}{\numberline {6.3.1}Type Inference in {\tt val}}{119}{subsection.6.3.1}
 \contentsline {subsection}{\numberline {6.3.2}Type Inference in {\tt def}}{121}{subsection.6.3.2}
 \contentsline {subsection}{\numberline {6.3.3}Type Inference in Arrays and Conditionals}{121}{subsection.6.3.3}
-\contentsline {subsection}{\numberline {6.3.4}Type Inference in Calls to Generic Methods}{121}{subsection.6.3.4}
-\contentsline {subsection}{\numberline {6.3.5}When Inference Fails}{121}{subsection.6.3.5}
-\contentsline {section}{\numberline {6.4}Generics}{122}{section.6.4}
-\contentsline {subsection}{\numberline {6.4.1}Nonvariance}{123}{subsection.6.4.1}
-\contentsline {section}{\numberline {6.5}Default Values}{124}{section.6.5}
-\contentsline {subsection}{\numberline {6.5.1}How Default Values Can Make Your Brain Explode}{126}{subsection.6.5.1}
-\contentsline {subsection}{\numberline {6.5.2}How To Use This Oddity}{127}{subsection.6.5.2}
-\contentsline {section}{\numberline {6.6}Common Ancestors of Types}{128}{section.6.6}
-\contentsline {section}{\numberline {6.7}When Types Don't Work}{128}{section.6.7}
+\contentsline {subsection}{\numberline {6.3.4}Type Inference in Calls to Generic Methods}{122}{subsection.6.3.4}
+\contentsline {subsection}{\numberline {6.3.5}When Inference Fails}{123}{subsection.6.3.5}
+\contentsline {section}{\numberline {6.4}Generics}{125}{section.6.4}
+\contentsline {subsection}{\numberline {6.4.1}Nonvariance}{125}{subsection.6.4.1}
+\contentsline {section}{\numberline {6.5}Default Values}{126}{section.6.5}
+\contentsline {subsection}{\numberline {6.5.1}How Default Values Can Make Your Brain Explode}{128}{subsection.6.5.1}
+\contentsline {subsection}{\numberline {6.5.2}How To Use This Oddity}{129}{subsection.6.5.2}
+\contentsline {section}{\numberline {6.6}Common Ancestors of Types}{130}{section.6.6}
+\contentsline {section}{\numberline {6.7}When Types Don't Work}{130}{section.6.7}
