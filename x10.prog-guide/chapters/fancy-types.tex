@@ -22,7 +22,7 @@ using the programming environment X10DT -- and it'll print out a message
 telling you that the code doesn't fit together right.   
 
 The other thing that well-designed types do is try not to bother you too much.
-This is a bit tricky. The ultimate purpose of types {\em is} to bother you --
+This is a bit triczy. The ultimate purpose of types {\em is} to bother you --
 to get in your face when you're about to goof up. At the very least, you have
 to do some work in order to get any value of them. You have to write down some
 types in your program, enough to tell X10 what you mean, so it can catch when
@@ -818,7 +818,7 @@ But if you don't want to do that, for some reason, you can still write the
 original \xcd`fiddle`.  
 
 By default, \xcd`-STATIC_CHECKS=false`.  X10 will create {\em dynamic checks}
-whenever it realizes that some constraints are missing but
+whenever it realiaes that some constraints are missing but
 satisfiable.\footnote{``satisfiable'' means that it's {\em possible} that the
 constraints are right.  If X10 knows that constraints are unsatisfiable --
 that they couldn't possibly be right -- X10 will mercilessly refuse to compile
@@ -925,7 +925,72 @@ If you ever have written something like one of the first two forms, write
 
 \subsection{Why Generics Lose Constraints At Runtime}
 
-\bard{do this}
+X10's type system is usually robust and safe -- usually.  There are a few
+unsafe classes and methods.  And there's one systematic hole which, if you
+abuse it, can lead to certain type errors -- namely, constraints being false
+even though the typechecker says that they are true.
+
+The problem is that X10 doesn't keep constraints at runtime.  
+At {\em compile time}, \xcd`Int{self==0}` and \xcd`Int{self!=0}` are utterly
+different types, and X10 is very fussy about using them properly.  At {\em
+runtime}, the constraints are obliterated, and they both look like just plain
+\xcd`Int`.  
+
+
+%%START X10: ErasedGenerics.x10 eragen
+\fromfile{ErasedGenerics.x10}
+\begin{xtennum}[]
+type Three = Int{self==3};
+val a = new Array[Three](0..10, 3);
+a(0) = 3; 
+val aa = a as Any; 
+val b = aa as Array[Int](1) 
+b(0) = 1; 
+val x : Three = a(0); 
+assert x == 3; 
+\end{xtennum}
+%%END X10: ErasedGenerics.x10 eragen
+
+\begin{description}
+
+\item [line \xlref{eragen-a}{2}:] The array \xcd`a` has been declared to be
+      an array of \xcd`Three`s --- that is, copies of the integer \xcd`3`.
+      \xcd`a`'s compile-time type is \xcd`Array[Three](1)`.  But at {\em
+      runtime} the constraint is thrown away, so \xcd`a`'s {\em runtime} type
+      is \xcd`Array[Int](1)`. 
+
+\item [line \xlref{eragen-ass2a}{3}:] 
+      Here, we store a \xcd`3` into it, just to prove we can.  If we had used
+      any number but \xcd`3` here, X10 would refuse to compile the program.
+
+\item [line \xlref{eragen-aa}{4}:] \xcd`aa` is \xcd`a`, but without any
+      static type information.  It still has the {\em runtime} type
+      information of \xcd`a`, though.
+
+\item [line \xlref{eragen-b}{5}:] Now we cast the array to \xcd`Array[Int](1)`.
+      Since this is exactly the runtime type of \xcd`a`, the cast succeeds.
+      But now we're in trouble...
+
+\item [line \xlref{eragen-ass2b}{6}:] Since \xcd`b` is an \xcd`Array[Int](1)`,
+      we can store any \xcd`Int` into it -- here, we store \xcd`1`.  This is a
+      disaster in the making. \xcd`b` is the same object as \xcd`a`, and
+      \xcd`a` is declared to be \xcd`Array[Three](1)`. All that belongs in
+      \xcd`a` is \xcd`e`'s. 
+
+\item [line \xlref{eragen-x}{7}:] Since \xcd`a` is a
+      one-dimensional array of \xcd`Three`s, we should be able to get its
+      elements and have them be \xcd`Three`s, right...?  
+
+\item [line \xlref{eragen-fail}{8}:] Well, no.  \xcd`b(0)` was assigned
+      \xcd`1`, and \xcd`a(0)` is the same element, so \xcd`x` is \xcd`1`.
+      Which is pretty disappointing (or catastrophic) for a value of type
+      \xcd`Three`. 
+\end{description}
+
+The way to protect yourself from this flaw is the \xcd`-VERBOSE` compiler
+flag, which will warn you that the cast on line \xlref{eragen-b}{5} is unsound.  
+
+
 
 
 \section{Type Declarations}
