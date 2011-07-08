@@ -1096,15 +1096,125 @@ val x : Int = 1;
 \end{xten}
 which leaves out the constraint on the type.
 
-Most of the time, there's no value to leaving out that information.  
+Generally you'll want to keep all the constraints on types.  If we try to
+write this: 
+\begin{xten}
+// This doesn't work 
+val a : Array[Int] = [1,2,3];
+a(0) = 0;
+\end{xten}
+we'll get a compiler warning or error message.  The initial value
+\xcd`[1,2,3]` is a one-dimensional array.  But the type \xcd`Array[Int]` has
+lost track of the dimensionality.  So, the attempt to subscript it with one
+index, \xcd`a(0)`, is a problem.
 
-\bard{<: some more}
+We could be more precise with the type, like this: 
+%%START X10: InferredSubscript.x10 inferredsubscript
+\fromfile{InferredSubscript.x10}
+\begin{xtennum}[]
+val a : Array[Int](1) = [1,2,3];
+a(0) = 0;
+\end{xtennum}
+%%END X10: InferredSubscript.x10 inferredsubscript
 
+This actually loses some other information about the array that X10's type
+keeps track of -- that it is rectangular, and indices start at 0.  In most
+cases it's a bad idea to specify exact types with \xcd`val`.  
+
+It's often a kindness for people and compilers reading your program to give
+{\em some} type information.  Explaining that you wanted \xcd`a` to be some
+kind of \xcd`Array[Int]` can be quite helpful.  It can catch some errors -- if
+we had somehow typed \xcd`"[1,2,3]"`, X10 would say that we've got a string
+rather than any sort of \xcd`Array[Int]`.  
+
+So X10 allows you to give {\em partial} type information in a \xcd`val`
+declaration: 
+%%START X10: InferredSubscript.x10 inferredowl
+\fromfile{InferredSubscript.x10}
+\begin{xtennum}[]
+val a <: Array[Int] = [1,2,3]; 
+a(0) = 0;
+\end{xtennum}
+%%END X10: InferredSubscript.x10 inferredowl
+X10 will make sure that whatever you have told it is right.  In
+\xlref{inferredowl-owl}{1}, it will confirm that \xcd`a` is indeed an
+\xcd`Array[Int]`.  But, unlike the previous example with \xcd`:`, it won't
+forget everything else it knows.  It will keep the full inferred type for
+\xcd`a`.  
+
+If you want to specify types for \xcd`val`s, it's usually best to use \xcd`<:`
+rather than \xcd`:`.
 
 \subsection{Type Inference in {\tt def}}
-\bard{Do me!}
+
+You can specify the type of a method if you want, like this: 
+%%START X10: InferredMethod.x10  inferredmethoda
+\fromfile{InferredMethod.x10}
+\begin{xtennum}[]
+def specify():Int = 1;
+\end{xtennum}
+%%END X10: InferredMethod.x10 inferredmethoda
+But you usually don't bother, like this:
+%%START X10: InferredMethod.x10  inferredmethodb
+\fromfile{InferredMethod.x10}
+\begin{xtennum}[]
+def infer() = 2; 
+\end{xtennum}
+%%END X10: InferredMethod.x10 inferredmethodb
+
+
 \subsection{Type Inference in Arrays and Conditionals}
-\bard{Do me!}
+
+We've mostly seen array and conditional expressions like \xcd`[1,2,3]`
+and \xcd`x>y ? 0 : 1`, where the results have similar types.  (Even in these
+cases, the results don't have the {\em same} types.)  But X10 allows 
+arrays with mixed-up element types, like this: 
+%%START X10: InferredCUB.x10 inferredcuba
+%%END X10: InferredCUB.x10 inferredcuba
+In fact, there's nothing unusual for X10 going on here.  Every type in X10,
+including the  \xcd`Int`, \xcd`Boolean`, and \xcd`String` represented here, is
+a subtype of \xcd`Any`.  This array simply has type
+\xcd`Array[Any]`.\footnote{Or, more precisely, \xcd`Array[Any]` with some
+constraints.}  
+
+In fact, there is {\em nothing} special going on here.  Whenever X10 tries to
+infer one type out of several, it computes a type that's broad enough to cover
+each of the types.  This happens in several places: 
+\begin{itemize}
+\item Array expressions, like \xcd`[1,2,3]` and \xcd`[1, true, "yes"`;
+\item Conditional expressions, like \xcd`x>y ? 0 : 1`
+\item Multiple returns from a method, like 
+\begin{xten}
+def choice(x:Int) { 
+  if (x>0) return 1; else return "hello?"; 
+}
+\end{xten}
+\end{itemize}
+
+In all these situations, X10 finds a type, called the {\em computed upper
+bound}, which is general enough to include all of the types in question, and,
+hopefully, not too much more general.  If it can't do any better than picking
+\xcd`Any`, that's what it will do -- and \xcd`Any` is always a possibility.
+But, if all the elements are integers, it'll use \xcd`Int` or some constrained
+version of it.  
+
+For \xcd`["string", ["array"]]`, X10 infers that the type \xcd`Array[Object]`.
+Both \xcd`"string"` and \xcd`["array"]` are \xcd`Object`s.  X10 could actually
+find a more precise type -- both of them are \xcd`Object{self!=null}`s. X10
+picks the simpler type, hoping that it is more likely to be what was intended.
+
+Similarly, for \xcd`[1,2,3]`, X10 picks \xcd`Int`.  There are more accurate
+choices available.  All three numbers are \xcd`Int{self!=4}`, for example.
+They're also \xcd`Int{self!=4,self!=5}`, and so on.  In fact, there is no {\em
+best} choice in the X10 type system\footnote{Unless one is willing to write
+all {$2^{32}-3$} values that these three numbers are not, which will probably
+crash the compiler.}  X10's choice of \xcd`Int` is about as sensible as
+anything could be. 
+
+
+
+
+
 \subsection{Type Inference in Calls to Generic Methods}
 \bard{Do me!}
 

@@ -242,7 +242,7 @@ class Fragment:
         relfn = os.path.relpath(self.x10FileName, x10dir)
         return relfn
     def confirmFileName(self, partialFileName, texpath, absLineNo):
-        if self.x10FileName.find(partialFileName) == -1:
+        if self.x10FileName.find(partialFileName.strip()) == -1:
             raise Exception("\nOh no!\nA fragment is misfiled!\n  The file name for fragment '{0}' is listed in the TeX file {1} (line {2})\nas being '{3}',\nbut it is actually '{4}'.".format(
             self.fragName, texpath, absLineNo, partialFileName, self.x10FileName))
     def textOfLineNamed(self, fragLine, texpath, absLineNo):
@@ -513,9 +513,9 @@ class TexRewriter:
                             inFile = None
                             inFragmentName = None
                         else:
-                            raise Exception("\n%%START/%%END mismatch\nIn TeX file {0},\nat line {1}, is the %%END of a fragment with file\n'{2}'\nand fragment name '{3}'.\nHowever, this matches a %%START with file \n'{4}'\nand fragment name '{5}'.\nThis is not to be endured!".format(
+                            raise Exception("\n%%START/%%END mismatch\nIn TeX file {0},\nat line {1}, is the %%END of a fragment with file\n'{2}'\nand fragment name '{3}'.\nHowever, this matches a %%START with file \n'{4}'\nand fragment name '{5}'.\nThis is not to be endured!\nBTW: {6}, {7}".format(
                             texpath, absLineNo, inFile, inFragmentName,
-                            m.group(1), m.group(2)))
+                            m.group(1), m.group(2),inFile == m.group(1) , inFragmentName == m.group(2)))
                     else:
                         # Not an %%END, so just skip it.
                         pass
@@ -530,7 +530,7 @@ class TexRewriter:
                         nIncludes += 1
                         new.write(line)
                         partialFileName = m.group(1)
-                        inFile = partialFileName
+                        inFile = partialFileName.strip()
                         fragmentName = m.group(2)
                         params = m.group(3)
                         #if params != None: print("PaRaM: '" + str(params) + "'")
