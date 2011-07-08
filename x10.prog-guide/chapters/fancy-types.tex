@@ -923,7 +923,8 @@ If you ever have written something like one of the first two forms, write
 \xcd`x==null` instead.  It's much easier to understand, for you and for X10.
 
 
-\subsection{Why Generics Lose Constraints At Runtime}
+\subsection{Generics Lose Constraints At Runtime}
+\label{sect:GenericsLose}
 
 X10's type system is usually robust and safe -- usually.  There are a few
 unsafe classes and methods.  And there's one systematic hole which, if you
@@ -935,8 +936,6 @@ At {\em compile time}, \xcd`Int{self==0}` and \xcd`Int{self!=0}` are utterly
 different types, and X10 is very fussy about using them properly.  At {\em
 runtime}, the constraints are obliterated, and they both look like just plain
 \xcd`Int`.  
-
-
 %%START X10: ErasedGenerics.x10 eragen
 \fromfile{ErasedGenerics.x10}
 \begin{xtennum}[]
@@ -1445,8 +1444,6 @@ Notice that we only needed to cast {\em one} element of the array to the type
 we wanted.  
 
 
-\section{Generics}
-\bard{do this!}
 
 \subsection{Nonvariance}
 \label{sect:ArrayNonvariance}
@@ -1740,11 +1737,54 @@ this way.
 
 
 
-
-
-
-\section{Common Ancestors of Types}
-\bard{do this!}
 \section{When Types Don't Work}
-\bard{do this!}
+
+X10's types are pretty strong.  Most of the time, when a program passes X10's
+type checker, it won't have any runtime type errors.  But in a few places X10
+has had to make compromises with practicality. There are way to make a program
+pass the type checker and still have a type error.
+
+Just to be clear -- these are places where X10 won't protect you.  They are
+not loopholes intended for clever programmers to exploit.  
+Intentionally sleazing around the type system is almost always a bad idea,
+and, nearly all of the time, you can get the effect you really need in other,
+less felonious ways.
+
+Even if you find yourself in a situation where you have to break X10's type
+system, we recommend that you encapsulate the violation in a method or
+function, so that the actual danger is kept under control.  Document your code
+very carefully, too ... of course, you always do that, but when you're
+breaking the language's laws, you need to be extra-clear about what you're
+doing and why you're doing it.
+
+\begin{enumerate}
+
+\item As we have seen in \Sref{sect:GenericsLose}, generic type variables lose
+      constraint information at runtime.  You can use this to ignore or
+      violate constraints -- making an \xcd`Array[Fish{self!=null}]` look like
+      an \xcd`Array[Fish]`, say.  This will let you store \xcd`null` into it,
+      and get a null-pointer exception from code that looks as if it cannot
+      possibly get a null-pointer exception.  This will rarely if ever help you.
+
+      You can't use this loophole to store anything but kinds of \xcd`Fish` in
+      that array. The loophole erases constraints, but no other type
+      information.
+
+\item Custom serialization lets you program your own ways that objects are
+      turned into bytes to send from one place to another, and how the bytes
+      are reassembled back into objects.  Since you are turning bytes into
+      objects, you can do nearly any sort of wicked deed in custom
+      serialization.  
+
+\item The library type \xcd`x10.util.IndexedMemoryChunk` gives a low-level
+      interface to blocks of memory.  A few methods on the class are not
+      type-safe. The API explains what's going on with this class.  It's very
+      helpful for implementing abstractions like arrays, but it has to be used
+      very carefully.
+
+\item Code written that uses underlying Java or C++ can do anything that
+      arbitrary Java or C++ are capable of doing.  In particular they can
+      break all of the X10 compiler's careful ways of doing things.  
+
+\end{enumerate}
 

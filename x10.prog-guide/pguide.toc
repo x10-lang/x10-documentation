@@ -73,7 +73,7 @@
 \contentsline {subsection}{\numberline {6.1.9}STATIC\_CHECKS}{113}{subsection.6.1.9}
 \contentsline {subsubsection}{Dynamic Checks}{115}{section*.17}
 \contentsline {subsection}{\numberline {6.1.10}Incompleteness}{116}{subsection.6.1.10}
-\contentsline {subsection}{\numberline {6.1.11}Why Generics Lose Constraints At Runtime}{117}{subsection.6.1.11}
+\contentsline {subsection}{\numberline {6.1.11}Generics Lose Constraints At Runtime}{117}{subsection.6.1.11}
 \contentsline {section}{\numberline {6.2}Type Declarations}{118}{section.6.2}
 \contentsline {section}{\numberline {6.3}Type Inference}{120}{section.6.3}
 \contentsline {subsection}{\numberline {6.3.1}Type Inference in {\tt val}}{120}{subsection.6.3.1}
@@ -81,10 +81,8 @@
 \contentsline {subsection}{\numberline {6.3.3}Type Inference in Arrays and Conditionals}{122}{subsection.6.3.3}
 \contentsline {subsection}{\numberline {6.3.4}Type Inference in Calls to Generic Methods}{123}{subsection.6.3.4}
 \contentsline {subsection}{\numberline {6.3.5}When Inference Fails}{124}{subsection.6.3.5}
-\contentsline {section}{\numberline {6.4}Generics}{126}{section.6.4}
-\contentsline {subsection}{\numberline {6.4.1}Nonvariance}{126}{subsection.6.4.1}
-\contentsline {section}{\numberline {6.5}Default Values}{127}{section.6.5}
-\contentsline {subsection}{\numberline {6.5.1}How Default Values Can Make Your Brain Explode}{129}{subsection.6.5.1}
-\contentsline {subsection}{\numberline {6.5.2}How To Use This Oddity}{130}{subsection.6.5.2}
-\contentsline {section}{\numberline {6.6}Common Ancestors of Types}{131}{section.6.6}
-\contentsline {section}{\numberline {6.7}When Types Don't Work}{131}{section.6.7}
+\contentsline {subsection}{\numberline {6.3.6}Nonvariance}{126}{subsection.6.3.6}
+\contentsline {section}{\numberline {6.4}Default Values}{127}{section.6.4}
+\contentsline {subsection}{\numberline {6.4.1}How Default Values Can Make Your Brain Explode}{129}{subsection.6.4.1}
+\contentsline {subsection}{\numberline {6.4.2}How To Use This Oddity}{130}{subsection.6.4.2}
+\contentsline {section}{\numberline {6.5}When Types Don't Work}{131}{section.6.5}
