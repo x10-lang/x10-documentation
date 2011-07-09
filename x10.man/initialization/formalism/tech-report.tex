@@ -23,9 +23,7 @@
 \mynewcommand{\async}{\code{async}}
 \mynewcommand{\finish}{\code{finish}}
 %\newcommand{\Ofn}[1]{\ensuremath{O(#1)}}
-\mynewcommand{\Read}{\code{Read}}
-\mynewcommand{\SyncWrite}{\code{SyncWrite}}
-\mynewcommand{\AsyncWrite}{\code{AsyncWrite}}
+\mynewcommand{\nonescaping}{\code{nonescaping}}
 
 \mynewcommand{\hasync}{\code{async}}
 \mynewcommand{\hfinish}{\code{finish}}
@@ -64,6 +62,14 @@ FX10 is similar to Featherweight Java (FJ), however it is both imperative (using
     models X10 specific constructs such as \finish and \async.
 FX10 also models field initialization including the fact that one can read a field only after it was definitely assigned.
 %    and that final (\code{val}) fields can be assigned exactly once (in \Ref{Section}{val}).
+FX10 type-checking rules are similar to those in Masked Types~\cite{XinQi:2009},
+    with two major differences:
+    (i)~simplicity,
+    (ii)~concurrency support.
+FX10 is simpler than masked types, but also less expressive, e.g., FX10 cannot express cyclic initialization.
+The simplicity stems from the fact that masked are not visible in the program itself.
+Instead, masks are used only during type-checking to describe partially initialized objects.
+In addition, FX10 models concurrency constructs such as \finish and \async (that do not exist in masked types).
 
 FX10 does \emph{not} model other aspects of X10 such as:
 \begin{description}
@@ -77,10 +83,10 @@ FX10 does \emph{not} model other aspects of X10 such as:
         (i)~it infers the type of a final field with an initializer,
         (ii)~it infers method return types,
         (iii)~using an inter-procedural dataflow analysis it infers
-            3 sets for each non-escaping method: $\Read$, $\SyncWrite$, $\AsyncWrite$.
-            $\Read$ is the set of fields that can be read by the method,
-                $\SyncWrite$ are the fields that must be definitely-assigned by the method,
-                and $\AsyncWrite$ are the fields that must be definitely-asynchronously-assigned by the method.
+            3 sets for each non-escaping method: $\nonescaping(R,S,A)$.
+            $R$ is the set of fields that can be read by the method,
+                $S$ are the fields that must be definitely-assigned by the method,
+                and $A$ are the fields that must be definitely-asynchronously-assigned by the method.
 
     FX10 does not model inference, and instead this information is explicitly presented.
   \item[null]
@@ -124,27 +130,21 @@ $\hF ::= \hf:\hC$
 $\hM ::= \hMM ~ \hm(\ol{\hx}:\ol{\hC}):\hC=\he;$
 & Method declaration. \\
 
-$\hMM ::= \hescaping ~~|~~ \Read(\ol{\hf})~~\SyncWrite(\ol{\hf})~~\AsyncWrite(\ol{\hf})$
+$\hMM ::= \hescaping ~~|~~ \nonescaping(\ol{\hf},\ol{\hf},\ol{\hf})$
 & Method Modifier. \\
 
 $\hp ::= \hl ~~|~~ \hx$
 & Path (location or parameter). \\
 
-$\he ::= \hl ~|~ \hx ~|~ \hp.\hf ~|~ \hp.\hf = \hp ~|~ \hp.\hm(\ol{\hp}) ~|~ \hnew{\hC}~|~ \hfinish~\he~|~ \hasync~\he;\he~|~ \hlet{\hx}{\he}{\he}$
+$\he ::= \hl ~|~ \hx ~|~ \hp.\hf ~|~ \hp.\hf = \hp ~|~ \hp.\hm(\ol{\hp}) ~|~ \hnew{\hC}~|~ \hfinish~\he~|~ \hasync~\he;\he ~|~ \he;\he ~|~ \hval{\hx}{\he}$
 & Expressions. \\ %: locations, parameters, field access\&assignment, invocation, \code{new}
-
-$\hs ::= \hf ~|~ *$
-& Mask. \\
-
-$\hT ::= \hC\myinit{\ol{\hs}}{\ol{\hs}}$
-& Masked types. \\
 
 \hline
 \end{tabular}
 \end{center}
 \caption{FX10 Syntax.
     The terminals are locations (\hl), parameters and \this (\hx), field name (\hf), method name (\hm), class name (\hB,\hC,\hD,\hObject),
-        and keywords/symbols (\super, \hescaping, \Read, \SyncWrite, \AsyncWrite, \hhnew, \finish, \async, \code{let}, \code{in}, $;$, $.$, $(\ldots)$).
+        and keywords/symbols (\super, \hescaping, \nonescaping, \hhnew, \finish, \async, \code{val}, \code{in}, $;$, $.$, $(\ldots)$).
     The program source code cannot contain locations (\hl), because locations are only created during execution/reduction in \RULE{R-New} of \Ref{Figure}{reduction}.
     }
 \label{Figure:syntax}
@@ -153,24 +153,123 @@ $\hT ::= \hC\myinit{\ol{\hs}}{\ol{\hs}}$
 
 \Ref{Figure}{syntax} shows the syntax of FX10.
 %(\Ref{Section}{val} will later add the \hval and \hvar field modifiers.)
+Expression~$\he;\he'$ means to evaluate first \he then to evaluate and return~$\he'$.
 Expression~$\hasync~\he;\he'$ means evaluate \he concurrently (in a different thread) while the result is the evaluation of $\he'$.
 
 The syntax is similar to X10 real syntax with the following difference:
     instead of doing inference, we explicitly write the fields of \this that are initialized and read in
     every initializing method
-    (using 3 sets: $\Read(\ol{\hf})$, $\SyncWrite(\ol{\hf})$, and $\AsyncWrite(\ol{\hf})$).
-Initializing methods (also called non-escaping methods) cannot leak \this and they can only read fields of \this that are in the \Read set.
+    (using 3 sets: $\nonescaping(R,S,A)$).
+Initializing methods (also called non-escaping methods) cannot leak \this and they can only read fields of \this that are in the $R$ set.
 Non-initializing methods (whose receiver is always a cooked object) are marked with \hescaping
     because they can escape \this (e.g., pass \this as an argument to another method).
 
-
-
 \Section{Typing}
-{Subtyping} is exactly as in FJ:
+The type of \code{val} locals is inferred because it might not be expressible in the above syntax.
+For example, consider the program on line~1 and the expression on line~2:
+\begin{xten}
+class D extends Object { f:Object; }
+val d = new D; d.f = new Object
+\end{xten}
+Then, the type of \code{d} is \code{D} where field \code{f} is uninitialized
+    (which we formally write below as $\code{D}\myinit{\hf}{\hf}$).
+Therefore, reading \code{d.f} would be illegal, but writing to \code{d.f} would update the type of \code{d}
+    to be fully initialized (formally $\code{D}\mycooked$).
+
+Therefore, types in FX10 are flow-sensitive, i.e., the type of a variable changes after its fields are assigned.
+We follow the notation of Masked Types~\cite{XinQi:2009}, and include in the type all the
+    fields that have not been synchronously and asynchronously initialized yet,
+    i.e., a type~$\hT$ has the syntax~$\hC\myinit{\ol{\hf_s}}{\ol{\hf_a}}$,
+        where~$\ol{\hf_s}$ and~$\ol{\hf_a}$ (where~$\ol{\hf_a} \subseteq \ol{\hf_s}$)
+        are sets of fields that might
+        be synchronously and asynchronously uninitialized, respectively.
+For example, the type~$\hC\mycooked$ is a fully initialized type,
+    whereas~$\hC\myinit{\hf}{\hf}$ have an uninitialized field \hf
+    (more precisely, \hf might be uninitialized).
+
+Consider the following class:
+\begin{xten}
+class A extends Object {
+  f:A;
+  f2:A;
+  Read(f2) SyncWrite(f) AsyncWrite(f) build(a:A) =
+    val x = this;
+    val y =
+      finish
+        val z =
+          async
+            val w = this.f = a;
+          this;
+}
+class B extends A { f3:A; }
+\end{xten}
+What are the types of \code{w,x,y,z}?
+Because the method is marked with \code{Read(f2)} (line~4),
+    we know that \code{f2} has been initialized,
+    but \code{f} might not.
+Also note that fields of subclasses of \code{A} might be uninitialized (e.g., \code{f3}),
+    so we mark it in the type using \code{*} (meaning that some set of unknown fields might be uninitialized).
+So the type of \code{x} and \this on line~5 is
+    $\code{A}\myinit{\hf,\code{*}}{\hf,\code{*}}$.
+In line~10, the type of \code{w} is
+    $\code{A}\myinit{\code{*}}{\code{*}}$,
+    because \code{f} has been initialized.
+In line~8, the type of \code{z} is
+    $\code{A}\myinit{\hf,\code{*}}{\code{*}}$
+    because \code{f} has been asynchronously initialized
+    (so it can be read only after we cross an enclosing \finish).
+Finally, in line~6, the type of \code{y} is
+    $\code{A}\myinit{\code{*}}{\code{*}}$
+    because we cross a \finish.
+We stress that the program does not include masked types;
+    they only appear during type-checking.
+
+
+%$\hs ::= \hf ~|~ *$
+%& Mask. \\
+%$\hT ::= \hC\myinit{\ol{\hs}}{\ol{\hs}}$
+%& Masked types. \\
+
+
+\emph{Subclassing} is exactly as in FJ:
     the transitive closure of the \hextends relation.
 That is, $\hC \st \hD$ iff $\hC=\hD$ or \hC transitively extends $\hD$.
+%\emph{Subtyping} is defined as follows:
+%    $\hC\myinit{\ol{\hf_s}}{\ol{\hf_a}} \st \hC'\myinit{\ol{\hf'_s}}{\ol{\hf'_a}}$
+%    iff
+%    $\hC \st \hC'$ and~$\ol{\hf_s} \subseteq \ol{\hf'_s}$ and~$\ol{\hf_a} \subseteq \ol{\hf'_a}$.
+%Therefore, a cooked object can be used anywhere a raw object is expected
+%    (e.g., $\hC\mycooked \st \hC\myinit{{\hf}}{{\hf}}$).
 
-Similarly, we define:
+A \emph{type environment}~$\Gamma$ maps variables and locations to types,
+    and we write either~$\hx:\hT \in \Gamma$ or~$\Gamma(\hx)=\hT$.
+The domain of a mapping is written as~$\dom(\Gamma)$.
+We also write~$\Gamma[\hx:\hT]$ to represent an new environment that maps~$\hx$ to~$\hT$
+    (regardless of whether~$\hx \in \dom(\Gamma)$ or not).
+
+The process of type-checking an expression~\he produces a new environment
+    where variables are mapped to new types that are more initialized,
+    i.e., the sets~$\ol{\hf_s}$ and~$\ol{\hf_a}$ are decreasing (or unchanged).
+Formally, we write~$\Gdash \he : \hT, \Gamma'$ to mean that the type of~\he
+    is~\hT, and the new environment (after evaluating \he) is~$\Gamma'$.
+The change in the environment is written as~$\Delta = \Gamma' - \Gamma$,
+    and it maps variables to the change in their two uninitialized sets,
+    i.e., which fields were assigned.
+For example, if~$\Gamma(\hx)=\hC\myinit{\ol{\hf_s}}{\ol{\hf_a}}$
+    and~$\Gamma'(\hx)=\hC\myinit{\ol{\hf'_s}}{\ol{\hf'_a}}$,
+    then~$\Delta(\hx)=\initsets{\ol{\hf_s} \setminus \ol{\hf'_s}}{\ol{\hf_a} \setminus \ol{\hf'_a}}$.
+We also define the reverse operator so that~$\Gamma' = \Gamma + \Delta$.
+For an environment change~$\Delta$, we define two operators named
+    $\finishG_\Delta$ and~$\asyncG_\Delta$ as follows,
+    if~$\Delta(\hx)=\initsets{\ol{\hf_s}}{\ol{\hf_a}}$ then
+\beqst
+    \finishG_\Delta(\hx) &= \initsets{\ol{\hf_a}}{\ol{\hf_a}} \\
+    \asyncG_\Delta(\hx) &= \initsets{\emptyset}{\ol{\hf_a}} \\
+\eeq
+Intuitively, after passing a \finish, all the asynchronous assignments become synchronous;
+    and after passing an \async, all the synchronous assignments become void.
+
+Similarly to FJ, we define:
 (i)~$\fields(\hC)=\ol{\hD}~\ol{\hf}$ returns all fields of \hC (both those declared by \hC and recursively inherited from its superclass),
     and~$\ftype{}(\hf_i,\hC) =\hD_i$.
 (ii)~$\mtype(\hm,\hC) = \ol{\hB}\mapsto\hD$ returns the type of method \hm in class \hC.
@@ -178,7 +277,6 @@ Similarly, we define:
 Because methods have a modifier (\hMM) in FX10, we also define:
 (iv)~$\mmodifier(\hm,\hC) = \hMM$ returns the method modifier of \hm in class \hC.
 
-The type of \this is flow-sensitive, i.e., it changes after fields are initialized.
 
 
 \begin{figure*}[t]
@@ -188,7 +286,7 @@ The type of \this is flow-sensitive, i.e., it changes after fields are initializ
 $\typerule{
     \Gdash \he : \hT, \Gamma'
 }{
-  \Gdash \finish~\he~:~\hT, \finishG(\Gamma,\Gamma')
+  \Gdash \finish~\he~:~\hT, \Gamma + \finishG_{\Gamma'-\Gamma}
 }$~\RULE{(T-Finish)}
 \quad
 $\typerule{
@@ -196,27 +294,36 @@ $\typerule{
         \gap
     \Gdash \he' : \hT', \Gamma"
 }{
-  \Gdash \async{}~\he;~\he'~:~\hT', \asyncG(\Gamma,\Gamma',\Gamma")
+  \Gdash \async{}~\he;~\he'~:~\hT', \Gamma" + \asyncG_{\Gamma'-\Gamma}
 }$~\RULE{(T-Async)}
 \\\\
 
 $\typerule{
   \Gdash \he:\hT,\Gamma'
     \gap
-  \Gamma',\hx:\hT \vdash \he':\hT',\Gamma"
+  \Gamma" = \Gamma'[\hx:\hT]
 }{
-  \Gdash \hlet{\hx}{\he}{\he'} : \hT',\Gamma"
-}$~\RULE{(T-Let)}
+  \Gdash \hval{\hx}{\he} : \hT,\Gamma"
+}$~\RULE{(T-Val)}
 \\\\
 
 $\typerule{
+  \Gdash \he:\hT,\Gamma'
+        \gap
+  \Gamma' \vdash \he':\hT',\Gamma"
 }{
-  \Gdash \hl : \Gamma(\hl)
+  \Gdash \he;\he' : \hT',\Gamma"
+}$~\RULE{(T-Seq)}
+\\
+
+$\typerule{
+}{
+  \Gdash \hl : \Gamma(\hl), \Gamma
 }$~\RULE{(T-Location)}
 \quad
 $\typerule{
 }{
-  \Gdash \hx : \Gamma(\hx)
+  \Gdash \hx : \Gamma(\hx), \Gamma
 }$~\RULE{(T-Parameter)}\\\\
 
 
@@ -235,24 +342,35 @@ $\typerule{
     \gap
   \fields{}(\hC_0)=\ol{\hf}:\ol{\hC}
     \gap
-  \Gdash \hp':\hT',\Gamma
+  \Gdash \hp':\hC'\mycooked,\Gamma
     \gap
-  \hT' \st \hC_i\mycooked
+  \hC' \st \hC_i
+    \\
+  \Gamma' = \Gamma[\hp_0:\hC_0\myinit{\ol{f_s}\setminus\hf_i}{\ol{f_a}\setminus\hf_i}]
 }{
-  \Gdash \hp_0.\hf_i = \hp' : \hT',\Gamma
+  \Gdash \hp_0.\hf_i = \hp' : \hC'\mycooked,\Gamma'
 }$~\RULE{(T-Field-Assign)}\\\\
 
 
 $\typerule{
-  \Gdash \he_0:\hC_0
+  \Gdash \hp_0:\hC_0\myinit{\ol{f_s}}{\ol{f_a}},\Gamma
     \gap
   \mtype{}(\hm,\hC_0)=\ol{\hD}\mapsto\hC
     \gap
-  \Gdash \ol{\he}:\ol{\hC}
+  \Gdash \ol{\hp}:\ol{\hC\mycooked},\Gamma
     \gap
   \ol{\hC} \st \ol{\hD}
+    \gap
+  \mmodifier{}(\hm,\hC_0)=M
+    \\
+  \Gamma' =
+        \begin{cases}
+        \Gamma & M=\hescaping \hand \ol{f_s}=\emptyset \\
+        \Gamma[\hp_0:\hC_0\myinit{\ol{f_s}\setminus S}{\ol{f_a}\setminus A}] & M=\nonescaping(R,S,A) \hand R \cap \ol{f_s} = \emptyset\\
+        \end{cases}
+    \gap
 }{
-  \Gdash \he_0.\hm(\ol{\he}) : \hC
+  \Gdash \hp_0.\hm(\ol{\hp}) : \hC\mycooked,\Gamma'
 }$~\RULE{(T-Invoke)}\\\\
 
 $\typerule{
@@ -272,9 +390,12 @@ $\typerule{
 \end{figure*}
 
 
-Like in FJ, we check that method declarations are ok by ensuring that the type of the method body is a subtype
-    of the return type, and that an overriding method has the same signature.
-Unlike FJ, we also check that the method modifier (whether it is \hescaping or if it has the 3 sets specified).
+We check that method declarations are ok (\RULE{T-Method})
+    by ensuring that the type of the method body is a subtype
+    of the return type, and that the signature matches the method modifier.
+We also check that an overriding method (\RULE{T-Method-Override})
+    has the same signature
+    and the method modifier is stronger in the subclass. %(whether it is \hescaping or if it has the 3 sets specified).
 
 
 \beqst %{method-ok}
@@ -282,14 +403,14 @@ Unlike FJ, we also check that the method modifier (whether it is \hescaping or i
   t  =
         \begin{cases}
         \hC\mycooked & \hMM=\hescaping \\
-        \hC\myinit{A}{A}  & \hMM=\Read(R)~\SyncWrite(W_s)~\AsyncWrite(W_a) \qquad A=* \cup \fields{}(\hC) \setminus R \\
+        \hC\myinit{A}{A}  & \hMM=\nonescaping(R,W_s,W_a) \qquad A = (\fields{}(\hC) \setminus R),* \\
         \end{cases}\\
   \Gamma = \{ \ol{\hx}:\ol{\hD\mycooked},\this:t \} \\
-  \Gdash \he : \hD'\mycooked,\Delta \gap
+  \Gdash \he : \hD'\mycooked,\Gamma' \gap \Delta = \Gamma' - \Gamma \gap
     \hD' \st \hD \\
-  \code{if }\hMM=\Read(R)~\SyncWrite(W_s)~\AsyncWrite(W_a)\\
+  \code{if }\hMM=\nonescaping(R,W_s,W_a)\\
   %todo
-    ~~\code{then }  \Delta(\this) = \hC\myinit{f_s}{f_a} \hand W_s \subseteq W_a  \hand f_s \supseteq W_s \hand f_a \supseteq W_a
+    ~~\code{then }  \Delta(\this) = \initsets{\ol{f_s}}{\ol{f_a}} \hand W_s \subseteq W_a  \hand \ol{f_s} \supseteq W_s \hand \ol{f_a} \supseteq W_a
 }{
   \hMM ~ \hm(\ol{\hx}:\ol{\hD}):\hD=\he ~~\OK~\IN~\hC
 }~\RULE{(T-Method)}
@@ -301,9 +422,9 @@ Unlike FJ, we also check that the method modifier (whether it is \hescaping or i
     ~~\code{then } \ol{\hD'}\equiv\ol{\hD} \hand \hD'\equiv\hD \\
   \code{if }\mmodifier{}(\hm,\hC')=\hMM'\\
     ~~\code{then } \hMM=\hescaping \Rightarrow \hMM'=\hescaping \hand \\
-    \gap \hMM=\Read(R)~\SyncWrite(W_s)~\AsyncWrite(W_a) \Rightarrow\\
+    \gap \hMM=\nonescaping(R,W_s,W_a) \Rightarrow\\
         (\hMM'=\hescaping  \hor\\
-        (\hMM'=\Read(R')~\SyncWrite(W'_s)~\AsyncWrite(W'_a) \hand
+        (\hMM'=\nonescaping(R',W'_s,W'_a) \hand
             (R \subseteq R' \hand W_s \supseteq W'_s \hand W_a \supseteq W'_a))
 }{
   \hMM ~ \hm(\ol{\hx}:\ol{\hD}):\hD=\he ~~\code{Override-OK}~\IN~\hC
@@ -311,7 +432,7 @@ Unlike FJ, we also check that the method modifier (whether it is \hescaping or i
 \eeq
 
 
-As in FJ, a class is ok if all its methods \RULE{(T-Method)} are ok.
+As in FJ, a class is ok if all its methods satisfy both \RULE{T-Method} and \RULE{T-Method-Override}.
 
 
 \Section{Reduction}
@@ -479,8 +600,8 @@ A heap~$H$ is \emph{well-typed} iff
     i.e., for every location in the heap~$\hl \in \dom(H)$,
         where $H[\hl] = \code{C}(\ol{\hf}\mapsto\ol{\hl'})$
         and
-        for every field~$\hf_i$, we have that
-        $\Gamma_H(\hl_i') \st \ftype{}(\hf_i,\hC)$.
+        for every field~$\hf_i$, we have that~$H[\hl_i'] = \hC'(\ldots)$ and
+        $\hC' \st \ftype{}(\hf_i,\hC)$.
 
 
 An expression~\he is called \emph{closed} if it does not contain
