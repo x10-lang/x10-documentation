@@ -10,7 +10,6 @@
 \stepcounter{RuleCounter}
 \newcommand{\userule}[1]{\arabic{#1}}
 \newcommand{\definerule}[1]{\newcounter{#1}\addtocounter{#1}{\arabic{RuleCounter}}\stepcounter{RuleCounter}}
-\newcommand{\myrule}[2]{\textbf{Rule #1:} #2.}
 \newcommand{\removeGlobalRef}[1]{}
 
 \input{commands}
@@ -18,7 +17,6 @@
 \begin{document}
 
 
-\lstset{language=java,basicstyle=\ttfamily\small}
 
 
 \title{Object Initialization in X10}
@@ -30,6 +28,7 @@
 
 
 \maketitle
+
 
 
 \begin{abstract}
@@ -46,10 +45,10 @@
 % \keywords
 % Immutability, Ownership, Java
 
-
 \Section[introduction]{Introduction}
 \input{introduction}
 
+\vspace{-0.3cm}
 \Section[rules]{X10 Initialization Rules}
 \input{rules}
 
@@ -62,6 +61,10 @@
 
 %\Section[case-study]{Case Study}
 %\input{case-study}
+
+
+\Section[formalism]{Formalism: FX10}
+\input{formalism}
 
 \Section[related-work]{Related Work}
 \input{related-work}

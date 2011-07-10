@@ -2,9 +2,64 @@
 \usepackage{amsmath}
 \usepackage{url}
 
-
-% http://en.wikibooks.org/wiki/LaTeX/Packages/Listings
 \usepackage{listings}
+
+%\usepackage{color}
+%
+%\definecolor{Brown}{cmyk}{0,0.49,0.71,0.37}
+%\definecolor{RoyalBlue}{cmyk}{0.71,0.53,0,0.12}
+%\definecolor{OliveGreen}{cmyk}{0.64,0,0.95,0.40}
+%\definecolor{Red}{cmyk}{0,0.80,0.80,0.10}
+%\definecolor{Gray}{cmyk}{0.2,0.2,0.2,0.2}
+%\definecolor{Black}{cmyk}{0,0,0,1}
+\lstdefinelanguage{X10}%
+  {morekeywords={abstract,break,case,catch,class,%
+      const,continue,default,do,else,extends,false,final,%
+      finally,for,goto,if,implements,import,instanceof,%
+      interface,label,native,new,null,package,private,protected,%
+      public,return,static,super,switch,synchronized,this,throw,%
+      throws,transient,true,try,volatile,while,%
+      async,atomic,when,foreach,ateach,finish,clocked,%
+      type,here,%
+      self,property,%
+      future,to,has,as,var,val,def,where,in,%
+      next,value,or,await,current,any},%
+   basicstyle=\normalfont\ttfamily,%\color{Red},%
+   keywordstyle=\bf\ttfamily,%\color{OliveGreen},%
+   commentstyle=\normalfont\ttfamily,%\color{Gray},%
+   identifierstyle=\normalfont\ttfamily,%\color{Red},%
+   stringstyle=\normalfont\ttfamily,%
+   tabsize=4,%
+   showstringspaces=false,%
+   sensitive,%
+   morecomment=[l]//,%
+   morecomment=[s]{/*}{*/},%
+   morestring=[b]",%
+   morestring=[b]',%
+   columns=fullflexible,%
+   mathescape=false,%
+   keepspaces=true,%
+   showlines=false,%
+   breaklines=true,%
+   breakatwhitespace=true,%
+   postbreak={},%
+   %breakautoindent=true,%
+   %breakindent=0pt,%
+   %prebreak={},%
+  }
+
+\lstnewenvironment{xtenmath}
+  {\lstset{language=X10,breaklines=false,captionpos=b,xleftmargin=2em,mathescape=true}}
+  {}
+
+\lstnewenvironment{xten}
+  {\lstset{language=X10,breaklines=false,captionpos=b}} %,xleftmargin=2em
+  {}
+
+%{numbers=left, numberstyle=\tiny, stepnumber=2, numbersep=5pt
+% numbers=left,
+\lstset{language=x10,basicstyle=\ttfamily\small}
+%\lstset{language=java,basicstyle=\ttfamily\small}
 
 
 \usepackage[ruled]{algorithm} % [plain]
@@ -28,6 +83,8 @@
 %\usepackage{epstopdf}
 
 \newcommand{\formalrule}[1]{\mbox{\textsc{\scriptsize #1}}}
+\newcommand{\myrule}[2]{\textbf{Rule #1:} #2.}
+%\newcommand{\myrule}[1]{\textsc{\codesmaller #1 Rule}}
 \newcommand{\umyrule}[1]{\textbf{\underline{\textsc{\codesmaller #1 Rule}}}}
 
 
@@ -68,8 +125,14 @@
 \newcommand{\CookerH}[1]{\ensuremath{{\kappa}_H(#1)}}
 \newcommand{\IfnH}[1]{\ensuremath{I_H(#1)}}
 \newcommand{\OwnerH}[1]{\ensuremath{{\theta}_H(#1)}}
-\newcommand{\KGdash}[0]{\ensuremath{K,\Gamma \vdash }}
-\newcommand{\reducesto}[0]{\rightarrow}
+\newcommand{\Gdash}[0]{\ensuremath{\Gamma \vdash }}
+\newcommand{\reducesto}[0]{\rightsquigarrow}
+\newcommand{\reduce}[0]{\rightsquigarrow}
+
+
+%% For typesetting theorems and some math symbols (\rightsquigarrow).
+\usepackage{amssymb}
+\usepackage{amsthm}
 
 \usepackage{color}
 \definecolor{light}{gray}{.75}
@@ -122,11 +185,16 @@
 \mynewcommand{\hJ}{\code{J}}
 \mynewcommand{\hO}{\code{O}}
 \mynewcommand{\ho}{\code{o}}
+\mynewcommand{\hnull}{\code{null}}
+\mynewcommand{\htrue}{\code{true}}
+\mynewcommand{\hfalse}{\code{false}}
 
 \mynewcommand{\hX}{\code{X}} % vars
 \mynewcommand{\hY}{\code{Y}} % vars
 \mynewcommand{\hC}{\code{C}} % class
+\mynewcommand{\hD}{\code{D}} % class
 \mynewcommand{\hc}{\code{c}} % cooker
+\mynewcommand{\hp}{\code{p}} % cooker
 \mynewcommand{\hL}{\code{L}} % class decl
 \mynewcommand{\hM}{\code{M}} % Method decl
 \mynewcommand{\hN}{\code{N}} % Non-variable type
@@ -145,10 +213,20 @@
 \mynewcommand{\hH}{\code{H}} % Heap
 \mynewcommand{\hS}{\code{S}}
 \mynewcommand{\hsub}{\code{/}} % substitute (reduction rules)
+
+\mynewcommand{\hand}{\code{~and~}}
+\mynewcommand{\hor}{\code{~or~}}
 \mynewcommand{\hthis}{\code{this}} % this
 \mynewcommand{\hclass}{\code{class}}
 \mynewcommand{\hreturn}{\code{return}}
-\mynewcommand{\hnew}{\code{new}}
+\mynewcommand{\hhnew}{\code{new}}
+\newcommand{\initsep}[0]{;} % tried \| and \dagger
+\newcommand{\initsets}[2]{\lb#1\initsep#2\rb}
+\newcommand{\myinit}[2]{\S{}\lb#1\initsep#2\rb}
+\mynewcommand{\mycooked}{\S{}\lb\initsep\rb}
+\newcommand{\hnew}[1]{\code{new}~#1}
+\newcommand{\hval}[3]{\code{val}~#1~=~#2;#3}
+
 \newcommand{\lt}{\code{<}}%{\mathop{\textrm{\tt <}}}
 \newcommand{\gt}{\code{>}}%{\mathop{\textrm{\tt >}}}
 
@@ -216,18 +294,47 @@
 
 \mynewcommand{\DA}{\texttt{DA}}
 \mynewcommand{\ok}{\texttt{OK}}
+\mynewcommand{\OK}{\texttt{OK}}
+\mynewcommand{\IN}{\texttt{IN}}
 \mynewcommand{\subterm}{\func{subterm}}
 \mynewcommand{\TP}{\func{TP}} % function that returns type parameters in a type
 \mynewcommand{\CT}{\func{CT}} % class table
 \mynewcommand{\mtype}{\func{mtype}}
 \mynewcommand{\mbody}{\func{mbody}}
+\mynewcommand{\mmodifier}{\func{mmodifier}}
+\mynewcommand{\fmodifier}{\func{fmodifier}}
+\mynewcommand{\fields}{\func{fields}}
+
+\mynewcommand{\finishG}{\func{finish}}
+\mynewcommand{\asyncG}{\func{async}}
+
 \mynewcommand{\bound}{\func{bound}_\Delta}
 \mynewcommand{\substitute}{\func{substitute}}
-\mynewcommand{\fields}{\func{fields}}
 \mynewcommand{\ftype}{\func{ftype}}
 \mynewcommand{\mguard}{\func{mguard}}
 \mynewcommand{\isTransitive}{\func{isTransitive}}
 \DeclareMathOperator{\dom}{dom}
+
+
+\mynewcommand{\async}{\code{async}}
+\mynewcommand{\finish}{\code{finish}}
+%\newcommand{\Ofn}[1]{\ensuremath{O(#1)}}
+\mynewcommand{\nonescaping}{\code{nonescaping}}
+
+\mynewcommand{\hasync}{\code{async}}
+\mynewcommand{\hfinish}{\code{finish}}
+\mynewcommand{\hR}{\code{R}}
+\mynewcommand{\hreceiver}{\code{receiver}} % receiver for new
+\mynewcommand{\hSW}{\code{SW}}
+\mynewcommand{\hAW}{\code{AW}}
+\mynewcommand{\hObject}{\code{Object}}
+
+\mynewcommand{\hFM}{\code{FM}}
+\mynewcommand{\hG}{\code{G}}
+\mynewcommand{\hP}{\code{P}}
+
+\mynewcommand{\hescaping}{\code{escaping}}
+\mynewcommand{\hextends}{\code{extends}}
 
 
 \mynewcommand\xth{\xX{th}}

@@ -56,10 +56,9 @@ Moreover, method calls are statically bound during construction,
     which may result in an exception at runtime
     if one tries to invoke a virtual method of an abstract class (see \Ref{Figure}{Dynamic-dispatch} below).
 (Determining whether this happens is an intractable problem~\cite{Gil:1998:CTA:646155.679689}.)
-
+% todo: to reduce space
 A design for object initialization should have the following
     desirable properties:
-
 \begin{description}
 %  \item[Reduce runtime errors]
 %    Common errors should be caught at compile time.
@@ -123,14 +122,30 @@ We believe the hardhat design in X10 has these desirable properties,
 Alternative designs for initialization are described in \Ref{Section}{designs},
     such as the \code{proto} design (that was part of X10 version 2.0) that allows cyclic immutable structures
     at the cost of a more complicated design.
+X10 is the first object-oriented (OO) language to adopt the hardhat initialization design.
+
+The \emph{contributions of this paper} are:
+    (i)~materializing the hardhat idea~\cite{Gil:2009:WRS:1615184.1615216}
+        into %a simple design that is incorporated into
+        full-blown OO language with many cross-cutting concerns
+        (such as advanced type-system, closures, and concurrent and distributed constructs),
+    (ii)~implementation inside the X10 open-source compiler and
+        converting the entire X10 code-base to conform to the hardhat principles,
+    (iii)~FX10 formalism which is the first to present flow-sensitive type-checking rules with concurrency constructs.
 
 The remainder of this introduction
     presents error-prone sequential initialization idioms in \Ref{Section}{Initialization-pitfalls},
     thread-unsafe immutable objects and serialization in \Ref{Section}{FinalFields}, and
     common initialization pitfalls in parallel X10 programs in \Ref{Section}{Parallelism}.
 
+\vspace{-0.1cm} % todo: to reduce space
 \subsection{Initialization pitfalls in sequential code}
 \label{Section:Initialization-pitfalls}
+
+\Ref{Figure}{TwoPitfalls} demonstrates the two most common initialization pitfalls in Java:
+    leaking \this and dynamic dispatching.
+We will first explain the surprising output due to dynamic dispatching,
+    and then the less known possible bug due to leaking \this.
 
 %class A {
 %  static val INSTANCES = new HashSet[A]();
@@ -185,11 +200,6 @@ class B extends A {
 \label{Figure:TwoPitfalls}
 \end{figure}
 
-\Ref{Figure}{TwoPitfalls} demonstrates the two most common initialization pitfalls in Java:
-    leaking \this and dynamic dispatching.
-We will first explain the surprising output due to dynamic dispatching,
-    and then the less known possible bug due to leaking \this.
-
 Running this code prints \code{a=42,b=0}, which is
     surprising to most Java users.
 One would expect \code{b} to be 2, and \code{a} to be either 1 or 44.
@@ -210,7 +220,7 @@ During the \code{super()} call we perform two dynamic dispatches:
     the two calls (\code{initA()} and \code{toString()})
     execute the implementation in \code{B} (and recall that \code{b} is still 0).
 Therefore, \code{initA()} returns 42, and \code{toString()} returns \code{a=42,b=0}.
-
+% todo: to reduce space
 This bug might seem pretty harmless,
     however if we just change the type of \code{b} from \code{int} to \code{Integer},
     then this code will now throw a \code{NullPointerException},
@@ -297,11 +307,8 @@ For instance,
     or might even throw a \code{NullPointerException}:
 \begin{lstlisting}
 final String name = "AB".substring(1);
-new Thread() {
-  public void run() {
-    System.out.println(name);
-  }
-}.start();
+new Thread() { public void run() {
+    System.out.println(name); } }.start();
 \end{lstlisting}
 
 A similar bug might happen in \Ref{Figure}{TwoPitfalls}
@@ -333,6 +340,7 @@ Similarly, these two features prevent us from adding \code{final} to the \code{h
     (even though this field is never re-assigned).
 
 
+\vspace{-0.2cm} % todo: to reduce space
 \subsubsection{Custom serialization and immutability}
 \emph{Default serialization} in Java of an object \code{o}
     will serialize the entire object graph reachable from \code{o}.
@@ -357,14 +365,13 @@ However, it is re-assigned in two \emph{methods}:
     \emph{constructors}.
 It is possible to use reflection in Java to set a final field,
     and the new memory model (Java's spec, Section~17.5.3)
-    even considers this:
-\begin{quote}
+    even considers this:\\
+%\begin{quote}
 ``In some cases, such as \emph{deserialization}, the system will need to change
-    the final fields of an object after construction.
-\ldots
-Freezes of a final field occur both at the end of the constructor in which the final field is set,
-    and immediately after each modification of a final field via reflection or other special mechanism."
-\end{quote}
+    the final fields of an object after construction."\\
+``Freezes of a final field occur both at the end of the constructor in which the final field is set,
+    and immediately after each modification of a final field via reflection or other special mechanism."\\
+%\end{quote}
 (The ``other special mechanism" is default serialization that has the privilege of assigning to final fields.)
 
 As another example, consider serializing the empty string \code{aVeryLongString.substring(0,0)}.
@@ -560,5 +567,7 @@ The remainder of this paper is organized as follows.
 %    and the compilation time overhead of checking these initialization rules.
 %\Ref{Section}{case-study} investigates the consequences of having a hardhat design
 %    in a case study that converted a large collection of Java classes to X10.
+\Ref{Section}{formalism} presents Featherweight X10 (FX10), which is a formalization of core X10
+    that includes \finish, \async, and flow-sensitive type-checking rules.
 \Ref{Section}{related-work} summarizes previous work in the field of object initialization.
 Finally, \Ref{Section}{conclusion} concludes.
