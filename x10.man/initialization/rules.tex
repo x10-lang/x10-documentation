@@ -134,8 +134,7 @@ Dynamic dispatching interacts with initialization by transferring control to the
 \begin{figure}
 \begin{lstlisting}
 abstract class A {
-  val a1:Int;
-  val a2:Int;
+  val a1:Int, a2:Int;
   def this() {
     this.a1 = m1(); //err1
     this.a2 = m2();
@@ -145,9 +144,6 @@ abstract class A {
 }
 class B extends A {
   var b:Int = 3; // non-final field
-  def this() {
-    super();
-  }
   def m1() {
     val x = super.a1;
     val y = this.b;
@@ -383,9 +379,7 @@ class A(a:Int) {
   }
 }
 class B(b:Int) {b==a} extends A {
-  val f1 = a+b;
-  val f2:Int;
-  val f3:A{this.a==self.a};
+  val f1 = a+b, f2:Int, f3:A{this.a==self.a};
   def this(x:Int) {
     super(x);
     val i1 = super.a;
@@ -569,11 +563,8 @@ class A {
   val f2:Int; // note: val field
   val f3:Int;
   def this() {//err: f2 was not definitely assigned
-    async f1 = 1;
-    async f2 = 2;
-    finish {
-      async f3 = 3;
-    }
+    async f1 = 1; async f2 = 2;
+    finish { async f3 = 3; }
   }
 }
 \end{lstlisting}
@@ -776,8 +767,7 @@ class A {
     } // assigned={a}
     readA();
   }
-  // reads={a}
-  private def readA() {
+  private def readA() { // reads={a}
     val x = a;
   }
 }
@@ -790,16 +780,13 @@ class B {
     writeJ();// assigned={i,j}
     readIJ();
   }
-  // asyncAssigned={i}
-  private def asyncWriteI() {
+  private def asyncWriteI() { // asyncAssigned={i}
     async i=1;
   }
-  // reads={i} assigned={j}
-  private def writeJ() {
+  private def writeJ() { // reads={i} assigned={j}
     if (i==1) writeJ(); else this.j = 1;
   }
-  // reads={i,j}
-  private def readIJ() {
+  private def readIJ() { // reads={i,j}
     val x = this.i+this.j;
   }
 }

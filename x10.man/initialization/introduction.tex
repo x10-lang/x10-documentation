@@ -491,9 +491,7 @@ This construct can also be used as a statement, in which case there is no copy b
 \begin{figure}
 \begin{lstlisting}
 class Fib {
-  val fib2:Int; // fib(n-2)
-  val fib1:Int; // fib(n-1)
-  val fib:Int;  // fib(n)
+  val fib2:Int, fib1:Int, fib:Int;
   def this(n:Int) {
     finish {
       async {
