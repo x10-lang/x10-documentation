@@ -59,7 +59,7 @@ Moreover, method calls are statically bound during construction,
     if one tries to invoke a virtual method of an abstract class (see \Ref{Figure}{Dynamic-dispatch} below).
 (Determining whether this happens is an intractable problem~\cite{Gil:1998:CTA:646155.679689}.)
 % todo: to reduce space
-A design for object initialization should have the following
+We believe a design for object initialization should have the following
     desirable properties:
 \begin{description}
 %  \item[Reduce runtime errors]
@@ -121,7 +121,7 @@ A design for object initialization should have the following
 We took the ideas of prohibiting dynamic-dispatching or leaking-\this during construction from~\cite{Gil:2009:WRS:1615184.1615216},
     and materialized them into a set of rules that cover all aspects of X10
     (type-system, closures, generics, properties, and concurrent and distributed constructs).
-This hardhat design in X10 (version 2.1) has the above desirable properties,
+This hardhat design in X10 (version 2.2) has the above desirable properties,
     however they come at a cost of limiting flexibility:
     it is not possible to express cyclic immutable structures in X10.
 We chose simplicity over flexibility in our design choices, e.g.,
@@ -130,7 +130,7 @@ We chose simplicity over flexibility in our design choices, e.g.,
 Alternative designs for initialization are described in \Ref{Section}{designs},
     such as the \code{proto} design (that was part of X10 version 2.0) that allows cyclic immutable structures
     at the cost of a more complicated design.
-X10 is the first object-oriented (OO) language to adopt the strict hardhat initialization design.
+To our knowledge, X10 is the first object-oriented (OO) language to adopt the strict hardhat initialization design.
 
 The \emph{contributions of this paper} are:
     (i)~presenting a complete and strict hardhat design in a
@@ -141,7 +141,8 @@ The \emph{contributions of this paper} are:
         converting the entire X10 code-base (+400K lines of code) %according to Igor
         to conform to the hardhat principles,
     (iii)~FX10 formalism which is the first to present a flow-sensitive effect system with concurrency constructs
-    and a soundness theorem stating that one can never read an uninitialized field in a well-typed program.
+    and a soundness theorem stating that one can never read an
+    uninitialized field in a statically correct  program.
 
 
 The remainder of this introduction

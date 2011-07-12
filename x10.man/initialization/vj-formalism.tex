@@ -182,13 +182,13 @@ considered $\hL,\hS$ is well-typed.
 \hline
 
 $\typerule{
- \phi \vdash +\hp.\hf \gap \phi, +\hx~\hS~\psi
+ \phi \vdash +\hp.\hf \gap \exists \hx.\phi, +\hx~\hS~\psi
 }{
  \phi~\hval{\hx}{\hp.\hf}{\hS}~ \exists \hx.\psi
 }$~\RULE{(T-Access)}
 \quad
 $\typerule{
-  \phi~\hS~\psi
+  \exists \hx.\phi~\hS~\psi
 }{
  \phi~ \hval{\hx}{\hnew{\hC()}}{\hS}~\exists \hx.\psi
 }$~\RULE{(T-New)}
@@ -465,8 +465,8 @@ that all programs and heaps are typed.
 
 We say that $\hS$ is annotable if there exists $\phi,\psi$ such that
 $\phi~\hS~\psi$ can be established.\footnote{An example of a statement that is
-not annotable is $\hval{\hx}{\hnew
-  \hC()}{\hval{\hy}{\hx.\hf}{\hx.\hf=\hy}}$ where $\hC{}$ has a field
+{\em not} annotable is $\hval{\hx}{\hnew
+  \hC()}{\hval{\hy}{\hx.\hf}{\hz.\hg=\hy}}$ where $\hC{}$ has a field
 \hf. This attempts to read a field of a variable initialized with a
 brand-new object.}
 
