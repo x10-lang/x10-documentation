@@ -152,28 +152,28 @@ Because the method is marked with \code{nonescaping(g;f;f)}, % (line~4),
     and
     \code{f} (\code{h}) must be synchronously (asynchronously) initialized inside the method, respectively.
 Also note that fields of subclasses of \code{A} might be uninitialized (e.g., \code{f3}),
-    so we mark it in the type using \code{*} (meaning that some set of unknown fields might be uninitialized).
+    so we mark it in the type using \unknown (meaning that some set of unknown fields might be uninitialized).
 So the type of \code{x} is %and \this on line~5
-    $\code{A}\myinit{\hf,\code{*}}{\hf,\code{*}}$.
+    $\code{A}\myinit{\hf,\unknown}{\hf,\unknown}$.
 %In line~10,
 The type of \code{w} is
-    $\code{A}\myinit{\code{*}}{\code{*}}$,
+    $\code{A}\myinit{\unknown}{\unknown}$,
     because \code{f} has been initialized.
 %In line~8,
 The type of \code{z} is
-    $\code{A}\myinit{\hf,\code{*}}{\code{*}}$
+    $\code{A}\myinit{\hf,\unknown}{\unknown}$
     because \code{f} has been asynchronously initialized
     (so it can be read only after we cross an enclosing \finish).
 Finally,
 %in line~6,
     the type of \code{y} is
-    $\code{A}\myinit{\code{*}}{\code{*}}$
+    $\code{A}\myinit{\unknown}{\unknown}$
     because we cross a \finish.
 We stress that the program does not include masked types;
     they only appear during type-checking.
 
 
-%$\hs ::= \hf ~|~ *$
+%$\hs ::= \hf ~|~ \unknown$
 %& Mask. \\
 %$\hT ::= \hC\myinit{\ol{\hs}}{\ol{\hs}}$
 %& Masked types. \\
@@ -221,6 +221,7 @@ Intuitively, after passing a \finish, all the asynchronous assignments become sy
 Similarly to FJ, we define:
 (i)~$\fields(\hC)=\ol{\hf}:\ol{\hD}$ returns all fields of \hC (both those declared by \hC and recursively inherited from its superclass),
     and~$\ftype{}(\hf_i,\hC) =\hD_i$.
+Consider a method~$\hG ~ \hm(\ol{\hx}:\ol{\hB}):\hD=\he;$ in class \hC.
 (ii)~$\mtype(\hm,\hC) = \ol{\hB}\mapsto\hD$ returns the type of method \hm in class \hC.
 (iii)~$\mbody(\hm,\hC) = \ol{\hx}.\he$ returns the method body of \hm in class \hC.
 Because methods have a modifier (\hG) in FX10, we also define:
@@ -346,8 +347,7 @@ As in FJ, a class is ok if all its methods are ok.
         \begin{cases}
         \hC\mycooked & \hG=\hescaping \\
         \hC\myinit{A}{A}  & \hG=\nonescaping(R;W_s;W_a) \\
-            & ~~\fields{}(\hC)=\ol{\hf}:\ol{\hB} \\
-            & ~~A=(\ol{\hf} \setminus R),* \\
+            & ~~~~\fields{}(\hC)=\ol{\hf}:\ol{\hB} \gap A=(\ol{\hf} \setminus R),\unknown \\
         \end{cases}\\
   \Gamma = \{ \ol{\hx}:\ol{\hD\mycooked},\this:t \} \\
   \Gdash \he : \hD'\mycooked,\Gamma' \gap \Delta = \Gamma' - \Gamma \gap
@@ -453,8 +453,8 @@ $\typerule{
 \label{Figure:reduction}
 \end{figure*}
 
-An object~$\ho = \code{C}(\ol{\hf}\mapsto\ol{\hl'})$ is an instance of some class~\hC
-    where fields~$\ol{\hf}$ has been initialized to locations~$\ol{\hl'}$.
+An object~$\ho = \code{C}(\ol{\hf}\mapsto\ol{\hl})$ is an instance of some class~\hC
+    where fields~$\ol{\hf}$ has been initialized to locations~$\ol{\hl}$.
 A heap~$H$ is a mapping from locations~\hl to objects~$\ho$.
 A heap-typing~$\Gamma_H$ maps locations to their type,
     i.e., if~$H[\hl] = \code{C}(\ol{\hf}\mapsto\ol{\hl'})$,

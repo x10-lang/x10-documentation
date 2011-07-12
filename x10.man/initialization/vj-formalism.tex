@@ -1,8 +1,8 @@
 FX10 is an effects system for X10 intended to complement Featherweight Java
 (FJ). It models imperative aspects of X10 including the concurrency
-constructs \finish{} and \async{}. 
+constructs \finish{} and \async{}.
 FX10 models the heart of the field initialization problem:
-    a field can be read only after it  is definitely assigned. 
+    a field can be read only after it  is definitely assigned.
 
 %    and that final (\code{val}) fields can be assigned exactly once (in \Ref{Section}{val}).
 
@@ -17,13 +17,13 @@ crossed).\footnote{There is no need for the formula $-\hx$ since local
   variables declared within an $\async$ cannot be accessed outside
   it.}  An {\em initialization formula} $\phi$ or $\psi$ is simply a
 conjunction of such formulas $\phi \wedge \psi$ or an existential
-quantification $\exists~\hx.\phi$.  We then introduce {\em effects
+quantification $\exists{}~\hx.\phi$.  We then introduce {\em effects
   assertions} $\phi~S~\psi$ (for $S$ a statement) to be read as: when
-executed in a heap that satisfies the constraint $\phi$, $S$ will on
+executed in a heap that satisfies the constraint $\phi$, statement $S$ will on
 termination result in a heap that satisfies $\psi$.  Since we do not
 model \code{null}, our formalization can be particularly simple:
 variables once initialized stay initialized, hence $S$ will also
-satisfy $\phi$.
+satisfy~$\phi$.
 
 Another feature of our approach is that unlike Masked
 Types~\cite{XinQi:2009}, the source program syntax does not permit the
@@ -44,7 +44,7 @@ that is ``at least as strong as'' $(\phi,\psi)$ (viz, it must be the
 case that ($\phi \vdash \phi'$ and $\psi' \vdash \psi$). Further, if
 the method is not marked \code{@NonEscaping}, then $\phi$ is required
 to entail $+\hthis$ (that is, \code{this} is cooked), and if it marked
-\code{@NoThisAccess} then $\phi,\psi$ cannot have \code{this} free. 
+\code{@NoThisAccess} then $\phi,\psi$ cannot have \code{this} free.
 
 \comment{{\sc We also have to check that if it is marked
     \code{@NonEscaping} then it does not escape.}}
@@ -52,7 +52,7 @@ to entail $+\hthis$ (that is, \code{this} is cooked), and if it marked
 By not permitting the user to specify initialization assertions we
 make the source language much simpler than \cite{XinQi:2009} and
 usable by most programmers. The down side is that some initialization
-idioms, such as cyclic initialization, are not expressible. 
+idioms, such as cyclic initialization, are not expressible.
 
 For reasons of space we do not include the (standard) details behind
 the decoration of methods with initialization assertions. We also omit
@@ -62,7 +62,7 @@ locals, field initializers etc.) necessary to establish the soundness
 of initialization for the full language discussed in the first half of
 the paper. FX10 also does not model places because the language design
 decision to only permit cooked objects to cross places means that the
-rules for \code{at} are routine. 
+rules for \code{at} are routine.
 
 We use the usual notation of~$\ol{\hx}$ to represent a vector or set of~$\hx_1, \ldots,\hx_n$.
 A program~\hP is a pair of class declarations~$\ol{\hL}$ (that is assumed to be global information)
@@ -75,9 +75,11 @@ A program~\hP is a pair of class declarations~$\ol{\hL}$ (that is assumed to be 
 
 \paragraph{Overview of formalism}
 \Ref{Section}{Syntax} presents the syntax of FX10.
-\Ref{Section}{Typing} defines various helper functions and shows the flow-sensitive typing rules
-    (e.g., $\Gdash \he:\hT, \Gamma'$ denotes that expression~\he has type \hT in environment $\Gamma$, and $\Gamma'$ is the new environment after executing \he).
-\Ref{Section}{Reduction} gives the reduction rules ($\he,H \reduce \he',H'$) and our soundness theorem.
+% todo
+\Ref{Section}{Typing} defines the flow-sensitive typing rules
+    ($\phi~\hS~\psi$), while
+    \Ref{Section}{Reduction} gives the reduction rules for statements and expressions ($\hS,\hH \reducesto \hS',\hH' ~|~\hH'$ and~$\he,\hH \reduce \hl,\hH'$)
+    and our soundness theorem.
 %Finally, \Ref{Section}{val} extends the formalism with \hval and \hvar fields.
 
 
@@ -105,7 +107,7 @@ $\hG ::= \code{@NonEscaping} ~~|~~ \code{@NoThisAccess}$
 $\hp ::= \hl ~~|~~ \hx$
 & Path. \\ %(location or parameter)
 
-$\he ::=  \hp.\hf  ~|~ \hnew{\hC}$ 
+$\he ::=  \hp.\hf  ~|~ \hnew{\hC}$
 & Expressions. \\ %: locations, parameters, field access\&assignment,  %invocation, \code{new}
 
 $\hS ::=  \hp.\hf = \hp; ~|~ \hp.\hm(\ol{\hp});  ~|~ \hval{\hx}{\he}{\hS}$ &\\
@@ -125,12 +127,12 @@ $~~~~|~ \hfinish~\hS~|~ \hasync~\hS ~|~ \hS\ \hS$
 
 \Ref{Figure}{syntax} shows the syntax of FX10.
 %(\Ref{Section}{val} will later add the \hval and \hvar field modifiers.)
-Expression~$\hval{\hx}{\he}{\he'}$ evaluates $\he$, assigns it to a
+Expression~$\hval{\hx}{\he}{\hS}$ evaluates $\he$, assigns it to a
 new variable $\hx$, and then evaluates \hS. The scope of \he{} is \hS.
 
 The syntax is similar to X10 real syntax with the following difference:
-%Non-escaping methods are marked with \code{@NonEscaping}, such methods 
-%can be invoked on raw objects (and can be used to initialize them). 
+%Non-escaping methods are marked with \code{@NonEscaping}, such methods
+%can be invoked on raw objects (and can be used to initialize them).
 FX10 does not have constructors; instead, an object is initialized by assigning to its fields or
     by calling
     non-escaping methods.
@@ -141,37 +143,31 @@ FX10 does not have constructors; instead, an object is initialized by assigning 
 %This does not restrict expressiveness, because of \code{val} expressions.
 
 \Subsection{Typing}
-\begin{lstlisting}
-class D extends Object { f:Object; }
-val d:D = new D; d.f = new Object
-\end{lstlisting}
-Then, the type of \code{d} is \code{D} where field \code{f} is uninitialized
-    (which we formally write below as $\code{D}\myinit{\hf}{\hf}$).
-Therefore, reading \code{d.f} would be illegal, but writing to \code{d.f} would update the type of \code{d}
-    to be fully initialized.
+%\begin{lstlisting}
+%class D extends Object { f:Object; }
+%val d:D = new D; d.f = new Object
+%\end{lstlisting}
+%Then, the type of \code{d} is \code{D} where field \code{f} is uninitialized
+%    (which we formally write below as $\code{D}\myinit{\hf}{\hf}$).
+%Therefore, reading \code{d.f} would be illegal, but writing to \code{d.f} would update the type of \code{d}
+%    to be fully initialized.
 
 Consider the following classes:
 \begin{lstlisting}
 class A extends Object {
   var f:A; var g:A; var h:A;
-  @NonEscaping def build(a:A) { 
-   // inferred decoration: 
-   // +this.g, +a => -this.h, +this.f
-
-    // checks phi implies +this.g, adds -this.h 
-    // to psi
-    async this.h=g; 
-
-    val q = this;
-
+  @NonEscaping def build(a:A) {
+    // inferred decoration: phi => psi
+    // phi= +this.g, +a
+    // psi= -this.h, +this.f
+    // checks phi implies +this.g
+    val x = this.g;
+    // adds -this.h to psi
+    async this.h=x;
     finish {
-      val y = g;
-      // checks current phi implies +a
+      // checks phi implies +a
       // adds -this.f to psi
-      async this.f=a; 
-
-      val r =  a;
-      val z = this;
+      async this.f=a;
     }
     // adds +this.f to psi
   }
@@ -189,7 +185,7 @@ class B extends A { f3:A; }
 $\typerule{
  \phi \vdash +\hp.\hf \gap \phi, +\hx~\hS~\psi
 }{
- \phi~\hval{\hx}{\hp.\hf_i}{\hS}~ \exists \hx.\psi
+ \phi~\hval{\hx}{\hp.\hf}{\hS}~ \exists \hx.\psi
 }$~\RULE{(T-Access)}
 \quad
 $\typerule{
@@ -302,18 +298,18 @@ $\typerule{
         \gap
     \hF' = \hF[ \hf \mapsto \hl']
 }{
-  \hl.\hf=\hl',\hH \reduce \hl',\hH[ \hl \mapsto \hC(\hF')]
+  \hl.\hf=\hl',\hH \reduce \hH[ \hl \mapsto \hC(\hF')]
 }$~\RULE{(R-Assign)}
 \\
 \hline
 \end{tabular}
 \end{center}
-\caption{FX10 Reduction Rules ($\hS,\hH \reducesto \hS',\hH' ~|~\hH'$).}
+\caption{FX10 Reduction Rules ($\hS,\hH \reducesto \hS',\hH' ~|~\hH'$ and~$\he,\hH \reduce \hl,\hH'$).}
 \label{Figure:reduction}
 \end{figure*}
 
-We use a simple logic of initialization for our basic assertions. 
-This is an intuitionistic logic over the 
+We use a simple logic of initialization for our basic assertions.
+This is an intuitionistic logic over the
 primitive formulas $+\hx$ (the variable or parameter $\hx$ is
 initialized), $+\hp.\hf$ (the field $\hp.\hf$ is initialized), and
 $-\hp.\hf$ (the field $\hp.\hf$ is being concurrently
@@ -328,10 +324,10 @@ The notion of substitution on formulas $\phi\char`[\ol{\hx}/\ol{\hz}\char`]$ is
 specified in a standard fashion.
 
 The inference relation is the usual intuitionistic implication over
-these formulas, and the following additional proof rules: 
+these formulas, and the following additional proof rules:
 (1)~$\phi\vdash +\hp.\hf$ if $\phi\vdash +\hp$; and (2)~if
 the exact class of $\hx$ is $\hC$, and $\hC$ has the fields $\ol{\hf}$,
-then $\phi\vdash +\hp$ if $\phi\vdash \hp.\hf_i$, for each $i$. 
+then $\phi\vdash +\hp$ if $\phi\vdash \hp.\hf_i$, for each $i$.
 
 A {\em heap} is a mapping from a given set of locations to {\em
   objects}. An object is a pair $C(u)$ where $C$ is a class (the exact
@@ -345,7 +341,7 @@ above is clearly sound for the obvious interpretation of formulas over
 annotated heaps. For future reference, we say that that a heap $H$
 {\em satisfies} $\phi$ if there is some annotation $N$ (and some
 valuation $v$ assigning locations in $\dom(H)$ to free variables of
-$\phi$) such that $\phi$ evaluates to true. 
+$\phi$) such that $\phi$ evaluates to true.
 
 We say a heap $H$ is {\em cooked} if a field can point only to cooked
 objects, i.e.{} for every object $o=C(u)$ in the range of $H$ and
