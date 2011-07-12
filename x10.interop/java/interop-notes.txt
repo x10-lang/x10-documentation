@@ -153,6 +153,14 @@ conversions to/from Java primitive types.  All manifestations of Java primitive
 types in the Java APIs are via the nested types of x10.interop.Java, not X10
 built-in types.
 
+<MT>
+As I wrote earlier, if we introduce new X10 types to represent Java primitives,
+we will need additional name mangling. Currently x10.lang.Int and UInt are mapped
+to int, and UInt is mangled (Int is unchanged). If we introduce the third type
+(x10.interop.Java.Int), x10.lang.Int also need be mangled.
+If an alias (like Rail as Array{rail}) is enough, I would prefer it.
+</MT>
+
 Java arrays are represented by an X10 generic class x10.interop.Java.array with
 a covariant type parameter, to reflect the Java covariant array subtyping.
 Java.array is the only generic class that accepts Java classes as type
