@@ -1,5 +1,5 @@
-FX10 is an effects system for X10 intended to complement Featherweight Java
-(FJ). It models imperative aspects of X10 including the concurrency
+FX10 is a formal calculus for X10 intended to  complement Featherweight Java
+(FJ).  It models imperative aspects of X10 including the concurrency
 constructs \finish{} and \async{}. 
 FX10 models the heart of the field initialization problem:
     a field can be read only after it  is definitely assigned. 
@@ -7,23 +7,30 @@ FX10 models the heart of the field initialization problem:
 %    and that final (\code{val}) fields can be assigned exactly once (in \Ref{Section}{val}).
 
 The basic idea behind the formalization is very straightforward. We
-introduce a simple {\em logic of initialization assertions}.  The
-primitive formula $+\hx$ ($+\hp.\hf$) asserts that the variable $\hx$
-(the field $\hf$ of $\hp$) is definitely initialized with a cooked
-object, and the formula $-\hp.\hf$ asserts that $\hp.\hf$ is being
-initialized by a concurrent activity (and hence $\hp.\hf$ will be
-definitely initialized once an enclosing $\finish$ is
-crossed).\footnote{There is no need for the formula $-\hx$ since local
-  variables declared within an $\async$ cannot be accessed outside
-  it.}  An {\em initialization formula} $\phi$ or $\psi$ is simply a
-conjunction of such formulas $\phi \wedge \psi$ or an existential
-quantification $\exists{}~\hx.\phi$.  We then introduce {\em effects
-  assertions} $\phi~S~\psi$ (for $S$ a statement) to be read as: when
-executed in a heap that satisfies the constraint $\phi$, statement $S$ will on
-termination result in a heap that satisfies $\psi$.  Since we do not
-model \code{null}, our formalization can be particularly simple:
-variables once initialized stay initialized, hence $S$ will also
-satisfy~$\phi$.
+break up the formalization into two distinct but interacting
+subsystems, a {\em type-system}\Ref{Section}{Type system} and an {\em
+  effects} system \Ref{Section}{Effect System}. The type
+system is completely standard -- think the system of FJ, adapted to
+the richer constructs of FX10.
+
+The effect system is built on a very simple {\em logic of
+  initialization assertions}.  The primitive formula $+\hx$
+($+\hp.\hf$) asserts that the variable $\hx$ (the field $\hf$ of
+$\hp$) is definitely initialized with a cooked object, and the formula
+$-\hp.\hf$ asserts that $\hp.\hf$ is being initialized by a concurrent
+activity (and hence $\hp.\hf$ will be definitely initialized once an
+enclosing $\finish$ is crossed).\footnote{There is no need for the
+  formula $-\hx$ since local variables declared within an $\async$
+  cannot be accessed outside it.}  An {\em initialization formula}
+$\phi$ or $\psi$ is simply a conjunction of such formulas $\phi \wedge
+\psi$ or an existential quantification $\exists{}~\hx.\phi$.
+An {\em
+  effects assertion} $\phi~S~\psi$ (for $S$ a statement) is read as a
+partial correctness assertion: when executed in a heap that satisfies
+the constraint $\phi$, $S$ will on termination result in a heap that
+satisfies $\psi$.  Since we do not model \code{null}, our
+formalization can be particularly simple: variables once initialized
+stay initialized, hence $S$ will also satisfy $\phi$.
 
 Another feature of our approach is that unlike Masked
 Types~\cite{XinQi:2009}, the source program syntax does not permit the
@@ -76,10 +83,13 @@ A program~\hP is a pair of class declarations~$\ol{\hL}$ (that is assumed to be 
 \paragraph{Overview of formalism}
 \Ref{Section}{Syntax} presents the syntax of FX10.
 % todo
-\Ref{Section}{Typing} defines the flow-sensitive typing rules
+\Ref{Section}{Type system} briefly describes the type
+system. \Ref{Section}{Effect system} defines the flow-sensitive rules for
     ($\phi~\hS~\psi$), while
-    \Ref{Section}{Reduction} gives the reduction rules for statements and expressions ($\hS,\hH \reducesto \hS',\hH' ~|~\hH'$ and~$\he,\hH \reduce \hl,\hH'$)
-    and our soundness theorem.
+    \Ref{Section}{Reduction} gives the reduction rules for statements
+    and expressions ($\hS,\hH \reducesto \hS',\hH' ~|~\hH'$
+    and~$\he,\hH \reduce \hl,\hH'$). Finally \Ref{Section}{Results}
+    presents the main formal result (soundness theorem).
 %Finally, \Ref{Section}{val} extends the formalism with \hval and \hvar fields.
 
 
@@ -142,7 +152,7 @@ FX10 does not have constructors; instead, an object is initialized by assigning 
 %    compile time, or heap locations \hl at run time) to appear in field access, assignment and method call.
 %This does not restrict expressiveness, because of \code{val} expressions.
 
-\Subsection{Type-system}
+\Subsection{Type system}
 %\begin{lstlisting}
 %class D extends Object { f:Object; }
 %val d:D = new D; d.f = new Object
@@ -152,28 +162,18 @@ FX10 does not have constructors; instead, an object is initialized by assigning 
 %Therefore, reading \code{d.f} would be illegal, but writing to \code{d.f} would update the type of \code{d}
 %    to be fully initialized.
 
-Consider the following classes:
-\begin{lstlisting}
-class A extends Object {
-  var f:A; var g:A; var h:A;
-  @NonEscaping def build(a:A) {
-    // inferred decoration: phi => psi
-    // phi= +this.g, +a
-    // psi= -this.h, +this.f
-    // checks phi implies +this.g
-    val x = this.g;
-    // adds -this.h to psi
-    async this.h=x;
-    finish {
-      // checks phi implies +a
-      // adds -this.f to psi
-      async this.f=a;
-    }
-    // adds +this.f to psi
-  }
-}
-class B extends A { f3:A; }
-\end{lstlisting}
+The type system for FX10 checks that every parameter and variable has
+a type (a type is the name of a class), and that a variable of type
+\hC can be assigned only expressions whose type is a subclass of \hC,
+and can only be the receiver of invocations of methods defined in
+\hC. The type system is formalized along the lines of FJ. No
+complications are introduced by the extra features of FX10 --
+assignable fields, local variable declarations, \hfinish{} and
+\hasync{}. We omit details for lack of space and because they are
+completely routine.
+
+In the rest of this section we shall assume that the program being
+considered $\hL,\hS$ is well-typed.
 
 \Subsection{Effect system}
 \begin{figure*}[t]
@@ -253,6 +253,21 @@ these formulas, and the following additional proof rules:
 the exact class of $\hx$ is $\hC$, and $\hC$ has the fields $\ol{\hf}$,
 then $\phi\vdash +\hp$ if $\phi\vdash \hp.\hf_i$, for each $i$. 
 
+A {\em heap} is a mapping from a given set of locations to {\em
+  objects}. An object is a pair $C(u)$ where $C$ is a class (the exact
+class of the object), and $u$ is a partial map from the fields of $C$
+to locations. We say the object is {\em total} if its map is total.
+
+An {\em annotation} $N$ for a heap $H$ maps each $l \in \dom(H)$ to a
+possibly empty set of fields $a(H(l))$ of the class of $H(l)$ disjoint
+from $\dom(H(l))$. (These are the fields currently being
+asynchronously initialized.) The logic of initialization described
+above is clearly sound for the obvious interpretation of formulas over
+annotated heaps. For future reference, we say that that a heap $H$
+{\em satisfies} $\phi$ if there is some annotation $N$ (and some
+valuation $v$ assigning locations in $\dom(H)$ to free variables of
+$\phi$) such that $\phi$ evaluates to true.
+
 The proof rules for the judgement $\phi~\hS~\psi$ are given in
 Figure~\ref{Figure:effects}. They use two syntactic operations on initialization
 formulas defined as follows. 
@@ -301,6 +316,31 @@ effects recorded for $\hS_1;\hS_2$ are a conjunction of the effects
 recorded for $\hS_1$ and $\hS_2$.  
 The rule~\RULE{(T-Invoke)} is routine.
 
+As an example, consider the following classes. Assertions are provided
+in-line. 
+\begin{lstlisting}
+class A extends Object {
+  var f:A; var g:A; var h:A;
+  @NonEscaping def build(a:A) {
+    // inferred decoration: phi => psi
+    // phi= +this.g, +a
+    // psi= -this.h, +this.f
+    // checks phi implies +this.g
+    val x = this.g;
+    // adds -this.h to psi
+    async this.h=x;
+    finish {
+      // checks phi implies +a
+      // adds -this.f to psi
+      async this.f=a;
+    }
+    // adds +this.f to psi
+  }
+}
+class B extends A { f3:A; }
+\end{lstlisting}
+
+
 \Subsection{Reduction}
 
 The reduction relation is described in
@@ -314,11 +354,16 @@ set of {\em values} is the set of locations; hence E-configurations of
 the form $\hl,\hH$ are terminaal. 
 
 Two transition relations $\reduce{}$ are defined, one over S-configurations and
-the other over E-configurations. The rules defining these relations are 
-standard. The only minor novelty is in how \async{} is defined. The
+the other over E-configurations. 
+For $X$ a partial function, we use the notation $X[v \mapsto
+  e]$ to represent the partial function which is the same as $X$
+except that it maps $v$ to $e$.
+The rules defining these relations are 
+standard. 
+The only minor novelty is in how \async{} is defined. The
 critical rule is the last rule in~\RULE{(R-Step)}  -- it specifies the 
 ``asynchronous'' nature of \async{} by permitting \hS{} to make a step
-even if it is preceded by $\async{} \hS_1$. 
+even if it is preceded by $\async{} \hS_1$.  
 %
 The rule ~\RULE{(R-New)} returns a new location that is bound to a new
 object that is an instance of \hC{} with none of its fields initialized.
@@ -326,8 +371,6 @@ object that is an instance of \hC{} with none of its fields initialized.
 The rule 
 ~\RULE{(R-Access)} ensures that the field is initialized before it is
 read ($\hf_i$ is contained in $\ol{\hf}$).
-
-
 
 \begin{figure*}[t]
 \begin{center}
@@ -398,20 +441,7 @@ $\typerule{
 \end{figure*}
 
 
-\subsection{Results}
-A {\em heap} is a mapping from a given set of locations to {\em
-  objects}. An object is a pair $C(u)$ where $C$ is a class (the exact
-class of the object), and $u$ is a partial map from the fields of $C$
-to locations. We say the object is {\em total} if its map is total.
-An {\em annotation} $N$ for a heap $H$ maps each $l \in \dom(H)$ to a
-possibly empty set of fields $a(H(l))$ of the class of $H(l)$ disjoint
-from $\dom(H(l))$. (These are the fields currently being
-asynchronously initialized.) The logic of initialization described
-above is clearly sound for the obvious interpretation of formulas over
-annotated heaps. For future reference, we say that that a heap $H$
-{\em satisfies} $\phi$ if there is some annotation $N$ (and some
-valuation $v$ assigning locations in $\dom(H)$ to free variables of
-$\phi$) such that $\phi$ evaluates to true.
+\Subsection{Results}
 
 We say a heap $H$ is {\em cooked} if a field can point only to cooked
 objects, i.e.{} for every object $o=C(u)$ in the range of $H$ and
