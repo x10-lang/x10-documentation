@@ -1,0 +1,61 @@
+
+\myrule{\arabic{Rule3}}{A raw \this or \code{super} cannot escape or
+  be aliased} 
+
+\myrule{\arabic{Rule4}}{A call on a raw \code{super} is allowed only
+  for a \code{@NonEscaping} method}
+
+\myrule{\arabic{Rule5}}{A non-escaping method must be private or
+  final, unless it has \code{@NoThisAccess}}
+
+\myrule{\arabic{Rule6}}{A method with \code{@NoThisAccess} cannot
+  access \this or \code{super} (neither read nor write its fields)}
+
+\myrule{\arabic{Rule7}}{If a constructor does not call
+  \code{super(\ldots)} or \code{this(\ldots)}, then an implicit
+  \code{super()} is added at the beginning of the constructor; the
+  first statement in a constructor is a constructor call (either
+  \code{super(\ldots)} or \code{this(\ldots)}); a constructor call may
+  only appear as the first statement in a constructor }
+
+\myrule{\arabic{Rule8}}{a raw \this cannot be the receiver of
+  \code{new}}
+
+\myrule{\arabic{Rule10}}{A \code{var} field that lacks a field
+  initializer and whose type has-zero, is implicitly added a zero
+  initializer}
+
+
+\myrule{\arabic{Rule17}}{If a constructor does not call
+  \code{this(\ldots)}, then it must have exactly one property call,
+  and it must be unconditionally executed (unless the constructor
+  throws an exception)} 
+
+\myrule{\arabic{Rule18}}{The class invariant must be satisfied after
+  the property call}
+
+\myrule{\arabic{Rule19}}{The super fields can only be accessed after
+  \code{super(\ldots)}, and the fields of \this can only be accessed
+  after \code{property(\ldots)}} }
+
+\myrule{\arabic{Rule20}}{A closure cannot capture a raw \this}
+
+\myrule{\arabic{Rule21}}{A type must be consistent, i.e., it cannot
+  contradict the environment; the environment includes final variables
+  in scope, method guards, and class invariants.}
+
+\myrule{\arabic{Rule13}}{A constructor must finish assigning to all
+  fields at least once}
+
+\myrule{\arabic{Rule13a}}{A final field can be assigned at most once}
+
+\myrule{\arabic{Rule14}}{a raw \this cannot be captured by an
+  \code{at}}
+
+\myrule{\arabic{Rule11}}{A field can be read only if it is
+  definitely-assigned} 
+
+\myrule{\arabic{Rule11b}}{A final field can be written only if it is
+  definitely-unassigned}
+
+\myrule{\arabic{TransientRule}}{The type of a \code{transient} field must satisfy \code{haszero}}

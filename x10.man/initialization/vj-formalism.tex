@@ -1,0 +1,382 @@
+FX10 is similar to Featherweight Java (FJ), however it is both imperative (using a heap) and it
+    models X10 specific constructs such as \finish and \async.
+FX10 models the heart of the field initialization problem:
+    a field can be read only after it  was definitely assigned.
+%    and that final (\code{val}) fields can be assigned exactly once (in \Ref{Section}{val}).
+FX10 type-checking rules are flow-sensitive and are similar to those in Masked Types~\cite{XinQi:2009},
+    with two major differences:
+    (i)~simplicity,
+    (ii)~concurrency support.
+FX10 is simpler than masked types, but also less expressive, e.g., FX10 cannot express cyclic initialization.
+The simplicity stems from the fact that masked are not visible in the program itself.
+Instead, masks are used only during effects-checking to describe partially initialized objects.
+In addition, FX10 models concurrency constructs such as \finish and \async (that do not exist in masked types).
+
+FX10 only model the core X10 relevant to the field initialization problem,
+    so it does not include many X10 features such as
+    generics, interfaces, constraints, casting, inner classes, overloading, co-variant return type, private/final,
+    locals, field initializers, etc.
+FX10 also does not model places because the only raw object is \this,
+        and a raw \this cannot be captured by an \code{at},
+        thus only cooked objects can cross places.
+Finally, instead of inferring the method return type and what fields a method reads and writes,
+    everything is explicit in the syntax.
+Each non-escaping method has a method modifier~$\nonescaping(R;S;A)$, where
+            $R$ is the set of fields that can be read by the method,
+                $S$ are the fields that must be definitely-assigned by the method,
+                and $A$ are the fields that must be definitely-asynchronously-assigned by the method
+                (see \Ref{Figure}{Read-Write-Order}).
+
+We use the usual notation of~$\ol{\hx}$ to represent a vector or set of~$\hx_1, \ldots,\hx_n$.
+A program~\hP is a pair of class declarations~$\ol{\hL}$ (that is assumed to be global information)
+    and an expression \he.
+Like in masked-types, there is no \hnull value in the language, because none is needed for object initialization.
+Phrased differently,
+    FX10 guarantees that a field is read only after assigned, so no need to initialize it with \hnull.
+In the formalism, an object is represented as a mapping from initialized fields to their values
+    (so initially the mapping is empty because no field is initialized).
+
+\paragraph{Overview of formalism}
+\Ref{Section}{Syntax} presents the syntax of FX10.
+\Ref{Section}{Typing} defines various helper functions and shows the flow-sensitive typing rules
+    (e.g., $\Gdash \he:\hT, \Gamma'$ denotes that expression~\he has type \hT in environment $\Gamma$, and $\Gamma'$ is the new environment after executing \he).
+\Ref{Section}{Reduction} gives the reduction rules ($\he,H \reduce \he',H'$) and our soundness theorem.
+%Finally, \Ref{Section}{val} extends the formalism with \hval and \hvar fields.
+
+
+\Subsection{Syntax}
+
+
+\begin{figure}[htpb!]
+\begin{center}
+\begin{tabular}{|l|l|}
+\hline
+
+$\hP ::= \ol{\hL},\hS$ & Program. \\
+
+$\hL ::= \hclass ~ \hC~\hextends~\hD~\lb~\ol{\hF};~\ol{\hM}~\rb$
+& cLass declaration. \\
+
+$\hF ::= \mbox{var}\,\hf:\hC$
+& Field declaration. \\
+
+$\hM ::= \hG\ \mbox{def}\ \hm(\ol{\hx}:\ol{\hC}):\hC\{\hS\}$
+& Method declaration. \\
+
+$\hG ::= \hescaping ~~|~~ \nonescaping$
+& Method modifier. \\
+
+$\hp ::= \hl ~~|~~ \hx$
+& Path. \\ %(location or parameter)
+
+$\he ::=  \hp.\hf  ~|~ \hnew{\hC}$ 
+& Expressions. \\ %: locations, parameters, field access\&assignment,  %invocation, \code{new}
+
+$\hS ::=  \hp.\hf = \hp; ~|~ \hp.\hm(\ol{\hp});  ~|~ \hval{\hx}{\he};$ &\\
+$~~~~|~ \hfinish~\hS~|~ \hasync~\hS ~|~ \hS\ \hS$
+& Statements. \\ %: locations, parameters, field access\&assignment, invocation, \code{new}
+
+\hline
+\end{tabular}
+\end{center}
+\caption{FX10 Syntax.
+    The terminals are locations (\hl), parameters and \this (\hx), field name (\hf), method name (\hm), class name (\hB,\hC,\hD,\hObject),
+        and keywords (\hescaping, \nonescaping, \hhnew, \finish, \async, \code{val}).
+    The program source code cannot contain locations (\hl), because locations are only created during execution/reduction in \RULE{R-New} of \Ref{Figure}{reduction}.
+    }
+\label{Figure:syntax}
+\end{figure}
+
+
+\Ref{Figure}{syntax} shows the syntax of FX10.
+%(\Ref{Section}{val} will later add the \hval and \hvar field modifiers.)
+Expression~$\hval{\hx}{\he}{\he'}$ means to evaluate first \he then to evaluate and return~$\he'$.
+Expression~$\hasync~\he;\he'$ means to evaluate \he concurrently (in a different thread) and return $\he'$.
+
+The syntax is similar to X10 real syntax with the following difference:
+Escaping methods are marked with \hescaping
+    because \this may escape (e.g., passing \this as an argument to another method).
+The receiver of escaping methods must be a cooked object,
+    whereas non-escaping methods can be called on a raw object (in order to initialize it).
+FX10 does not have constructors; instead, an object is initialized by assigning to its fields or
+    by calling
+    non-escaping methods.
+%To simplify presentation, we allow only paths~$\hp$
+%    (variables \hx at
+%    compile time, or heap locations \hl at run time) to appear in field access, assignment and method call.
+%This does not restrict expressiveness, because of \code{val} expressions.
+
+\Subsection{Typing}
+\begin{lstlisting}
+class D extends Object { f:Object; }
+val d:D = new D; d.f = new Object
+\end{lstlisting}
+Then, the type of \code{d} is \code{D} where field \code{f} is uninitialized
+    (which we formally write below as $\code{D}\myinit{\hf}{\hf}$).
+Therefore, reading \code{d.f} would be illegal, but writing to \code{d.f} would update the type of \code{d}
+    to be fully initialized.
+
+
+Consider the following classes:
+\begin{lstlisting}
+class A extends Object {
+  var f:A; var g:A; var h:A;
+  nonescaping(g;f;f,h) build(a:A):A =
+    val x = this;
+    async this.h=g;
+    val q = this;
+    finish {
+      val y = g;
+      async this.f=a;
+      val r =  a;
+      val w=this; 
+      val z = this;
+    }
+}
+class B extends A { f3:A; }
+\end{lstlisting}
+
+
+\emph{Subclassing} is exactly as in FJ:
+    the transitive closure of the \hextends relation,
+    i.e., $\hC \st \hD$ if \hC transitively extends $\hD$.
+(We also call it \emph{subtyping}, though types in FX10 also have masks,
+    but those are ignored for subtyping purposes.)
+%\emph{Subtyping} is defined as follows:
+%    $\hC\myinit{\ol{\hf_s}}{\ol{\hf_a}} \st \hC'\myinit{\ol{\hf'_s}}{\ol{\hf'_a}}$
+%    iff
+%    $\hC \st \hC'$ and~$\ol{\hf_s} \subseteq \ol{\hf'_s}$ and~$\ol{\hf_a} \subseteq \ol{\hf'_a}$.
+%Therefore, a cooked object can be used anywhere a raw object is expected
+%    (e.g., $\hC\mycooked \st \hC\myinit{{\hf}}{{\hf}}$).
+
+Similarly to FJ, we define:
+(i)~$\fields(\hC)=\ol{\hf}:\ol{\hD}$ returns all fields of \hC (both those declared by \hC and recursively inherited from its superclass),
+    and~$\ftype{}(\hf_i,\hC) =\hD_i$.
+(ii)~$\mtype(\hm,\hC) = \ol{\hB}\mapsto\hD$ returns the type of method \hm in class \hC.
+(iii)~$\mbody(\hm,\hC) = \ol{\hx}.\he$ returns the method body of \hm in class \hC.
+Because methods have a modifier (\hG) in FX10, we also define:
+(iv)~$\mmodifier(\hm,\hC) = \hG$ returns the method modifier of \hm in class \hC.
+
+
+We use a simple logic of initialization for our basic assertions. We
+consider primitive formulas $+\hx$ (the variable or parameter $\hx$ is
+initialized), $+\hp.\hf$ (the field $\hp.hf$ is initialized), and
+$-\hp.\hf$ (the field $\hp.\hf$ is being conciurrently initialized):
+
+$$
+ \phi,\psi {::=} \epsilon ~|~ +\hx ~|~ +\hp.\hf ~|~ -\hp.\hf \alt \phi,\psi
+$$
+
+The inference rules over formulas are straightforward: $\phi \vdash d$
+if $d \in \phi$; $\phi\vdash +\hp.\hf$ if $\phi\vdash +\hp$; and if
+the exact type of $\hx$ is $\hC$, and $\hC$ has the fields $\ol{\hf}$,
+then $\phi\vdash +\hp$ if $\phi\vdash \hp.\hf_i$, for each $i$.
+
+\begin{figure*}[t]
+\begin{center}
+\begin{tabular}{|c|}
+\hline
+
+
+$\typerule{
+ \phi \vdash +p.f \gap \phi, +x~\hS~\psi
+}{
+ \phi \hval{\hx}{\hp.\hf_i}{\hS}~\psi
+}$~\RULE{(T-Access)}
+\quad
+$\typerule{
+  \phi~\hS~\psi
+}{
+ \phi~ \hval{\hx}{\hnew{\hC}}{\hS}~\psi
+}$~\RULE{(T-New)}
+\quad
+$\typerule{
+  \phi \vdash + q
+}{
+ \phi ~ p.\hf=q ~ + p.\hf
+}$~\RULE{(T-Assign)}
+\\\\
+
+$\typerule{
+    \phi~\hS~\psi
+}{
+  \begin{array}{l}
+    \phi~\finish\,\hS~ +\psi \\
+    \phi~\async\,\hS~ -\psi
+  \end{array}
+}$~\RULE{(T-Finish,Async)}
+
+\quad
+$\typerule{
+  \phi~\hS_1~\psi_1
+        \gap
+    \phi,\psi_1~\hS_2~\psi_2
+}{
+  \phi~\hS_1;\hS_2~\psi_1,\psi_2
+}$~\RULE{(T-Seq)}
+\quad
+
+$\typerule{
+m(\ol{\hx}):: \phi' \Rightarrow \psi' \gap \phi \vdash \phi'[\hp/this,\ol{\hp}/\ol{\hx}]
+}{
+\phi~\hp.m(\ol{\hp})~\psi'[\hp/this,\ol{\hp}/\ol{\hx}]
+}$~\RULE{(T-Invoke)}\\
+
+\hline
+\end{tabular}
+\end{center}
+\caption{FX10 Typing Rules ($\phi~\hS\psi$)}
+\label{Figure:expression-typing}
+\end{figure*}
+
+
+We check that method declarations are ok in two parts (the two parts are separated below by a blank line).
+The first part ensures that the type of the method body is a subtype
+    of the return type, and that the body entails the method modifier.
+The second part ensures that an overriding method
+    has the same signature as the overridden one,
+    and that non-escaping methods are final (cannot be overridden). %the method modifier is stronger in the subclass. %(whether it is \hescaping or if it has the 3 sets specified).
+As in FJ, a class is ok if all its methods are ok.
+
+\beqst %{method-ok}
+\typerule{
+  t  =
+        \begin{cases}
+        \hC\mycooked & \hG=\hescaping \\
+        \hC\myinit{A}{A}  & \hG=\nonescaping(R;W_s;W_a) \\
+            & ~~\fields{}(\hC)=\ol{\hf}:\ol{\hB} \\
+            & ~~A=(\ol{\hf} \setminus R),* \\
+        \end{cases}\\
+  \Gamma = \{ \ol{\hx}:\ol{\hD\mycooked},\this:t \} \\
+  \Gdash \he : \hD'\mycooked,\Gamma' \gap \Delta = \Gamma' - \Gamma \gap
+    \hD' \st \hD \\
+  \code{if }\hG=\nonescaping(R;W_s;W_a) ~\code{then }  \Delta(\this) = \initsets{\ol{f_s}}{\ol{f_a}} \\
+  %todo
+    ~\hand W_s \subseteq W_a  \hand \ol{f_s} \supseteq W_s \hand \ol{f_a} \supseteq W_a \\\\
+  \hclass~\hC~\hextends~\hC'~\lb~\ldots~\rb\\
+  \code{if }\mtype{}(\hm,\hC')=\ol{\hD'} \mapsto \hD'\\
+    ~~\code{then } \ol{\hD'}\equiv\ol{\hD} \hand \hD'\equiv\hD \hand \\
+    \mmodifier{}(\hm,\hC)=\mmodifier{}(\hm,\hC')=\hescaping
+}{
+  \hG ~ \hm(\ol{\hx}:\ol{\hD}):\hD=\he ~~\OK~\IN~\hC
+}
+\eeq
+
+
+
+\Subsection{Reduction}
+
+\begin{figure*}[t]
+\begin{center}
+\begin{tabular}{|c|}
+\hline
+$\typerule{
+ \hS,\hH \reduce \hH'
+}{
+  \begin{array}{l}
+    \finish~\hS,\hH \reduce \hH'\\
+    \async~\hS,\hH \reduce \hH'\\
+    \hS;\hS', \hH \reduce \hS',\hH'\\
+  \end{array}
+}$~\RULE{(R-Term)}
+~
+$\typerule{
+ \hS,\hH \reduce \hS', \hH'
+}{
+  \begin{array}{l}
+    \finish~\hS,\hH \reduce \finish~\hS',\hH'\\
+    \async~\hS,\hH \reduce \async~\hS', \hH'\\
+    \hS;\hS_1, \hH \reduce \hS';\hS_1,\hH'\\
+    \async~\hS_1;\hS, \hH \reduce \async~\hS_1;\hS', \hH'\\
+  \end{array}
+}$~\RULE{(R-Step)}
+~
+$\typerule{
+  \he,\hH \reduce \hl,\hH'
+}{
+  \hval{\hx}{\he}{\hS},\hH \reduce \hS[\hl/\hx], \hH'
+}$~\RULE{(R-Val)}
+\\\\
+
+$\typerule{
+    \hl' \not \in \dom(\hH)
+}{
+  \hnew{\hC},\hH \reduce \hl',\hH[ \hl' \mapsto \hC()]
+}$~\RULE{(R-New)}
+\quad
+$\typerule{
+    \hH(\hl')=\hC(\ldots)
+        \gap
+    \mbody{}(\hm,\hC)=\ol{\hx}.\hS
+}{
+  \hl'.\hm(\ol{\hl}),\hH \reduce \hS[\ol{\hl}/\ol{\hx},\hl'/\this],\hH
+}$~\RULE{(R-Invoke)}
+\quad
+
+
+\\\\
+
+$\typerule{
+    \hH(\hl)=\hC(\ol{\hf}\mapsto\ol{\hl'})
+}{
+  \hl.\hf_i,\hH \reduce \hl_i',\hH
+}$~\RULE{(R-Access)}
+\quad
+$\typerule{
+    \hH(\hl)=\hC(\hF)
+        \gap
+    \hF' = \hF[ \hf \mapsto \hl"]
+}{
+  \hl.\hf=\hl',\hH \reduce \hl',\hH[ \hl \mapsto \hC(\hF')]
+}$~\RULE{(R-Assign)}
+\\
+\hline
+\end{tabular}
+\end{center}
+\caption{FX10 Reduction Rules ($\hH,\hS \reducesto \hH',\hS' ~|~\hH'$).}
+\label{Figure:reduction}
+\end{figure*}
+
+An object~$\ho = \code{C}(\ol{\hf}\mapsto\ol{\hl'})$ is an instance of some class~\hC
+    where fields~$\ol{\hf}$ has been initialized to locations~$\ol{\hl'}$.
+A heap~$H$ is a mapping from locations~\hl to objects~$\ho$.
+A heap-typing~$\Gamma_H$ maps locations to their type,
+    i.e., if~$H[\hl] = \code{C}(\ol{\hf}\mapsto\ol{\hl'})$,
+        $\fields{}(\hC)=\ol{\hf'}:\ol{\hD}$, and~$A=\ol{\hf'}\setminus\ol{\hf}$,
+    then~$\Gamma_H[\hl] = \hC\myinit{A}{A}$.
+A heap~$H$ is \emph{well-typed} iff
+    each field location is a subtype of the declared field type,
+    i.e., for every location in the heap~$\hl \in \dom(H)$,
+        where $H[\hl] = \code{C}(\ol{\hf}\mapsto\ol{\hl'})$
+        and
+        for every field~$\hf_i$, we have that~$H[\hl_i'] = \hC'(\ldots)$ and
+        $\hC' \st \ftype{}(\hf_i,\hC)$.
+
+
+An expression~\he is called \emph{closed} if it does not contain
+    any free variables (i.e., it does not contain method parameters \hx nor~\this).
+
+
+Consider a program $\hP,\he$, where~\he is closed and \hP is well-typed.
+Then in a well-typed heap, \he can always be reduced to a location.
+Because our reduction rules only allow reads from initialized fields,
+    then a corollary is that a field can only be read after it was assigned.
+
+
+\begin{Theorem}[preservation]
+  \textbf{(Progress and Preservation)}
+    For every closed expression~$\he \neq \hl$, and a well-typed heap~$H$,
+        if $\Gamma_{H} \vdash \he : \hC\myinit{\ol{\hf_s}}{\ol{\hf_a}}, \Gamma'$,
+        then there exists~$H',\he',\hC',\Delta$ such that
+        (i)~$H,\he \reducesto H',\he'$,
+        (ii)~$\Gamma_{H'} \vdash \he':\hC'\myinit{\ol{\hf'_s}}{\ol{\hf'_a}}, \Gamma"$,
+        and~$\hC' \st \hC$,
+        and~$\ol{\hf'_s} \subseteq \ol{\hf_s}$,
+        and~$\ol{\hf'_a} \subseteq \ol{\hf_a}$,
+        and~$\Gamma" = \Gamma'+\Delta$,
+        (iii)~$H'$ is well-typed,
+        (iv)~$\he'$ is closed.
+\end{Theorem}
+\begin{proof}
+See our technical report.
+\end{proof}
