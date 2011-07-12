@@ -137,6 +137,18 @@ implementations of $getRTT() and $getParam(int) by using Java reflection.
 Therefore we don't see difficulties for making Java classes as subtype of x10.lang.Any.
 </MT>
 
+<MT>
+Making java.lang.String a different type from x10.lang.String will introduce subtlety
+in the identity of String object.
+
+We can cache a single java.lang.String object in each instance of x10.lang.Object
+when it is needed for the first time. We may also need a global
+IdentityHashMap<java.lang.String,x10.lang.String> to cache a single x10.lang.String
+object for each instance of java.lang.String. By using these mechanisms in the implicit
+conversion between x10.lang.String and java.lang.String, we must ensure the identity of
+String object across X10-Java boundary.
+</MT>
+
 Java classes have X10 run-time types that can be retrieved using the Class
 object.  They can be used as type arguments to X10 generic classes and
 methods.
