@@ -1,8 +1,8 @@
 FX10 is a formal calculus for X10 intended to  complement Featherweight Java
 (FJ).  It models imperative aspects of X10 including the concurrency
-constructs \finish{} and \async{}. 
+constructs \finish{} and \async{}.
 FX10 models the heart of the field initialization problem:
-    a field can be read only after it  is definitely assigned. 
+    a field can be read only after it  is definitely assigned.
 
 %    and that final (\code{val}) fields can be assigned exactly once (in \Ref{Section}{val}).
 
@@ -232,8 +232,8 @@ $\typerule{
 \label{Figure:effects}
 \end{figure*}
 
-We use a simple logic of initialization for our basic assertions. 
-This is an intuitionistic logic over the 
+We use a simple logic of initialization for our basic assertions.
+This is an intuitionistic logic over the
 primitive formulas $+\hx$ (the variable or parameter $\hx$ is
 initialized), $+\hp.\hf$ (the field $\hp.\hf$ is initialized), and
 $-\hp.\hf$ (the field $\hp.\hf$ is being concurrently
@@ -248,10 +248,10 @@ The notion of substitution on formulas $\phi\char`[\ol{\hx}/\ol{\hz}\char`]$ is
 specified in a standard fashion.
 
 The inference relation is the usual intuitionistic implication over
-these formulas, and the following additional proof rules: 
+these formulas, and the following additional proof rules:
 (1)~$\phi\vdash +\hp.\hf$ if $\phi\vdash +\hp$; and (2)~if
 the exact class of $\hx$ is $\hC$, and $\hC$ has the fields $\ol{\hf}$,
-then $\phi\vdash +\hp$ if $\phi\vdash \hp.\hf_i$, for each $i$. 
+then $\phi\vdash +\hp$ if $\phi\vdash \hp.\hf_i$, for each $i$.
 
 A {\em heap} is a mapping from a given set of locations to {\em
   objects}. An object is a pair $C(u)$ where $C$ is a class (the exact
@@ -270,17 +270,17 @@ $\phi$) such that $\phi$ evaluates to true.
 
 The proof rules for the judgement $\phi~\hS~\psi$ are given in
 Figure~\ref{Figure:effects}. They use two syntactic operations on initialization
-formulas defined as follows. 
-$+\psi$ is defined inductively as follows: 
-$+\htrue=\htrue$, 
-$++\hx=+\hx$, 
-$+\pm\hp.\hf=+\hp.\hf$, 
+formulas defined as follows.
+$+\psi$ is defined inductively as follows:
+$+\htrue=\htrue$,
+$++\hx=+\hx$,
+$+\pm\hp.\hf=+\hp.\hf$,
 $+(\phi \wedge\psi)=(+\phi)\wedge(+\psi)$
-and $+\exists x.\phi=\exists x.+\phi$. 
+and $+\exists x.\phi=\exists x.+\phi$.
 $-\psi$ is defined similarly:
-$-\htrue=\htrue$, 
-$-+\hx=\htrue$, 
-$-\pm\hp.\hf=-\hp.\hf$, 
+$-\htrue=\htrue$,
+$-+\hx=\htrue$,
+$-\pm\hp.\hf=-\hp.\hf$,
 $-(\phi \wedge\psi)=(-\phi)\wedge(-\psi)$
 and $-\exists x.\phi=\exists x.-\phi$.\footnote{It turns out that
   expressions of the form $-+\hx$ never arise since \async{} is a
@@ -291,11 +291,11 @@ The rule~\RULE{(T-Access)} can be read as asserting: if $\phi$ entails
 the field $\hp.\hf$ is initialized, and with the assumption $\phi$
 (together with $+\hx$ which states that $\hx$ is initialized to a
 cooked object), we can establish that execution of $\hS$ satisfies the assertion
-$\psi$ then we can establish that execution of 
-$\hval{\hx}{\hp.\hf}{\hS}$ in 
+$\psi$ then we can establish that execution of
+$\hval{\hx}{\hp.\hf}{\hS}$ in
 (a heap satisfying) $\phi$ establishes $\exists \hx.\psi$. Here we
 must take care to project $\hx$ out of $\psi$ since $\hx$ is not
-accessible outside its scope $\hS$. 
+accessible outside its scope $\hS$.
 The rule ~\RULE{(T-New)} can be read in a similar way except that when
 executing $\hS$ we can make no assumption that $\hx$ is initialized,
 since it has been initialized with a raw object (none of its fields
@@ -306,35 +306,32 @@ cooked object and then asserts that $\hp.\hf$ is initialized to a
 cooked object.
 The rule~\RULE{(T-Finish)} can be understood as recording that after a
 \finish{} has been ``crossed'' all asynchronous initializations $\psi$
-can be considered to have been performed $\phi$. Conversely, 
+can be considered to have been performed $\phi$. Conversely,
 the rule~\RULE{(T-Async)} states that any initializations must be
-considered asynchronous to the surrounding context. 
+considered asynchronous to the surrounding context.
 The rule~\RULE{(T-Seq)} is a slight variation of the stadard rule for
 sequential composition that permits $\phi$ to be used in the
 antecedent of $\hS_2$, exploiting monotonicity of effects. Note the
 effects recorded for $\hS_1;\hS_2$ are a conjunction of the effects
-recorded for $\hS_1$ and $\hS_2$.  
+recorded for $\hS_1$ and $\hS_2$.
 The rule~\RULE{(T-Invoke)} is routine.
 
 As an example, consider the following classes. Assertions are provided
-in-line. 
+in-line.
 \begin{lstlisting}
 class A extends Object {
   var f:A; var g:A; var h:A;
   @NonEscaping def build(a:A) {
     // inferred decoration: phi => psi
-    // phi= +this.g, +a
-    // psi= -this.h, +this.f
+    //   phi= +this.g, +a
+    //   psi= -this.h, +this.f
     // checks phi implies +this.g
     val x = this.g;
-    // adds -this.h to psi
-    async this.h=x;
+    async this.h=x; // psi= -this.h
     finish {
       // checks phi implies +a
-      // adds -this.f to psi
-      async this.f=a;
-    }
-    // adds +this.f to psi
+      async this.f=a; // psi= -this.h,-this.f
+    } // psi= -this.h,+this.f
   }
 }
 class B extends A { f3:A; }
@@ -345,30 +342,30 @@ class B extends A { f3:A; }
 
 The reduction relation is described in
 Figure~\ref{Figure:reduction}. An S-configuration is of the form
-$\hS,\hH$ where \hS{} is a statement and $\hH$ a heap (representing a
+$\hS,\hH$ where \hS{} is a statement and $\hH$ is a heap (representing a
 computation which is to execute $\hS$ in the heap $\hH$), or $\hH$
 (representing terminated computation). An
 E-configuration is of the form $\he,\hH$ and represents the
 computation which is to evaluate $\he$ in the configuration $\hH$. The
 set of {\em values} is the set of locations; hence E-configurations of
-the form $\hl,\hH$ are terminaal. 
+the form $\hl,\hH$ are terminaal.
 
 Two transition relations $\reduce{}$ are defined, one over S-configurations and
-the other over E-configurations. 
+the other over E-configurations.
 For $X$ a partial function, we use the notation $X[v \mapsto
   e]$ to represent the partial function which is the same as $X$
 except that it maps $v$ to $e$.
-The rules defining these relations are 
-standard. 
+The rules defining these relations are
+standard.
 The only minor novelty is in how \async{} is defined. The
-critical rule is the last rule in~\RULE{(R-Step)}  -- it specifies the 
+critical rule is the last rule in~\RULE{(R-Step)}  -- it specifies the
 ``asynchronous'' nature of \async{} by permitting \hS{} to make a step
-even if it is preceded by $\async{} \hS_1$.  
+even if it is preceded by $\async{} \hS_1$.
 %
 The rule ~\RULE{(R-New)} returns a new location that is bound to a new
 object that is an instance of \hC{} with none of its fields initialized.
 %
-The rule 
+The rule
 ~\RULE{(R-Access)} ensures that the field is initialized before it is
 read ($\hf_i$ is contained in $\ol{\hf}$).
 
