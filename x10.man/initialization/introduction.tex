@@ -12,7 +12,7 @@ X10 is an object oriented programming language with a sophisticated
     type system (constraints, class invariants, non-erased generics, closures)
     and concurrency constructs (asynchronous activities, multiple places\removeGlobalRef{, global references}).
 This paper shows that object initialization is a cross-cutting concern
-    that interact with other features in the language.
+    that interacts with other features in the language.
 We discuss several language designs that restrict these interactions,
     and explain why we chose the \emph{hardhat} design for X10.
 
@@ -49,9 +49,11 @@ Finally, if the type-system is augmented, for example, with non-null types, then
     a default value no longer exists,
     which leads to complicated type-systems for initialization~\cite{Fahndrich:2007:EOI:1297027.1297052,XinQi:2009}.
 
-\mbox{C++} sacrifices type-safety on the alter of performance. %as usual, gives you enough rope to hang yourself, but in an amazing speed.
-Fields are not zero-initialized, and therefore if \this leaks,
-    one can read an uninitialized field.
+\mbox{C++} sacrifices type-safety on the altar of performance: %as usual, gives you enough rope to hang yourself, but in an amazing speed.
+    fields are not zero-initialized.
+    (X10 has both type-safety and the performance for not zero-initializing fields.)
+Therefore if \this leaks in \mbox{C++},
+    one can read an uninitialized field resulting in an arbitrary value.
 Moreover, method calls are statically bound during construction,
     which may result in an exception at runtime
     if one tries to invoke a virtual method of an abstract class (see \Ref{Figure}{Dynamic-dispatch} below).
@@ -116,22 +118,31 @@ A design for object initialization should have the following
         Java's relaxed initialization rules.
 \end{description}
 
-We believe the hardhat design in X10 has these desirable properties,
+We took the ideas of prohibiting dynamic-dispatching or leaking-\this during construction from~\cite{Gil:2009:WRS:1615184.1615216},
+    and materialized them into a set of rules that cover all aspects of X10
+    (type-system, closures, generics, properties, and concurrent and distributed constructs).
+This hardhat design in X10 (version 2.1) has the above desirable properties,
     however they come at a cost of limiting flexibility:
-    it is not possible to express cyclic immutable structures in X10 version 2.1.
+    it is not possible to express cyclic immutable structures in X10.
+We chose simplicity over flexibility in our design choices, e.g.,
+    X10 prohibits creating an alias of \this during object construction
+    (whereas a more flexible design could track aliases via alias-analysis, at the cost of sacrificing simplicity).
 Alternative designs for initialization are described in \Ref{Section}{designs},
     such as the \code{proto} design (that was part of X10 version 2.0) that allows cyclic immutable structures
     at the cost of a more complicated design.
-X10 is the first object-oriented (OO) language to adopt the hardhat initialization design.
+X10 is the first object-oriented (OO) language to adopt the strict hardhat initialization design.
 
 The \emph{contributions of this paper} are:
-    (i)~materializing the hardhat idea~\cite{Gil:2009:WRS:1615184.1615216}
-        into %a simple design that is incorporated into
-        full-blown OO language with many cross-cutting concerns
-        (such as advanced type-system, closures, and concurrent and distributed constructs),
+    (i)~presenting a complete and strict hardhat design in a
+        full-blown advanced OO language with many cross-cutting concerns
+        (especially the concurrent and distributed aspects),
+    (ii)~discussing alternative designs, such as the proto design,
     (ii)~implementation inside the X10 open-source compiler and
-        converting the entire X10 code-base to conform to the hardhat principles,
-    (iii)~FX10 formalism which is the first to present flow-sensitive type-checking rules with concurrency constructs.
+        converting the entire X10 code-base (+400K lines of code) %according to Igor
+        to conform to the hardhat principles,
+    (iii)~FX10 formalism which is the first to present a flow-sensitive effect system with concurrency constructs
+    and a soundness theorem stating that one can never read an uninitialized field in a well-typed program.
+
 
 The remainder of this introduction
     presents error-prone sequential initialization idioms in \Ref{Section}{Initialization-pitfalls},
