@@ -129,7 +129,7 @@ $~~~~|~ \hfinish~\hS~|~ \hasync~\hS ~|~ \hS\ \hS$
 \end{center}
 \caption{FX10 Syntax.
     The terminals are locations (\hl), parameters and \hthis (\hx), field name (\hf), method name (\hm), class name (\hB,\hC,\hD,\hObject),
-        and keywords (\hescaping, \nonescaping, \hhnew, \finish, \async, \code{val}).
+        and keywords (\hhnew, \finish, \async, \code{val}).
     The program source code cannot contain locations (\hl), because locations are only created during execution/reduction in \RULE{R-New} of \Ref{Figure}{reduction}.
     }
 \label{Figure:syntax}
@@ -215,7 +215,7 @@ $\typerule{
         \gap
     \phi,\psi_1~\hS_2~\psi_2
 }{
-  \phi~\hS_1;\hS_2~\psi_1,\psi_2
+  \phi~\hS_1\,\hS_2~\psi_1,\psi_2 % vj: Yoav, do NOT put a semi-colon back in!!
 }$~\RULE{(T-Seq)}
 \quad
 
@@ -312,8 +312,8 @@ considered asynchronous to the surrounding context.
 The rule~\RULE{(T-Seq)} is a slight variation of the stadard rule for
 sequential composition that permits $\phi$ to be used in the
 antecedent of $\hS_2$, exploiting monotonicity of effects. Note the
-effects recorded for $\hS_1;\hS_2$ are a conjunction of the effects
-recorded for $\hS_1$ and $\hS_2$.
+effects recorded for $\hS_1\,\hS_2$ are a conjunction of the effects
+recorded for $\hS_1$ and $\hS_2$. 
 The rule~\RULE{(T-Invoke)} is routine.
 
 As an example, consider the following classes. Assertions are provided
@@ -340,8 +340,8 @@ Method \code{build} synchronously (asynchronously) initializes fields \code{this
     and it assumes that \code{this.g} and \code{a} are cooked.
 The following statement completely initializes \code{b}:
 \begin{lstlisting}
-val b = new B;
-b.g = new Object; // psi= +b.g
+val b = new B();
+b.g = new Object(); // psi= +b.g
 finish {
   b.build(b.g); // psi= +b.g,+b.f,-b.h
 } // psi= +b.g,+b.f,+b.h
@@ -451,11 +451,11 @@ $\typerule{
 
 \Subsection{Results}
 
-We say a heap $H$ is {\em cooked} if a field can point only to cooked
+We say a heap $H$ is {\em f-cooked} if a field can point only to cooked
 objects, i.e.{} for every object $o=C(u)$ in the range of $H$ and
 every field $f \in \dom(u)$ it is the case that $u(f)\in \dom (H)$ and
-$H(u(f))$ is a total object. We shall only consider cooked heaps (valid
-programs will only produce cooked heaps).
+$H(u(f))$ is a total object. We shall only consider f-cooked heaps (valid
+programs will only produce f-cooked heaps).
 
 A {\em heap typing} $T$ is a mapping from locations to classes. $H$ is
 said to be typed by $T$ if for each $l\in\dom(H)$, the class of $H(l)$
@@ -463,32 +463,41 @@ is a subclass of $T(l)$.  Since our treatment separates out effects
 from types, and the treatment of types is standard, we shall assume
 that all programs and heaps are typed.
 
-We say that a program \hP{} is {\em proper} if it is well-typed using
-(an appropriate variation of) FJ rules, and each method can be
-decorated with pre-post assertions $(\phi,\psi)$. The decorations must
-satisfy the property that under the assumption that every method
-satisfies its assertion (this is for use in recursive calls) we can
-establish for every method $\hdef\hm(\ol{\hx}:\ol{\hC})\{\hS\}$ with
-assertion $(\phi,\psi)$ that it is the case that the free variables of
-$\phi,\psi$ are contained in $\this,\ol{\hx}$, and that
-$\phi~\hS~\psi$.
+We say that $\hS$ is annotable if there exists $\phi,\psi$ such that
+$\phi~\hS~\psi$ can be established.\footnote{An example of a statement that is
+not annotable is $\hval{\hx}{\hnew
+  \hC()}{\hval{\hy}{\hx.\hf}{\hx.\hf=\hy}}$ where $\hC{}$ has a field
+\hf. This attempts to read a field of a variable initialized with a
+brand-new object.}
 
-Consider a program $\hP,\hS$, where \hP is proper.  Then in a cooked,
-typed heap, \hS can always progress (or terminate):
+We say that a program $\hP=\ol{\hL}\hS$ is {\em proper} if it is
+well-typed and each method in \hL{} can be decorated with pre-post assertions
+$(\phi,\psi)$, and \hS is annotable. 
+The decorations must satisfy the property that under the
+assumption that every method satisfies its assertion (this is for use
+in recursive calls) we can establish for every method
+$\hdef\hm(\ol{\hx}:\ol{\hC})\{\hS\}$ with assertion $(\phi,\psi)$ that
+it is the case that the free variables of $\phi,\psi$ are contained in
+$\this,\ol{\hx}$, and that $\phi~\hS~\psi$.
 
-\begin{Theorem}[preservation]
-  \textbf{(Progress and Preservation)} For every closed
-  statement~$\hS$, assertion $\phi~\hS~\psi$, and a cooked, typed
-  heap~$H$ satisfying $\phi$: either there exists a cooked, typed heap $\hH'$
-  satisfying $\psi$ such that $\hS,\hH \reducesto \hH'$; or there
-  exists an $\hS',\phi'$ such that $\phi'~\hS'~\psi$ and there exists
-  a cooked, typed $\hH'$ satisfying $\phi'$ such that $\hS,\hH \reducesto
-  \hS',\hH'$.
-
+We prove the following theorems. In all these theorems the background
+program \hP{} is assumed to be proper. The first theorem is analogous
+to subject-reduction for typing systems.
+\begin{Theorem}{\textbf{Preservation}}
+Let $\phi~\hS~\psi$, $\hH$ satisfy $\phi$, ($\hH$ f-cooked and typed).
+(a) If $\hS,\hH \reducesto \hH'$ then $\hH'$ is f-cooked and typed and satisfies $+\psi$. 
+(b) If $\hS,\hH \reducesto \hS',\hH'$ then $\hH'$ is f-cooked and typed and
+there exists a $\psi'$ such
+that $\hH'$ satisfies $\psi'$ and $\psi'~S\phi$.
 \end{Theorem}
-\begin{proof}
-See our technical report in\\
- \code{http://x10-lang.org/documentation/initialization/TR.pdf}
-\end{proof}
+
+\begin{Theorem}{\textbf{Progress}}
+ Let $\phi~\hS~\psi$, $\hH$ satisfy $\phi$, ($\hH$ f-cooked and
+ typed). The configuration $\hS,\hH$ is not stuck.
+\end{Theorem}
+
+For proofs, please see associated technical report.
+
 Because our reduction rules only allow reads from initialized fields,
-a corollary is that a field can only be read after it was assigned.
+a corollary is that a field can only be read after it was assigned,
+and an attempt to read a field will always succeed.
