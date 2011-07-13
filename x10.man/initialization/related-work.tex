@@ -17,7 +17,7 @@ object (in X10 terminology) may violate the constraints in their types.  This
 simply disables the type-system while an object is partially constructed while
 ensuring the rest of the program is typed normally.  Our approach prevents
 errors during constructors as it does not disable the type-system, and it also
-permits optimisation of the representation of fields whose types are very
+permits optimization of the representation of fields whose types are very
 constrained, since they will never have to hold a value other than the values
 allowed by their type constraint.
 
@@ -39,7 +39,7 @@ Our type system is simpler but less expressive.
 There is also a time-aware type system \cite{Matsakis:2010:TTS:1869459.1869511}
 that allows the detection of data-races, and understands the concept of shared
 variables that become immutable only after a certain time
-(and can then be accessed without synchronisation).  The same mechanisms can also be
+(and can then be accessed without synchronization).  The same mechanisms can also be
 used to express when an object becomes cooked.
 
 Ownership types can be used to create immutable cycles~\cite{Zibin:2010:OIG:1869459.1869509}.
@@ -48,5 +48,5 @@ our \code{proto} design because it also allows \code{this} to be linked from an
 incomplete object.  However the ownership structure is used to implement a
 broader policy, allowing code in the owner to use a reference to its partially
 constructed children, whereas we only allow code to use a reference to objects
-that are being partially constructed in some nesting stack frame.  However our
+that are being partially constructed in some nesting stack frame.  Our
 approach does not use ownership types.

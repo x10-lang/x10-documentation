@@ -1,4 +1,4 @@
-FX10 is a formal calculus for X10 intended to  complement Featherweight Java
+Featherweight X10 (FX10) is a formal calculus for X10 intended to  complement Featherweight Java
 (FJ).  It models imperative aspects of X10 including the concurrency
 constructs \finish{} and \async{}.
 FX10 models the heart of the field initialization problem:
@@ -8,8 +8,8 @@ FX10 models the heart of the field initialization problem:
 
 The basic idea behind the formalization is very straightforward. We
 break up the formalization into two distinct but interacting
-subsystems, a {\em type-system}~(\Ref{Section}{Type system}) and an {\em
-  effects} system~(\Ref{Section}{Effect system}). The type
+subsystems, a {\em type system}~(\Ref{Section}{Type system}) and an {\em
+  effect} system~(\Ref{Section}{Effect system}). The type
 system is completely standard -- think the system of FJ, adapted to
 the richer constructs of FX10.
 
@@ -25,14 +25,14 @@ enclosing $\finish$ is crossed).\footnote{There is no need for the
 $\phi$ or $\psi$ is simply a conjunction of such formulas $\phi \wedge
 \psi$ or an existential quantification $\exists{}\hx.\phi$.
 An {\em
-  effects assertion} $\phi~S~\psi$ (for $S$ a statement) is read as a
+  effects assertion} $\phi~S~\psi$ (for a statement $S$) is read as a
 partial correctness assertion: when executed in a heap that satisfies
 the constraint $\phi$, $S$ will on termination result in a heap that
 satisfies $\psi$.  Since we do not model \code{null}, our
-formalization can be particularly simple: variables once initialized
+formalization can be particularly simple: variables, once initialized,
 stay initialized, hence $S$ will also satisfy $\phi$.
 
-Another feature of our approach is that unlike Masked
+Another feature of our approach is that, unlike Masked
 Types~\cite{XinQi:2009}, the source program syntax does not permit the
 specification of initialization assertions. Instead we use a standard
 least fixed point computation to automatically decorate each method
@@ -46,7 +46,7 @@ $\phi~\hS~\psi$.\footnote{Note that this approach permits a formal $\hx$ to a
   result of the method invocation the formal may become more cooked.}
 This computation must be sensitive to the semantics
 of method overriding, that is a method with decoration $(\phi,\psi)$
-can only be over-ridden by a method with decoration $(\phi',\psi')$
+can only be overridden by a method with decoration $(\phi',\psi')$
 that is ``at least as strong as'' $(\phi,\psi)$ (viz, it must be the
 case that ($\phi \vdash \phi'$ and $\psi' \vdash \psi$). Further, if
 the method is not marked \code{@NonEscaping}, then $\phi$ is required
@@ -140,7 +140,7 @@ $~~~~|~ \hfinish~\hS~|~ \hasync~\hS ~|~ \hS\ \hS$
 Expression~$\hval{\hx}{\he}{\hS}$ evaluates $\he$, assigns it to a
 new variable $\hx$, and then evaluates \hS. The scope of \hx{} is \hS.
 
-The syntax is similar to X10 real syntax with the following difference:
+The syntax is similar to the real X10 syntax with the following difference:
 %Non-escaping methods are marked with \code{@NonEscaping}, such methods
 %can be invoked on raw objects (and can be used to initialize them).
 FX10 does not have constructors; instead, an object is initialized by assigning to its fields or
