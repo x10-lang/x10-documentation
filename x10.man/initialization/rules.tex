@@ -2,13 +2,13 @@ X10 is an advanced object-oriented language with a complex type-system
     and concurrency constructs.
 This section describes how object initialization interacts with X10 features.
 We begin with object-oriented features found in mainstream languages,
-    such as constructors, inheritance, dynamic dispatching, exceptions, and inner classes.
+    such as constructors, inheritance, dynamic dispatch, exceptions, and inner classes.
 We then proceed to X10's type-system features,
-    such as constraints, properties, class invariants, closures, (non-erased) generics, and structs.
-The parallel features of X10 allow writing concurrent code (using \code{finish} and \code{async}),
-    and distributed code (using \code{at}\removeGlobalRef{ and global references}).
+    such as constraints, properties, class invariants, closures, (non-erased) generics, and structs,
+followed by the parallel features of X10 for writing concurrent code (\code{finish} and \code{async}),
+    and distributed code (\code{at}\removeGlobalRef{ and global references}).
 Next we describe the inter-procedural data-flow analysis that ensures that
-    a field is read only after it was assigned.
+    a field is read only after it has been assigned.
 Finally, we summarize the virtues and attributes of initialization in X10.
 
 
@@ -66,7 +66,7 @@ class B extends A {
     \myrule{\arabic{Rule3}}{A raw \this or \code{super} cannot escape or be aliased}
     \myrule{\arabic{Rule4}}{A call on a raw \code{super} is allowed only for a \code{@NonEscaping} method}
     (\code{\textbf{final}} and \code{@NoThisAccess} are related
-        to dynamic-dispatching as shown in \Ref{Figure}{Dynamic-dispatch}.)}
+        to dynamic dispatch as shown in \Ref{Figure}{Dynamic-dispatch}.)}
 \label{Figure:Escaping-this}
 \end{figure}
 
@@ -108,7 +108,7 @@ For example, \code{m2} is \emph{implicitly} non-escaping (and therefore cannot l
 The user could also mark \code{m2} \emph{explicitly} as non-escaping by using the annotation
     \code{@NonEscaping}.
 (Like in Java, \code{@} is used for annotations in X10.)
-We recommend to explicitly mark public methods as \code{@NonEscaping} to show intent,
+We recommend explicitly marking public methods as \code{@NonEscaping} to show intent,
     as done on method \code{m3}.
 Without this annotation the call \code{super.m3()} in \code{B} would be illegal,
     due to rule~\userule{Rule4}.
@@ -122,11 +122,11 @@ Finally, we note that all errors in this example are due to rule~\userule{Rule3}
 
 \vspace{-0.2cm}
 \subsection{Dynamic dispatch}
-Dynamic dispatching interacts with initialization by transferring control to the subclass
+Dynamic dispatch interacts with initialization by transferring control to the subclass
     before the superclass completed its initialization.
-\Ref{Figure}{Dynamic-dispatch} demonstrates why dynamic dispatching is error-prone during construction:
-    calling \code{m1} in \code{A} would dynamically dispatch and
-    call the implementation in \code{B}
+\Ref{Figure}{Dynamic-dispatch} demonstrates why dynamic dispatch is error-prone during construction:
+    calling \code{m1} in \code{A} would dynamically dispatch
+    to the implementation in \code{B}
     that would read the default value.
 
 
@@ -158,7 +158,7 @@ class B extends A {
 \end{lstlisting}\vspace{-0.2cm}
 \definerule{Rule5}
 \definerule{Rule6}
-\caption{Dynamic dispatching example.
+\caption{Dynamic dispatch example.
     \myrule{\arabic{Rule5}}{A non-escaping method must be private or final, unless it has \code{@NoThisAccess}}
     \myrule{\arabic{Rule6}}{A method with \code{@NoThisAccess} cannot access \this or \code{super} (neither read nor write its fields)}
     }
@@ -166,17 +166,17 @@ class B extends A {
 \end{figure}
 
 
-X10 prevents dynamic dispatching by requiring that non-escaping methods
+X10 prevents dynamic dispatch by requiring that non-escaping methods
     must be private or final
     (so overriding is impossible).
 For example, \code{\itshape err1} is caused by rule~\userule{Rule5}
     because \code{m1} is neither private nor final nor \code{@NoThisAccess}.
 
-However, sometimes dynamic dispatching is required during construction.
+However, sometimes dynamic dispatch is required during construction.
 For example, if a subclass needs to refine initialization
     of the superclass's fields.
 Such refinement cannot have any access to \this, and therefore
-    such methods are marked with \code{@NoThisAccess}.
+    such methods must be marked with \code{@NoThisAccess}.
 For example, \code{\itshape err2} and \code{\itshape err3} are caused by rule~\userule{Rule6} that prohibits access \this or \code{super}
     when using \code{@NoThisAccess}.
 \code{@NoThisAccess} prohibits any access to \this,
@@ -188,12 +188,12 @@ For example, \code{\itshape err2} and \code{\itshape err3} are caused by rule~\u
 In C++, the call to \code{m1} is legal,
     but at runtime
     methods are statically bound,
-    so you will get an error for calling a pure virtual function.
+    so you will get a crash trying to call a pure virtual function.
 In Java, the call to \code{m1} is also legal,
     but at runtime
     methods are dynamically bound,
     so the implementation of \code{m1} in \code{B}
-    will read the default value of \code{a} and \code{b}.
+    will read the default values of \code{a1} and \code{b}.
 %This behavior is undesired in Java,
 %    and Java discourages it by trying to catch statically most of these cases.
 %For example, Java prohibits calls to member functions before the super object was initialized,
@@ -214,7 +214,7 @@ Exceptions combined with inheritance interact with initialization in the followi
     then all preceding constructor calls (either \code{super(\ldots)} or \code{this(\ldots)})
     must end normally as well.
 Phrased differently, in a constructor it should not be possible to
-    recover from an exception thrown by a constructor call.
+    recover from an exception thrown by a this or super constructor call.
 This is one of the reason why a constructor call must be the first statement in Java;
     failure to verify this led to a famous security attack~\cite{Dean:1996}.
 
@@ -242,7 +242,7 @@ class B extends A {
 
 \Ref{Figure}{Exceptions} shows that it is an error to try to recover from an exception thrown
     by a constructor call;
-    the reason is for the error is rule~\userule{Rule7} that requires the first statement to be \code{super()}.
+    the reason for the error is rule~\userule{Rule7} that requires the first statement to be \code{super()}.
 
 
 \Subsection[Inner]{Inner classes}
@@ -293,7 +293,7 @@ We wish to keep the invariant that only one \this can be raw.
 
 %To reduce complexity in the following subsections,
 In our rules, we assume that there is a single \this reference,
-    because we convert all inner, anonymous and local classes into
+    because we can convert all inner, anonymous and local classes into
     static nested classes
     by passing the outer instance and all other captured variables
     explicitly as arguments to the constructor.
@@ -304,7 +304,7 @@ In our rules, we assume that there is a single \this reference,
 
 
 We now turn our attention to X10's sophisticated type-system
-    that has features that are not found in main-stream languages:
+    features not found in main-stream languages:
     constraints, properties, class invariants, closures, (non-erased) generics, and structs.
 
 \subsection{Constraints and default/zero values}
@@ -316,14 +316,14 @@ X10 supports constrained types using the syntax \code{T\lb{}c\rb},
     field access, equality (\code{==}) and disequality (\code{!=}).
 There are plans to add arithmetic inequality (\code{<}, \code{<=})
     to X10 in the future,
-    and one can plugin any constraint solver into the~X10~compiler.
+    and one can plug in any constraint solver into the~X10~compiler.
 
 As a consequence of constrained types,
     some types do not have a default value, e.g., \code{Int\lb self!=0\rb}.
 Therefore, in X10, the fields of an object cannot be zero-initialized as done in Java.
 Furthermore, in Java, a non-final field does not have to be assigned in a constructor
     because it is assumed to have an implicit zero initializer.
-X10 follows the same line, and a non-final field is implicitly added a zero initializer
+X10 follows the same principle, and a non-final field is implicitly given a zero initializer
     \emph{if its type has-zero}.
 \Ref{Figure}{Constraints} defines when a type \emph{has-zero},
     and gives examples of types without zero.
@@ -352,7 +352,7 @@ class A {
                 zero in all fields for user-defined structs)
             or if it is a type parameter guarded with \code{haszero} (see \Ref{Section}{Generics-and-Structs}).}
     \myrule{\arabic{Rule10}}{A \code{var} field that lacks a field initializer and whose type has-zero,
-        is implicitly added a zero initializer}
+        is implicitly given a zero initializer}
     }
 \label{Figure:Constraints}
 \end{figure}
@@ -362,11 +362,11 @@ class A {
 Properties are final fields that can be used in constraints,
     e.g., \code{Array} has a \code{size} property,
     so an array of size 2 can be expressed as: \code{Array\lb self.size==2\rb}.
-The differences between a property and a final field are both syntactically and semantically,
+The differences between a property and a final field are both syntactic and semantic,
     as seen in class \code{A} of \Ref{Figure}{Properties}.
 Syntactically, properties are defined after the class name,
-    they must have a type and cannot have an initializer,
-    and they must be initialized in a constructor using a property call statement written as \code{property(\ldots)}.
+    must have a type and cannot have an initializer,
+    and must be initialized in a constructor using a property call statement written as \code{property(\ldots)}.
 Semantically, properties are initialized before all other fields,
     and they can be used in constraints with the prefix \code{self}.
 
@@ -400,9 +400,9 @@ class B(b:Int) {b==a} extends A {
         using a property call (\code{property(\ldots);} statement).
     {If a class does not define any properties, then
         an implicit \code{property()} is added
-        after (the implicit or explicit) \code{super(\ldots)}.}
+        after the (implicit or explicit) \code{super(\ldots)}.}
     {Field initializers are executed in their declaration order
-        after (the implicit or explicit) the property call.}
+        after the (implicit or explicit) property call.}
     \myrule{\arabic{Rule17}}{If a constructor does not call \code{this(\ldots)},
         then it must have exactly one
         property call, and it must be unconditionally executed
@@ -427,7 +427,7 @@ The difference between \this and \code{self} is
 
 Properties must be initialized before other fields because
     field initializers and field types can refer to properties (see initializer for \code{f1} and the type of \code{f3}).
-The super's fields can be accessed after the super call,
+The superclass's fields can be accessed after the super call,
     and the other fields after the property call;
     field initializers are executed after the property call.
 
@@ -442,7 +442,7 @@ The \emph{class invariant} (\code{\lb{}b==a\rb} in \Ref{Figure}{Properties})
 \subsection{Closures}
 Closures are functions that can refer to final variables in the enclosing scope,
     e.g., they can refer to final method parameters, locals, and \this.
-When a closure refer to a variable, we say that it is captured by the closure,
+When a closure refers to a variable, we say that the variable is \emph{captured} by the closure,
     and the variable is thus stored in the closure object.
 Closures interact with initialization when they capture \this during construction.
 
@@ -454,8 +454,8 @@ class A {
   def this() {
     val closure1 = ()=>this.a; //err
     at(here.next()) closure1();
-    val local = this.a;
-    val closure2 = ()=>local;
+    val local_a = this.a;
+    val closure2 = ()=>local_a;
   }
 }
 \end{lstlisting}\vspace{-0.2cm}
@@ -469,7 +469,7 @@ class A {
 
 \Ref{Figure}{Closures} shows why it is prohibited to capture a raw \this in a closure:
     that closure can later escape to another place which will serialize all captured variables
-    (including the raw \this, that should not be serialized, see \Ref{Section}{Multiple-Places}).
+    (including the raw \this, which should not be serialized, see \Ref{Section}{Multiple-Places}).
 The work-around for using a field in a closure is to define a local that will refer only to the field (which is definitely cooked)
     and capture the local instead of the field as done in \code{closure2}.
 
@@ -479,7 +479,7 @@ The work-around for using a field in a closure is to define a local that will re
 \label{Section:Generics-and-Structs}
 \emph{Structs} in X10 are header-less inlinable objects
     that cannot inherit code (i.e., they can \emph{implement} interfaces, but cannot \emph{extend} anything).
-Therefore an instance of a struct type has a known size and it can be inlined in a containing object.
+Therefore an instance of a struct type has a known size and can be inlined in a containing object.
 Java's primitive types (\code{int}, \code{byte}, etc) are represented as structs in X10.
 Structs, as opposed to classes, do not contain the value \code{null}.
 
@@ -494,11 +494,11 @@ For example, in Java and C\#, it is possible to define an equivalent to
 
 ~~~~~~~\code{class A[T] \lb{} var a:T; \rb}\\
 However, this is illegal in X10 because we cannot be sure that \code{T} has-zero (see \Ref{Figure}{Constraints}),
-    e.g., if the user instantiate \code{A[Int\lb{}self!=0\rb]} then field \code{a} cannot be assigned a zero value
+    e.g., if the user instantiates \code{A[Int\lb{}self!=0\rb]} then field \code{a} cannot be assigned a zero value
     without violating type-safety.
-Therefore X10 has a type predicate written \code{X haszero} that returns true if type \code{X} has-zero.
+Therefore X10 has a type predicate written \code{X haszero} that evaluates to true if type \code{X} has-zero.
 Using \code{haszero} in a constraint (e.g., in a class invariant or a method guard),
-    it is possible to guarantee a type-parameter will be instantiated by a type that has-zero.
+    makes it possible to guarantee that a type-parameter will be instantiated with a type that has-zero.
 
 \begin{figure}
 \vspace{-0.2cm}\begin{lstlisting}
@@ -546,7 +546,7 @@ Finally, we see an example of usages of \code{B[T]},
 
 
 
-We now turn our attention to the parallel features of X10:
+We now turn our attention to the parallel features of X10 for
     concurrent programming (\code{finish} and \code{async})
     and distributed programming (\code{at}\removeGlobalRef{ and global references}).
 \Ref{Section}{Parallelism} already explained how parallel code is written in X10,
@@ -584,19 +584,19 @@ Recall that we wish to guarantee that one can never read an uninitialized field,
     therefore rule~\userule{Rule13} ensures that all fields are assigned at least once.
 
 All three fields in \code{A} are asynchronously assigned,
-    however, only \code{f2} is not definitely assigned.
+    however, only \code{f2} is not definitely assigned at the end of the constructor.
 Assigning to \code{f3} has an enclosing \code{finish}, so
     it is definitely assigned.
 Field \code{f1} is also definitely assigned, because it is non-final
     so from rule~\userule{Rule10} it has an implicit zero field initializer.
 However, field \code{f2} is final so it does not have an implicit field initializer.
 Moreover, \code{f2} is only asynchronously assigned,
-    and the constructor does not wait for this assignment to finish,
+    and the constructor does not have to wait for this assignment to finish,
     thus violating rule~\userule{Rule13}.
 (The exact data-flow analysis to enforce rule~\userule{Rule13} is described in
     \Ref{Section}{Read-write-rules}.)
 Rule~\userule{Rule13a} is the same as in Java: a final field is assigned \emph{at most} once
-    (and combined with rule~\userule{Rule13} we know it is assigned \emph{exactly} once).
+    (and, combined with rule~\userule{Rule13}, we know it is assigned \emph{exactly} once).
 
 
 
@@ -604,7 +604,7 @@ Rule~\userule{Rule13a} is the same as in Java: a final field is assigned \emph{a
 \vspace{-0.2cm}\begin{lstlisting}
 class A {
   val f:Int;
-  def this() {//err: f was not definitely assigned
+  def this() { //err: f was not definitely assigned
     // Execute at another place
     at (here.next())
       this.f = 1; //err: this escaped
@@ -622,11 +622,11 @@ class A {
 \subsection{Distributed programming and Initialization}
 \label{Section:Multiple-Places}
 X10 programs can be executed on a distributed system with multiple places
-    that have no shared-memory.
-Therefore, objects are copied from one place to another when captured by an \code{at}.
+    that have no shared memory.
+Objects are copied from one place to another when captured by an \code{at}.
 Copying is done by first serializing the object into a buffer,
     sending the buffer to the other place, and then de-serializing the buffer at the other place.
-As in Java, one can write custom serialization code in X10 by implementing \code{CustomSerialization},
+As in Java, one can write custom serialization code in X10 by implementing the \code{CustomSerialization} interface,
     and defining the method \code{serialize():SerialData} and the constructor \code{this(data:SerialData)}.
 
 
@@ -796,14 +796,14 @@ class B {
 \caption{Read-Write order for fields.
     We infer for each method three sets:
         (i)~fields it reads (i.e., these fields must be assigned before the method is called),
-        (ii)~fields it assigned,
-        (iii)~fields it asynchronously assigned.
-    The flow maintain similar three sets before and after each statement;
+        (ii)~fields it assigns,
+        (iii)~fields it assigns asynchronously.
+    The data-flow maintains these three sets before and after each statement;
         \code{\itshape assigned} becomes \code{\itshape asyncAssigned} after an \code{async},
         and \code{\itshape asyncAssigned} becomes \code{\itshape assigned} after a \code{finish}.
-    In the example, we omitted empty sets.
-    \myrule{\arabic{Rule11}}{A field can be read only if it is definitely-assigned}
-    \myrule{\arabic{Rule11b}}{A final field can be written only if it is definitely-unassigned}
+    In this example, we omitted empty sets.
+    \myrule{\arabic{Rule11}}{A field may be read only if it is definitely-assigned}
+    \myrule{\arabic{Rule11b}}{A final field may be written only if it is definitely-unassigned}
     }
 \label{Figure:Read-Write-Order}
 \end{figure}
@@ -814,19 +814,19 @@ We now present a data-flow analysis for guaranteeing
 Java performs an \emph{intra}-procedural data-flow analysis in \emph{constructors} to calculate
     when a \emph{final} field is definitely-assigned and definitely-unassigned.
 In contrast, X10 performs an \emph{inter}-procedural (fixed-point) data-flow analysis
-    in all \emph{non-escaping methods} to calculate
+    in all \emph{non-escaping methods} (and constructors) to calculate
     when {a} field (\emph{both final and non-final}) is
     definitely-assigned, \emph{definitely-asynchronously-assigned}, and definitely-unassigned.
 The details are explained using examples (\Ref{Figure}{Read-Write-Order}) by comparison with Java;
     the full analysis is described in X10's language specification.
 
-X10 and Java allows \emph{writing} to a final field only when it is definitely-\emph{unassigned},
+X10, like Java, allows \emph{writing} to a final field only when it is definitely-\emph{unassigned},
     and it allows \emph{reading} from a final field only when it is definitely-\emph{assigned}.
 X10 also has the same read restriction on non-final fields
     (recall that rule~\userule{Rule10} adds a field initializer if the field's type has-zero).
 
 
-Consider first only \emph{final} fields.
+Consider first only final fields.
     They are easier to type-check because they can only be assigned in constructors.
 X10 extends Java rules,
     by calculating for each non-escaping method \code{m} the set of final fields it reads,
@@ -842,9 +842,8 @@ X10 also adds the notion of \emph{definitely-asynchronously-assigned}
     (so it can be read).
 The flow maintains three sets:
     \code{\itshape reads}, \code{\itshape assigned}, and \code{\itshape asyncAssigned}.
-If a constructor
-    reads an uninitialized field, then it is an error;
-    however, if a method reads an uninitialized field, then we add it to its \code{\itshape reads} set.
+If a method reads an uninitialized field, then we add it to its \code{\itshape reads} set;
+    however, if a constructor reads an uninitialized field, then it is an error.
 Phrased differently, the \code{\itshape reads} set of a constructor must be empty.
 
 Now consider non-final fields.
@@ -862,9 +861,9 @@ The fixed-point calculation, in every iteration, increases \code{\itshape reads}
 
 
 \subsection{Static initialization}
-X10 does not support dynamic class loading as opposed to Java,
+Unlike Java, X10 does not support dynamic class loading,
     and all static fields in X10 are final.
-Thus, initialization of static fields is a one-time phase, %denoted the static-init phase,
+Thus, initialization of static fields is a one-time phase %, denoted the static-init phase,
     that is done before the \code{main} method is executed.
 Reading a static field in this phase \emph{waits} until the field is initialized,
     which may lead to dead-lock.
@@ -873,7 +872,7 @@ However, in practice, deadlock is rare,
 %The exact details can be found in the language specification.
 
 \subsection{Virtues and attributes of initialization in X10}
-We assume there is a single \this variable, because all nested classes were converted to static,
+We assume there is a single \this variable, because all nested classes can be converted to static,
     as described in \Ref{Section}{Inner}.
 Therefore, initialization in X10 has the following attributes:
 (i)~\this (and its alias \code{super}) is the only accessible raw object in scope (rule~\userule{Rule3}),
@@ -881,4 +880,4 @@ Therefore, initialization in X10 has the following attributes:
 (iii)~only \code{@NoThisAccess} methods can be dynamically dispatched during construction (rule~\userule{Rule5}),
 (iv)~all final field assignments finish by the time the constructor ends (rule~\userule{Rule13}),
 (v)~it is not possible to read an uninitialized field (rule~\userule{Rule11}), and
-(vi)~reading a final field always return the same value (rule~\userule{Rule11b} combined with attribute~(v)).
+(vi)~reading a final field always results in the same value (rule~\userule{Rule11b} combined with attribute~(v)).
