@@ -288,14 +288,15 @@ and $-\exists x.\phi=\exists x.-\phi$.\footnote{It turns out that
   ``crosses'' out.}
 
 The rule~\RULE{(T-Access)} can be read as asserting: if $\phi$ entails
-the field $\hp.\hf$ is initialized, and with the assumption $\phi$
+the field $\hp.\hf$ is initialized, and with the assumption $\exists \hx.\phi$
 (together with $+\hx$ which states that $\hx$ is initialized to a
 cooked object), we can establish that execution of $\hS$ satisfies the assertion
 $\psi$ then we can establish that execution of
 $\hval{\hx}{\hp.\hf}{\hS}$ in
 (a heap satisfying) $\phi$ establishes $\exists \hx.\psi$. Here we
 must take care to project $\hx$ out of $\psi$ since $\hx$ is not
-accessible outside its scope $\hS$.
+accessible outside its scope $\hS$; similarly we must take care to
+project $\hx$ out of $\phi$ when checking \hS.
 The rule ~\RULE{(T-New)} can be read in a similar way except that when
 executing $\hS$ we can make no assumption that $\hx$ is initialized,
 since it has been initialized with a raw object (none of its fields
