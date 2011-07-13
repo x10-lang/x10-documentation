@@ -26,9 +26,9 @@ disadvantages given above, was too problematic to justify the advantages of
 Java-style object initialization.
 
 For example, consider field \code{birthday} that cannot be \code{null}, i.e., it does not have a default value:
-\begin{lstlisting}
+\vspace{-0.2cm}\begin{lstlisting}
 class Person { val birthday:Date{self!=null}; ...}
-\end{lstlisting}
+\end{lstlisting}\vspace{-0.2cm}
 Then in this design the programmer would have to specify a default value for this field,
     e.g., \code{Date.MIN\_DATE}.
 The field would be initialized with this default value, and it's final value would be assigned only later.
@@ -63,7 +63,7 @@ null value.  The commented out lines indicate code that would be rejected by
 the type system.
 
 \begin{figure}
-\begin{lstlisting}
+\vspace{-0.2cm}\begin{lstlisting}
 class C {
   val next : C {self!=null};
   var fld : C;
@@ -95,7 +95,7 @@ class C {
     assert c.next.next==c;
   }
 }
-\end{lstlisting}
+\end{lstlisting}\vspace{-0.2cm}
 \caption{An immutable cycle of heap references, using \texttt{proto}.}
 \label{Figure:Cyclic}
 \end{figure}

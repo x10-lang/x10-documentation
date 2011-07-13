@@ -96,21 +96,21 @@ Tested my serialization hypotheses using this Java code:
 Property design (what would happen if we use val fields instead of properties.)
 
 Fields are partition into two: property fields and normal fields. Property fields are assigned together before any other field.
-\begin{lstlisting}
+\vspace{-0.2cm}\begin{lstlisting}
 class A(x:Int) {
   val y:Int{self!=x};
   val z = x*x;
 }
-\end{lstlisting}
+\end{lstlisting}\vspace{-0.2cm}
 Vs.
 Fields are ordered, and all ctors need to assign in the same order as the fields declaration.
-\begin{lstlisting}
+\vspace{-0.2cm}\begin{lstlisting}
 class A {
   val x:Int;
   val y:Int{self!=x};
   val z = x*x;
 }
-\end{lstlisting}
+\end{lstlisting}\vspace{-0.2cm}
 
 
 
@@ -129,14 +129,14 @@ However, in practice, deadlock is rare,
     and usually found quickly the first time a program is executed.
 
 \begin{figure}
-\begin{lstlisting}
+\vspace{-0.2cm}\begin{lstlisting}
 class A {
   static val a:Int = B.b;
 }
 class B {
   static val b:Int = A.a;
 }
-\end{lstlisting}
+\end{lstlisting}\vspace{-0.2cm}
 \caption{Static initialization example:
     the program will deadlock at run-time
     during the static-init phase (before the \code{main} method is executed).

@@ -57,9 +57,9 @@ Therefore if \this leaks in \mbox{C++},
 Moreover, method calls are statically bound during construction,
     which may result in an exception at runtime
     if one tries to invoke a virtual method of an abstract class (see \Ref{Figure}{Dynamic-dispatch} below).
-(Determining whether this happens is an intractable problem~\cite{Gil:1998:CTA:646155.679689}.)
+(Determining whether this happens is intractable~\cite{Gil:1998:CTA:646155.679689}.)
 % todo: to reduce space
-We believe a design for object initialization should have the following
+We believe a design for object initialization should have these
     desirable properties:
 \begin{description}
 %  \item[Reduce runtime errors]
@@ -137,10 +137,10 @@ The \emph{contributions of this paper} are:
         full-blown advanced OO language with many cross-cutting concerns
         (especially the concurrent and distributed aspects),
     (ii)~discussing alternative designs, such as the proto design,
-    (ii)~implementation inside the X10 open-source compiler and
-        converting the entire X10 code-base (+400K lines of code) %according to Igor
+    (iii)~implementation inside the X10 open-source compiler and
+        converting the entire X10 code-base (+200K lines of code) %according to Igor
         to conform to the hardhat principles,
-    (iii)~FX10 formalism which is the first to present a flow-sensitive effect system with concurrency constructs
+    (vi)~FX10 formalism which is the first to present a flow-sensitive effect system with concurrency constructs
     and a soundness theorem stating that one can never read an
     uninitialized field in a statically correct  program.
 
@@ -184,7 +184,7 @@ We will first explain the surprising output due to dynamic dispatching,
 %  }
 %}
 \begin{figure}
-\begin{lstlisting}
+\vspace{-0.2cm}\begin{lstlisting}
 class A {
   static HashSet INSTANCES = new HashSet();
   final int a;
@@ -198,7 +198,6 @@ class A {
 }
 class B extends A {
   int b = 2;
-  B() { super(); }
   int initA() { return b+42; }
   public String toString() {
     return super.toString()+",b="+b; }
@@ -206,7 +205,7 @@ class B extends A {
     new B(); // prints: a=42,b=0
   }
 }
-\end{lstlisting}
+\end{lstlisting}\vspace{-0.2cm}
 \caption{Two initialization pitfalls in Java:
     leaking \this and dynamic dispatch during construction.}
 \label{Figure:TwoPitfalls}
@@ -272,7 +271,7 @@ It is possible to fix the bugs in this example by following the hardhat initiali
         the public non-final method \code{toString} could delegate to \code{toStringOnlyA}.
 
 The hardhat design of X10 guarantees that a field can be read only after it was written.
-Therefore, there is no need to zero-initialize all fields before executing the constructor (as done in Java).
+Therefore, there is no need to zero-initialize all fields before executing the constructor (as done~in~Java).
 
 
 \subsection{Final fields, Concurrency, and Serialization}
@@ -301,8 +300,7 @@ For example, it is well-known that \code{String} is immutable in Java,
     and its implementation uses three {final} fields:
     \code{char[] value}, and two \code{int} fields named \code{offset} and \code{count}.
 The following code
-
-~~~~~~~~~~\code{"AB".substring(1)}\\
+    ~~\code{"AB".substring(1)}\\
 will return a new string \code{"B"}
     that shares
     the same \code{value} array as \code{"AB"}, %\lb'A','B'\rb
@@ -317,11 +315,11 @@ For instance,
     or it might print
     \code{A} or an empty string,
     or might even throw a \code{NullPointerException}:
-\begin{lstlisting}
+\vspace{-0.2cm}\begin{lstlisting}
 final String name = "AB".substring(1);
 new Thread() { public void run() {
     System.out.println(name); } }.start();
-\end{lstlisting}
+\end{lstlisting}\vspace{-0.2cm}
 
 A similar bug might happen in \Ref{Figure}{TwoPitfalls}
     because \this was leaked into \code{INSTANCES} before the barrier was executed.
@@ -462,7 +460,7 @@ This construct can also be used as a statement, in which case there is no copy b
 
 
 %\begin{figure}
-%\begin{lstlisting}
+%\vspace{-0.2cm}\begin{lstlisting}
 %class Fib {
 %  val fib2:Int; // fib(n-2)
 %  val fib1:Int; // fib(n-1)
@@ -478,7 +476,7 @@ This construct can also be used as a statement, in which case there is no copy b
 %    fib = fib2+fib1;
 %  }
 %}
-%\end{lstlisting}
+%\end{lstlisting}\vspace{-0.2cm}
 %\caption{Concurrent fibonacci example.
 %    \code{async} starts an asynchronous activity,
 %    and \code{finish} waits for all spawned activities to finish.
@@ -490,7 +488,7 @@ This construct can also be used as a statement, in which case there is no copy b
 
 
 \begin{figure}
-\begin{lstlisting}
+\vspace{-0.2cm}\begin{lstlisting}
 class Fib {
   val fib2:Int, fib1:Int, fib:Int;
   def this(n:Int) {
@@ -504,7 +502,7 @@ class Fib {
     fib = fib2+fib1;
   }
 }
-\end{lstlisting}
+\end{lstlisting}\vspace{-0.2cm}
 \caption{Concurrent and distributed fibonacci example.
     Concurrent code is expressed using \code{async} and \code{finish}:
         \code{async} starts an asynchronous activity,

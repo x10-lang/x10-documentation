@@ -24,7 +24,7 @@ We do this in X10 by forcing the constructors of \code{B} to make a super call,
 
 
 \begin{figure}
-\begin{lstlisting}
+\vspace{-0.2cm}\begin{lstlisting}
 class A {
   val a:Int;
   def this() {
@@ -53,7 +53,7 @@ class B extends A {
     super(); this.b = 2; super.m3();
   }
 }
-\end{lstlisting}
+\end{lstlisting}\vspace{-0.2cm}
 \definerule{Rule3}
 \definerule{Rule4}
 \caption{Escaping \this example.
@@ -120,7 +120,7 @@ Finally, we note that all errors in this example are due to rule~\userule{Rule3}
 
 
 
-
+\vspace{-0.2cm}
 \subsection{Dynamic dispatch}
 Dynamic dispatching interacts with initialization by transferring control to the subclass
     before the superclass completed its initialization.
@@ -132,7 +132,7 @@ Dynamic dispatching interacts with initialization by transferring control to the
 
 
 \begin{figure}
-\begin{lstlisting}
+\vspace{-0.2cm}\begin{lstlisting}
 abstract class A {
   val a1:Int, a2:Int;
   def this() {
@@ -155,7 +155,7 @@ class B extends A {
     return 2;
   }
 }
-\end{lstlisting}
+\end{lstlisting}\vspace{-0.2cm}
 \definerule{Rule5}
 \definerule{Rule6}
 \caption{Dynamic dispatching example.
@@ -198,9 +198,9 @@ In Java, the call to \code{m1} is also legal,
 %    and Java discourages it by trying to catch statically most of these cases.
 %For example, Java prohibits calls to member functions before the super object was initialized,
 %    as this example shows (which is also illegal in X10):
-%\begin{lstlisting}
+%\vspace{-0.2cm}\begin{lstlisting}
 %class B extends A { B() {super(f()); }}
-%\end{lstlisting}
+%\end{lstlisting}\vspace{-0.2cm}
 
 
 
@@ -219,13 +219,13 @@ This is one of the reason why a constructor call must be the first statement in 
     failure to verify this led to a famous security attack~\cite{Dean:1996}.
 
 \begin{figure}
-\begin{lstlisting}
+\vspace{-0.2cm}\begin{lstlisting}
 class B extends A {
   def this() {
     try { super(); } catch(e:Throwable){} //err
   }
 }
-\end{lstlisting}
+\end{lstlisting}\vspace{-0.2cm}
 \definerule{Rule7}
 \caption{Exceptions example:
     if a constructor ends normally (without throwing an exception),
@@ -253,7 +253,7 @@ Therefore, X10 requires that the outer instance is cooked,
 
 
 \begin{figure}
-\begin{lstlisting}
+\vspace{-0.2cm}\begin{lstlisting}
 class Outer {
   val a:Int;
   def this() {
@@ -271,7 +271,7 @@ class Outer {
   }
   static class Nested {}
 }
-\end{lstlisting}
+\end{lstlisting}\vspace{-0.2cm}
 \definerule{Rule8}
 \caption{Inner class example: the outer instance is always cooked.
     \myrule{\arabic{Rule8}}{a raw \this cannot be the receiver of \code{new}}
@@ -316,7 +316,7 @@ X10 supports constrained types using the syntax \code{T\lb{}c\rb},
     field access, equality (\code{==}) and disequality (\code{!=}).
 There are plans to add arithmetic inequality (\code{<}, \code{<=})
     to X10 in the future,
-    and it is possible to plugin any constraint solver into the X10 compiler.
+    and one can plugin any constraint solver into the~X10~compiler.
 
 As a consequence of constrained types,
     some types do not have a default value, e.g., \code{Int\lb self!=0\rb}.
@@ -331,7 +331,7 @@ Note that \code{i0} has to be assigned because it is a final field (\code{val}),
     as opposed to \code{i1} which is non-final (\code{var}).
 
 \begin{figure}
-\begin{lstlisting}
+\vspace{-0.2cm}\begin{lstlisting}
 class A {
   val i0:Int; //err
   var i1:Int;
@@ -343,7 +343,7 @@ class A {
   var b1:Boolean;
   var b2:Boolean{self==true}; //err
 }
-\end{lstlisting}
+\end{lstlisting}\vspace{-0.2cm}
 \definerule{Rule10}
 \caption{Default value example.
     \textbf{Definition of \emph{has-zero}:}
@@ -372,7 +372,7 @@ Semantically, properties are initialized before all other fields,
 
 
 \begin{figure}
-\begin{lstlisting}
+\vspace{-0.2cm}\begin{lstlisting}
 class A(a:Int) {
   def this(x:Int) {
     property(x);
@@ -390,7 +390,7 @@ class B(b:Int) {b==a} extends A {
     f3 = new A(this.a);
   }
 }
-\end{lstlisting}
+\end{lstlisting}\vspace{-0.2cm}
 \definerule{Rule17}
 \definerule{Rule18}
 \definerule{Rule19}
@@ -448,7 +448,7 @@ Closures interact with initialization when they capture \this during constructio
 
 \begin{figure}
 %    LeakIt.foo(closure1);
-\begin{lstlisting}
+\vspace{-0.2cm}\begin{lstlisting}
 class A {
   var a:Int = 3;
   def this() {
@@ -458,7 +458,7 @@ class A {
     val closure2 = ()=>local;
   }
 }
-\end{lstlisting}
+\end{lstlisting}\vspace{-0.2cm}
 \definerule{Rule20}
 \caption{Closures example.
     \myrule{\arabic{Rule20}}{A closure cannot capture a raw \this}
@@ -501,7 +501,7 @@ Using \code{haszero} in a constraint (e.g., in a class invariant or a method gua
     it is possible to guarantee a type-parameter will be instantiated by a type that has-zero.
 
 \begin{figure}
-\begin{lstlisting}
+\vspace{-0.2cm}\begin{lstlisting}
 class B[T] {T haszero} {
   var f1:T;
   val f2 = Zero.get[T]();
@@ -514,7 +514,7 @@ class Usage {
   var b3:B[WithZeroValue];
   var b4:B[WithoutZeroValue]; //err
 }
-\end{lstlisting}
+\end{lstlisting}\vspace{-0.2cm}
 \definerule{Rule21}
     \caption{\code{haszero} type predicate example.
     \myrule{\arabic{Rule21}}{A type must be consistent, i.e., it cannot contradict the environment; the environment includes final variables in scope, method guards, and class invariants.}
@@ -557,7 +557,7 @@ Next we present the rules that prevent these pitfalls.
 
 
 \begin{figure}
-\begin{lstlisting}
+\vspace{-0.2cm}\begin{lstlisting}
 class A {
   var f1:Int; // note: var field
   val f2:Int; // note: val field
@@ -567,7 +567,7 @@ class A {
     finish { async f3 = 3; }
   }
 }
-\end{lstlisting}
+\end{lstlisting}\vspace{-0.2cm}
 \definerule{Rule13}
 \definerule{Rule13a}
 \caption{Concurrency in initialization example: asynchronously assign to a field.
@@ -599,6 +599,26 @@ Rule~\userule{Rule13a} is the same as in Java: a final field is assigned \emph{a
     (and combined with rule~\userule{Rule13} we know it is assigned \emph{exactly} once).
 
 
+
+\begin{figure}
+\vspace{-0.2cm}\begin{lstlisting}
+class A {
+  val f:Int;
+  def this() {//err: f was not definitely assigned
+    // Execute at another place
+    at (here.next())
+      this.f = 1; //err: this escaped
+  }
+}
+\end{lstlisting}\vspace{-0.2cm}
+\definerule{Rule14}
+% todo: Support remote-initialization (at and at back to init a field of this)
+\caption{Distributed initialization example. %only cooked objects can be copied.
+    \myrule{\arabic{Rule14}}{a raw \this cannot be captured by an \code{at}}
+    }
+\label{Figure:Multi-place}
+\end{figure}
+
 \subsection{Distributed programming and Initialization}
 \label{Section:Multiple-Places}
 X10 programs can be executed on a distributed system with multiple places
@@ -610,26 +630,6 @@ As in Java, one can write custom serialization code in X10 by implementing \code
     and defining the method \code{serialize():SerialData} and the constructor \code{this(data:SerialData)}.
 
 
-\begin{figure}
-\begin{lstlisting}
-class A {
-  val f:Int;
-  def this() {//err: f was not definitely assigned
-    // Execute at another place
-    at (here.next())
-      this.f = 1; //err: this escaped
-  }
-}
-\end{lstlisting}
-\definerule{Rule14}
-% todo: Support remote-initialization (at and at back to init a field of this)
-\caption{Distributed initialization example. %only cooked objects can be copied.
-    \myrule{\arabic{Rule14}}{a raw \this cannot be captured by an \code{at}}
-    }
-\label{Figure:Multi-place}
-\end{figure}
-
-
 \Ref{Figure}{Multi-place} shows a common pitfall
     where a raw \this escapes to another place,
     and the field assignment would have been done on a copy of \this.
@@ -638,12 +638,12 @@ We wish to de-serialize only cooked objects,
 Consequently, we also report that field \code{f} was not definitely assigned.
 
 
-%\begin{lstlisting}
+%\vspace{-0.2cm}\begin{lstlisting}
 %class A {
 %  var i:Int;
 %  val distArray = DistArray.make( ..., (Point)=>this.i); // "this" is serialized to another place before it is cooked
 %}
-%\end{lstlisting}
+%\end{lstlisting}\vspace{-0.2cm}
 
 \removeGlobalRef{
 \subsection{Global references}
@@ -664,7 +664,7 @@ Then, when a box pointing to \code{o} is serialized, then \code{o} is recursivel
 However, when a global reference pointing to \code{o} is serialized, then only the pointer to \code{o} is serialized (not \code{o} itself).
 %  assert r()==o;
 %def copyExample(o:Any, p:Place) {
-%\begin{lstlisting}
+%\vspace{-0.2cm}\begin{lstlisting}
 %  val box = new Box(o);
 %  at (here.next()) { // copies box and o
 %    val x = box;
@@ -673,7 +673,7 @@ However, when a global reference pointing to \code{o} is serialized, then only t
 %  at (here.next()) { // copies r but not o
 %    val x = r;
 %  }
-%\end{lstlisting}
+%\end{lstlisting}\vspace{-0.2cm}
 
 % No room to talk about custom serialization:
 % Places require serialization and deserialization (both custom and automatic) across "at".
@@ -704,7 +704,7 @@ Note how \code{root()} returns the referent of the global reference.
 %Cannot use 'root' because a GlobalRef[\ldots](this) cannot be used in a field initializer, constructor, or methods called from a constructor.
 
 \begin{figure}
-\begin{lstlisting}
+\vspace{-0.2cm}\begin{lstlisting}
 class GlobalCounter {
   private val root = new GlobalRef(this);
   transient var count:Int;
@@ -715,7 +715,7 @@ class GlobalCounter {
     return at(root.home) root().count++;
   }
 }
-\end{lstlisting}
+\end{lstlisting}\vspace{-0.2cm}
 \definerule{TransientRule}
 \caption{A global counter example.
     \textbf{Revision of~\userule{Rule3}:}
@@ -753,7 +753,7 @@ There is an RFC that suggests an annotation that will automatically convert a cl
 
 
 \begin{figure}
-\begin{lstlisting}
+\vspace{-0.2cm}\begin{lstlisting}
 class A {
   val a:Int;
   def this() {
@@ -790,7 +790,7 @@ class B {
     val x = this.i+this.j;
   }
 }
-\end{lstlisting}
+\end{lstlisting}\vspace{-0.2cm}
 \definerule{Rule11}
 \definerule{Rule11b}
 \caption{Read-Write order for fields.

@@ -138,7 +138,7 @@ $~~~~|~ \hfinish~\hS~|~ \hasync~\hS ~|~ \hS\ \hS$
 \Ref{Figure}{syntax} shows the syntax of FX10.
 %(\Ref{Section}{val} will later add the \hval and \hvar field modifiers.)
 Expression~$\hval{\hx}{\he}{\hS}$ evaluates $\he$, assigns it to a
-new variable $\hx$, and then evaluates \hS. The scope of \he{} is \hS.
+new variable $\hx$, and then evaluates \hS. The scope of \hx{} is \hS.
 
 The syntax is similar to X10 real syntax with the following difference:
 %Non-escaping methods are marked with \code{@NonEscaping}, such methods
@@ -153,10 +153,10 @@ FX10 does not have constructors; instead, an object is initialized by assigning 
 %This does not restrict expressiveness, because of \code{val} expressions.
 
 \Subsection{Type system}
-%\begin{lstlisting}
+%\vspace{-0.2cm}\begin{lstlisting}
 %class D extends Object { f:Object; }
 %val d:D = new D; d.f = new Object
-%\end{lstlisting}
+%\end{lstlisting}\vspace{-0.2cm}
 %Then, the type of \code{d} is \code{D} where field \code{f} is uninitialized
 %    (which we formally write below as $\code{D}\myinit{\hf}{\hf}$).
 %Therefore, reading \code{d.f} would be illegal, but writing to \code{d.f} would update the type of \code{d}
@@ -239,10 +239,10 @@ initialized), $+\hp.\hf$ (the field $\hp.\hf$ is initialized), and
 $-\hp.\hf$ (the field $\hp.\hf$ is being concurrently
 initialized). We are only concerned with conjunctions and existential
 quantifications over these formulas:
-$$
+$
  \phi,\psi {::=}  \htrue ~|~ +\hx ~|~ +\hp.\hf ~|~ -\hp.\hf ~|~ \phi \wedge \psi
  ~|~ \exists \hx.\phi
-$$
+$
 
 The notion of substitution on formulas $\phi\char`[\ol{\hx}/\ol{\hz}\char`]$ is
 specified in a standard fashion.
@@ -314,12 +314,12 @@ The rule~\RULE{(T-Seq)} is a slight variation of the stadard rule for
 sequential composition that permits $\phi$ to be used in the
 antecedent of $\hS_2$, exploiting monotonicity of effects. Note the
 effects recorded for $\hS_1\,\hS_2$ are a conjunction of the effects
-recorded for $\hS_1$ and $\hS_2$. 
+recorded for $\hS_1$ and $\hS_2$.
 The rule~\RULE{(T-Invoke)} is routine.
 
 As an example, consider the following classes. Assertions are provided
 in-line.
-\begin{lstlisting}
+\vspace{-0.2cm}\begin{lstlisting}
 class A extends Object {
   var f:Object; var g:Object; var h:Object;
   @NonEscaping def build(a:Object) {
@@ -336,18 +336,18 @@ class A extends Object {
   }
 }
 class B extends A { e:Object; }
-\end{lstlisting}
+\end{lstlisting}\vspace{-0.2cm}
 Method \code{build} synchronously (asynchronously) initializes fields \code{this.f} (\code{this.h}),
     and it assumes that \code{this.g} and \code{a} are cooked.
 The following statement completely initializes \code{b}:
-\begin{lstlisting}
+\vspace{-0.2cm}\begin{lstlisting}
 val b = new B();
 b.g = new Object(); // psi= +b.g
 finish {
   b.build(b.g); // psi= +b.g,+b.f,-b.h
 } // psi= +b.g,+b.f,+b.h
 b.e = b.f; // psi implies +b
-\end{lstlisting}
+\end{lstlisting}\vspace{-0.2cm}
 
 
 \Subsection{Reduction}
@@ -473,7 +473,7 @@ brand-new object.}
 
 We say that a program $\hP=\ol{\hL}\hS$ is {\em proper} if it is
 well-typed and each method in \hL{} can be decorated with pre-post assertions
-$(\phi,\psi)$, and \hS is annotable. 
+$(\phi,\psi)$, and \hS is annotable.
 The decorations must satisfy the property that under the
 assumption that every method satisfies its assertion (this is for use
 in recursive calls) we can establish for every method
@@ -486,7 +486,7 @@ program \hP{} is assumed to be proper. The first theorem is analogous
 to subject-reduction for typing systems.
 \begin{Theorem}{\textbf{Preservation}}
 Let $\phi~\hS~\psi$, $\hH$ satisfy $\phi$, ($\hH$ f-cooked and typed).
-(a) If $\hS,\hH \reducesto \hH'$ then $\hH'$ is f-cooked and typed and satisfies $+\psi$. 
+(a) If $\hS,\hH \reducesto \hH'$ then $\hH'$ is f-cooked and typed and satisfies $+\psi$.
 (b) If $\hS,\hH \reducesto \hS',\hH'$ then $\hH'$ is f-cooked and typed and
 there exists a $\psi'$ such
 that $\hH'$ satisfies $\psi'$ and $\psi'~S\phi$.
