@@ -8,8 +8,8 @@ FX10 models the heart of the field initialization problem:
 
 The basic idea behind the formalization is very straightforward. We
 break up the formalization into two distinct but interacting
-subsystems, a {\em type-system}~\Ref{Section}{Type system} and an {\em
-  effects} system~\Ref{Section}{Effect system}. The type
+subsystems, a {\em type-system}~(\Ref{Section}{Type system}) and an {\em
+  effects} system~(\Ref{Section}{Effect system}). The type
 system is completely standard -- think the system of FJ, adapted to
 the richer constructs of FX10.
 
@@ -23,7 +23,7 @@ enclosing $\finish$ is crossed).\footnote{There is no need for the
   formula $-\hx$ since local variables declared within an $\async$
   cannot be accessed outside it.}  An {\em initialization formula}
 $\phi$ or $\psi$ is simply a conjunction of such formulas $\phi \wedge
-\psi$ or an existential quantification $\exists{}~\hx.\phi$.
+\psi$ or an existential quantification $\exists{}\hx.\phi$.
 An {\em
   effects assertion} $\phi~S~\psi$ (for $S$ a statement) is read as a
 partial correctness assertion: when executed in a heap that satisfies
@@ -250,13 +250,14 @@ specified in a standard fashion.
 The inference relation is the usual intuitionistic implication over
 these formulas, and the following additional proof rules:
 (1)~$\phi\vdash +\hp.\hf$ if $\phi\vdash +\hp$; and (2)~if
-the exact class of $\hx$ is $\hC$, and $\hC$ has the fields $\ol{\hf}$,
+the \emph{exact} class of $\hx$ is $\hC$, and $\hC$ has the fields $\ol{\hf}$,
 then $\phi\vdash +\hp$ if $\phi\vdash \hp.\hf_i$, for each $i$.
+(We only know the \emph{exact} class for a local~\hx when~$\hval{\hx}{\hnew \hC}{\hS}$.)
 
 A {\em heap} is a mapping from a given set of locations to {\em
   objects}. An object is a pair $C(u)$ where $C$ is a class (the exact
 class of the object), and $u$ is a partial map from the fields of $C$
-to locations. We say the object is {\em total} if its map is total.
+to locations. We say the object is {\em total/cooked} if its map is total.
 
 An {\em annotation} $N$ for a heap $H$ maps each $l \in \dom(H)$ to a
 possibly empty set of fields $a(H(l))$ of the class of $H(l)$ disjoint
@@ -276,13 +277,13 @@ $+\htrue=\htrue$,
 $++\hx=+\hx$,
 $+\pm\hp.\hf=+\hp.\hf$,
 $+(\phi \wedge\psi)=(+\phi)\wedge(+\psi)$
-and $+\exists x.\phi=\exists x.+\phi$.
+and $+\exists \hx.\phi=\exists \hx.+\phi$.
 $-\psi$ is defined similarly:
 $-\htrue=\htrue$,
 $-+\hx=\htrue$,
 $-\pm\hp.\hf=-\hp.\hf$,
 $-(\phi \wedge\psi)=(-\phi)\wedge(-\psi)$
-and $-\exists x.\phi=\exists x.-\phi$.\footnote{It turns out that
+and $-\exists \hx.\phi=\exists \hx.-\phi$.\footnote{It turns out that
   expressions of the form $-+\hx$ never arise since \async{} is a
   scoping construct, hence a local variable declared within it never
   ``crosses'' out.}
@@ -342,11 +343,12 @@ Method \code{build} synchronously (asynchronously) initializes fields \code{this
 The following statement completely initializes \code{b}:
 \vspace{-0.2cm}\begin{lstlisting}
 val b = new B();
-b.g = new Object(); // psi= +b.g
+val a = new Object(); // psi= +a
+b.g = a; // psi= +a,+b.g
 finish {
-  b.build(b.g); // psi= +b.g,+b.f,-b.h
-} // psi= +b.g,+b.f,+b.h
-b.e = b.f; // psi implies +b
+  b.build(a); // psi= +a,+b.g,+b.f,-b.h
+} // psi= +a,+b.g,+b.f,+b.h
+b.e = a; // psi implies +a,+b
 \end{lstlisting}\vspace{-0.2cm}
 
 
@@ -477,7 +479,7 @@ $(\phi,\psi)$, and \hS is annotable.
 The decorations must satisfy the property that under the
 assumption that every method satisfies its assertion (this is for use
 in recursive calls) we can establish for every method
-$\hdef\hm(\ol{\hx}:\ol{\hC})\{\hS\}$ with assertion $(\phi,\psi)$ that
+$\hdef~\hm(\ol{\hx}:\ol{\hC})\{\hS\}$ with assertion $(\phi,\psi)$ that
 it is the case that the free variables of $\phi,\psi$ are contained in
 $\this,\ol{\hx}$, and that $\phi~\hS~\psi$.
 
