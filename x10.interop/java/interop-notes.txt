@@ -35,6 +35,7 @@ construct array
 catch exception/throw exception
 primitive conversions without boxing
 Java array/IMC conversions without copying
+Java static initialization semantics
 
 Java->X10
 
@@ -57,10 +58,10 @@ Java primitive mapping
 Proposal:
   Java types as nested (native) types in an exposed X10 library class?
     class x10.interop.Java
-    arrays: X[] -> Java.array[X]  (covariant!)
-    primitives: Java.int (==x10.lang.Int?), Java.char (numeric!)
-  Explicit conversion of primitives, arrays, strings via overloaded Java.convert() methods
-  Implicit conversion for certain primitive types (e.g., Java.int<->Int) ?
+    arrays: X[] -> Java.array[X]  (covariant! special primitive array behavior)
+    primitives: Java.int==x10.lang.Int, etc, Java.char (numeric! != x10.lang.Char)
+  Explicit conversion of char, arrays, strings via overloaded Java.convert() methods
+  Implicit conversion for certain primitive types (Java.char<->Char) ?
 
 Java classes in the typesystem (limited, !<: Any)
   read from class files
@@ -93,6 +94,8 @@ Java enums
 Overriding generic methods
 
 Java locking/synchronization in X10 activities?
+
+Class loading semantics for Java code called from X10.
 
 
 --------------------- Design summary
@@ -136,6 +139,26 @@ implementations of $getRTT() and $getParam(int) by using Java reflection.
 
 Therefore we don't see difficulties for making Java classes as subtype of x10.lang.Any.
 </MT>
+<IP>
+The above only works if x10.lang.String==java.lang.String.  This presents other
+problems, e.g., string aliasing preservation:
+A.java:
+    public class A { public String f; }
+B.x10:
+    public class B {
+        public static def main(Array[String]) {
+            val x = new x10.lang.String();
+            val y = new x10.lang.String();
+            val a = new A();
+            a.f = x;
+            at (p) {
+                assert (a.f == x);
+                assert (a.f != y);
+            }
+        }
+    }
+The above requires that we alter the serialization format for x10.lang.String.
+</IP>
 
 <MT>
 Making java.lang.String a different type from x10.lang.String will introduce subtlety
@@ -148,6 +171,12 @@ object for each instance of java.lang.String. By using these mechanisms in the i
 conversion between x10.lang.String and java.lang.String, we must ensure the identity of
 String object across X10-Java boundary.
 </MT>
+<IP>
+Conversion need not preserve identity.  If the two types are the same, then
+aliasing must preserve identity (see above).
+Making x10.lang.String a distinct type at the X10 level would also permit
+us to make it distinct at the Java level (e.g., implement it in X10).
+</IP>
 
 Java classes have X10 run-time types that can be retrieved using the Class
 object.  They can be used as type arguments to X10 generic classes and
@@ -160,23 +189,16 @@ Java local and anonymous classes are not accessible.
 
 For accessing primitive types and arrays, special nested types are provided in
 a helper class x10.interop.Java.  That class also contains explicit conversion
-methods that are always guaranteed to work.  There may be additional implicit
-conversions to/from Java primitive types.  All manifestations of Java primitive
-types in the Java APIs are via the nested types of x10.interop.Java, not X10
-built-in types.
-
-<MT>
-As I wrote earlier, if we introduce new X10 types to represent Java primitives,
-we will need additional name mangling. Currently x10.lang.Int and UInt are mapped
-to int, and UInt is mangled (Int is unchanged). If we introduce the third type
-(x10.interop.Java.Int), x10.lang.Int also need be mangled.
-If an alias (like Rail as Array{rail}) is enough, I would prefer it.
-</MT>
+methods that are always guaranteed to work.  Java primitive types (except for
+char) are typedefs that alias the corresponding X10 built-in structs.
+There may be additional implicit conversions to/from Java char and arrays.
+All manifestations of Java primitive types in the Java APIs are via the nested
+types of x10.interop.Java, not X10 built-in types, but most of those types are
+equivalent.
 
 Java arrays are represented by an X10 generic class x10.interop.Java.array with
-a covariant type parameter, to reflect the Java covariant array subtyping.
-Java.array is the only generic class that accepts Java classes as type
-arguments, and the only covariant generic.
+a special covariant type parameter, to reflect the Java covariant array
+subtyping rules (e.g., Java.array[Java.int] !<: Java.array[x10.lang.Any]).
 
 An X10 class may implement a Java interface by defining methods with the
 exact same signatures as the mapping of the interface to X10.  The signatures
@@ -185,8 +207,8 @@ of these methods will be written into the generated code in unmangled form
 generic Java interface, boxed Java types have to be used explicitly in the
 signatures (e.g., java.lang.Integer instead of x10.interop.Java.int).
 
-Note that it is not possible for an X10 class to extend an existing Java class,
-because all X10 classes must subclass x10.lang.Object.
+Note that it is not possible for an X10 class to extend an existing Java class
+if all X10 classes must subclass x10.lang.Object.
 
 <MT>
 x10.lang.Object is mapped to interface x10.core.RefI. 
@@ -200,6 +222,11 @@ java.util.concurrent.atomic.AtomicInteger.
 We can provide a wrapper class and delegate all methods to the wrapped Java object,
 but wrapping is an overhead we should avoid across the boundary.
 </MT>
+<IP>
+The problem is at the X10 typesystem level.  One class may not have two
+superclasses.  Given a Java class S and an X10 class C that extends S, we have
+C <: S, S !<: x10.lang.Object, and C <: x10.lang.Object, which is not possible.
+</IP>
 
 To access a static field of a Java class or interface, the X10 user will simply
 refer to it by name.  Static fields of Java classes are mutable.  Instance
@@ -219,7 +246,8 @@ X10 idiom: "new C(a,b)".  These statements will be written into the generated
 code as regular "new" statements with constructor arguments, and will not
 undergo the expansion and rewriting that the X10 constructor invocations do.
 Since X10 classes cannot extend Java classes, super constructor invocation is
-not an issue.
+not an issue (and we could always generate erased code when calling a Java
+generic anyway).
 
 To construct a Java array, the X10 user may construct an instance of
 x10.interop.Java.array with the appropriate type argument.  If the type
@@ -228,9 +256,10 @@ There will also be helper methods in x10.interop.Java to construct
 multi-dimensional arrays.  Routines will be provided to convert X10 arrays
 (including array literals) into Java arrays.
 
-Java classes that implement java.io.Serializable can captured by "at" -- their
-X10-level serialization is the Java serialized form.  Attempting to capture
-other Java classes will result in a run-time exception.
+Java classes that implement java.io.Serializable can be captured by "at" --
+their X10-level serialization is different from the serialized form of
+X10 classes, but may not be the Java serialized form.  Attempting to
+capture other Java classes will result in a run-time exception.
 
 
 _Invoking X10 from Java_
