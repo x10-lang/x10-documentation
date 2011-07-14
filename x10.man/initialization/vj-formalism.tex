@@ -43,7 +43,10 @@ $\phi~\hS~\psi$.\footnote{Note that this approach permits a formal $\hx$ to a
   method to be ``uncooked'' ($\phi$ does not entail $+\hx$ or
   $+\hx.\hf$ for any field $\hf$) or partially cooked ($\phi$ does not
   entail $+\hx$ but may entail $+\hx.\hf$ for some fields $\hf$). As a
-  result of the method invocation the formal may become more cooked.}
+  result of the method invocation the formal may become more cooked.
+  In X10, in order for the inference to be intra-class, we require that all method parameters~$\ol{\hx}$ (except \this) are cooked, i.e.,
+    $+\hx_i$. In FX10 we are more relaxed and allow methods to receive and initialize raw parameters.
+  }
 This computation must be sensitive to the semantics
 of method overriding, that is a method with decoration $(\phi,\psi)$
 can only be overridden by a method with decoration $(\phi',\psi')$
@@ -53,8 +56,10 @@ the method is not marked \code{@NonEscaping}, then $\phi$ is required
 to entail $+\hthis$ (that is, \code{this} is cooked), and if it marked
 \code{@NoThisAccess} then $\phi,\psi$ cannot have \code{this} free.
 
+
 \comment{{\sc We also have to check that if it is marked
-    \code{@NonEscaping} then it does not escape.}}
+    \code{@NonEscaping} then it does not escape.
+    Yoav notes: if \this is not cooked then it cannot escape to the heap - only as a parameter to other methods.}}
 
 By not permitting the user to specify initialization assertions we
 make the source language much simpler than \cite{XinQi:2009} and
@@ -173,7 +178,7 @@ assignable fields, local variable declarations, \hfinish{} and
 completely routine.
 
 In the rest of this section we shall assume that the program being
-considered $\hL,\hS$ is well-typed.
+considered $\ol{\hL},\hS$ is well-typed.
 
 \Subsection{Effect system}
 \begin{figure*}[t]
@@ -491,7 +496,7 @@ Let $\phi~\hS~\psi$, $\hH$ satisfy $\phi$, ($\hH$ f-cooked and typed).
 (a) If $\hS,\hH \reducesto \hH'$ then $\hH'$ is f-cooked and typed and satisfies $+\psi$.
 (b) If $\hS,\hH \reducesto \hS',\hH'$ then $\hH'$ is f-cooked and typed and
 there exists a $\psi'$ such
-that $\hH'$ satisfies $\psi'$ and $\psi'~S\phi$.
+that $\hH'$ satisfies $\psi'$ and $\psi'~S~\phi$.
 \end{Theorem}
 
 \begin{Theorem}{\textbf{Progress}}
