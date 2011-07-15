@@ -95,7 +95,9 @@ Overriding generic methods
 
 Java locking/synchronization in X10 activities?
 
-Class loading semantics for Java code called from X10.
+Class loading semantics for Java code called from X10
+
+Varargs
 
 
 --------------------- Design summary
