@@ -211,11 +211,10 @@
 \mynewcommand{\hq}{\code{q}}
 \mynewcommand{\hf}{\code{f}} % field
 \mynewcommand{\hy}{\code{y}} % field
-\mynewcommand{\hF}{\code{F}} % types (vars or non vars) of a field
+\mynewcommand{\hF}{\code{F}} % field declaration
 \mynewcommand{\hT}{\code{T}} % types (vars or non vars)
 \mynewcommand{\hU}{\code{U}} % types (vars or non vars)
 \mynewcommand{\hV}{\code{V}} % closed types
-\mynewcommand{\hH}{\code{H}} % Heap
 \mynewcommand{\hS}{\code{S}}
 \mynewcommand{\hsub}{\code{/}} % substitute (reduction rules)
 
@@ -310,9 +309,8 @@
 \mynewcommand{\mmodifier}{\func{mmodifier}}
 \mynewcommand{\fmodifier}{\func{fmodifier}}
 \mynewcommand{\fields}{\func{fields}}
+\mynewcommand{\cooked}{\func{cooked}}
 
-\mynewcommand{\finishG}{\func{finish}}
-\mynewcommand{\asyncG}{\func{async}}
 
 \mynewcommand{\bound}{\func{bound}_\Delta}
 \mynewcommand{\substitute}{\func{substitute}}
@@ -322,20 +320,19 @@
 \DeclareMathOperator{\dom}{dom}
 
 
-\mynewcommand{\async}{\code{async}}
-\mynewcommand{\finish}{\code{finish}}
+\newcommand{\async}[1]{\code{async~\lb}#1\rb}
+\newcommand{\finish}[1]{\code{finish~\lb}#1\rb}
+\mynewcommand{\hasync}{\code{async}}
+\mynewcommand{\hfinish}{\code{finish}}
 %\newcommand{\Ofn}[1]{\ensuremath{O(#1)}}
 \mynewcommand{\nonescaping}{\code{nonescaping}}
 
-\mynewcommand{\hasync}{\code{async}}
-\mynewcommand{\hfinish}{\code{finish}}
 \mynewcommand{\hR}{\code{R}}
 \mynewcommand{\hreceiver}{\code{receiver}} % receiver for new
 \mynewcommand{\hSW}{\code{SW}}
 \mynewcommand{\hAW}{\code{AW}}
 \mynewcommand{\hObject}{\code{Object}}
 
-\mynewcommand{\hFM}{\code{FM}}
 \mynewcommand{\hG}{\code{G}}
 \mynewcommand{\hP}{\code{P}}
 \mynewcommand{\hd}{\code{d}}

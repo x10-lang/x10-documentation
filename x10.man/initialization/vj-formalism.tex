@@ -1,6 +1,6 @@
 Featherweight X10 (FX10) is a formal calculus for X10 intended to  complement Featherweight Java
 (FJ).  It models imperative aspects of X10 including the concurrency
-constructs \finish{} and \async{}.
+constructs \hfinish{} and \hasync{}.
 FX10 models the heart of the field initialization problem:
     a field can be read only after it  is definitely assigned.
 
@@ -16,21 +16,21 @@ the richer constructs of FX10.
 The effect system is built on a very simple {\em logic of
   initialization assertions}.  The primitive formula $+\hx$
 ($+\hp.\hf$) asserts that the variable $\hx$ (the field $\hf$ of
-$\hp$) is definitely initialized with a cooked object, and the formula
-$-\hp.\hf$ asserts that $\hp.\hf$ is being initialized by a concurrent
-activity (and hence $\hp.\hf$ will be definitely initialized once an
-enclosing $\finish$ is crossed).\footnote{There is no need for the
-  formula $-\hx$ since local variables declared within an $\async$
-  cannot be accessed outside it.}  An {\em initialization formula}
+$\hp$) is definitely initialized with a cooked object, and the formula $-\hx$
+($-\hp.\hf$) asserts that it is being initialized by a concurrent
+activity (and hence it will be definitely initialized once an
+enclosing $\hfinish$ is crossed).
+An {\em initialization formula}
 $\phi$ or $\psi$ is simply a conjunction of such formulas $\phi \wedge
-\psi$ or an existential quantification $\exists{}\hx.\phi$.
+\psi$. % or an existential quantification $\exists{}\hx.\phi$.
 An {\em
-  effects assertion} $\phi~S~\psi$ (for a statement $S$) is read as a
-partial correctness assertion: when executed in a heap that satisfies
-the constraint $\phi$, $S$ will on termination result in a heap that
+  effects assertion} $\phi~\hS~\psi$ (for a statement $\hS$) is read as a
+partial correctness assertion: when executed in a heap~$H$ that satisfies
+the constraint $\phi$, $\hS$ will on termination result in a heap~$H'$ that
 satisfies $\psi$.  Since we do not model \code{null}, our
 formalization can be particularly simple: variables, once initialized,
-stay initialized, hence $S$ will also satisfy $\phi$.
+stay initialized, hence $H'$ will also satisfy $\phi$
+    (see \Ref{Section}{Reduction} for a definition of heaps and when a heap satisfy~$\phi$).
 
 Another feature of our approach is that, unlike Masked
 Types~\cite{XinQi:2009}, the source program syntax does not permit the
@@ -40,8 +40,8 @@ $\hdef~\hm(\ol{\hx}:\ol{\hC})\{\hS\}$ with pairs $(\phi, \psi)$ (in the free
 variables $\hthis, \ol{\hx}$) such that under the assumption that all
 methods satisfy their corresponding assertion we can show that
 $\phi~\hS~\psi$.\footnote{Note that this approach permits a formal $\hx$ to a
-  method to be ``uncooked'' ($\phi$ does not entail $+\hx$ or
-  $+\hx.\hf$ for any field $\hf$) or partially cooked ($\phi$ does not
+  method to be completely raw ($\phi$ does not entail $+\hx$ or
+  $+\hx.\hf$ for any field $\hf$) or partially raw ($\phi$ does not
   entail $+\hx$ but may entail $+\hx.\hf$ for some fields $\hf$). As a
   result of the method invocation the formal may become more cooked.
   In X10, in order for the inference to be intra-class, we require that all method parameters~$\ol{\hx}$ (except \this) are cooked, i.e.,
@@ -92,8 +92,8 @@ A program~\hP is a pair of class declarations~$\ol{\hL}$ (that is assumed to be 
 system. \Ref{Section}{Effect system} defines the flow-sensitive rules for
     ($\phi~\hS~\psi$), while
     \Ref{Section}{Reduction} gives the reduction rules for statements
-    and expressions ($\hS,\hH \reducesto \hS',\hH' ~|~\hH'$
-    and~$\he,\hH \reduce \hl,\hH'$). Finally \Ref{Section}{Results}
+    and expressions ($\hS,H \reducesto \hS',H' ~|~H'$
+    and~$\he,H \reduce \hl,H'$). Finally \Ref{Section}{Results}
     presents the main formal result (soundness theorem).
 %Finally, \Ref{Section}{val} extends the formalism with \hval and \hvar fields.
 
@@ -126,7 +126,7 @@ $\he ::=  \hp.\hf  ~|~ \hnew{\hC}$
 & Expressions. \\ %: locations, parameters, field access\&assignment,  %invocation, \code{new}
 
 $\hS ::=  \hp.\hf = \hp; ~|~ \hp.\hm(\ol{\hp});  ~|~ \hval{\hx}{\he}{\hS}$ &\\
-$~~~~|~ \hfinish~\hS~|~ \hasync~\hS ~|~ \hS\ \hS$
+$~~~~|~ \finish{\hS}~|~ \async{\hS} ~|~ \hS~\hS$
 & Statements. \\ %: locations, parameters, field access\&assignment, invocation, \code{new}
 
 \hline
@@ -134,7 +134,7 @@ $~~~~|~ \hfinish~\hS~|~ \hasync~\hS ~|~ \hS\ \hS$
 \end{center}
 \caption{FX10 Syntax.
     The terminals are locations (\hl), parameters and \hthis (\hx), field name (\hf), method name (\hm), class name (\hB,\hC,\hD,\hObject),
-        and keywords (\hhnew, \finish, \async, \code{val}).
+        and keywords (\hhnew, \hfinish, \hasync, \code{val}).
     The program source code cannot contain locations (\hl), because locations are only created during execution/reduction in \RULE{R-New} of \Ref{Figure}{reduction}.
     }
 \label{Figure:syntax}
@@ -155,6 +155,7 @@ FX10 does not have constructors; instead, an object is initialized by assigning 
 %To simplify presentation, we allow only paths~$\hp$
 %    (variables \hx at
 %    compile time, or heap locations \hl at run time) to appear in field access, assignment and method call.
+% Phrased differently, the user must flatten the program.
 %This does not restrict expressiveness, because of \code{val} expressions.
 
 \Subsection{Type system}
@@ -187,15 +188,15 @@ considered $\ol{\hL},\hS$ is well-typed.
 \hline
 
 $\typerule{
- \phi \vdash +\hp.\hf \gap \exists \hx.\phi, +\hx~\hS~\psi
+ \phi \vdash +\hp.\hf \gap \phi, +\hx~\hS~\psi
 }{
- \phi~\hval{\hx}{\hp.\hf}{\hS}~ \exists \hx.\psi
+ \phi~\hval{\hx}{\hp.\hf}{\hS}~\psi
 }$~\RULE{(T-Access)}
 \quad
 $\typerule{
-  \exists \hx.\phi~\hS~\psi
+  \phi~\hS~\psi
 }{
- \phi~ \hval{\hx}{\hnew{\hC()}}{\hS}~\exists \hx.\psi
+ \phi~ \hval{\hx}{\hnew{\hC()}}{\hS}~\psi
 }$~\RULE{(T-New)}
 \quad
 $\typerule{
@@ -209,8 +210,8 @@ $\typerule{
     \phi~\hS~\psi
 }{
   \begin{array}{l}
-    \phi~\finish\,\hS~ +\psi \\
-    \phi~\async\,\hS~ -\psi
+    \phi~\finish{\hS}~ +\psi \\
+    \phi~\async{\hS}~ -\psi
   \end{array}
 }$~\RULE{(T-Finish,Async)}
 
@@ -220,7 +221,7 @@ $\typerule{
         \gap
     \phi,\psi_1~\hS_2~\psi_2
 }{
-  \phi~\hS_1\,\hS_2~\psi_1,\psi_2 % vj: Yoav, do NOT put a semi-colon back in!!
+  \phi~\hS_1~\hS_2~\psi_1,\psi_2
 }$~\RULE{(T-Seq)}
 \quad
 
@@ -239,14 +240,13 @@ $\typerule{
 
 We use a simple logic of initialization for our basic assertions.
 This is an intuitionistic logic over the
-primitive formulas $+\hx$ (the variable or parameter $\hx$ is
+primitive formulas $+\hp$ (the variable or parameter $\hp$ is
 initialized), $+\hp.\hf$ (the field $\hp.\hf$ is initialized), and
-$-\hp.\hf$ (the field $\hp.\hf$ is being concurrently
+$-\hp,-\hp.\hf$ (it is being \emph{concurrently}
 initialized). We are only concerned with conjunctions and existential
 quantifications over these formulas:
 $
  \phi,\psi {::=}  \htrue ~|~ +\hx ~|~ +\hp.\hf ~|~ -\hp.\hf ~|~ \phi \wedge \psi
- ~|~ \exists \hx.\phi
 $
 
 The notion of substitution on formulas $\phi\char`[\ol{\hx}/\ol{\hz}\char`]$ is
@@ -254,52 +254,36 @@ specified in a standard fashion.
 
 The inference relation is the usual intuitionistic implication over
 these formulas, and the following additional proof rules:
-(1)~$\phi\vdash +\hp.\hf$ if $\phi\vdash +\hp$; and (2)~if
+(1)~if $\phi\vdash +\hp$ then~$\phi\vdash -\hp$;
+(2)~if $\phi\vdash +\hp.\hf$ then~$\phi\vdash -\hp.\hf$;
+(3)~if $\phi\vdash +\hp$ ($\phi\vdash -\hp$) then~$\phi\vdash +\hp.\hf$ ($\phi\vdash -\hp.\hf$);
+and (4)~if
 the \emph{exact} class of $\hx$ is $\hC$, and $\hC$ has the fields $\ol{\hf}$,
-then $\phi\vdash +\hp$ if $\phi\vdash \hp.\hf_i$, for each $i$.
+then $\phi\vdash +\hp$ ($\phi\vdash -\hp$) if $\phi\vdash +\hp.\hf_i$ ($\phi\vdash -\hp.\hf_i$), for each $i$.
 (We only know the \emph{exact} class for a local~\hx when~$\hval{\hx}{\hnew \hC}{\hS}$.)
 
-A {\em heap} is a mapping from a given set of locations to {\em
-  objects}. An object is a pair $C(u)$ where $C$ is a class (the exact
-class of the object), and $u$ is a partial map from the fields of $C$
-to locations. We say the object is {\em total/cooked} if its map is total.
-
-An {\em annotation} $N$ for a heap $H$ maps each $l \in \dom(H)$ to a
-possibly empty set of fields $a(H(l))$ of the class of $H(l)$ disjoint
-from $\dom(H(l))$. (These are the fields currently being
-asynchronously initialized.) The logic of initialization described
-above is clearly sound for the obvious interpretation of formulas over
-annotated heaps. For future reference, we say that that a heap $H$
-{\em satisfies} $\phi$ if there is some annotation $N$ (and some
-valuation $v$ assigning locations in $\dom(H)$ to free variables of
-$\phi$) such that $\phi$ evaluates to true.
 
 The proof rules for the judgement $\phi~\hS~\psi$ are given in
 Figure~\ref{Figure:effects}. They use two syntactic operations on initialization
 formulas defined as follows.
 $+\psi$ is defined inductively as follows:
 $+\htrue=\htrue$,
-$++\hx=+\hx$,
+$+\pm\hx=+\hx$,
 $+\pm\hp.\hf=+\hp.\hf$,
-$+(\phi \wedge\psi)=(+\phi)\wedge(+\psi)$
-and $+\exists \hx.\phi=\exists \hx.+\phi$.
+$+(\phi \wedge\psi)=(+\phi)\wedge(+\psi)$.
 $-\psi$ is defined similarly:
 $-\htrue=\htrue$,
-$-+\hx=\htrue$,
+$-\pm\hx=-\hx$,
 $-\pm\hp.\hf=-\hp.\hf$,
-$-(\phi \wedge\psi)=(-\phi)\wedge(-\psi)$
-and $-\exists \hx.\phi=\exists \hx.-\phi$.\footnote{It turns out that
-  expressions of the form $-+\hx$ never arise since \async{} is a
-  scoping construct, hence a local variable declared within it never
-  ``crosses'' out.}
+$-(\phi \wedge\psi)=(-\phi)\wedge(-\psi)$.
 
 The rule~\RULE{(T-Access)} can be read as asserting: if $\phi$ entails
-the field $\hp.\hf$ is initialized, and with the assumption $\exists \hx.\phi$
+the field $\hp.\hf$ is initialized
 (together with $+\hx$ which states that $\hx$ is initialized to a
 cooked object), we can establish that execution of $\hS$ satisfies the assertion
 $\psi$ then we can establish that execution of
 $\hval{\hx}{\hp.\hf}{\hS}$ in
-(a heap satisfying) $\phi$ establishes $\exists \hx.\psi$. Here we
+(a heap satisfying) $\phi$ establishes $\psi$. Here we
 must take care to project $\hx$ out of $\psi$ since $\hx$ is not
 accessible outside its scope $\hS$; similarly we must take care to
 project $\hx$ out of $\phi$ when checking \hS.
@@ -312,14 +296,14 @@ The rule~\RULE{(T-Assign)} checks that \hq{} is initialized to a
 cooked object and then asserts that $\hp.\hf$ is initialized to a
 cooked object.
 The rule~\RULE{(T-Finish)} can be understood as recording that after a
-\finish{} has been ``crossed'' all asynchronous initializations $\psi$
+\hfinish{} has been ``crossed'' all asynchronous initializations $\psi$
 can be considered to have been performed $\phi$. Conversely,
 the rule~\RULE{(T-Async)} states that any initializations must be
 considered asynchronous to the surrounding context.
 The rule~\RULE{(T-Seq)} is a slight variation of the stadard rule for
 sequential composition that permits $\phi$ to be used in the
 antecedent of $\hS_2$, exploiting monotonicity of effects. Note the
-effects recorded for $\hS_1\,\hS_2$ are a conjunction of the effects
+effects recorded for $\hS_1~\hS_2$ are a conjunction of the effects
 recorded for $\hS_1$ and $\hS_2$.
 The rule~\RULE{(T-Invoke)} is routine.
 
@@ -334,10 +318,10 @@ class A extends Object {
     //   psi= -this.h, +this.f
     // checks phi implies +this.g
     val x = this.g;
-    async this.h = x; // psi= -this.h
+    async { this.h = x; } // psi= -this.h
     finish {
       // checks phi implies +a
-      async this.f = a; // psi= -this.h,-this.f
+      async { this.f = a; } // psi= -this.h,-this.f
     } // psi= -this.h,+this.f
   }
 }
@@ -352,22 +336,44 @@ val a = new Object(); // psi= +a
 b.g = a; // psi= +a,+b.g
 finish {
   b.build(a); // psi= +a,+b.g,+b.f,-b.h
-} // psi= +a,+b.g,+b.f,+b.h
-b.e = a; // psi implies +a,+b
+  async { b.e = a; } // psi= +a,+b.g,+b.f,-b.h,-b,-b.e,-b
+} // psi= +a,+b
 \end{lstlisting}\vspace{-0.2cm}
 
 
 \Subsection{Reduction}
+A {\em heap}~$H$ is a mapping from a given set of locations to {\em
+  objects}. An object is a pair $C(F)$ where $C$ is a class (the exact
+class of the object), and $F$ is a partial map from the fields of $C$
+to locations.
+We say the object~\hl is {\em total/cooked} (written~$\cooked_H(\hl)$)
+    if its map is total, i.e.,~$H(\hl)=\hC(F) \gap \dom(F)=\fields(\hC)$.
+
+We say that a heap~$H$ {\em satisfies} $\phi$ (written~$H \vdash \phi$)
+    if the plus assertions in~$\phi$ (ignoring the minus assertions) are true in~$H$,
+    i.e., if~$\phi \vdash +\hl$ then~$\hl$ is cooked in~$H$
+    and if~$\phi \vdash +\hl.\hf$ then~$H(\hl)=\hC(F)$ and~$F(\hf)$ is cooked in~$H$.
+
+
+%An {\em annotation} $N$ for a heap $H$ maps each $l \in \dom(H)$ to a
+%possibly empty set of fields $a(H(l))$ of the class of $H(l)$ disjoint
+%from $\dom(H(l))$. (These are the fields currently being
+%asynchronously initialized.) The logic of initialization described
+%above is clearly sound for the obvious interpretation of formulas over
+%annotated heaps. For future reference, we say that that a heap $H$
+%{\em satisfies} $\phi$ if there is some annotation $N$ (and some
+%valuation $v$ assigning locations in $\dom(H)$ to free variables of
+%$\phi$) such that $\phi$ evaluates to true.
 
 The reduction relation is described in
 Figure~\ref{Figure:reduction}. An S-configuration is of the form
-$\hS,\hH$ where \hS{} is a statement and $\hH$ is a heap (representing a
-computation which is to execute $\hS$ in the heap $\hH$), or $\hH$
+$\hS,H$ where \hS{} is a statement and $H$ is a heap (representing a
+computation which is to execute $\hS$ in the heap $H$), or $H$
 (representing terminated computation). An
-E-configuration is of the form $\he,\hH$ and represents the
-computation which is to evaluate $\he$ in the configuration $\hH$. The
+E-configuration is of the form $\he,H$ and represents the
+computation which is to evaluate $\he$ in the configuration $H$. The
 set of {\em values} is the set of locations; hence E-configurations of
-the form $\hl,\hH$ are terminaal.
+the form $\hl,H$ are terminal.
 
 Two transition relations $\reduce{}$ are defined, one over S-configurations and
 the other over E-configurations.
@@ -376,16 +382,15 @@ For $X$ a partial function, we use the notation $X[v \mapsto
 except that it maps $v$ to $e$.
 The rules defining these relations are
 standard.
-The only minor novelty is in how \async{} is defined. The
+The only minor novelty is in how \hasync{} is defined. The
 critical rule is the last rule in~\RULE{(R-Step)}  -- it specifies the
-``asynchronous'' nature of \async{} by permitting \hS{} to make a step
-even if it is preceded by $\async{} \hS_1$.
+``asynchronous'' nature of \hasync{} by permitting \hS{} to make a step
+even if it is preceded by $\async{\hS_1}$.
 %
-The rule ~\RULE{(R-New)} returns a new location that is bound to a new
+The rule~\RULE{(R-New)} returns a new location that is bound to a new
 object that is an instance of \hC{} with none of its fields initialized.
 %
-The rule
-~\RULE{(R-Access)} ensures that the field is initialized before it is
+The rule~\RULE{(R-Access)} ensures that the field is initialized before it is
 read ($\hf_i$ is contained in $\ol{\hf}$).
 
 \begin{figure*}[t]
@@ -393,85 +398,89 @@ read ($\hf_i$ is contained in $\ol{\hf}$).
 \begin{tabular}{|c|}
 \hline
 $\typerule{
- \hS,\hH \reduce \hH'
+ \hS,H \reduce H'
 }{
   \begin{array}{l}
-    \finish~\hS,\hH \reduce \hH'\\
-    \async~\hS,\hH \reduce \hH'\\
-    \hS;\hS', \hH \reduce \hS',\hH'\\
+    \finish{\hS},H \reduce H'\\
+    \async{\hS},H \reduce H'\\
+    \hS~\hS', H \reduce \hS',H'\\
   \end{array}
 }$~\RULE{(R-Term)}
 ~
 $\typerule{
- \hS,\hH \reduce \hS', \hH'
+ \hS,H \reduce \hS', H'
 }{
   \begin{array}{l}
-    \finish~\hS,\hH \reduce \finish~\hS',\hH'\\
-    \async~\hS,\hH \reduce \async~\hS', \hH'\\
-    \hS;\hS_1, \hH \reduce \hS';\hS_1,\hH'\\
-    \async~\hS_1;\hS, \hH \reduce \async~\hS_1;\hS', \hH'\\
+    \finish{\hS},H \reduce \finish{\hS'},H'\\
+    \async{\hS},H \reduce \async{\hS'}, H'\\
+    \hS~\hS_1, H \reduce \hS'~\hS_1,H'\\
+    \async{\hS_1}~\hS, H \reduce \async{\hS_1}~\hS', H'\\
   \end{array}
 }$~\RULE{(R-Step)}
 ~
 $\typerule{
-  \he,\hH \reduce \hl,\hH'
+  \he,H \reduce \hl,H'
 }{
-  \hval{\hx}{\he}{\hS},\hH \reduce \hS[\hl/\hx], \hH'
+  \hval{\hx}{\he}{\hS},H \reduce \hS[\hl/\hx], H'
 }$~\RULE{(R-Val)}
 \\\\
 
 $\typerule{
-    \hl' \not \in \dom(\hH)
+    \hl' \not \in \dom(H)
 }{
-  \hnew{\hC},\hH \reduce \hl',\hH[ \hl' \mapsto \hC()]
+  \hnew{\hC},H \reduce \hl',H[ \hl' \mapsto \hC()]
 }$~\RULE{(R-New)}
 \quad
 $\typerule{
-    \hH(\hl')=\hC(\ldots)
+    H(\hl')=\hC(\ldots)
         \gap
     \mbody{}(\hm,\hC)=\ol{\hx}.\hS
 }{
-  \hl'.\hm(\ol{\hl}),\hH \reduce \hS[\ol{\hl}/\ol{\hx},\hl'/\hthis],\hH
+  \hl'.\hm(\ol{\hl}),H \reduce \hS[\ol{\hl}/\ol{\hx},\hl'/\hthis],H
 }$~\RULE{(R-Invoke)}
 \quad
 
 \\\\
 
 $\typerule{
-    \hH(\hl)=\hC(\ol{\hf}\mapsto\ol{\hl'})
+    H(\hl)=\hC(\ol{\hf}\mapsto\ol{\hl'})
 }{
-  \hl.\hf_i,\hH \reduce \hl_i',\hH
+  \hl.\hf_i,H \reduce \hl_i',H
 }$~\RULE{(R-Access)}
 \quad
 $\typerule{
-    \hH(\hl)=\hC(\hF)
+    H(\hl)=\hC(F) \gap \cooked_H(\hl')
 }{
-  \hl.\hf=\hl',\hH \reduce \hH[ \hl \mapsto \hC(\hF[ \hf \mapsto \hl'])]
+  \hl.\hf=\hl',H \reduce H[ \hl \mapsto \hC(F[ \hf \mapsto \hl'])]
 }$~\RULE{(R-Assign)}
 \\
 \hline
 \end{tabular}
 \end{center}
-\caption{FX10 Reduction Rules ($\hS,\hH \reducesto \hS',\hH' ~|~\hH'$ and~$\he,\hH \reduce \hl,\hH'$).}
+\caption{FX10 Reduction Rules ($\hS,H \reducesto \hS',H' ~|~H'$ and~$\he,H \reduce \hl,H'$).}
 \label{Figure:reduction}
 \end{figure*}
 
 
 \Subsection{Results}
 
-We say a heap $H$ is {\em f-cooked} if a field can point only to cooked
-objects, i.e.{} for every object $o=C(u)$ in the range of $H$ and
-every field $f \in \dom(u)$ it is the case that $u(f)\in \dom (H)$ and
-$H(u(f))$ is a total object. We shall only consider f-cooked heaps (valid
-programs will only produce f-cooked heaps).
+We say a heap $H$ is {\em correctly cooked} (written~$\vdash H$)
+    if a field can point only to cooked objects, i.e.,~for every object $o=C(F)$ in the range of $H$ and
+    every field $f \in \dom(F)$ it is the case that every object~$\hl=H(F(f))$ is cooked ($\cooked_H(\hl)$).
+We shall only consider correctly cooked heaps (valid
+programs will only produce correctly cooked heaps).
+As the program is executed, the heap monotonically becomes more and more cooked.
+Formally,~$H'$ is \emph{more cooked} than~$H$ (written~$H' \vdash H$)
+    if for every~$\hl \in \dom(H)$, we have~$H(\hl)=\hC(F)$,~$H'(\hl)=\hC(F')$, and~$\dom(F)\subseteq\dom(F')$.
 
-A {\em heap typing} $T$ is a mapping from locations to classes. $H$ is
-said to be typed by $T$ if for each $l\in\dom(H)$, the class of $H(l)$
-is a subclass of $T(l)$.  Since our treatment separates out effects
+A {\em heap typing} $\Gamma$ is a mapping from locations to classes. $H$ is
+said to be typed by $\Gamma$ if for each $l\in\dom(H)$, the class of $H(l)$
+is a subclass of $\Gamma(l)$.  Since our treatment separates out effects
 from types, and the treatment of types is standard, we shall assume
 that all programs and heaps are typed.
 
-We say that $\hS$ is annotable if there exists $\phi,\psi$ such that
+A statement~$\hS$ is \emph{closed} (written~$\vdash \hS$) if it does not contain any free variables.
+We say that $\hS$ is \emph{annotable} if there exists $\phi,\psi$ such that
 $\phi~\hS~\psi$ can be established.\footnote{An example of a statement that is
 {\em not} annotable is $\hval{\hx}{\hnew
   \hC()}{\hval{\hy}{\hx.\hf}{\hz.\hg=\hy}}$ where $\hC{}$ has a field
@@ -492,16 +501,18 @@ We prove the following theorems. In all these theorems the background
 program \hP{} is assumed to be proper. The first theorem is analogous
 to subject-reduction for typing systems.
 \begin{Theorem}{\textbf{Preservation}}
-Let $\phi~\hS~\psi$, $\hH$ satisfy $\phi$, ($\hH$ f-cooked and typed).
-(a) If $\hS,\hH \reducesto \hH'$ then $\hH'$ is f-cooked and typed and satisfies $+\psi$.
-(b) If $\hS,\hH \reducesto \hS',\hH'$ then $\hH'$ is f-cooked and typed and
-there exists a $\psi'$ such
-that $\hH'$ satisfies $\psi'$ and $\psi'~S~\phi$.
+%\label{Theorem:Preservation}
+Let $\phi~\hS~\psi$, $\vdash \hS$, $\vdash H$, $H \vdash \phi$.
+(a) If $\hS,H \reducesto H'$ then $\vdash H'$, $H' \vdash H$, $H' \vdash +\psi$.
+(b) If $\hS,H \reducesto \hS',H'$ then $\vdash \hS'$, $\vdash H'$, $H' \vdash H$,
+there exists $\phi',\psi'$ such
+that $H' \vdash \phi'$, $\phi'~\hS'~\psi'$, $\phi' \vdash \phi$, $\psi' \vdash \psi$.
 \end{Theorem}
 
 \begin{Theorem}{\textbf{Progress}}
- Let $\phi~\hS~\psi$, $\hH$ satisfy $\phi$, ($\hH$ f-cooked and
- typed). The configuration $\hS,\hH$ is not stuck.
+%\label{Theorem:Progress}
+Let $\phi~\hS~\psi$, $\vdash \hS$, $\vdash H$, $H \vdash \phi$.
+The configuration $\hS,H$ is not stuck.
 \end{Theorem}
 
 For proofs, please see associated technical report.

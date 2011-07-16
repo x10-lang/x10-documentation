@@ -1,0 +1,414 @@
+A closed statement is reduced to a closed expression.
+\begin{lemma}
+\label{Lemma:closed}
+If $\vdash \hS$ and $\hS,H \reducesto \hS',H'$ then $\vdash \hS'$.
+\end{lemma}
+\begin{proof}
+The only rules that introduce free variables are \RULE{R-Val}
+    and \RULE{R-Invoke}.
+
+In rule \RULE{R-Val} we have \[
+    \hval{\hx}{\he}{\hS},H \reduce \hS[\hl/\hx], H'
+\]
+Therefore, \hS might have a free variable (\hx), but~$\hS[\hl/\hx]$ is closed.
+
+In rule \RULE{R-Invoke} we have \[
+    \hl'.\hm(\ol{\hl}),H \reduce \hS[\ol{\hl}/\ol{\hx},\hl'/\hthis],H
+\]
+The method body can only refer to the free variables~$\ol{\hx}$ and~$\this$,
+    therefore~$\hS[\ol{\hl}/\ol{\hx},\hl'/\hthis]$ is closed.
+\end{proof}
+
+
+
+Monotonicity of cooked heaps: during the process of reduction, the heap stays correctly-cooked and it becomes more cooked.
+\begin{lemma}
+\label{Lemma:correctly-cooked}
+If $\vdash H$ and (i)~$\hS,H \reducesto \hS',H'$ or~(ii)~$\hS,H \reducesto H'$, then $\vdash H'$ and~$H' \vdash H$.
+\end{lemma}
+\begin{proof}
+By definition:
+    (i)~$\vdash H$ if for every object $o=C(F)$ in the range of $H$ and
+    every field $f \in \dom(F)$ it is the case that every object~$\hl=H(F(f))$ is cooked ($\cooked_H(\hl)$).
+    (ii)~$H' \vdash H$
+    if for every~$\hl \in \dom(H)$, we have~$H(\hl)=\hC(F)$,~$H'(\hl)=\hC(F')$, and~$\dom(F)\subseteq\dom(F')$.
+
+By structural induction on~\hS.
+
+For \RULE{R-Term} and \RULE{R-Step}, by induction $\vdash H'$ and~$H' \vdash H$.
+
+For \RULE{R-Val}, $\he,H \reduce \hl',H'$ in two possible ways: \RULE{R-New} or \RULE{R-Access}.
+In \RULE{R-New}, we created a new location~$\hl'$ that is not connected to any other location, so $\vdash H'$ and~$H' \vdash H$.
+In \RULE{R-Access}, $H'=H$.
+
+In \RULE{R-Invoke}, $H'=H$.
+
+Only \RULE{R-Assign} ($\hl.\hf=\hl'$) changes the heap, and it requires that~$\cooked_H(\hl')$ so $\vdash H'$.
+Let~$H(\hl)=\hC(F)$ and~$H'(\hl)=\hC(F')$, where~$F'=F[ \hf \mapsto \hl']$, so~$\dom(F)\subseteq\dom(F')$.
+Thus~$H' \vdash H$.
+\end{proof}
+
+
+
+Properties of plus.
+\begin{lemma}
+\label{Lemma:plus}
+For all $\phi$,
+    (i)~$+\pm\phi=+\phi$,
+    (ii)~$-\pm\phi=-\phi$.
+\end{lemma}
+\begin{proof}
+Routine.
+\end{proof}
+
+
+
+Properties of the logic system.
+\begin{lemma}
+\label{Lemma:logic}
+Let $\phi \vdash \psi$.
+Then
+    (i)~$+\phi \vdash +\psi$,
+    (ii)~$-\phi \vdash -\psi$,
+    (iii)~for all~$\phi'$, we have~$\phi',\phi \vdash \phi',\psi$.
+\end{lemma}
+\begin{proof}
+Routine.
+\end{proof}
+
+
+
+Properties of heaps and formulas:
+\begin{lemma}
+\label{Lemma:heaps}
+For all heaps~$H$,
+(i)~$H \vdash -\phi$,
+(ii)~if $H \vdash +\phi$ then $H \vdash \phi$,
+(iii)~if $H \vdash \phi$ and $H \vdash \psi$ then $H \vdash \phi,\psi$,
+(iv)~if $H \vdash \phi$ and~$H' \vdash H$ then $H' \vdash \phi$.
+\end{lemma}
+\begin{proof}
+Routine.
+\end{proof}
+
+
+Substitution lemma.
+\begin{lemma}
+\label{Lemma:substitution}
+If~$\phi~\hS~\psi$ then~$\phi[\hl/\hx]~\hS[\hl/\hx]~\psi[\hl/\hx]$.
+\end{lemma}
+\begin{proof}
+Routine (by induction on the derivation sequence of~$\phi~\hS~\psi$, considering each rule in \Ref{Figure}{effects}).
+\end{proof}
+
+
+Preservation for terminal configurations.
+\begin{lemma}
+\label{Lemma:Preservation1}
+Let $\acute{\phi}~\acute{\hS}~\acute{\psi}$, $\vdash \acute{\hS}$, $\vdash H$, $H \vdash \acute{\phi}$, and $\acute{\hS},H \reducesto H'$.
+Then $H' \vdash +\acute{\psi}$.
+\end{lemma}
+\begin{proof}
+By structural induction on~$\acute{\hS}$.
+Only two rules result with a terminal configuration:
+    \RULE{R-Term} (for \hfinish and \hasync)
+    and \RULE{R-Assign}.
+
+
+In \RULE{R-Term} for \hfinish we have:
+\beq{pre1}
+    \acute{\hS}=\finish{\hS} \gap \hS,H \reduce H'
+\eeq
+From~$\acute{\phi}~\acute{\hS}~\acute{\psi}$ and \RULE{T-Finish}
+\beq{pre2}
+    \acute{\psi}=+\psi \gap \phi~\hS~\psi \gap \acute{\phi}=\phi \gap \phi~\finish{\hS}~ +\psi
+\eeq
+Because $\hS,H \reduce H'$ and~$\phi~\hS~\psi$ (from \eq{pre2}), by induction we have
+\beq{pre3}
+    H' \vdash +\phi
+\eeq
+Because~$\acute{\psi}=+\psi$ and $++\psi=+\psi$ (\Ref{Lemma}{plus}), from~\eq{pre3}, we conclude~$H' \vdash +\acute{\psi}$.
+
+In \RULE{R-Term} for \hasync we do the same proof but use the fact that~$+-\psi=+\psi$ (\Ref{Lemma}{plus}).
+
+In \RULE{R-Assign} we have:
+\beqs{pre4}
+    \acute{\hS}=\hl.\hf=\hl' \gap H(\hl)=\hC(F) \gap \cooked_H(\hl')
+    \\ H'=H[ \hl \mapsto \hC(F[ \hf \mapsto \hl'])]
+\eeq
+From~$\acute{\phi}~\acute{\hS}~\acute{\psi}$ and \RULE{T-Assign}
+\beq{pre5}
+    \acute{\phi}=\phi
+    \gap
+    \acute{\psi}=+\hl.\hf
+    \gap
+    \phi ~ \hl.\hf=\hl' ~ + \hl.\hf
+    \gap
+    \phi \vdash +\hl'
+\eeq
+From~\eq{pre4} and~\eq{pre5}, we conclude~$H' \vdash +\acute{\psi}$.
+\end{proof}
+
+
+Preservation for non-terminal configurations.
+\begin{lemma}
+\label{Lemma:Preservation2}
+Let
+\beq{np}
+    \acute{\phi}~\acute{\hS}~\acute{\psi}
+    \gap
+    \vdash \acute{\hS}
+    \gap
+    \vdash H
+    \gap
+    H \vdash \acute{\phi}
+    \gap
+    \acute{\hS},H \reducesto \grave{\hS},H'
+\eeq
+Then there exists $\grave{\phi},\grave{\psi}$ such
+    that
+\beq{np-res}
+H' \vdash \grave{\phi}
+\gap
+\grave{\phi}~\grave{\hS}~\grave{\psi}
+\gap
+\grave{\phi} \vdash \acute{\phi}
+\gap
+\grave{\psi} \vdash \acute{\psi}
+\eeq
+\end{lemma}
+\begin{proof}
+By structural induction on~$\acute{\hS}$.
+
+For \RULE{R-Term} for sequences we have
+\beq{np1}
+ \acute{\hS} = \hS~\hS' \gap
+ \grave{\hS}=\hS' \gap
+ \hS,H \reduce H'
+\eeq
+From \RULE{T-Seq} and~\eq{np} ($\acute{\phi}~\acute{\hS}~\acute{\psi}$),
+\beq{np2}
+  \acute{\phi}=\phi
+    \gap
+  \acute{\psi}=\psi_1,\psi_2
+    \gap
+  \phi~\hS~\psi_1
+    \gap
+  \phi,\psi_1~\hS'~\psi_2
+\eeq
+From~\eq{np1} and~\eq{np2}, by \Ref{Lemma}{Preservation1}
+\beq{np3}
+    H'\vdash +\psi_1.
+\eeq
+Let~$\grave{\phi}=\phi,\psi_1$, then from~\eq{np2}
+\beq{np4}
+    \grave{\phi}~\grave{\hS}~\psi_2
+\eeq
+Because~$\grave{\phi}=\phi,\psi_1$ then~$\grave{\phi} \vdash \psi_1$, and because~$\grave{\psi}=\acute{\psi}=\psi_1,\psi_2$ then
+\beq{np4b}
+    \grave{\phi}~\grave{\hS}~\grave{\psi}
+\eeq
+Trivially,
+\beq{np5}
+    \phi,\psi_1 \vdash \phi
+    \gap
+    \grave{\psi} \vdash \acute{\psi}
+\eeq
+From~\eq{np3} and \Ref{Lemma}{heaps},
+\beq{np5a}
+    H'\vdash \psi_1
+\eeq
+Because~$H' \vdash H$ (\Ref{Lemma}{correctly-cooked}) and~$H \vdash\phi$, then from \Ref{Lemma}{heaps}~$H' \vdash\phi$.
+Together,~$H' \vdash \phi,\psi_1$ and~$\grave{\phi}=\phi,\psi_1$.
+
+
+For \RULE{R-Step} for \hfinish, we have
+\beq{np6}
+ \acute{\hS} = \finish{\hS} \gap
+ \grave{\hS}=\finish{\hS'} \gap
+ \hS,H \reduce \hS', H'
+\eeq
+Because~$\acute{\phi}~\acute{\hS}~\acute{\psi}$, from \RULE{T-Finish},
+\beq{np7}
+  \acute{\phi}=\phi
+    \gap
+  \acute{\psi}=+\psi
+    \gap
+  \phi~\hS~\psi
+\eeq
+From~\eq{np6} and~\eq{np7}, by induction, exists~$\phi'$ and~$\psi'$,
+\beq{np8}
+  \phi'~\hS'~\psi'
+    \gap
+  \phi' \vdash \phi
+    \gap
+  \psi' \vdash \psi
+    \gap
+  H' \vdash \phi'
+\eeq
+From \RULE{T-Finish} and \eq{np8},
+\beq{np9}
+  \phi'~\finish{\hS'}~+\psi'
+\eeq
+Let~$\grave{\phi}=\phi'$ and~$\grave{\psi}=+\psi'$, then from~\eq{np8} and
+    from \Ref{Lemma}{logic},
+\beq{np10}
+    \phi' \vdash \phi
+    \gap
+    +\psi' \vdash +\psi
+    \gap
+    \grave{\phi}~\grave{\hS}~\grave{\psi}
+    \gap
+    H' \vdash \phi'
+\eeq
+
+The proof for the first \RULE{R-Step} for \hasync is like that of \hfinish above (but instead we use the fact that
+    if~$\psi' \vdash \psi$ then~$-\psi' \vdash -\psi$ in \Ref{Lemma}{logic}).
+
+For the second \hasync \RULE{R-Step}, we have
+\beq{np11}
+ \acute{\hS} = \async{\hS_1}~\hS \gap
+ \grave{\hS}=\async{\hS_1}~\hS' \gap
+ \hS,H \reduce \hS', H'
+\eeq
+Because~$\acute{\phi}~\acute{\hS}~\acute{\psi}$, from \RULE{T-Seq},
+\beq{np12}
+  \acute{\phi}=\phi
+    \gap
+  \acute{\psi}=\psi_1,\psi_2
+    \gap
+  \phi~\async{\hS_1}~\psi_1
+        \gap
+  \phi,\psi_1~\hS~\psi_2
+\eeq
+From \RULE{T-Async} we know that there exists~$\psi'_1$ such that~$\psi_1=-\psi'_1$,
+    therefore from \Ref{Lemma}{heaps}, we have that for any~$H$, it holds~$H \vdash \psi_1$.
+Thus,~$H \vdash \phi,\psi_1$.
+From that and~$\phi,\psi_1~\hS~\psi_2$ we can apply the induction and get that there exists~$\phi'$ and~$\psi'$ such that
+\beq{np13}
+    \phi'~\hS'~\psi'
+    \gap
+    \phi' \vdash \phi,\psi_1
+    \gap
+    \psi' \vdash \psi_2
+    \gap
+    H' \vdash \phi'
+\eeq
+Then from~\eq{np12},~\eq{np13},
+\beq{np14}
+    \phi'~\async{\hS_1}~\psi_1
+    \gap
+    \phi',\psi_1~\hS'~\psi'
+\eeq
+From~\eq{np14} and \RULE{T-Seq}
+\beq{np15}
+    \phi'~\async{\hS_1}~\hS'~\psi_1,\psi'
+\eeq
+Let~$\grave{\phi}=\phi'$ and~$\grave{\psi}=\psi_1,\psi'$, then
+\beq{np16}
+    \grave{\phi}~\async{\hS_1}~\hS'~\grave{\psi}
+    \phi' \vdash \phi
+    \gap
+    \psi_1,\psi' \vdash \psi_1,\psi_2
+    \gap
+    H' \vdash \grave{\phi}
+\eeq
+
+
+
+For \RULE{R-Step} for sequences, we have
+\beq{np26}
+ \acute{\hS} =\hS~\hS_1 \gap
+ \grave{\hS}=\hS'~\hS_1 \gap
+ \hS,H \reduce \hS', H'
+\eeq
+Because~$\acute{\phi}~\acute{\hS}~\acute{\psi}$, from \RULE{T-Seq},
+\beq{np27}
+  \acute{\phi}=\phi
+    \gap
+  \acute{\psi}=\psi_1,\psi_2
+    \gap
+  \phi~\hS~\psi_1
+    \gap
+  \phi,\psi_1~\hS_1~\psi_2
+\eeq
+From~\eq{np26} and~\eq{np27}, by induction ($\hS,H \reduce \hS', H'$ and~$H \vdash \phi$ and~$\phi~\hS~\psi_1$),
+    exists~$\phi'$ and~$\psi'_1$,
+\beq{np28}
+  \phi'~\hS'~\psi'_1
+    \gap
+  \phi' \vdash \phi
+    \gap
+  \psi'_1 \vdash \psi_1
+    \gap
+  H' \vdash \phi'
+\eeq
+Thus, from~\eq{np27} and~\eq{np28},
+\beq{np28b}
+  \phi'~\hS'~\psi'_1
+    \gap
+  \phi',\psi'_1~\hS_1~\psi_2
+\eeq
+\eeq
+From \RULE{T-Seq} and \eq{np28b},
+\beq{np29}
+  \phi'~\hS'~\hS_1~\psi'_1,\psi_2
+\eeq
+Let~$\grave{\phi}=\phi'$ and~$\grave{\psi}=\psi'_1,\psi_2$, then from~\eq{np28} and~\eq{np29} and
+    from \Ref{Lemma}{logic},
+\beq{np30}
+    \phi' \vdash \phi
+    \gap
+    \psi'_1,\psi_2 \vdash \psi_1,\psi_2
+    \gap
+    \grave{\phi}~\grave{\hS}~\grave{\psi}
+    \gap
+    H' \vdash \phi'
+\eeq
+
+\RULE{R-Val}
+(\RULE{R-New} \RULE{R-Access})
+
+\RULE{R-Invoke}
+
+\RULE{R-Assign}
+\end{proof}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+\begin{Theorem}{\textbf{Preservation}}
+\label{Theorem:Preservation}
+Let $\phi~\hS~\psi$, $\vdash \hS$, $\vdash H$, $H \vdash \phi$.
+(a) If $\hS,H \reducesto H'$ then $\vdash H'$, $H' \vdash H$, $H' \vdash +\psi$.
+(b) If $\hS,H \reducesto \hS',H'$ then $\vdash \hS'$, $\vdash H'$, $H' \vdash H$,
+there exists $\phi',\psi'$ such
+that $H' \vdash \phi'$, $\phi'~\hS'~\psi'$, $\phi' \vdash \phi$, $\psi' \vdash \psi$.
+\end{Theorem}
+\begin{proof}
+Follows from \Ref{Lemma}{closed},  \Ref{Lemma}{correctly-cooked}, \Ref{Lemma}{Preservation1},
+    and \Ref{Lemma}{Preservation2}.
+\end{proof}
+
+Progress: a proper non-terminal configuration can always be reduced.
+\begin{Theorem}{\textbf{Progress}}
+Let $\phi~\hS~\psi$, $\vdash \hS$, $\vdash H$, $H \vdash \phi$.
+Then there exists $\hS',H'$ such
+    that either $\hS,H \reducesto H'$ or $\hS,H \reducesto \hS',H'$.
+\end{Theorem}
+\begin{proof}
+\end{proof}
