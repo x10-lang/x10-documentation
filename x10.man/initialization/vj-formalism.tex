@@ -196,7 +196,7 @@ $\typerule{
 $\typerule{
   \phi~\hS~\psi
 }{
- \phi~ \hval{\hx}{\hnew{\hC()}}{\hS}~\psi
+ \phi~ \hval{\hx}{\hnew{\hC}}{\hS}~\psi
 }$~\RULE{(T-New)}
 \quad
 $\typerule{
@@ -483,7 +483,7 @@ A statement~$\hS$ is \emph{closed} (written~$\vdash \hS$) if it does not contain
 We say that $\hS$ is \emph{annotable} if there exists $\phi,\psi$ such that
 $\phi~\hS~\psi$ can be established.\footnote{An example of a statement that is
 {\em not} annotable is $\hval{\hx}{\hnew
-  \hC()}{\hval{\hy}{\hx.\hf}{\hz.\hg=\hy}}$ where $\hC{}$ has a field
+  \hC}{\hval{\hy}{\hx.\hf}{\hz.\hg=\hy}}$ where $\hC{}$ has a field
 \hf. This attempts to read a field of a variable initialized with a
 brand-new object.}
 

@@ -92,13 +92,26 @@ Routine.
 \end{proof}
 
 
+The meaning of substitution for statement is to replace all the \emph{free} occurrences of a variable.
+For example, for the following statement~\hS \[
+\hx.\hf=\hl;\hval{\hx}{\hnew{\hC}}{\hx.\hf=\hl}
+\]
+if we substitute \hx with $\hl'$, written as~$\hS[\hl'/\hx]$, the result is \[
+\hl'.\hf=\hl;\hval{\hx}{\hnew{\hC}}{\hx.\hf=\hl}
+\]
+
 Substitution lemma.
 \begin{lemma}
 \label{Lemma:substitution}
-If~$\phi~\hS~\psi$ then~$\phi[\hl/\hx]~\hS[\hl/\hx]~\psi[\hl/\hx]$.
+Given a heap $H$, a location~\hl whose type is $\hC$ ($H(\hl)=\hC(F)$), a variable \hx whose type is $\hD$, a statement \hS,
+    and \[
+    \vdash H \gap \hC \st \hD \gap \phi~\hS~\psi
+    \] then~$\phi[\hl/\hx]~\hS[\hl/\hx]~\psi[\hl/\hx]$.
 \end{lemma}
 \begin{proof}
 Routine (by induction on the derivation sequence of~$\phi~\hS~\psi$, considering each rule in \Ref{Figure}{effects}).
+The only sensitive point is that the type of~\hl is a subtype \hx, and therefore in \RULE{T-Invoke} we use the fact that when method~$\hm$ is overridden by~$\hm'$
+    then their inferred decorations~$(\phi, \psi)$ and~$(\phi', \psi')$ satisfy $\phi \vdash \phi'$ and $\psi' \vdash \psi$.
 \end{proof}
 
 
@@ -366,10 +379,99 @@ Let~$\grave{\phi}=\phi'$ and~$\grave{\psi}=\psi'_1,\psi_2$, then from~\eq{np28} 
     H' \vdash \phi'
 \eeq
 
-\RULE{R-Val}
-(\RULE{R-New} \RULE{R-Access})
+For \RULE{R-Val},
+\beq{np36}
+ \acute{\hS} =\hval{\hx}{\he}{\hS} \gap
+ \grave{\hS}= \hS[\hl/\hx] \gap
+ \he,H \reduce \hl,H'
+\eeq
+We have two possible ways to reduce \he:
+    either with \RULE{R-New} or \RULE{R-Access}.
+Consider first \RULE{R-New}, so
+\beq{np36b}
+ \he = \hnew{\hC} \gap
+ \hl \not \in \dom(H) \gap
+ H'=H[ \hl \mapsto \hC()]
+\eeq
+Because~$\acute{\phi}~\hval{\hx}{\hnew{\hC}}{\hS}~\acute{\psi}$, from \RULE{T-New},
+\beq{np37}
+  \acute{\phi} = \phi \gap
+  \acute{\psi} = \psi \gap
+  \phi~\hS~\psi
+\eeq
+Because~$H$ contains only locations~\hl (not variables~\hx), and~$H \vdash \phi$,
+    then~$\phi[\hl/\hx]=\phi$ and~$\psi[\hl/\hx]=\psi$.
+From \Ref{Lemma}{substitution} and~\eq{np37}, we have
+\beq{np38}
+  \phi~\hS[\hl/\hx]~\psi
+\eeq
+From \Ref{Lemma}{heaps}, because~$H' \vdash H$ (\Ref{Lemma}{correctly-cooked}), then
+\beq{np39}
+  H' \vdash \phi
+\eeq
+We choose~$\grave{\phi}=\phi$ and~$\grave{\psi}=\psi$, thus from~\eq{np38} and~\eq{np39},
+\beq{np40}
+  H' \vdash \grave{\phi} \gap
+  \grave{\phi} \vdash \phi  \gap
+  \grave{\psi} \vdash \psi  \gap
+  \grave{\phi}~\grave{\hS}~\grave{\psi}
+\eeq
+Now consider \RULE{R-Access}, so
+\beq{np41}
+ \he = \hl'.\hf_i \gap
+ H(\hl')=\hC(\ol{\hf}\mapsto\ol{\hl"}) \gap
+ \hl = \hl"_i \gap
+ H'=H
+\eeq
+Because~$\vdash H$ then~$\hl$ is cooked, i.e., \[H \vdash +\hl \]
+Because~$\acute{\phi}~\hval{\hx}{\hl'.\hf_i}{\hS}~\acute{\psi}$, from \RULE{T-Access},
+\beq{np42}
+  \acute{\phi} = \phi \gap
+  \acute{\psi} = \psi \gap
+    \phi \vdash +\hl'.\hf_i \gap
+    \phi, +\hx~\hS~\psi
+\eeq
+Like for \RULE{R-New}, we have that~$\phi[\hl/\hx]=\phi$ and~$\psi[\hl/\hx]=\psi$.
+From \Ref{Lemma}{substitution} and~\eq{np42}, we have
+\beq{np43}
+  \phi,+\hl~\hS[\hl/\hx]~\psi
+\eeq
+Because~$H'=H$ and~$H \vdash \phi$ and~$H \vdash +\hl$,
+    then
+\beq{np44}
+  H' \vdash \phi,+\hl
+\eeq
+We choose~$\grave{\phi}=\phi,+\hl$ and~$\grave{\psi}=\psi$, thus from~\eq{np43} and~\eq{np44},
+\beq{np45}
+  H' \vdash \grave{\phi} \gap
+  \grave{\phi} \vdash \phi  \gap
+  \grave{\psi} \vdash \psi  \gap
+  \grave{\phi}~\grave{\hS}~\grave{\psi}
+\eeq
 
-\RULE{R-Invoke}
+For \RULE{R-Invoke},
+\beqs{np56}
+ \acute{\hS} =\hl'.\hm(\ol{\hl}) \gap
+ \grave{\hS}=\hS[\ol{\hl}/\ol{\hx},\hl'/\hthis] \\
+ H(\hl')=\hC(\ldots) \gap
+ \mbody{}(\hm,\hC)=\ol{\hx}.\hS \gap
+ H'=H
+\eeq
+Because~$\acute{\phi}~\acute{\hS}~\acute{\psi}$, from \RULE{T-Invoke},
+\beq{np57}
+  \acute{\phi}=\phi
+    \gap
+  \acute{\psi}=\psi'[\hl'/\hthis,\ol{\hl}/\ol{\hx}]
+    \gap
+  \hm(\ol{\hx}):: \phi' \Rightarrow \psi'
+    \gap
+  \phi \vdash \phi'[\hl'/\hthis,\ol{\hl}/\ol{\hx}]
+\eeq
+
+
+\hl
+
+congruence
 
 \RULE{R-Assign}
 \end{proof}
