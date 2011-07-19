@@ -467,29 +467,24 @@ Because~$\acute{\phi}~\acute{\hS}~\acute{\psi}$, from \RULE{T-Invoke},
     \gap
   \phi \vdash \phi'[\hl'/\hthis,\ol{\hl}/\ol{\hx}]
 \eeq
+From the definition of~$\hm(\ol{\hx}):: \phi' \Rightarrow \psi'$ we have that
+\beq{np58}
+    \phi'~\hS~\psi'
+\eeq
+From \Ref{Lemma}{substitution} and~\eq{np58}, we have
+\beq{np59}
+    \phi'[\hl'/\hthis,\ol{\hl}/\ol{\hx}]~\hS~\psi'[\hl'/\hthis,\ol{\hl}/\ol{\hx}]
+\eeq
+We choose~$\grave{\phi}=\acute{\phi}=\phi$ and~$\grave{\psi}=\acute{\psi}$, thus from~\eq{np56},~\eq{np57} and~\eq{np59},
+\beq{np60}
+  H' \vdash \grave{\phi} \gap
+  \grave{\phi} \vdash \acute{\phi}  \gap
+  \grave{\psi} \vdash \acute{\psi}  \gap
+  \grave{\phi}~\grave{\hS}~\grave{\psi}
+\eeq
 
-
-\hl
-
-congruence
-
-\RULE{R-Assign}
+(Note that \RULE{R-Assign} was handled in \Ref{Lemma}{Preservation1}.)
 \end{proof}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -508,9 +503,72 @@ Follows from \Ref{Lemma}{closed},  \Ref{Lemma}{correctly-cooked}, \Ref{Lemma}{Pr
 
 Progress: a proper non-terminal configuration can always be reduced.
 \begin{Theorem}{\textbf{Progress}}
-Let $\phi~\hS~\psi$, $\vdash \hS$, $\vdash H$, $H \vdash \phi$.
-Then there exists $\hS',H'$ such
-    that either $\hS,H \reducesto H'$ or $\hS,H \reducesto \hS',H'$.
+Let $\acute{\phi}~\acute{\hS}~\acute{\psi}$, $\vdash \acute{\hS}$, $\vdash H$, $H \vdash \acute{\phi}$.
+Then there exists $\grave{\hS},H'$ such
+    that either $\acute{\hS},H \reducesto H'$ or $\acute{\hS},H \reducesto \grave{\hS},H'$.
 \end{Theorem}
 \begin{proof}
+By structural induction on~$\acute{\hS}$.
+According to the syntax,~$\acute{\hS}$ is one of the following: \[
+\hS ::=  \hp.\hf = \hp; ~|~ \hp.\hm(\ol{\hp});  ~|~ \hval{\hx}{\he}{\hS} ~|~ \finish{\hS}~|~ \async{\hS} ~|~ \hS~\hS
+\]
+We will show that for each of these possibilities, there is a matching reduction rule that can be applied.
+
+If~$\acute{\hS} = \finish{\hS}$, then because~$\acute{\phi}~\acute{\hS}~\acute{\psi}$, we have from \RULE{T-Finish},
+\beq{p1}
+\phi~\hS~\psi \gap
+\acute{\phi}=\phi \gap
+\acute{\psi}=+\psi
+\eeq
+Therefore, by induction, there exists $\hS',H'$ such
+    that either ${\hS},H \reducesto H'$ or ${\hS},H \reducesto {\hS'},H'$.
+Therefore, we can either apply \RULE{R-Term} or \RULE{R-Step} on $\acute{\hS}$,
+    i.e., either $\acute{\hS},H \reducesto H'$ or $\acute{\hS},H \reducesto \finish{\hS'},H'$.
+
+If~$\acute{\hS} = \async{\hS}$, then the same proof as above holds (except changing $+$ to $-$).
+
+If~$\acute{\hS} = \hS_1 \hS_2$, then because~$\acute{\phi}~\acute{\hS}~\acute{\psi}$, we have from \RULE{T-Seq},
+\beq{p2}
+  \phi~\hS_1~\psi_1
+        \gap
+    \phi,\psi_1~\hS_2~\psi_2 \gap
+    \acute{\phi}=\phi \gap
+    \acute{\psi}=\psi_1,\psi_2
+\eeq
+By induction, there exists $\hS'_1,H'$ such
+    that either ${\hS_1},H \reducesto H'$ or ${\hS_1},H \reducesto {\hS'_1},H'$.
+Therefore, we can either apply \RULE{R-Term} or \RULE{R-Step} on $\acute{\hS}$,
+    i.e., either $\acute{\hS},H \reducesto \hS_2,H'$ or $\acute{\hS},H \reducesto \hS'_1~\hS_2,H'$.
+
+If~$\acute{\hS} = \hp'.\hm(\ol{\hp});$ then because~$\vdash \acute{\hS}$ we know that \hp cannot be a variable (only a location in~$H$),
+    so~$\acute{\hS} = \hl'.\hm(\ol{\hl})$.
+Thus, we can apply \RULE{R-Invoke}.
+
+If~$\acute{\hS} = \hp.\hf = \hp;$ then for similar reasons, we have~$\acute{\hS} = \hl.\hf=\hl'$.
+Because~$\acute{\phi}~\acute{\hS}~\acute{\psi}$, we have from \RULE{T-Assign}, that \[
+\acute{\phi} \vdash +\hl'
+\]
+And because~$H \vdash \acute{\phi}$ we have that~$\cooked_H(\hl')$.
+Thus we can apply \RULE{R-Assign}, i.e., \[
+    H(\hl)=\hC(F) \gap
+    \acute{\hS},H \reducesto H[ \hl \mapsto \hC(F[ \hf \mapsto \hl'])]
+\]
+
+Finally, if~$\acute{\hS} = \hval{\hx}{\he}{\hS}$, then according to the syntax \[
+\he ::=  \hp.\hf  ~|~ \hnew{\hC}
+\]
+If $\he = \hnew{\hC}$ then by \RULE{R-New}, we have \[
+    \he,H \reduce \hl',H[ \hl' \mapsto \hC()]
+\]
+If $\he = \hp.\hf$ then because~$\vdash \acute{\hS}$ we know that \hp is some location~\hl.
+Because~$\acute{\phi}~\acute{\hS}~\acute{\psi}$, we have from \RULE{T-Access}, \[
+    \acute{\phi} \vdash +\hl.\hf
+\]
+And because~$H \vdash \acute{\phi}$, we have that \hl has the field~\hf in the heap, i.e., \[
+    H(\hl)=\hC(F) \gap \hf \in \dom(F)
+\]
+Thus, we can apply \RULE{R-Access} and get~$\hl.\hf,H \reduce \hl',H$.
+In both cases, we have that~\he was reduced to~$\hl'$, thus we can apply \RULE{R-Val} and get \[
+    \acute{\hS},H \reduce \hS[\hl'/\hx], H'
+\]
 \end{proof}
