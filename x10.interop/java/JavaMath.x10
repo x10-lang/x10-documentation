@@ -7,6 +7,6 @@ public class JavaMath {
         val tpi:Double = Math.cos(pi);
         val j_tpi:Java.double = java.lang.Math.cos(pi);
         Console.OUT.println("X10 pi: "+pi+"\nJava pi: "+j_pi);
-        Console.OUT.println("X10 tan(pi): "+tpi+"\nJava tan(pi): "+j_tpi);
+        Console.OUT.println("X10 cos(pi): "+tpi+"\nJava cos(pi): "+j_tpi);
     }
 }
