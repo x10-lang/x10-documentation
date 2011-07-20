@@ -1,0 +1,68 @@
+// JavaListTest.java
+public class JavaListTest {
+    public static void main(String[] args) {
+        java.util.ArrayList<String> l = new java.util.ArrayList<String>();
+        l.add("abc");
+        l.add("xyz");
+        JavaListInX10.getStringFromJavaList_0_$_x10$lang$String_$$O(l); // will succeed
+        JavaListInX10.getObjectFromJavaList_0_$_x10$lang$Object_$$O(l); // will throw FailedDynamicCheckException
+    }
+}
+
+
+// JavaListInX10.x10
+public class JavaListInX10 {
+    public static def getStringFromX10List(l:x10.util.ArrayList[String]):String {
+        return l.removeFirst();
+    }
+    public static def getObjectFromX10List(l:x10.util.ArrayList[Object]):Object {
+        return l.removeFirst();
+    }
+    public static def getStringFromJavaList(l:java.util.ArrayList[String]):String {
+        return l.remove(0);
+    }
+    public static def getObjectFromJavaList(l:java.util.ArrayList[Object]):Object {
+        return l.remove(0);
+    }
+    public static def main(args:Array[String]) {
+        val l = new x10.util.ArrayList[String]();
+        l.add("abc");
+        l.add("xyz");
+        JavaListInX10.getStringFromX10List(l);
+        //JavaListInX10.getObjectFromX10List(l); // compile error (no valid method call)
+    }
+}
+// Generated code (JavaListInX10.java)
+public class JavaListInX10 extends x10.core.Ref {
+    public static java.lang.String getStringFromX10List_0_$_x10$lang$String_$$O(final x10.util.ArrayList<java.lang.String> l) {
+        return ((x10.util.ArrayList<java.lang.String>) l).removeFirst$G();
+    }
+    public static x10.core.RefI getObjectFromX10List_0_$_x10$lang$Object_$$O(final x10.util.ArrayList<x10.core.RefI> l) {
+        return ((x10.util.ArrayList<x10.core.RefI>) l).removeFirst$G();
+    }
+    public static java.lang.String getStringFromJavaList_0_$_x10$lang$String_$$O(final java.util.ArrayList l) {
+        //return ((java.util.ArrayList<java.lang.String>) l).remove(0); // this is unsafe
+        java.lang.Object o = l.remove(0);
+        if (!x10.rtt.Types.instanceOf(o, x10.rtt.Types.STRING)) {
+            // we can also implement as try { return ... } catch (ClassCastException) { throw new FailedDynamicCheckException(); } for simple case without constraint
+            throw new x10.lang.FailedDynamicCheckException();
+        }
+        return ((java.lang.String) o);
+    }
+    public static x10.core.RefI getObjectFromJavaList_0_$_x10$lang$Object_$$O(final java.util.ArrayList l) {
+        //return ((java.util.ArrayList<x10.core.RefI>) l).remove(0);    // this is unsafe
+        java.lang.Object o = l.remove(0);
+        if (!x10.rtt.Types.instanceOf(o, x10.rtt.Types.OBJECT)) {
+            // we can also implement as try { return ... } catch (ClassCastException) { throw new FailedDynamicCheckException(); } for simple case without constraint
+            throw new x10.lang.FailedDynamicCheckException();
+        }
+        return ((x10.core.RefI) o);
+    }
+
+    public static void main(final x10.array.Array<java.lang.String> args) {
+        final x10.util.ArrayList<java.lang.String> l = ((x10.util.ArrayList) (new x10.util.ArrayList<java.lang.String>((java.lang.System[]) null).$init(x10.rtt.Types.STRING)));
+        ((x10.util.ArrayList<java.lang.String>) l).add_0_$$x10$util$ArrayList_T$O(((java.lang.String) ("abc")));
+        ((x10.util.ArrayList<java.lang.String>) l).add_0_$$x10$util$ArrayList_T$O(((java.lang.String) ("xyz")));
+        JavaListInX10.getStringFromX10List_0_$_x10$lang$String_$$O(((x10.util.ArrayList) (l)));
+    }
+}

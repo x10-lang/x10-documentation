@@ -36,8 +36,8 @@ public class ArrayList<$T> extends x10.util.AbstractCollection<$T> implements x1
 }
 
 
-// ListInJava.java
-public class ListInJava {
+// X10ListInJava.java
+public class X10ListInJava {
     public static void addString(x10.util.ArrayList l) {
         l.safe__add_0_$$x10$util$ArrayList_T$O("abc"); // calls safe version
     }
@@ -46,22 +46,22 @@ public class ListInJava {
     }
 }
 
-// ListTest.x10
-class ListTest {
+// X10ListTest.x10
+class X10ListTest {
     public static def main(Array[String]) {
         val l = new x10.util.ArrayList[String]();
-        ListInJava.addString(l); // will succeed
-        ListInJava.addJavaObject(l); // will throw FailedDynamicCheckException
+        X10ListInJava.addString(l); // will succeed
+        X10ListInJava.addJavaObject(l); // will throw FailedDynamicCheckException
         l.add("xyz"); // will succeed
         //l.add(123); // compile error (no valid method call)
     }
 }
-// Generated code (ListTest.java)
-public class ListTest extends x10.core.Ref {
+// Generated code (X10ListTest.java)
+public class X10ListTest extends x10.core.Ref {
     public static void main(final x10.array.Array<java.lang.String> args) {
         final x10.util.ArrayList<java.lang.String> l = ((x10.util.ArrayList) (new x10.util.ArrayList<java.lang.String>((java.lang.System[]) null).$init(x10.rtt.Types.STRING)));
-        ListInJava.addString(l);
-        ListInJava.addJavaObject(l);
+        X10ListInJava.addString(l);
+        X10ListInJava.addJavaObject(l);
         ((x10.util.ArrayList<java.lang.String>) l).add_0_$$x10$util$ArrayList_T$O(((java.lang.String) ("xyz"))); // calls unsafe version
     }
 }
