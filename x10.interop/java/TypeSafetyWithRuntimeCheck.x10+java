@@ -1,0 +1,67 @@
+// ArrayList.x10
+public class ArrayList[T] extends AbstractCollection[T] implements List[T] {
+    private val a: GrowableIndexedMemoryChunk[T];
+    public def add(v: T): Boolean {
+        a.add(v);
+        return true;
+    }
+}
+// Generated code (ArrayList.java)
+public class ArrayList<$T> extends x10.util.AbstractCollection<$T> implements x10.util.List {
+    public static final x10.rtt.RuntimeType<ArrayList> $RTT =
+        new x10.rtt.NamedType<ArrayList>("x10.util.ArrayList", ArrayList.class,
+                                         new x10.rtt.RuntimeType.Variance[] { x10.rtt.RuntimeType.Variance.INVARIANT },
+                                         new x10.rtt.Type[] {
+                                             new x10.rtt.ParameterizedType(x10.util.List.$RTT, x10.rtt.UnresolvedType.PARAM(0)),
+                                             new x10.rtt.ParameterizedType(x10.util.AbstractCollection.$RTT, x10.rtt.UnresolvedType.PARAM(0))
+                                         }
+                                         );
+    private x10.rtt.Type $T;
+
+    // unsafe version (X10 code calls this)
+    public boolean add_0_$$x10$util$ArrayList_T$O(final $T v) {
+        final x10.util.GrowableIndexedMemoryChunk<$T> t64133 = ((x10.util.GrowableIndexedMemoryChunk) (a));
+        ((x10.util.GrowableIndexedMemoryChunk<$T>) t64133).add_0_$$x10$util$GrowableIndexedMemoryChunk_T((($T) (v)));
+        return true;
+    }
+
+    // safe version (Java code should call this)
+    // TODO expose as a simple name
+    public boolean safe__add_0_$$x10$util$ArrayList_T$O(final $T v) {
+        if (!x10.rtt.Types.instanceOf(v, $RTT, $T)) {
+            throw new x10.lang.FailedDynamicCheckException();
+        }
+        return add_0_$$x10$util$ArrayList_T$O(v);
+    }
+}
+
+
+// ListInJava.java
+public class ListInJava {
+    public static void addString(x10.util.ArrayList l) {
+        l.safe__add_0_$$x10$util$ArrayList_T$O("abc"); // calls safe version
+    }
+    public static void addJavaObject(x10.util.ArrayList l) {
+        l.safe__add_0_$$x10$util$ArrayList_T$O(new java.lang.Object()); // calls safe version
+    }
+}
+
+// ListTest.x10
+class ListTest {
+    public static def main(Array[String]) {
+        val l = new x10.util.ArrayList[String]();
+        ListInJava.addString(l); // will succeed
+        ListInJava.addJavaObject(l); // will throw FailedDynamicCheckException
+        l.add("xyz"); // will succeed
+        //l.add(123); // compile error (no valid method call)
+    }
+}
+// Generated code (ListTest.java)
+public class ListTest extends x10.core.Ref {
+    public static void main(final x10.array.Array<java.lang.String> args) {
+        final x10.util.ArrayList<java.lang.String> l = ((x10.util.ArrayList) (new x10.util.ArrayList<java.lang.String>((java.lang.System[]) null).$init(x10.rtt.Types.STRING)));
+        ListInJava.addString(l);
+        ListInJava.addJavaObject(l);
+        ((x10.util.ArrayList<java.lang.String>) l).add_0_$$x10$util$ArrayList_T$O(((java.lang.String) ("xyz"))); // calls unsafe version
+    }
+}
