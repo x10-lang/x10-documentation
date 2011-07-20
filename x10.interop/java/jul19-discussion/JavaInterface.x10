@@ -1,13 +1,13 @@
 import x10.interop.Java;
 public class JavaInterface {
     public static class MyString(s:String) implements java.lang.CharSequence { // it's okay to implement java interface
-        def charAt(index:Java.int):Java.char {
-            return Java.convert(s(index));		// Char type needs conversion to Java.char
+        def charAt(index:Int):Char {
+            return s(index);
         }
-        def length():Java.int {
+        def length():Int {
             return s.length();
         }
-        def subSequence(start:Java.int, end:Java.int):java.lang.CharSequence {
+        def subSequence(start:Int, end:Int):java.lang.CharSequence {
             return new MyString(s.substring(start, end));
         }
         def toString():String {
