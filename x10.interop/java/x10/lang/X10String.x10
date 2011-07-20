@@ -33,14 +33,14 @@ import x10.util.IndexedMemoryChunk;
  * with all characters translated to uppercase or to lowercase.  Case mapping
  * is defined in {@link x10.lang.Char}.
  */
-public final class String implements (Int) => Char, Ordered[String], Comparable[String] {
+public final class X10String implements (Int) => Char, Ordered[X10String], Comparable[X10String] {
 
     val content: IndexedMemoryChunk[Char]; // TODO: UTF-8
 
     /**
      * Default constructor.
      */
-    public def this(): String {
+    public def this(): X10String {
         this.content = IndexedMemoryChunk.allocateUninitialized[Char](1);
         this.content(0) = '\0';
     }
@@ -48,14 +48,14 @@ public final class String implements (Int) => Char, Ordered[String], Comparable[
     /**
      * Copy constructor.
      */
-    public def this(s: String): String {
+    public def this(s: X10String): X10String {
         this.content = s.content;
     }
 
     /**
      * Construct a String from an Array[Byte].
      */
-    public def this(r:Array[Byte], offset:Int, length:Int): String { // TODO: UTF-8
+    public def this(r:Array[Byte], offset:Int, length:Int): X10String { // TODO: UTF-8
         val content = IndexedMemoryChunk.allocateUninitialized[Char](length+1);
         for (i in 0..(length-1)) {
             content(i) = r(offset + i) as Char;
@@ -67,7 +67,7 @@ public final class String implements (Int) => Char, Ordered[String], Comparable[
     /**
      * Construct a String from an Array[Char].
      */
-    public def this(r:Array[Char], offset:Int, length:Int): String { // TODO: UTF-8
+    public def this(r:Array[Char], offset:Int, length:Int): X10String { // TODO: UTF-8
         val content = IndexedMemoryChunk.allocateUninitialized[Char](length+1);
         for (i in 0..(length-1)) {
             content(i) = r(offset + i);
@@ -79,7 +79,7 @@ public final class String implements (Int) => Char, Ordered[String], Comparable[
     /**
      * Construct a String from an IndexedMemoryChunk[Char] (share).
      */
-    private def this(r:IndexedMemoryChunk[Char]): String { // TODO: UTF-8
+    private def this(r:IndexedMemoryChunk[Char]): X10String { // TODO: UTF-8
         this.content = r;
     }
 
@@ -92,8 +92,8 @@ public final class String implements (Int) => Char, Ordered[String], Comparable[
     public def equals(x:Any): Boolean {
         if (x == null) return false;
         if (x == this) return true; // short-circuit trivial equality
-        if (!(x instanceof String)) return false;
-        val that: String = x as String;
+        if (!(x instanceof X10String)) return false;
+        val that: X10String = x as X10String;
         if (this.content.length() != that.content.length()) return false; // short-circuit trivial dis-equality
         if (strncmp(this.content, 0, that.content, 0, this.length()) != 0)
             return false;
@@ -106,7 +106,7 @@ public final class String implements (Int) => Char, Ordered[String], Comparable[
      * @param that the given String
      * @return true if this String is equal to the given String ignoring case.
      */
-    public def equalsIgnoreCase(that:String): Boolean {
+    public def equalsIgnoreCase(that:X10String): Boolean {
         if (that == null) return false;
         if (that == this) return true; // short-circuit trivial equality
         if (this.content.length() != that.content.length()) return false; // short-circuit trivial dis-equality
@@ -143,7 +143,7 @@ public final class String implements (Int) => Char, Ordered[String], Comparable[
      * Returns this String.
      * @return the String itself.
      */
-    public @Inline def toString(): String = this;
+    public @Inline def toString(): X10String = this;
 
 
     /**
@@ -209,7 +209,7 @@ public final class String implements (Int) => Char, Ordered[String], Comparable[
      * @param toIndex the ending index, exclusive
      * @return the specified substring.
      */
-    public def substring(fromIndex: Int, toIndex: Int): String {
+    public def substring(fromIndex: Int, toIndex: Int): X10String {
         val content_length = content.length() - 1;
         if (CompilerFlags.checkBounds() && fromIndex < 0) {
             raiseStringIndexOutOfBoundsException(fromIndex, content_length);
@@ -227,7 +227,7 @@ public final class String implements (Int) => Char, Ordered[String], Comparable[
             str(i) = r(fromIndex + i);
         }
         str(sz) = '\0';
-        return new String(str);
+        return new X10String(str);
     }
 
     /**
@@ -237,7 +237,7 @@ public final class String implements (Int) => Char, Ordered[String], Comparable[
      * @param fromIndex the starting index, inclusive
      * @return the specified substring.
      */
-    public @Inline def substring(fromIndex: Int): String = substring(fromIndex, this.length());
+    public @Inline def substring(fromIndex: Int): X10String = substring(fromIndex, this.length());
 
     /**
      * Returns the index within this String of the first occurrence of the specified Char ch.
@@ -300,7 +300,7 @@ public final class String implements (Int) => Char, Ordered[String], Comparable[
      * @see #indexOf(Char)
      * @see #lastIndexOf(String)
      */
-    public @Inline def indexOf(str: String): Int = indexOf(str, 0);
+    public @Inline def indexOf(str: X10String): Int = indexOf(str, 0);
 
     /**
      * Returns the index within this String of the first occurrence of the specified substring after
@@ -319,7 +319,7 @@ public final class String implements (Int) => Char, Ordered[String], Comparable[
      * @see #indexOf(Char,Int)
      * @see #lastIndexOf(String,Int)
      */
-    public @Inline def indexOf(str: String, i: Int): Int = strnstrn(content, i, content.length()-1, str.content);
+    public @Inline def indexOf(str: X10String, i: Int): Int = strnstrn(content, i, content.length()-1, str.content);
 
     private static def strnstrn(haystack: IndexedMemoryChunk[Char], start: Int, end: Int, needle: IndexedMemoryChunk[Char]): Int {
         val offset = (start < 0) ? 0 : start;
@@ -419,7 +419,7 @@ public final class String implements (Int) => Char, Ordered[String], Comparable[
      * @see #lastIndexOf(Char)
      * @see #indexOf(String)
      */
-    public @Inline def lastIndexOf(str: String): Int = lastIndexOf(str, this.length()-1);
+    public @Inline def lastIndexOf(str: X10String): Int = lastIndexOf(str, this.length()-1);
 
     /**
      * Returns the index within this String of the rightmost occurrence of the specified substring
@@ -440,7 +440,7 @@ public final class String implements (Int) => Char, Ordered[String], Comparable[
      * @see #lastIndexOf(Char,Int)
      * @see #indexOf(String,Int)
      */
-    public def lastIndexOf(str: String, i: Int): Int = strnrstrn(content, 0, i+1, str.content);
+    public def lastIndexOf(str: X10String, i: Int): Int = strnrstrn(content, 0, i+1, str.content);
 
     public static def strnrstrn(haystack: IndexedMemoryChunk[Char], start: Int, end: Int, needle: IndexedMemoryChunk[Char]) {
         val endOffset = (end < 0) ? 0 : end;
@@ -467,11 +467,11 @@ public final class String implements (Int) => Char, Ordered[String], Comparable[
      * @param delim the String to use as a delimiter.
      * @return the Array of Strings computed by splitting this String around matches of the delimiter.
      */
-    public def split(delim: String):Rail[String] {
+    public def split(delim: X10String):Rail[X10String] {
         if (delim.equals("")) {
-            return new Rail[String](this.length(), (i:Int)=>this.substring(i, i+1));
+            return new Rail[X10String](this.length(), (i:Int)=>this.substring(i, i+1));
         }
-        val ans = new ArrayList[String]();
+        val ans = new ArrayList[X10String]();
         var pos:Int = 0;
         var nextMatch:Int = this.indexOf(delim, pos);
         while (nextMatch != -1) {
@@ -490,7 +490,7 @@ public final class String implements (Int) => Char, Ordered[String], Comparable[
      * Returns a copy of the string with leading and trailing whitespace removed.
      * @return The new string with no leading/trailing whitespace.
      */
-    public def trim(): String {
+    public def trim(): X10String {
         val r = content;
         var start: Int = 0;
         var l: Int = content.length() - 1;
@@ -504,7 +504,7 @@ public final class String implements (Int) => Char, Ordered[String], Comparable[
             trimmed(i) = r(start+i);
         }
         trimmed(l) = '\0';
-        return new String(trimmed);
+        return new X10String(trimmed);
     }
 
     // [DC] Java defines whitespace as any unicode codepoint <= U0020
@@ -518,7 +518,7 @@ public final class String implements (Int) => Char, Ordered[String], Comparable[
      * @param v the given entity
      * @return a String representation of the given entity.
      */
-    public static def valueOf[T](v: T): String {
+    public static def valueOf[T](v: T): X10String {
         if (v == null) return "null";
         return v.toString();
     }
@@ -537,7 +537,7 @@ public final class String implements (Int) => Char, Ordered[String], Comparable[
      */
     @Native("java", "x10.core.String.format(#fmt,(Object[]) (#args).raw().value)")
     @Native("c++", "x10::lang::String::format(#fmt,#args)")
-    public native static def format(fmt: String, args:Array[Any]): String;
+    public native static def format(fmt: X10String, args:Array[Any]): X10String;
 
 
     // FIXME: Locale sensitivity
@@ -545,7 +545,7 @@ public final class String implements (Int) => Char, Ordered[String], Comparable[
      * Converts all of the Chars in this String to lower case.
      * @return this String, converted to lowercase.
      */
-    public def toLowerCase(): String {
+    public def toLowerCase(): X10String {
         val r = IndexedMemoryChunk.allocateUninitialized[Char](content.length());
         var all_lower: Boolean = true;
         for (i in 0..(content.length()-2)) {
@@ -559,7 +559,7 @@ public final class String implements (Int) => Char, Ordered[String], Comparable[
             return this;
         }
         r(content.length()-1) = '\0';
-        return new String(r);
+        return new X10String(r);
     }
 
     // FIXME: Locale sensitivity
@@ -567,7 +567,7 @@ public final class String implements (Int) => Char, Ordered[String], Comparable[
      * Converts all of the Chars in this String to upper case.
      * @return this String, converted to uppercase.
      */
-    public def toUpperCase(): String {
+    public def toUpperCase(): X10String {
         val r = IndexedMemoryChunk.allocateUninitialized[Char](content.length());
         var all_upper: Boolean = true;
         for (i in 0..(content.length()-2)) {
@@ -581,7 +581,7 @@ public final class String implements (Int) => Char, Ordered[String], Comparable[
             return this;
         }
         r(content.length()-1) = '\0';
-        return new String(r);
+        return new X10String(r);
     }
 
 
@@ -603,7 +603,7 @@ public final class String implements (Int) => Char, Ordered[String], Comparable[
      * @param arg the argument String
      * @return 0 if the argument String is equal to this String; a negative Int if this String is lexicographically less than the argument String; and a positive Int if this String is lexicographically greater than the argument String.
      */
-    public def compareTo(arg: String): Int {
+    public def compareTo(arg: X10String): Int {
         if (arg == this) return 0; // short-circuit trivial equality
         val length_diff = this.content.length() - arg.content.length();
         if (length_diff != 0)
@@ -621,7 +621,7 @@ public final class String implements (Int) => Char, Ordered[String], Comparable[
      * @param arg the argument String
      * @return a negative Int, zero, or a positive Int as the argument String is greater than, equal to, or less than this String, ignoring case considerations.
      */
-    public def compareToIgnoreCase(arg: String): Int {
+    public def compareToIgnoreCase(arg: X10String): Int {
         if (arg == this) return 0; // short-circuit trivial equality
         val length_diff = this.content.length() - arg.content.length();
         if (length_diff != 0)
@@ -636,7 +636,7 @@ public final class String implements (Int) => Char, Ordered[String], Comparable[
      * @return true if the argument string appears at the head of this String.
      *         The method returns false otherwise.
      */
-    public def startsWith(arg: String): Boolean {
+    public def startsWith(arg: X10String): Boolean {
         val len = arg.content.length()-1;
         if (len > this.content.length()-1)
             return false;
@@ -649,7 +649,7 @@ public final class String implements (Int) => Char, Ordered[String], Comparable[
      * @return true if the argument string appears at the tail of this String.
      *         The method returns false otherwise.
      */
-    public def endsWith(arg: String): Boolean {
+    public def endsWith(arg: X10String): Boolean {
         val len = arg.content.length()-1;
         if (len > this.content.length()-1)
             return false;
@@ -665,7 +665,7 @@ public final class String implements (Int) => Char, Ordered[String], Comparable[
      * @param x the other String
      * @return true if this String is strictly before the other String.
      */
-    public @Inline operator this < (x:String): Boolean = this.compareTo(x) < 0;
+    public @Inline operator this < (x:X10String): Boolean = this.compareTo(x) < 0;
 
     // FIXME: Locale sensitivity
     /**
@@ -675,7 +675,7 @@ public final class String implements (Int) => Char, Ordered[String], Comparable[
      * @param x the other String
      * @return true if this String is strictly after the other String.
      */
-    public @Inline operator this > (x:String): Boolean = this.compareTo(x) > 0;
+    public @Inline operator this > (x:X10String): Boolean = this.compareTo(x) > 0;
 
     // FIXME: Locale sensitivity
     /**
@@ -685,7 +685,7 @@ public final class String implements (Int) => Char, Ordered[String], Comparable[
      * @param x the other String
      * @return true if this String is before or equal to the other String.
      */
-    public @Inline operator this <= (x:String): Boolean = this.compareTo(x) <= 0;
+    public @Inline operator this <= (x:X10String): Boolean = this.compareTo(x) <= 0;
 
     // FIXME: Locale sensitivity
     /**
@@ -695,7 +695,7 @@ public final class String implements (Int) => Char, Ordered[String], Comparable[
      * @param x the other String
      * @return true if this String is after or equal to the other String.
      */
-    public @Inline operator this >= (x:String): Boolean = this.compareTo(x) >= 0;
+    public @Inline operator this >= (x:X10String): Boolean = this.compareTo(x) >= 0;
 
     /**
      * A string concatenation operator.
@@ -705,7 +705,7 @@ public final class String implements (Int) => Char, Ordered[String], Comparable[
      * @param y the given entity
      * @return the resulting String
      */
-    public @Inline static operator[T] (x:String) + (y:T): String = x + String.valueOf(y);
+    public @Inline static operator[T] (x:X10String) + (y:T): X10String = x + X10String.valueOf(y);
 
     /**
      * A string concatenation operator.
@@ -715,7 +715,7 @@ public final class String implements (Int) => Char, Ordered[String], Comparable[
      * @param y the given String
      * @return the resulting String
      */
-    public @Inline static operator[T] (x:T) + (y:String): String = String.valueOf(x) + y;
+    public @Inline static operator[T] (x:T) + (y:X10String): X10String = X10String.valueOf(x) + y;
 
     /**
      * A string concatenation operator.
@@ -724,7 +724,7 @@ public final class String implements (Int) => Char, Ordered[String], Comparable[
      * @param y the second String
      * @return the resulting String
      */
-    public static operator (x:String) + (y:String): String {
+    public static operator (x:X10String) + (y:X10String): X10String {
         val xc = x.content;
         val xl = xc.length()-1;
         val yc = y.content;
@@ -737,8 +737,8 @@ public final class String implements (Int) => Char, Ordered[String], Comparable[
             r(xl+i) = yc(i);
         }
         r(xl+yl) = '\0';
-        return new String(r);
+        return new X10String(r);
     }
 }
 
-public type String(s:String) = String{self==s};
+public type X10String(s:X10String) = X10String{self==s};

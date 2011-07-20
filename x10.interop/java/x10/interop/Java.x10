@@ -15,8 +15,8 @@ public class Java {
     public static type float = x10.lang.Float;
     public static type double = x10.lang.Double;
     @NativeRep("java", "char", null, "null") public static struct char { }
-    // Java arrays
-    @NativeRep("java", "#T[]", null, "null") public static class array[+T](
+    // Java arrays (special)
+    @NativeRep("java", "#T[]", null, "null") public static class array[T](
         @Native("java", "(#this).length") length:Java.int
     ) extends java.lang.Object {
         @Native("java", "new #T[#d0]")

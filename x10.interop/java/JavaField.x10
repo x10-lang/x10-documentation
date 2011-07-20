@@ -5,7 +5,7 @@ public class JavaField {
         val o = new JavaField();
         finish {
             async {
-                Runtime.sleep(10);
+                System.sleep(10);
                 Console.OUT.println("Waiting");
                 o.f.lock();
                 Console.OUT.println("Done");
@@ -13,7 +13,7 @@ public class JavaField {
             }
             async {
                 o.f.lock();
-                Runtime.sleep(100);
+                System.sleep(100);
                 Console.OUT.println("Notifying");
                 o.f.unlock();
             }
