@@ -4,7 +4,7 @@ public class JavaListTest {
         java.util.ArrayList<String> l = new java.util.ArrayList<String>();
         l.add("abc");
         JavaListInX10.get_0_$_x10$lang$String_$$O(l); // will succeed
-        JavaListInX10.get_0_$_x10$lang$Object_$$O(l); // will throw FailedDynamicCheckException
+        JavaListInX10.get_0_$_x10$lang$Object_$$O(l); // will throw FailedDynamicCheckException (*1)
     }
 }
 
@@ -39,20 +39,20 @@ public class JavaListInX10 extends x10.core.Ref {
         return ((x10.util.ArrayList<x10.core.RefI>) l).getFirst$G();
     }
     public static java.lang.String get_0_$_x10$lang$String_$$O(final java.util.ArrayList/*<java.lang.Object>*/ l) {
-        //return ((java.util.ArrayList<java.lang.String>) l).get(0); // this may cause ClassCastException
-        java.lang.Object o = l.get(0);
-        if (!x10.rtt.Types.instanceOf(o, x10.rtt.Types.STRING)) {
+        //return ((java.util.ArrayList<java.lang.String>) l).get(0); // for simple instanceof test, java cast should be enough (may cause ClassCastException) (*2)
+        java.lang.Object v = l.get(0);
+        if (v != null && !x10.rtt.Types.instanceOf(v, x10.rtt.Types.STRING)) {
             throw new x10.lang.FailedDynamicCheckException();
         }
-        return ((java.lang.String) o);
+        return ((java.lang.String) v);
     }
     public static x10.core.RefI get_0_$_x10$lang$Object_$$O(final java.util.ArrayList/*<java.lang.Object>*/ l) {
-        //return ((java.util.ArrayList<x10.core.RefI>) l).get(0); // this may cause ClassCastException
-        java.lang.Object o = l.get(0);
-        if (!x10.rtt.Types.instanceOf(o, x10.rtt.Types.OBJECT)) {
+        //return ((java.util.ArrayList<x10.core.RefI>) l).get(0); // for simple instanceof test, java cast should be enough (may cause ClassCastException) (*2)
+        java.lang.Object v = l.get(0);
+        if (v != null && !x10.rtt.Types.instanceOf(v, x10.rtt.Types.OBJECT)) {
             throw new x10.lang.FailedDynamicCheckException();
         }
-        return ((x10.core.RefI) o);
+        return ((x10.core.RefI) v);
     }
 
     public static void main(final x10.array.Array<java.lang.String> args) {
