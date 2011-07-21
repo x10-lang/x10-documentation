@@ -14,11 +14,11 @@ public class Java {
     public static type long = x10.lang.Long;
     public static type float = x10.lang.Float;
     public static type double = x10.lang.Double;
-    @NativeRep("java", "char", null, "null") public static struct char { }
+    public static type char = x10.lang.Char;
     // Java arrays (special)
     @NativeRep("java", "#T[]", null, "null") public static class array[T](
         @Native("java", "(#this).length") length:Java.int
-    ) extends java.lang.Object {
+    ) {
         @Native("java", "new #T[#d0]")
         public native def this(d0:Java.int):array[T]{self.length==d0};
         @Native("java", "(#this)[#i]")
@@ -26,14 +26,14 @@ public class Java {
         @Native("java", "(#this)[#i] = #v")
         public native operator this(i:Java.int) = (v:T):T;
     }
-    @Native("java", "new #T[#d0]")
+    @Native("java", "(#T[])#T$rtt.makeArray(#d0)")
     public static native def newArray[T](d0:Java.int):array[T]{self.length==d0};
-    @Native("java", "new #T[#d0][#d1]")
-    public static native def newArray[T](d0:Java.int, d1:Java.int):array[array[T]{self.length==d1}]{self.length==d0};
-    @Native("java", "new #T[#d0][#d1][#d2]")
-    public static native def newArray[T](d0:Java.int, d1:Java.int, d2:Java.int):array[array[array[T]{self.length==d2}]{self.length==d1}]{self.length==d0};
-    @Native("java", "new #T[#d0][#d1][#d2][#d3]")
-    public static native def newArray[T](d0:Java.int, d1:Java.int, d2:Java.int, d3:Java.int):array[array[array[array[T]{self.length==d3}]{self.length==d2}]{self.length==d1}]{self.length==d0};
+    //@Native("java", "(#T[][])#T$rtt.makeArray(#d0,#d1)")
+    //public static native def newArray[T](d0:Java.int, d1:Java.int):array[array[T]{self.length==d1}]{self.length==d0};
+    //@Native("java", "(#T[][][])#T$rtt.makeArray(#d0,#d1,#d2)")
+    //public static native def newArray[T](d0:Java.int, d1:Java.int, d2:Java.int):array[array[array[T]{self.length==d2}]{self.length==d1}]{self.length==d0};
+    //@Native("java", "(#T[][][][])#T$rtt.makeArray(#d0,#d1,#d2,#d3)")
+    //public static native def newArray[T](d0:Java.int, d1:Java.int, d2:Java.int, d3:Java.int):array[array[array[array[T]{self.length==d3}]{self.length==d2}]{self.length==d1}]{self.length==d0};
     // Java conversions (primitive)
     public static def convert(b:x10.lang.Boolean):Java.boolean = b; // no-op
     //public static def convert(b:Java.boolean):x10.lang.Boolean = b; // no-op
@@ -49,18 +49,16 @@ public class Java {
     //public static def convert(f:Java.float):x10.lang.Float = f; // no-op
     public static def convert(d:x10.lang.Double):Java.double = d; // no-op
     //public static def convert(d:Java.double):x10.lang.Double = d; // no-op
-    @Native("java", "#c")
-    public static native def convert(c:x10.lang.Char):Java.char;
-    @Native("java", "#c")
-    public static native def convert(c:Java.char):x10.lang.Char;
+    public static def convert(c:x10.lang.Char):Java.char = c; // no-op
+    //public static def convert(c:Java.char):x10.lang.Char = c; // no-op
     // Java conversions (String)
     @Native("java", "#s")
-    public static native def convert(s:x10.lang.String):java.lang.String;
-    @Native("java", "#s")
-    public static native def convert(s:java.lang.String):x10.lang.String;
+    public static native def convert(s:x10.lang.String):java.lang.String; // no-op
+    //@Native("java", "#s")
+    //public static native def convert(s:java.lang.String):x10.lang.String; // no-op
     // Java conversions (array)
     @Native("java", "(#T[])#a.raw.getBackingArray()")
     public static native def convert[T](a:x10.array.Array[T]):Java.array[T];
-    @Native("java", "x10.core.interop.Java.toX10Array(#T$rtt, #a);")
-    public static native def convert[T](a:Java.array[T]):x10.array.Array[T];
+    //@Native("java", "x10.core.interop.Java.toX10Array(#T$rtt, #a);")
+    //public static native def convert[T](a:Java.array[T]):x10.array.Array[T];
 }
