@@ -1,0 +1,30 @@
+// A.java,B.java,C.java
+class A {}
+class B {}
+class C {
+    public static A m(Object o) { ... }
+    public static B m(int i) { ... }
+}
+
+// A,B,C (exposed in X10)
+class A {}
+class B {}
+class C {
+    public static def m(o:Any):A;
+    public static def m(i:Int):B;
+}
+
+// Main.x10
+class Main {
+    public static def main(Array[String]) {
+        //val v:A = C.m(3y);  // if C is X10 type
+        val v:B = C.m(3y);  // if C is Java type
+    }
+}
+// Generated code (Main.java)
+public class Main extends x10.core.Ref {
+    public static void main(final x10.array.Array<java.lang.String> args) {
+        //final A v = C.m(x10.core.Byte.$box(3));  // if C is X10 type
+        final B v = C.m((int)3);                 // if C is Java type
+    }
+}
