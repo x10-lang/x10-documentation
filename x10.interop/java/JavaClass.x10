@@ -6,7 +6,7 @@ public class JavaClass {
             private var cnt:Int = 0;
             public def hasNext():Boolean = cnt < sz;
             public def next():Any = new java.lang.Integer(cnt++);
-            public def remove():void { throw new java.lang.UnsupportedOperationException(); }
+            public def remove():void { Java.throwException(new java.lang.UnsupportedOperationException()); }
         };
     }
     public static def main(Array[String]) {
