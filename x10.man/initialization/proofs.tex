@@ -1,6 +1,6 @@
-A closed statement is reduced to a closed expression.
+A closed statement is reduced to a closed statement.
 \begin{lemma}
-\label{Lemma:closed}
+\label{Lemma:closed} \textbf{(Closed statement)}
 If $\vdash \hS$ and $\hS,H \reducesto \hS',H'$ then $\vdash \hS'$.
 \end{lemma}
 \begin{proof}
@@ -23,7 +23,7 @@ The method body can only refer to the free variables~$\ol{\hx}$ and~$\this$,
 
 Monotonicity of cooked heaps: during the process of reduction, the heap stays correctly-cooked and it becomes more cooked.
 \begin{lemma}
-\label{Lemma:correctly-cooked}
+\label{Lemma:correctly-cooked} \textbf{(Correctly-cooked heaps)}
 If $\vdash H$ and (i)~$\hS,H \reducesto \hS',H'$ or~(ii)~$\hS,H \reducesto H'$, then $\vdash H'$ and~$H' \vdash H$.
 \end{lemma}
 \begin{proof}
@@ -50,8 +50,8 @@ Thus~$H' \vdash H$.
 
 
 
-Properties of plus.
-\begin{lemma}
+
+\begin{lemma}  \textbf{(Properties of plus and minus)}
 \label{Lemma:plus}
 For all $\phi$,
     (i)~$+\pm\phi=+\phi$,
@@ -63,8 +63,7 @@ Routine.
 
 
 
-Properties of the logic system.
-\begin{lemma}
+\begin{lemma}   \textbf{(Properties of the logic system)}
 \label{Lemma:logic}
 Let $\phi \vdash \psi$.
 Then
@@ -78,8 +77,7 @@ Routine.
 
 
 
-Properties of heaps and formulas:
-\begin{lemma}
+\begin{lemma}   \textbf{(Properties of heaps and formulas)}
 \label{Lemma:heaps}
 For all heaps~$H$,
 (i)~$H \vdash -\phi$,
@@ -100,10 +98,10 @@ if we substitute \hx with $\hl'$, written as~$\hS[\hl'/\hx]$, the result is \[
 \hl'.\hf=\hl;\hval{\hx}{\hnew{\hC}}{\hx.\hf=\hl}
 \]
 
-Substitution lemma.
-\begin{lemma}
+
+\begin{lemma}  \textbf{(Substitution lemma)}
 \label{Lemma:substitution}
-Given a heap $H$, a location~\hl whose type is $\hC$ ($H(\hl)=\hC(F)$), a variable \hx whose type is $\hD$, a statement \hS,
+Given a heap $H$, a location~\hl whose type is $\hC$, a variable \hx whose type is $\hD$, a statement \hS,
     and \[
     \vdash H \gap \hC \st \hD \gap \phi~\hS~\psi
     \] then~$\phi[\hl/\hx]~\hS[\hl/\hx]~\psi[\hl/\hx]$.
@@ -115,8 +113,8 @@ The only sensitive point is that the type of~\hl is a subtype \hx, and therefore
 \end{proof}
 
 
-Preservation for terminal configurations.
-\begin{lemma}
+
+\begin{lemma}  \textbf{(Preservation for terminal configurations)}
 \label{Lemma:Preservation1}
 Let $\acute{\phi}~\acute{\hS}~\acute{\psi}$, $\vdash \acute{\hS}$, $\vdash H$, $H \vdash \acute{\phi}$, and $\acute{\hS},H \reducesto H'$.
 Then $H' \vdash +\acute{\psi}$.
@@ -128,6 +126,7 @@ Only two rules result with a terminal configuration:
     and \RULE{R-Assign}.
 
 
+$\bullet$
 In \RULE{R-Term} for \hfinish we have:
 \beq{pre1}
     \acute{\hS}=\finish{\hS} \gap \hS,H \reduce H'
@@ -138,17 +137,21 @@ From~$\acute{\phi}~\acute{\hS}~\acute{\psi}$ and \RULE{T-Finish}
 \eeq
 Because $\hS,H \reduce H'$ and~$\phi~\hS~\psi$ (from \eq{pre2}), by induction we have
 \beq{pre3}
-    H' \vdash +\phi
+    H' \vdash +\psi
 \eeq
 Because~$\acute{\psi}=+\psi$ and $++\psi=+\psi$ (\Ref{Lemma}{plus}), from~\eq{pre3}, we conclude~$H' \vdash +\acute{\psi}$.
 
+$\bullet$
 In \RULE{R-Term} for \hasync we do the same proof but use the fact that~$+-\psi=+\psi$ (\Ref{Lemma}{plus}).
 
+$\bullet$
 In \RULE{R-Assign} we have:
 \beqs{pre4}
-    \acute{\hS}=\hl.\hf=\hl' \gap H(\hl)=\hC(F) \gap \cooked_H(\hl')
-    \\ H'=H[ \hl \mapsto \hC(F[ \hf \mapsto \hl'])]
+    &\acute{\hS}=\hl.\hf=\hl' \gap H(\hl)=\hC(F) \gap \cooked_H(\hl')
+    \\
+    &H'=H[ \hl \mapsto \hC(F[ \hf \mapsto \hl'])]
 \eeq
+Thus,~$H' \vdash +\hl.\hf$.
 From~$\acute{\phi}~\acute{\hS}~\acute{\psi}$ and \RULE{T-Assign}
 \beq{pre5}
     \acute{\phi}=\phi
@@ -159,12 +162,12 @@ From~$\acute{\phi}~\acute{\hS}~\acute{\psi}$ and \RULE{T-Assign}
     \gap
     \phi \vdash +\hl'
 \eeq
-From~\eq{pre4} and~\eq{pre5}, we conclude~$H' \vdash +\acute{\psi}$.
+From~\eq{pre4} and~\eq{pre5}, we conclude~$H' \vdash \acute{\psi}$.
+Because~$+\acute{\psi}=\acute{\psi}$ we also have~$H' \vdash +\acute{\psi}$.
 \end{proof}
 
 
-Preservation for non-terminal configurations.
-\begin{lemma}
+\begin{lemma}  \textbf{(Preservation for non-terminal configurations)}
 \label{Lemma:Preservation2}
 Let
 \beq{np}
@@ -193,6 +196,7 @@ H' \vdash \grave{\phi}
 \begin{proof}
 By structural induction on~$\acute{\hS}$.
 
+$\bullet$
 For \RULE{R-Term} for sequences we have
 \beq{np1}
  \acute{\hS} = \hS~\hS' \gap
@@ -213,7 +217,8 @@ From~\eq{np1} and~\eq{np2}, by \Ref{Lemma}{Preservation1}
 \beq{np3}
     H'\vdash +\psi_1.
 \eeq
-Let~$\grave{\phi}=\phi,\psi_1$, then from~\eq{np2}
+Let~$\grave{\phi}=\phi,\psi_1$ and~$\grave{\psi}=\acute{\psi}$.
+Then from~\eq{np2}
 \beq{np4}
     \grave{\phi}~\grave{\hS}~\psi_2
 \eeq
@@ -222,8 +227,11 @@ Because~$\grave{\phi}=\phi,\psi_1$ then~$\grave{\phi} \vdash \psi_1$, and becaus
     \grave{\phi}~\grave{\hS}~\grave{\psi}
 \eeq
 Trivially,
-\beq{np5}
-    \phi,\psi_1 \vdash \phi
+\beqs{np5}
+    &\phi,\psi_1 \vdash \phi
+    \gap
+    \grave{\psi} = \acute{\psi} \\
+    &\grave{\phi} \vdash \acute{\phi}
     \gap
     \grave{\psi} \vdash \acute{\psi}
 \eeq
@@ -232,9 +240,11 @@ From~\eq{np3} and \Ref{Lemma}{heaps},
     H'\vdash \psi_1
 \eeq
 Because~$H' \vdash H$ (\Ref{Lemma}{correctly-cooked}) and~$H \vdash\phi$, then from \Ref{Lemma}{heaps}~$H' \vdash\phi$.
-Together,~$H' \vdash \phi,\psi_1$ and~$\grave{\phi}=\phi,\psi_1$.
+Together,~$H' \vdash \phi,\psi_1$.
+Because~$\grave{\phi}=\phi,\psi_1$, we got~$H' \vdash \grave{\phi}$.
 
 
+$\bullet$
 For \RULE{R-Step} for \hfinish, we have
 \beq{np6}
  \acute{\hS} = \finish{\hS} \gap
@@ -275,9 +285,11 @@ Let~$\grave{\phi}=\phi'$ and~$\grave{\psi}=+\psi'$, then from~\eq{np8} and
     H' \vdash \phi'
 \eeq
 
+$\bullet$
 The proof for the first \RULE{R-Step} for \hasync is like that of \hfinish above (but instead we use the fact that
     if~$\psi' \vdash \psi$ then~$-\psi' \vdash -\psi$ in \Ref{Lemma}{logic}).
 
+$\bullet$
 For the second \hasync \RULE{R-Step}, we have
 \beq{np11}
  \acute{\hS} = \async{\hS_1}~\hS \gap
@@ -320,6 +332,7 @@ From~\eq{np14} and \RULE{T-Seq}
 Let~$\grave{\phi}=\phi'$ and~$\grave{\psi}=\psi_1,\psi'$, then
 \beq{np16}
     \grave{\phi}~\async{\hS_1}~\hS'~\grave{\psi}
+    \gap
     \phi' \vdash \phi
     \gap
     \psi_1,\psi' \vdash \psi_1,\psi_2
@@ -329,6 +342,7 @@ Let~$\grave{\phi}=\phi'$ and~$\grave{\psi}=\psi_1,\psi'$, then
 
 
 
+$\bullet$
 For \RULE{R-Step} for sequences, we have
 \beq{np26}
  \acute{\hS} =\hS~\hS_1 \gap
@@ -356,14 +370,16 @@ From~\eq{np26} and~\eq{np27}, by induction ($\hS,H \reduce \hS', H'$ and~$H \vda
     \gap
   H' \vdash \phi'
 \eeq
-Thus, from~\eq{np27} and~\eq{np28},
+Thus, from~\eq{np28}, we have
+\beq{np28a}
+\phi',\psi'_1 \vdash \phi,\psi_1
+\eeq
+From~\eq{np27} and~\eq{np28a},
 \beq{np28b}
-  \phi'~\hS'~\psi'_1
-    \gap
   \phi',\psi'_1~\hS_1~\psi_2
 \eeq
 \eeq
-From \RULE{T-Seq} and \eq{np28b},
+From \RULE{T-Seq},~\eq{np28} ($\phi'~\hS'~\psi'_1$) and \eq{np28b},
 \beq{np29}
   \phi'~\hS'~\hS_1~\psi'_1,\psi_2
 \eeq
@@ -379,6 +395,7 @@ Let~$\grave{\phi}=\phi'$ and~$\grave{\psi}=\psi'_1,\psi_2$, then from~\eq{np28} 
     H' \vdash \phi'
 \eeq
 
+$\bullet$
 For \RULE{R-Val},
 \beq{np36}
  \acute{\hS} =\hval{\hx}{\he}{\hS} \gap
@@ -400,8 +417,9 @@ Because~$\acute{\phi}~\hval{\hx}{\hnew{\hC}}{\hS}~\acute{\psi}$, from \RULE{T-Ne
   \phi~\hS~\psi
 \eeq
 Because~$H$ contains only locations~\hl (not variables~\hx), and~$H \vdash \phi$,
-    then~$\phi[\hl/\hx]=\phi$ and~$\psi[\hl/\hx]=\psi$.
-From \Ref{Lemma}{substitution} and~\eq{np37}, we have
+    then~$\phi$ and~$\psi$ cannot contain variables~\hx, thus
+    $\phi[\hl/\hx]=\phi$ and~$\psi[\hl/\hx]=\psi$.
+From \Ref{Lemma}{substitution} (because $H$ and \hS are well-typed, so the type of~\hl is a subtype of~\hx) and~\eq{np37}, we have
 \beq{np38}
   \phi~\hS[\hl/\hx]~\psi
 \eeq
@@ -449,21 +467,22 @@ We choose~$\grave{\phi}=\phi,+\hl$ and~$\grave{\psi}=\psi$, thus from~\eq{np43} 
   \grave{\phi}~\grave{\hS}~\grave{\psi}
 \eeq
 
+$\bullet$
 For \RULE{R-Invoke},
 \beqs{np56}
- \acute{\hS} =\hl'.\hm(\ol{\hl}) \gap
+ &\acute{\hS} =\hl'.\hm(\ol{\hl}) \gap
  \grave{\hS}=\hS[\ol{\hl}/\ol{\hx},\hl'/\hthis] \\
- H(\hl')=\hC(\ldots) \gap
+ &H(\hl')=\hC(\ldots) \gap
  \mbody{}(\hm,\hC)=\ol{\hx}.\hS \gap
  H'=H
 \eeq
 Because~$\acute{\phi}~\acute{\hS}~\acute{\psi}$, from \RULE{T-Invoke},
-\beq{np57}
-  \acute{\phi}=\phi
+\beqs{np57}
+  & \acute{\phi}=\phi
     \gap
   \acute{\psi}=\psi'[\hl'/\hthis,\ol{\hl}/\ol{\hx}]
-    \gap
-  \hm(\ol{\hx}):: \phi' \Rightarrow \psi'
+    \\
+  & \hm(\ol{\hx}):: \phi' \Rightarrow \psi'
     \gap
   \phi \vdash \phi'[\hl'/\hthis,\ol{\hl}/\ol{\hx}]
 \eeq
@@ -471,11 +490,15 @@ From the definition of~$\hm(\ol{\hx}):: \phi' \Rightarrow \psi'$ we have that
 \beq{np58}
     \phi'~\hS~\psi'
 \eeq
-From \Ref{Lemma}{substitution} and~\eq{np58}, we have
+From \Ref{Lemma}{substitution} (because $H$ and $\acute{\hS}$ are well-typed,
+    so the type of~$\ol{\hl}$ is a subtype of~$\ol{\hx}$,
+    and the type of $\hl'$ is  a subtype of~\this)
+    and~\eq{np58}, we have
 \beq{np59}
-    \phi'[\hl'/\hthis,\ol{\hl}/\ol{\hx}]~\hS~\psi'[\hl'/\hthis,\ol{\hl}/\ol{\hx}]
+    \phi'[\hl'/\hthis,\ol{\hl}/\ol{\hx}]~~\hS[\hl'/\hthis,\ol{\hl}/\ol{\hx}]~~\psi'[\hl'/\hthis,\ol{\hl}/\ol{\hx}]
 \eeq
-We choose~$\grave{\phi}=\acute{\phi}=\phi$ and~$\grave{\psi}=\acute{\psi}$, thus from~\eq{np56},~\eq{np57} and~\eq{np59},
+We choose~$\grave{\phi}=\acute{\phi}=\phi$ and~$\grave{\psi}=\acute{\psi}=\psi'[\hl'/\hthis,\ol{\hl}/\ol{\hx}]$,
+    thus from~\eq{np56},~\eq{np57} and~\eq{np59},
 \beq{np60}
   H' \vdash \grave{\phi} \gap
   \grave{\phi} \vdash \acute{\phi}  \gap
@@ -483,37 +506,56 @@ We choose~$\grave{\phi}=\acute{\phi}=\phi$ and~$\grave{\psi}=\acute{\psi}$, thus
   \grave{\phi}~\grave{\hS}~\grave{\psi}
 \eeq
 
+$\bullet$
 (Note that \RULE{R-Assign} was handled in \Ref{Lemma}{Preservation1}.)
 \end{proof}
 
 
 
-\begin{Theorem}{\textbf{Preservation}}
+\begin{Theorem}{ \textbf{(Preservation)}}
 \label{Theorem:Preservation}
-Let $\phi~\hS~\psi$, $\vdash \hS$, $\vdash H$, $H \vdash \phi$.
-(a) If $\hS,H \reducesto H'$ then $\vdash H'$, $H' \vdash H$, $H' \vdash +\psi$.
-(b) If $\hS,H \reducesto \hS',H'$ then $\vdash \hS'$, $\vdash H'$, $H' \vdash H$,
+Let \[
+\phi~\hS~\psi \gap \vdash \hS \gap \vdash H \gap H \vdash \phi
+\]
+(a) If $\hS,H \reducesto H'$ then \[
+\vdash H' \gap H' \vdash H \gap H' \vdash +\psi
+\]
+(b) If $\hS,H \reducesto \hS',H'$ then \[
+\vdash \hS' \gap \vdash H' \gap H' \vdash H
+\] and
 there exists $\phi',\psi'$ such
-that $H' \vdash \phi'$, $\phi'~\hS'~\psi'$, $\phi' \vdash \phi$, $\psi' \vdash \psi$.
+that \[
+H' \vdash \phi' \gap \phi'~\hS'~\psi' \gap \phi' \vdash \phi \gap \psi' \vdash \psi
+\]
 \end{Theorem}
 \begin{proof}
 Follows from \Ref{Lemma}{closed},  \Ref{Lemma}{correctly-cooked}, \Ref{Lemma}{Preservation1},
     and \Ref{Lemma}{Preservation2}.
 \end{proof}
 
-Progress: a proper non-terminal configuration can always be reduced.
-\begin{Theorem}{\textbf{Progress}}
-Let $\acute{\phi}~\acute{\hS}~\acute{\psi}$, $\vdash \acute{\hS}$, $\vdash H$, $H \vdash \acute{\phi}$.
+Progress means that a proper non-terminal configuration can always be reduced.
+\begin{Theorem}{ \textbf{(Progress)}}
+Let \[
+\acute{\phi}~\acute{\hS}~\acute{\psi} \gap \vdash \acute{\hS} \gap \vdash H \gap H \vdash \acute{\phi}
+\]
 Then there exists $\grave{\hS},H'$ such
     that either $\acute{\hS},H \reducesto H'$ or $\acute{\hS},H \reducesto \grave{\hS},H'$.
 \end{Theorem}
 \begin{proof}
 By structural induction on~$\acute{\hS}$.
-According to the syntax,~$\acute{\hS}$ is one of the following: \[
-\hS ::=  \hp.\hf = \hp; ~|~ \hp.\hm(\ol{\hp});  ~|~ \hval{\hx}{\he}{\hS} ~|~ \finish{\hS}~|~ \async{\hS} ~|~ \hS~\hS
-\]
+According to the syntax,~$\acute{\hS}$ is one of the following:
+\beqst
+\hS &::=  \hp.\hf = \hp; ~|~ \hp.\hm(\ol{\hp});  ~|~ \hval{\hx}{\he}{\hS} ~|~ \finish{\hS}~|~ \async{\hS} ~|~ \hS~\hS\\
+\he &::=  \hp.\hf  ~|~ \hnew{\hC}\\
+\eeq
+Because~$\vdash \acute{\hS}$ we know that \hp cannot be a variable (only a location in~$H$), so
+\beqst
+\hS &::=  \hl.\hf = \hl; ~|~ \hl.\hm(\ol{\hl});  ~|~ \hval{\hx}{\he}{\hS} ~|~ \finish{\hS}~|~ \async{\hS} ~|~ \hS~\hS\\
+\he &::=  \hl.\hf  ~|~ \hnew{\hC}\\
+\eeq
 We will show that for each of these possibilities, there is a matching reduction rule that can be applied.
 
+$\bullet$
 If~$\acute{\hS} = \finish{\hS}$, then because~$\acute{\phi}~\acute{\hS}~\acute{\psi}$, we have from \RULE{T-Finish},
 \beq{p1}
 \phi~\hS~\psi \gap
@@ -525,8 +567,10 @@ Therefore, by induction, there exists $\hS',H'$ such
 Therefore, we can either apply \RULE{R-Term} or \RULE{R-Step} on $\acute{\hS}$,
     i.e., either $\acute{\hS},H \reducesto H'$ or $\acute{\hS},H \reducesto \finish{\hS'},H'$.
 
+$\bullet$
 If~$\acute{\hS} = \async{\hS}$, then the same proof as above holds (except changing $+$ to $-$).
 
+$\bullet$
 If~$\acute{\hS} = \hS_1 \hS_2$, then because~$\acute{\phi}~\acute{\hS}~\acute{\psi}$, we have from \RULE{T-Seq},
 \beq{p2}
   \phi~\hS_1~\psi_1
@@ -540,12 +584,11 @@ By induction, there exists $\hS'_1,H'$ such
 Therefore, we can either apply \RULE{R-Term} or \RULE{R-Step} on $\acute{\hS}$,
     i.e., either $\acute{\hS},H \reducesto \hS_2,H'$ or $\acute{\hS},H \reducesto \hS'_1~\hS_2,H'$.
 
-If~$\acute{\hS} = \hp'.\hm(\ol{\hp});$ then because~$\vdash \acute{\hS}$ we know that \hp cannot be a variable (only a location in~$H$),
-    so~$\acute{\hS} = \hl'.\hm(\ol{\hl})$.
-Thus, we can apply \RULE{R-Invoke}.
+$\bullet$
+If~$\acute{\hS} = \hl'.\hm(\ol{\hl})$, then we can simply apply \RULE{R-Invoke}.
 
-If~$\acute{\hS} = \hp.\hf = \hp;$ then for similar reasons, we have~$\acute{\hS} = \hl.\hf=\hl'$.
-Because~$\acute{\phi}~\acute{\hS}~\acute{\psi}$, we have from \RULE{T-Assign}, that \[
+$\bullet$
+If~$\acute{\hS} = \hl.\hf=\hl'$, then because~$\acute{\phi}~\acute{\hS}~\acute{\psi}$, we have from \RULE{T-Assign}, that \[
 \acute{\phi} \vdash +\hl'
 \]
 And because~$H \vdash \acute{\phi}$ we have that~$\cooked_H(\hl')$.
@@ -554,14 +597,12 @@ Thus we can apply \RULE{R-Assign}, i.e., \[
     \acute{\hS},H \reducesto H[ \hl \mapsto \hC(F[ \hf \mapsto \hl'])]
 \]
 
-Finally, if~$\acute{\hS} = \hval{\hx}{\he}{\hS}$, then according to the syntax \[
-\he ::=  \hp.\hf  ~|~ \hnew{\hC}
-\]
+$\bullet$
+Finally,~$\acute{\hS} = \hval{\hx}{\he}{\hS}$.
 If $\he = \hnew{\hC}$ then by \RULE{R-New}, we have \[
     \he,H \reduce \hl',H[ \hl' \mapsto \hC()]
 \]
-If $\he = \hp.\hf$ then because~$\vdash \acute{\hS}$ we know that \hp is some location~\hl.
-Because~$\acute{\phi}~\acute{\hS}~\acute{\psi}$, we have from \RULE{T-Access}, \[
+If $\he = \hl.\hf$, then because~$\acute{\phi}~\acute{\hS}~\acute{\psi}$, we have from \RULE{T-Access}, \[
     \acute{\phi} \vdash +\hl.\hf
 \]
 And because~$H \vdash \acute{\phi}$, we have that \hl has the field~\hf in the heap, i.e., \[
