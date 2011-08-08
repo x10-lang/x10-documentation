@@ -1315,12 +1315,7 @@ conjoined constraints: \xcd`S{c,d}` in turn is the same as \xcd`S{c && d}`.
 \index{expression!allowed in constraint}
 \index{expression!constraint}
 
-\forvijay{You wrote ``self vs. this in super type, interfaces, class
-invariant''.  I think we decided that self could appear there and this
-couldn't, and we'd write a polite error message explaining that?  Since the
-restriction on it in those places is the same as the restriction on self.  
-If you confirm this (or deny it), I'll write a JIRA about it.
-}
+
 
 Only a few kinds of expressions can appear in constraints.  For fundamental
 reasons of mathematical logic, the more kinds of expressions that can appear
@@ -1340,7 +1335,9 @@ Only the following forms of expression are allowed in constraints.
 \item Accessible, immutable (\xcd`val`) variables and parameters;
 % \item Accessible and immutable fields of objects;
 % \item Properties of the type being constrained;
-\item \xcd`this`, if the constraint is at a point in the program where \xcd`this` is defined;
+\item \xcd`this`, if the constraint is at a point in the program where
+      \xcd`this` is defined, but not in \xcd`extends` or \xcd`implements`
+      clauses or class invariants;
 \item \xcd`here`, if the constraint is at a point in the program where \xcd`here` is defined;
 \item \xcd`self`;
 \item A field selection expression \xcd`t.f`, where \xcd`t` is a value
@@ -1378,14 +1375,73 @@ all value expressions are of the forms which may appear in constraints:
 \item Testing a type for a default: \Xcd{T haszero}.
 \end{enumerate}
 
-\forvijay{You wrote ``not true'' by this.  What, then, is true?}
-All variables appearing in a constraint expression must be visible wherever
-that expression can used.  \Eg, properties and public fields of an object are
-always permitted, but private fields of an object can only constrain private
-members.  (Consider a class \xcd`PriVio` with a private field \xcd`p` and a
-public method \xcd`m(x: Int{self != p})`, and a call \xcd`ob.m(10)` made
-outside of the class. Since \xcd`p` is only visible inside the class, there is
-no way to tell if \xcd`10` is of type \xcd`Int{self != p}` at the call site.)
+
+Note that constraints on methods may include private, protected, or
+package-protected  fields.  It is
+possible to have a method whose guard cannot be directly checked, or even
+whose result type cannot be expressed as a clause in the program, at some call
+sites.  
+Nonetheless, X10 uses a broader {\em internal} type representation, not
+limited by access rules, and can work with fields in types even though those
+fields cannot be used in executable code. 
+
+\begin{ex}
+This phenomenon can be used to implement a form of compile-type capability
+checking. We give a minimal example, providing only security by obscurity: 
+users unaware that the \xcd`key` method returns the required key will be
+unable to use the \xcd`secret` method.  This approach can be strengthened to
+provide better security.
+
+The class \xcd`Keyed` has a private field \xcd`k`.  The method \xcd`secret(q)`
+can only be called when \xcd`q==k`. In a larger example, \xcd`secret` could be
+some priveleged behavior or secret, available only to callers with proper
+authority.
+
+At the call site in \xcd`Snooper`, \xcd`keyed.secret()` is called.
+It can't be called as \xcd`keyed.secret(keyed.k)`, because \xcd`k` is a private
+field.
+It can't be called as \xcd`keyed.secret(8)`, even though \xcd`keyed.k==8`,
+because there
+is no proof available that \xcd`keyed.k==8` --- indeed, at this point in the
+code, the requirement that \xcd`keyed.k==8` cannot even be expressed in X10.
+
+However,  the value of \xcd`keyed.k` can be retrieved, using
+\xcd`keyed.key()`.   
+The type of \xcd`kk` cannot be expressed in \xcd`Snooper`, because it refers to
+a private field of \xcd`keyed`.  However, the compiler's internal
+representation is not bound by the rules of privacy, and can track the fact
+that \xcd`kk` is the same as \xcd`keyed.k`.  So, the call \xcd`keyed.secret(kk)`
+succeeds.
+%~~gen ^^^ Types6s1l
+% package Types6s1l;
+%~~vis
+\begin{xten}
+class Keyed {
+  private val k : Int;
+  public def this(k : Int) {
+    this.k = k; 
+  }
+  public def secret(q:Int){q==this.k} = 11;
+  public def key():Int{self==this.k} = this.k;
+}
+class Snooper {
+  public static def main(argv:Array[String](1)) {
+    val keyed : Keyed = new Keyed(8);
+    //ERROR: keyed.secret(keyed.k);
+    //ERROR: keyed.secret(8);
+    val kk = keyed.key();
+    keyed.secret(kk);
+  }
+}
+
+\end{xten}
+%~~siv
+%
+%~~neg
+
+
+\end{ex}
+
 
 {\bf Note:} Constraints may not contain casts.   In particular, comparisons of
 values of incompatible types are not allowed.  If \xcd`i:Int`, then \xcd`i==0`
@@ -1558,8 +1614,26 @@ entails \xcd`false` if \xcd`a`, \xcd`b`, and \xcd`c` are of type
 Similarly, although \xcd`a.b==1 && a.b==2` entails \xcd`a==null`, the
 constraint solver does not deduce this fact. 
 
-\forvijay{You wrote ``Need discussion of acyclicity''.  Could I have a bit
-more detail?}
+
+\subsection{Acyclicity of Properties}
+
+To ensure that typechecking is decidable, X10 requires that the graph whose
+nodes are types, with edges from types to the properties of those types, be
+{\em acyclic}. This is often stated as ``properties are acyclic.'' That is,
+given a container type \xcd`T`, \xcd`T` cannnot have a property of type
+\xcd`T`, nor a property which has a property of type \xcd`T`, nor a property
+which has a property with a property of type \xcd`T`, etc. 
+
+\begin{ex}
+The following is forbidden by the acyclicity requirement, as 
+\xcd`ERRORList[T]` would have a property, \xcd`tail`, which is also an
+\xcd`ERRORList[T]`. 
+\begin{xten}
+class ERRORList[T](head:T, tail: ERRORList[T]) {}
+\end{xten}
+\end{ex}
+
+Without this restriction, typechecking becomes undecidable.  
 
 %%NOW-GONE%% Certain other constraint entailments are prohibitively expensive to calculate.  The issues
 %%NOW-GONE%% concern constraints that connect different levels of recursively-defined

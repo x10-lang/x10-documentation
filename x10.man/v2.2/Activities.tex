@@ -653,6 +653,68 @@ class OneBuffer[T] {
 %~~neg
 \end{ex}
 
+\subsubsection{When  {\tt when} is Tested}
+\index{when!timing}
+
+Suppose that activity {$A$} is blocked waiting on \xcd`when(e)S`, because
+\xcd`e` is \xcd`false`.    If some other activity {$B$} changes the state 
+in an \xcd`atomic` section 
+in a
+way that makes \xcd`e` become \xcd`true`, then either: 
+\begin{itemize}
+\item {$A$} will eventually execute \xcd`S`, or
+\item Some activity {$C \ne A$} will cause \xcd`e` to become \xcd`false` again.
+\end{itemize}
+In particular, if no other activity ever falsifies \xcd`e`, then {$A$} will,
+eventually, discover that \xcd`e` evaluates to \xcd`true` and run \xcd`S`.
+
+Two caveats are worth noting: 
+\begin{itemize}
+\item X10 has no guarantees of fairness or liveness.
+\item X10 only makes guarantees about state changes {\em in atomic sections}
+      alerting \xcd`when`s.  State changes outside of atomic sections might
+      not cause {$A$} to re-evaluate \xcd`e`.  
+\end{itemize}
+
+\begin{ex}
+The method \xcd`good` below will always terminate.  In particular, if the
+\xcd`when` statement is allowed to run first and block on \xcd`c()`, the
+\xcd`atomic` will alert it that \xcd`c()` has changed. 
+
+The method \xcd`bad` has
+no such guarantee: it might terminate if the compiler and scheduler are in a
+generous mood, or the \xcd`when` might wait forever to be told that \xcd`c()`
+is now true.   Without an \xcd`atomic`, the \xcd`when` statement might not be
+notified about the change in \xcd`c()`.  
+%~~gen ^^^ Activities5m7u
+% package Activities5m7u;
+% class Example {
+%~~vis
+\begin{xten}
+static def good() {
+  val c = new Cell[Boolean](false);
+  async {
+    atomic {c() = true;}
+  }
+  when( c() ); 
+}
+static def bad() {
+  val c = new Cell[Boolean](false);
+  async {
+    c() = true;
+  }
+  when( c() ); 
+}
+\end{xten}
+%~~siv
+% }
+%~~neg
+
+
+\end{ex}
+
+
+
 \section{Use of Atomic Blocks}
 
 The semantics of atomicity is chosen as a compromise between programming

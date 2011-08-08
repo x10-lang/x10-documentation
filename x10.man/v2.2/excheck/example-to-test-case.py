@@ -629,6 +629,7 @@ os.system("rm -r " + gennedFileDir + "/*");
 os.system("rm -r " + testCaseDir + "/*");
 extractExamplesFromAllFiles()
 #print ("\n".join(files))
+os.system("ls")
 os.system("x10c -STATIC_CHECKS=true *.x10")
 
     

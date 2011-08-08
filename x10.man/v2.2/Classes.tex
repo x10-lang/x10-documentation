@@ -3025,7 +3025,8 @@ class Score {
 %~~neg
 
 All other sorts of instance fields do need to be initialized before they can
-be used.  \Xcd{val} fields must be initialized, even if their type has a
+be used.  \Xcd{val} fields must be initialized in the constructor, even if
+their type has a 
 default value.  It would be silly to have a field \Xcd{val z : Int} that was
 always given default value of \Xcd{0} and, since it is \Xcd{val}, can never be
 changed.  \Xcd{var} fields whose type has no default value must be initialized
