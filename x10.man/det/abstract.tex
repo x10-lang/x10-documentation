@@ -1,0 +1,49 @@
+Imperative memory locations are famously indeterminate under
+concurrent read/write operations. This means that it is very difficult
+to systematically design data-structures that are determinate and
+deadlock-free.
+
+There are two fundamental ways to ensure determinacy -- run-time
+checks and static types. 
+
+The former can lead to run-time overheads and the latter to brittle
+programs since it is very difficult to smoothly extend the rich type
+systems underlying modern imperative languages (supporting objects,
+inheritance, subtyping, genericity etc) to support determinacy. The
+fundamental problem is the possibility of aliasing in arbitrary
+unstructured heaps. This makes it very difficult to get a static
+handle on concurrent access to a shared location.
+
+In this paper we show that a middle path can be successful for a
+language based on structured concurrency, such as \Xten.  We introduce
+two new abstractions -- {\em accumulators} and {\em clocked values}
+with very modest compiler support. Accumulators of type \code{T}
+permit multiple concurrent writes, these are reduced into a single
+value by a user-specified reduction operator. Clocked values of type
+\code{T} operate on two values of \code{T} (the {\em current} and the
+     {\em next}). Read operations are performed on the current value
+     and write operations on the next. Such values are implicitly
+     associated with a clock \cite{vj-radha-x10} and the current and
+     next values are switched (determinately) on quiescence of the
+     clock. Clocked values capture the common ``double buffering'' or
+     ``red/black'' concurrency idiom.
+
+We show that these abstractions (by design) determinate and
+deadlock-free in any usage, though executions may throw exceptions
+under certain circumstances. We show that these data-structures are
+very natural to use and successfully capture many common patterns of
+expression that are semantically determinate (e.g. histograms,
+all-to-all reductions, stencil computations etc). We show that there
+are simple statically-checkable rules that can establish for many
+common idioms that concurrency-related exceptions will not be thrown
+at run-time, and that some potentially costly synchronization checks
+can be avoided.
+
+A key technical innovation is the introduction of an {\em implicit
+  ownership domain} for objects. This provides a way around the
+unstructured heap by permitting only the current activity and its
+spawned asyncs to access the objects. Now the block structure of
+\code{finish}, \code{async}, \code{at} and the clock construct of
+\Xten{} can be used to establish determinacy in a local way,
+independent of the context in which the code is being used. 
+

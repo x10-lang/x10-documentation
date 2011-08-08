@@ -1,0 +1,12 @@
+Dscussion of X10.
+
+\subsubsection{\code{sync}}
+
+We introduce a new derivative synchronization concept, that of syncing.
+
+We introduce \code{Runtime.sync()}. It returns only after all asyncs
+spawned by the current activity have terminated or stopped at an
+\code{advance} on a clock registered on the current activity.
+
+Programs using finish/async/at/atomic/clocks/Runtime.sync() cannot deadlock.
+

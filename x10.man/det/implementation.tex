@@ -1,0 +1,8 @@
+
+Registration of accumulators with activities needs to be implemented
+efficiently. This may require the implementation of an activity stack,
+with registration information being looked up lazily and cached,
+rather than pushed eagerly.  Also this information is clearly not
+needed in the  body of async's that can be statically analyzed to not
+contain accumulator operations.
+

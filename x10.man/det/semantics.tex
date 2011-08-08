@@ -1,0 +1,239 @@
+Featherweight X10 (FX10) is a formal calculus for X10 intended to  complement Featherweight Java
+(FJ).  It models imperative aspects of X10 including the concurrency
+constructs \hfinish{} and \hasync{}.
+
+
+\paragraph{Overview of formalism}
+\Subsection{Syntax}
+
+\begin{figure}[htpb!]
+\begin{center}
+\begin{tabular}{|l|l|}
+\hline
+
+$\hP ::= \ol{\hL},\hS$ & Program. \\
+
+$\hL ::= \hclass ~ \hC~\hextends~\hD~\lb~\ol{\hF};~\ol{\hM}~\rb$
+& cLass declaration. \\
+
+$\hF ::= \hvar\,\hf:\hC$
+& Field declaration. \\
+
+$\hM ::= \hG\ \hdef\ \hm(\ol{\hx}:\ol{\hC}):\hC\{\hS\}$
+& Method declaration. \\
+
+$\hG ::= \code{@NonEscaping} ~~|~~ \code{@NoThisAccess}$
+& Method modifier. \\
+
+$\hp ::= \hl ~~|~~ \hx$
+& Path. \\ %(location or parameter)
+
+$\he ::=  \hp.\hf  ~|~ \hnew{\hC}$
+& Expressions. \\ %: locations, parameters, field access\&assignment,  %invocation, \code{new}
+
+$\hS ::=  \hp.\hf = \hp; ~|~ \hp.\hm(\ol{\hp});  ~|~ \hval{\hx}{\he}{\hS}$ &\\
+$~~~~|~ \finish{\hS}~|~ \async{\hS} ~|~ \hS~\hS$
+& Statements. \\ %: locations, parameters, field access\&assignment, invocation, \code{new}
+
+\hline
+\end{tabular}
+\end{center}
+\caption{FX10 Syntax.
+    The terminals are locations (\hl), parameters and \hthis (\hx), field name (\hf), method name (\hm), class name (\hB,\hC,\hD,\hObject),
+        and keywords (\hhnew, \hfinish, \hasync, \code{val}).
+    The program source code cannot contain locations (\hl), because locations are only created during execution/reduction in \RULE{R-New} of \Ref{Figure}{reduction}.
+    }
+\label{Figure:syntax}
+\end{figure}
+
+\Ref{Figure}{syntax} shows the syntax of FX10.
+%(\Ref{Section}{val} will later add the \hval and \hvar field modifiers.)
+Expression~$\hval{\hx}{\he}{\hS}$ evaluates $\he$, assigns it to a
+new variable $\hx$, and then evaluates \hS. The scope of \hx{} is \hS.
+
+The syntax is similar to the real X10 syntax with the following difference:
+%Non-escaping methods are marked with \code{@NonEscaping}, such methods
+%can be invoked on raw objects (and can be used to initialize them).
+FX10 does not have constructors; instead, an object is initialized by assigning to its fields or
+    by calling
+    non-escaping methods.
+
+\Subsection{Reduction}
+A {\em heap}~$H$ is a mapping from a given set of locations to {\em
+  objects}. An object is a pair $C(F)$ where $C$ is a class (the exact
+class of the object), and $F$ is a partial map from the fields of $C$
+to locations.
+We say the object~\hl is {\em total/cooked} (written~$\cooked_H(\hl)$)
+    if its map is total, i.e.,~$H(\hl)=\hC(F) \gap \dom(F)=\fields(\hC)$.
+
+We say that a heap~$H$ {\em satisfies} $\phi$ (written~$H \vdash \phi$)
+    if the plus assertions in~$\phi$ (ignoring the minus assertions) are true in~$H$,
+    i.e., if~$\phi \vdash +\hl$ then~$\hl$ is cooked in~$H$
+    and if~$\phi \vdash +\hl.\hf$ then~$H(\hl)=\hC(F)$ and~$F(\hf)$ is cooked in~$H$.
+
+
+%An {\em annotation} $N$ for a heap $H$ maps each $l \in \dom(H)$ to a
+%possibly empty set of fields $a(H(l))$ of the class of $H(l)$ disjoint
+%from $\dom(H(l))$. (These are the fields currently being
+%asynchronously initialized.) The logic of initialization described
+%above is clearly sound for the obvious interpretation of formulas over
+%annotated heaps. For future reference, we say that that a heap $H$
+%{\em satisfies} $\phi$ if there is some annotation $N$ (and some
+%valuation $v$ assigning locations in $\dom(H)$ to free variables of
+%$\phi$) such that $\phi$ evaluates to true.
+
+The reduction relation is described in
+Figure~\ref{Figure:reduction}. An S-configuration is of the form
+$\hS,H$ where \hS{} is a statement and $H$ is a heap (representing a
+computation which is to execute $\hS$ in the heap $H$), or $H$
+(representing terminated computation). An
+E-configuration is of the form $\he,H$ and represents the
+computation which is to evaluate $\he$ in the configuration $H$. The
+set of {\em values} is the set of locations; hence E-configurations of
+the form $\hl,H$ are terminal.
+
+Two transition relations $\reduce{}$ are defined, one over S-configurations and
+the other over E-configurations.
+For $X$ a partial function, we use the notation $X[v \mapsto
+  e]$ to represent the partial function which is the same as $X$
+except that it maps $v$ to $e$.
+The rules defining these relations are
+standard.
+The only minor novelty is in how \hasync{} is defined. The
+critical rule is the last rule in~\RULE{(R-Step)}  -- it specifies the
+``asynchronous'' nature of \hasync{} by permitting \hS{} to make a step
+even if it is preceded by $\async{\hS_1}$.
+%
+The rule~\RULE{(R-New)} returns a new location that is bound to a new
+object that is an instance of \hC{} with none of its fields initialized.
+%
+The rule~\RULE{(R-Access)} ensures that the field is initialized before it is
+read ($\hf_i$ is contained in $\ol{\hf}$).
+
+\begin{figure*}[t]
+\begin{center}
+\begin{tabular}{|c|}
+\hline
+$\typerule{
+ \hS,H \reduce H'
+}{
+  \begin{array}{l}
+    \finish{\hS},H \reduce H'\\
+    \async{\hS},H \reduce H'\\
+    \hS~\hS', H \reduce \hS',H'\\
+  \end{array}
+}$~\RULE{(R-Term)}
+~
+$\typerule{
+ \hS,H \reduce \hS', H'
+}{
+  \begin{array}{l}
+    \finish{\hS},H \reduce \finish{\hS'},H'\\
+    \async{\hS},H \reduce \async{\hS'}, H'\\
+    \hS~\hS_1, H \reduce \hS'~\hS_1,H'\\
+    \async{\hS_1}~\hS, H \reduce \async{\hS_1}~\hS', H'\\
+  \end{array}
+}$~\RULE{(R-Step)}
+~
+$\typerule{
+  \he,H \reduce \hl,H'
+}{
+  \hval{\hx}{\he}{\hS},H \reduce \hS[\hl/\hx], H'
+}$~\RULE{(R-Val)}
+\\\\
+
+$\typerule{
+    \hl' \not \in \dom(H)
+}{
+  \hnew{\hC},H \reduce \hl',H[ \hl' \mapsto \hC()]
+}$~\RULE{(R-New)}
+\quad
+$\typerule{
+    H(\hl')=\hC(\ldots)
+        \gap
+    \mbody{}(\hm,\hC)=\ol{\hx}.\hS
+}{
+  \hl'.\hm(\ol{\hl}),H \reduce \hS[\ol{\hl}/\ol{\hx},\hl'/\hthis],H
+}$~\RULE{(R-Invoke)}
+\quad
+
+\\\\
+
+$\typerule{
+    H(\hl)=\hC(\ol{\hf}\mapsto\ol{\hl'})
+}{
+  \hl.\hf_i,H \reduce \hl_i',H
+}$~\RULE{(R-Access)}
+\quad
+$\typerule{
+    H(\hl)=\hC(F) \gap \cooked_H(\hl')
+}{
+  \hl.\hf=\hl',H \reduce H[ \hl \mapsto \hC(F[ \hf \mapsto \hl'])]
+}$~\RULE{(R-Assign)}
+\\
+\hline
+\end{tabular}
+\end{center}
+\caption{FX10 Reduction Rules ($\hS,H \reducesto \hS',H' ~|~H'$ and~$\he,H \reduce \hl,H'$).}
+\label{Figure:reduction}
+\end{figure*}
+
+
+\Subsection{Results}
+
+We say a heap $H$ is {\em correctly cooked} (written~$\vdash H$)
+    if a field can point only to cooked objects, i.e.,~for every object $o=C(F)$ in the range of $H$ and
+    every field $f \in \dom(F)$ it is the case that every object~$\hl=H(F(f))$ is cooked ($\cooked_H(\hl)$).
+We shall only consider correctly cooked heaps (valid
+programs will only produce correctly cooked heaps).
+As the program is executed, the heap monotonically becomes more and more cooked.
+Formally,~$H'$ is \emph{more cooked} than~$H$ (written~$H' \vdash H$)
+    if for every~$\hl \in \dom(H)$, we have~$H(\hl)=\hC(F)$,~$H'(\hl)=\hC(F')$, and~$\dom(F)\subseteq\dom(F')$.
+
+A {\em heap typing} $\Gamma$ is a mapping from locations to classes. $H$ is
+said to be typed by $\Gamma$ if for each $l\in\dom(H)$, the class of $H(l)$
+is a subclass of $\Gamma(l)$.  Since our treatment separates out effects
+from types, and the treatment of types is standard, we shall assume
+that all programs and heaps are typed.
+
+A statement~$\hS$ is \emph{closed} (written~$\vdash \hS$) if it does not contain any free variables.
+We say that $\hS$ is \emph{annotable} if there exists $\phi,\psi$ such that
+$\phi~\hS~\psi$ can be established.\footnote{An example of a statement that is
+{\em not} annotable is $\hval{\hx}{\hnew
+  \hC}{\hval{\hy}{\hx.\hf}{\hz.\hg=\hy}}$ where $\hC{}$ has a field
+\hf. This attempts to read a field of a variable initialized with a
+brand-new object.}
+
+We say that a program $\hP=\ol{\hL}\hS$ is {\em proper} if it is
+well-typed and each method in \hL{} can be decorated with pre-post assertions
+$(\phi,\psi)$, and \hS is annotable.
+The decorations must satisfy the property that under the
+assumption that every method satisfies its assertion (this is for use
+in recursive calls) we can establish for every method
+$\hdef~\hm(\ol{\hx}:\ol{\hC})\{\hS\}$ with assertion $(\phi,\psi)$ that
+it is the case that the free variables of $\phi,\psi$ are contained in
+$\this,\ol{\hx}$, and that $\phi~\hS~\psi$.
+
+We prove the following theorems. In all these theorems the background
+program \hP{} is assumed to be proper. The first theorem is analogous
+to subject-reduction for typing systems.
+\begin{Theorem}{\textbf{Preservation}}
+%\label{Theorem:Preservation}
+Let $\phi~\hS~\psi$, $\vdash \hS$, $\vdash H$, $H \vdash \phi$.
+(a) If $\hS,H \reducesto H'$ then $\vdash H'$, $H' \vdash H$, $H' \vdash +\psi$.
+(b) If $\hS,H \reducesto \hS',H'$ then $\vdash \hS'$, $\vdash H'$, $H' \vdash H$,
+there exists $\phi',\psi'$ such
+that $H' \vdash \phi'$, $\phi'~\hS'~\psi'$, $\phi' \vdash \phi$, $\psi' \vdash \psi$.
+\end{Theorem}
+
+\begin{Theorem}{\textbf{Progress}}
+%\label{Theorem:Progress}
+Let $\phi~\hS~\psi$, $\vdash \hS$, $\vdash H$, $H \vdash \phi$.
+The configuration $\hS,H$ is not stuck.
+\end{Theorem}
+
+For proofs, please see associated technical report.
+
+Because our reduction rules only allow reads from initialized fields,
+a corollary is that a field can only be read after it was assigned,
+and an attempt to read a field will always succeed.

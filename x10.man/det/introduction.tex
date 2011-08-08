@@ -1,0 +1,52 @@
+Determinate, deadlock-free imperative data-structures
+
+Desiderata:
+
+ * Data-structures should by design by dynamically determinate and
+   deadlock-free.
+ * Usable
+ * Static type-checking can provide extra guarantees (e.g. no
+   concurrency related run-time exceptions).
+
+We discuss three examples
+
+  * clocks
+  * accumulators
+  * clocked types
+
+Challenge
+  Arbitrary nature of object graphs.
+
+
+{\em 
+\begin{enumerate}
+\item Use activity registration as a mechanism to tame object graphs.
+\item Focus on structured concurrency. Using scoping and block-structure
+    to delimit regions of code that may execute in parallel and affect
+    the data structure.
+
+\item Accumulation can be defined safely by delaying. However, the delay
+    operation is guaranteed to be deadlock-free.
+
+\item Clocked types support phased computation, another common idiom
+    particularly for stencil computations.
+\end{enumerate}
+}
+
+Key contributions:
+{\em 
+\begin{enumerate}
+\item Identification of determinate, deadlock-free data-structures. 
+\item Discussion of design alternatives which points out the
+  difficulty of integrating these ideas in a modern OO language.
+\item Discussion of various idioms expressible using these data-structures.
+\item Proof of determinacy and deadlock-freedom in an abstract version
+  of the language.
+\end{enumerate}
+These constructs are implemented in \Xten, available as open source from
+SVN head and will be in the next release of \Xten.
+}
+
+
+Semantics and theorems for an abstract version of the language.
+
