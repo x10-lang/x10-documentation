@@ -1,22 +1,23 @@
 \subsection{Accumulators}
-
 Each async (dynamically) has a set of registered \code{@Sync} accumulators
   and \code{@Async} accumulators.
   \begin{itemize}
-  \item The registered \code{@Async} accumulators for an activity are the
-    registered \code{@Sync} and \code{@Async} accumulators of its parent activity.
+  \item The registered \code{@Async} accumulators for an activity are
+    the registered \code{@Sync} and \code{@Async} accumulators of its
+    parent activity.
 
-  \item The registered \code{@Sync} accumulators for an activity are the ones it has
-    created. 
+  \item The registered \code{@Sync} accumulators for an activity are
+    the ones it has created.
   \end{itemize}
 
- This permits computations to be determinate even though
- objects can be stored in heaps, since no async other than a child of
- the async that creates the accumulator can actually operate on
- them. One can still use the flexibility of the heap to arrange for
- complex data-dependent transmission pathways for the accumulator from
- point of creation to point of use. e.g.{} arrays of accumulators,
- hash-maps, etc.
+This permits computations to be determinate even though accumulators
+can be stored in heaps, since no async other the async that created
+the accumulator or one of its progeny can actually operate on them.
+One can still use the flexibility of the heap to arrange for complex
+data-dependent transmission pathways for the accumulator from point of
+creation to point of use. e.g.{} arrays of accumulators, hash-maps,
+etc. In particular, accumulators can be passed into arbitrary method
+invocations, returned from methods etc, with no restrictions.
 
 The method 
 \begin{lstlisting}
@@ -27,8 +28,8 @@ Runtime.isRegistered[T](x:Acc[T]):Int
 current activity, \code{1} if it is \code{@Sync} registered, and \code{2} if
 it is \code{@Async} registered.
 
-//  * Note: Runtime.isRegistered(Clock):Boolean should also be provided
-//    for symmetry.
+%%  * Note: Runtime.isRegistered(Clock):Boolean should also be provided
+%%    for symmetry.
 
 An invocation \code{e.m(e1,...,en)} of an \code{@Sync} method on an \code{Acc} is
   translated to: 
@@ -62,9 +63,7 @@ In many cases the compiler can statically evaluate whether
 \code{Runtime.isRegistered(x) > 0} and/or whether a call to 
 \code{Runtime.sync()}  will suspend. 
 
-It may then appropriately simplify the above code.
-
-e.g. in the code below
+It may then appropriately simplify the above code. e.g.{}~in the code below
 \begin{lstlisting}
 val x:Acc[Int] = new Acc[Int](0, Int.+);
 finish for (i in 0..100000) async
@@ -80,18 +79,17 @@ access check.
 Notes:
 \begin{itemize}
 \item 
-   There are no restrictions to storing Accs in
-   data-structures or reading them. 
+   Accs are first-class values. There are no restrictions in storing
+   them in data-structures, reading them, passing them as arguments to
+   methods, returning them from methods etc. 
 
-\item   However, any attempt to use it will fail unless the Acc is
+   However, any attempt to use it will fail unless the Acc is
    registered with the current activity.
 
-\item   The runtime checks in Runtime.sync() and Runtime.registered(..)
-   ensure that the operations on an Acc are determinate.
+\item The runtime checks in \code{Runtime.sync()} and
+  \code{Runtime.registered(..)}  ensure that the operations on an \code{Acc}
+  are determinate.
 
-\item
-   Static analyses similar to the ones performed for clocks may be
-   performed to ensure that exceptions are not thrown.
 \end{itemize}
 
 \begin{proposition}
@@ -172,6 +170,26 @@ One can write this code using a clock (to avoid two finish nests).
 The collective style requires extending clock so the advance method
 takes arbitrary args and performs collective operations on them,
 mimicking the MPI API.
+
+\paragraph{Collecting \code{finish}}
+
+The collecting \code{finish} construct is of the form \code{finish(r)
+  S}, where \code{r} is an instance of \code{Reducible[T]} and
+\code{S} is a statement. Within the dynamic execution of \code{S}, any
+execution of the statement \code{offer t;} results in a value \code{t}
+being accumulated in a set. (\code{t} must be of type \code{T}.) The
+result of the reduction of this set of \code{T} values with \code{r}
+is then returned. 
+
+\begin{lstlisting}
+  {
+    val x = new Acc[T](r);
+    finish {
+      S [ x <- t / offer t;]
+    }
+    x()
+  }
+\end{lstlisting}
 
 
 \subsection{Clocked types}

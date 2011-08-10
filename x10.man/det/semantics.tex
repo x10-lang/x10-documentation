@@ -19,20 +19,19 @@ $\hL ::= \hclass ~ \hC~\hextends~\hD~\lb~\ol{\hF};~\ol{\hM}~\rb$
 $\hF ::= \hvar\,\hf:\hC$
 & Field declaration. \\
 
-$\hM ::= \hG\ \hdef\ \hm(\ol{\hx}:\ol{\hC}):\hC\{\hS\}$
+$\hM ::= \hdef\ \hm(\ol{\hx}:\ol{\hC}):\hC\{\hS\}$
 & Method declaration. \\
-
-$\hG ::= \code{@NonEscaping} ~~|~~ \code{@NoThisAccess}$
-& Method modifier. \\
 
 $\hp ::= \hl ~~|~~ \hx$
 & Path. \\ %(location or parameter)
 
-$\he ::=  \hp.\hf  ~|~ \hnew{\hC}$
+$\he ::=  \hp.\hf  ~|~ \hnew{\hC} ~|~ \hnew{\hAcc(\hr,\hz)}$
 & Expressions. \\ %: locations, parameters, field access\&assignment,  %invocation, \code{new}
 
 $\hS ::=  \hp.\hf = \hp; ~|~ \hp.\hm(\ol{\hp});  ~|~ \hval{\hx}{\he}{\hS}$ &\\
-$~~~~|~ \finish{\hS}~|~ \async{\hS} ~|~ \hS~\hS$
+$~~~~|~\acc{\hx}{\hnew{\hAcc(\hr,\hz)}}{\hS} ~|~ \ha \leftarrow \hp$ &\\
+$~~~~|~ \pclocked~\finish{\hS}$&\\
+$~~~~|~ \pclocked~\async{\hS} ~|~ \hS~\hS$
 & Statements. \\ %: locations, parameters, field access\&assignment, invocation, \code{new}
 
 \hline
@@ -63,13 +62,13 @@ A {\em heap}~$H$ is a mapping from a given set of locations to {\em
   objects}. An object is a pair $C(F)$ where $C$ is a class (the exact
 class of the object), and $F$ is a partial map from the fields of $C$
 to locations.
-We say the object~\hl is {\em total/cooked} (written~$\cooked_H(\hl)$)
-    if its map is total, i.e.,~$H(\hl)=\hC(F) \gap \dom(F)=\fields(\hC)$.
+%We say the object~\hl is {\em total/cooked} (written~$\cooked_H(\hl)$)
+%    if its map is total, i.e.,~$H(\hl)=\hC(F) \gap \dom(F)=\fields(\hC)$.
 
-We say that a heap~$H$ {\em satisfies} $\phi$ (written~$H \vdash \phi$)
-    if the plus assertions in~$\phi$ (ignoring the minus assertions) are true in~$H$,
-    i.e., if~$\phi \vdash +\hl$ then~$\hl$ is cooked in~$H$
-    and if~$\phi \vdash +\hl.\hf$ then~$H(\hl)=\hC(F)$ and~$F(\hf)$ is cooked in~$H$.
+%We say that a heap~$H$ {\em satisfies} $\phi$ (written~$H \vdash \phi$)
+%    if the plus assertions in~$\phi$ (ignoring the minus assertions) are true in~$H$,
+%    i.e., if~$\phi \vdash +\hl$ then~$\hl$ is cooked in~$H$
+%    and if~$\phi \vdash +\hl.\hf$ then~$H(\hl)=\hC(F)$ and~$F(\hf)$ is cooked in~$H$.
 
 
 %An {\em annotation} $N$ for a heap $H$ maps each $l \in \dom(H)$ to a
@@ -92,148 +91,185 @@ computation which is to evaluate $\he$ in the configuration $H$. The
 set of {\em values} is the set of locations; hence E-configurations of
 the form $\hl,H$ are terminal.
 
-Two transition relations $\reduce{}$ are defined, one over S-configurations and
-the other over E-configurations.
-For $X$ a partial function, we use the notation $X[v \mapsto
-  e]$ to represent the partial function which is the same as $X$
-except that it maps $v$ to $e$.
-The rules defining these relations are
-standard.
+Two transition relations $\preduce{}$ are defined, one over
+S-configurations and the other over E-configurations. Here $\pi$ is a
+set of locations which can currently be asynchronously accessed.  Thus
+each transition is performed in a context that knows about the current
+set of capabilities.  For $X$ a partial function, we use the notation
+$X[v \mapsto e]$ to represent the partial function which is the same
+as $X$ except that it maps $v$ to $e$.
+
+The rules for termination, step, val, new, invoke, access and assign are standard.
 The only minor novelty is in how \hasync{} is defined. The
 critical rule is the last rule in~\RULE{(R-Step)}  -- it specifies the
 ``asynchronous'' nature of \hasync{} by permitting \hS{} to make a step
-even if it is preceded by $\async{\hS_1}$.
+even if it is preceded by $\async{\hS_1}$. Further, each async records
+its set of capabilities. When descending into an async the
+async's own capabiliites are added to those obtained from the environment.
 %
 The rule~\RULE{(R-New)} returns a new location that is bound to a new
 object that is an instance of \hC{} with none of its fields initialized.
 %
 The rule~\RULE{(R-Access)} ensures that the field is initialized before it is
 read ($\hf_i$ is contained in $\ol{\hf}$).
+%
+The rule~\RULE{(R-Acc-N)} adds the new location bound to the
+accumulator as a synchronous access capability to the current async.
+%
+
+The rule~\RULE{(R-Acc-A-R)} permits the accumulator to be read by an
+unclocked async provided that the current set of capabilities permit
+it, and provided that there is no nested async prior to the read
+(i.e.{} if there were any, they have terminated).
+
+The rule~\RULE{(R-Acc-CA-R)} permits the accumulator to be read by 
+clocked async provided that the current set of capabilities permit
+it, and provided that the only statements prior to the read are
+clocked asyncs that are stuck at an \hadvance. By convention we regard
+the empty statement as stuck, hence this rule can be applied even if
+there is no statement preceding the read. 
+
+The rule~\RULE{(R-Acc-W)} updates the current contents of the
+accumulator provided that the current set of capabilities permit
+asynchronous access to the accumulator.
+
+The rule~\RULE{(R-Advance)} permits a \code{clocked finish} to advance
+only if all the top-level \code{clocked asyncs} in the scope of the
+\code{clocked finish} and before an \code{advance} are stuck at an
+\code{advance}. A \code{clocked finish} can also advance if all the
+the top-level \code{clocked asyncs} in its scope are stuck. In this
+case, the statement in the body of hte \code{clocked finish} has
+terminated, and left behind only possibly clocked \code{async}. This
+rule corresponds to the notion that the body of a \code{clocked
+  finish} deregisters itself from the clock on local termination.
+Note that in both these rules unlocked \code{aync} may exist in the
+scope of the \code{clocked finish}; they do not come in the way of the
+\code{clocked finish} advancing.
 
 \begin{figure*}[t]
 \begin{center}
 \begin{tabular}{|c|}
 \hline
 $\typerule{
- \hS,H \reduce H'
+ \hS,H \preduce H'
 }{
   \begin{array}{l}
-    \finish{\hS},H \reduce H'\\
-    \async{\hS},H \reduce H'\\
-    \hS~\hS', H \reduce \hS',H'\\
+    \pclocked~\finish{\hS},H \preduce H'\\
+    \pclocked~\asynct{\pi_1}{\hS},H \ptreduce H'\ \ \ \pi=\pi_1,\pi_2\\
+    \hS~\hS', H \preduce \hS',H'\\
   \end{array}
 }$~\RULE{(R-Term)}
-~
+\\\\
 $\typerule{
- \hS,H \reduce \hS', H'
+  \hS,H \preduce \hS', H'
 }{
   \begin{array}{l}
-    \finish{\hS},H \reduce \finish{\hS'},H'\\
-    \async{\hS},H \reduce \async{\hS'}, H'\\
-    \hS~\hS_1, H \reduce \hS'~\hS_1,H'\\
-    \async{\hS_1}~\hS, H \reduce \async{\hS_1}~\hS', H'\\
+    \pclocked~\finish{\hS},H \preduce \pclocked~\finish{\hS'},H'\\
+    \pclocked~\asynct{\pi_1}{\hS},H \ptreduce  \pclocked~\asynct{\pi_1}{\hS'}, H'\ \ \ \pi=\pi_1,\pi_2\\
+    \hS~\hS_1, H \preduce \hS'~\hS_1,H'\\
+    \asynct{\pi_1}{\hS_1}~\hS, H \preduce \asynct{\pi_1}{\hS_1}~\hS', H'\\
   \end{array}
 }$~\RULE{(R-Step)}
-~
-$\typerule{
-  \he,H \reduce \hl,H'
-}{
-  \hval{\hx}{\he}{\hS},H \reduce \hS[\hl/\hx], H'
-}$~\RULE{(R-Val)}
 \\\\
 
 $\typerule{
+  \he,H \reduce \hl,H'
+}{
+  \hval{\hx}{\he}{\hS},H \preduce \hS[\hl/\hx], H'
+}$~\RULE{(R-Val)}
+~
+$\typerule{
     \hl' \not \in \dom(H)
 }{
-  \hnew{\hC},H \reduce \hl',H[ \hl' \mapsto \hC()]
+  \hnew{\hC},H \preduce \hl',H[ \hl' \mapsto \hC()]
 }$~\RULE{(R-New)}
-\quad
+~
 $\typerule{
     H(\hl')=\hC(\ldots)
         \gap
     \mbody{}(\hm,\hC)=\ol{\hx}.\hS
 }{
-  \hl'.\hm(\ol{\hl}),H \reduce \hS[\ol{\hl}/\ol{\hx},\hl'/\hthis],H
+  \hl'.\hm(\ol{\hl}),H \preduce \hS[\ol{\hl}/\ol{\hx},\hl'/\hthis],H
 }$~\RULE{(R-Invoke)}
-\quad
-
 \\\\
-
 $\typerule{
     H(\hl)=\hC(\ol{\hf}\mapsto\ol{\hl'})
 }{
-  \hl.\hf_i,H \reduce \hl_i',H
+  \hl.\hf_i,H \preduce \hl_i',H
 }$~\RULE{(R-Access)}
 \quad
 $\typerule{
-    H(\hl)=\hC(F) \gap \cooked_H(\hl')
+    H(\hl)=\hC(F) 
 }{
-  \hl.\hf=\hl',H \reduce H[ \hl \mapsto \hC(F[ \hf \mapsto \hl'])]
+  \hl.\hf=\hl',H \preduce H[ \hl \mapsto \hC(F[ \hf \mapsto \hl'])]
 }$~\RULE{(R-Assign)}
+\\\\
+$\typerule{
+    \hl \not \in \dom(H)
+}{
+ \asynct{\pi_1}{\acc{\hx}{\hnew{\hAcc(\hr,\hz)}}~\hS},H \preduce 
+   \asynct{\pi_1,l}{\hS[\hl/\hx]},H[ \hl \mapsto \hAcc(\hr,\hz)]
+}$~\RULE{(R-Acc-N)}
+\\\\
+$\typerule{
+   \ha\in \pi \gap H(a)=\hAcc(\hr,\hv)\gap \hx \in \pi_1
+}{
+\asynct{\pi_1}{\hval{\hx}{\ha()}{\hS}},H \preduce 
+\asynct{\pi_1}{\hS[\hv/\hx]}, H'
+}$~\RULE{(R-Acc-A-R)}
+\\\\
+$\typerule{}{
+    \hclocked~\asynct{\pi}{\xadvance~\hS} \stuck
+}$~\RULE{(R-Stuck-CA)}
+~
+$\typerule{
+  \hS_1 \stuck \gap \hS_2 \stuck
+}{
+   \hS_1~\hS_2 \stuck
+}$~\RULE{(R-Stuck-S)}
+\\\\
+$\typerule{
+   \ha\in \pi \gap H(a)=\hAcc(\hr,\hv)\gap \hx \in \pi_1 \gap S\stuck
+}{
+\hclocked~\asynct{\pi_1}{\hS~\hval{\hx}{\ha()}{\hS_1}},H \preduce 
+\hclocked~\asynct{\pi_1}{\hS~\hS_1[\hv/\hx]}, H'
+}$~\RULE{(R-Acc-CA-R)}
+\\\\
+$\typerule{
+  \ha^{-}\in \pi\gap H(\ha)=\hAcc(\hr,\hv)\gap \hw=\hr(\hv,\hp)  
+}{
+  \ha \leftarrow \hp,H \preduce H[\ha \mapsto \hAcc(\hr,\hw)]
+}$~\RULE{(R-Acc-W)}
+\\\\
+
+$\typerule{}{
+    \asynct{\pi}{\hS}\ureduce \asynct{\pi}{\hS}\\
+    \hclocked~\asynct{\pi}{\xadvance~\hS} \ureduce
+    \hclocked~\asynct{\pi}{\hS} \\
+    \hclocked~\finish{\hS}\ureduce \hclocked~\finish{\hS}\\
+}$~\RULE{(R-Advance-A,CA,CF)}
+\quad
+$\typerule{
+    \hS_1 \ureduce \hS_1'\ \     \hS_2 \ureduce \hS_2'
+}{
+  \hS_1~\hS_2\ureduce \hS_1'~\hS_2'
+}$~\RULE{(R-Advance-S)}
+\\\\
+$\typerule{
+    \hS \ureduce \hS'
+}{
+  \begin{array}{l}
+    \hclocked~\finish{\hS~\xadvance~\hS_1},H\preduce \hclocked~\finish{\hS'~\hS_1},H\\
+    \hclocked~\finish{\hS},H\preduce  \hclocked~\finish{\hS'},H
+  \end{array}
+}$~\RULE{(R-Advance)}
 \\
 \hline
 \end{tabular}
 \end{center}
-\caption{FX10 Reduction Rules ($\hS,H \reducesto \hS',H' ~|~H'$ and~$\he,H \reduce \hl,H'$).}
+\caption{FX10 Reduction Rules ($\hS,H \preduce \hS',H' ~|~H'$ and~$\he,H \preduce \hl,H'$).}
 \label{Figure:reduction}
 \end{figure*}
 
 
 \Subsection{Results}
-
-We say a heap $H$ is {\em correctly cooked} (written~$\vdash H$)
-    if a field can point only to cooked objects, i.e.,~for every object $o=C(F)$ in the range of $H$ and
-    every field $f \in \dom(F)$ it is the case that every object~$\hl=H(F(f))$ is cooked ($\cooked_H(\hl)$).
-We shall only consider correctly cooked heaps (valid
-programs will only produce correctly cooked heaps).
-As the program is executed, the heap monotonically becomes more and more cooked.
-Formally,~$H'$ is \emph{more cooked} than~$H$ (written~$H' \vdash H$)
-    if for every~$\hl \in \dom(H)$, we have~$H(\hl)=\hC(F)$,~$H'(\hl)=\hC(F')$, and~$\dom(F)\subseteq\dom(F')$.
-
-A {\em heap typing} $\Gamma$ is a mapping from locations to classes. $H$ is
-said to be typed by $\Gamma$ if for each $l\in\dom(H)$, the class of $H(l)$
-is a subclass of $\Gamma(l)$.  Since our treatment separates out effects
-from types, and the treatment of types is standard, we shall assume
-that all programs and heaps are typed.
-
-A statement~$\hS$ is \emph{closed} (written~$\vdash \hS$) if it does not contain any free variables.
-We say that $\hS$ is \emph{annotable} if there exists $\phi,\psi$ such that
-$\phi~\hS~\psi$ can be established.\footnote{An example of a statement that is
-{\em not} annotable is $\hval{\hx}{\hnew
-  \hC}{\hval{\hy}{\hx.\hf}{\hz.\hg=\hy}}$ where $\hC{}$ has a field
-\hf. This attempts to read a field of a variable initialized with a
-brand-new object.}
-
-We say that a program $\hP=\ol{\hL}\hS$ is {\em proper} if it is
-well-typed and each method in \hL{} can be decorated with pre-post assertions
-$(\phi,\psi)$, and \hS is annotable.
-The decorations must satisfy the property that under the
-assumption that every method satisfies its assertion (this is for use
-in recursive calls) we can establish for every method
-$\hdef~\hm(\ol{\hx}:\ol{\hC})\{\hS\}$ with assertion $(\phi,\psi)$ that
-it is the case that the free variables of $\phi,\psi$ are contained in
-$\this,\ol{\hx}$, and that $\phi~\hS~\psi$.
-
-We prove the following theorems. In all these theorems the background
-program \hP{} is assumed to be proper. The first theorem is analogous
-to subject-reduction for typing systems.
-\begin{Theorem}{\textbf{Preservation}}
-%\label{Theorem:Preservation}
-Let $\phi~\hS~\psi$, $\vdash \hS$, $\vdash H$, $H \vdash \phi$.
-(a) If $\hS,H \reducesto H'$ then $\vdash H'$, $H' \vdash H$, $H' \vdash +\psi$.
-(b) If $\hS,H \reducesto \hS',H'$ then $\vdash \hS'$, $\vdash H'$, $H' \vdash H$,
-there exists $\phi',\psi'$ such
-that $H' \vdash \phi'$, $\phi'~\hS'~\psi'$, $\phi' \vdash \phi$, $\psi' \vdash \psi$.
-\end{Theorem}
-
-\begin{Theorem}{\textbf{Progress}}
-%\label{Theorem:Progress}
-Let $\phi~\hS~\psi$, $\vdash \hS$, $\vdash H$, $H \vdash \phi$.
-The configuration $\hS,H$ is not stuck.
-\end{Theorem}
-
-For proofs, please see associated technical report.
-
-Because our reduction rules only allow reads from initialized fields,
-a corollary is that a field can only be read after it was assigned,
-and an attempt to read a field will always succeed.

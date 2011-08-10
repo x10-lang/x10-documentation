@@ -1,12 +1,17 @@
-Determinate, deadlock-free imperative data-structures
 
 Desiderata:
 
- * Data-structures should by design by dynamically determinate and
+\begin{itemize}
+\item Data-structures should by design by dynamically determinate and
    deadlock-free.
- * Usable
- * Static type-checking can provide extra guarantees (e.g. no
-   concurrency related run-time exceptions).
+\item They should be first-class -- they can be stored in
+  data-structures/read from them, passed as arguments to
+  procedures/returned etc with no restrictions. 
+\item Usable -- common idioms should be naturally and elegantly expressible.
+\item Additional static type-checking can provide extra guarantees
+  (e.g.{} no concurrency related run-time exceptions) that may aid
+  efficient implementation.
+\end{itemize}
 
 We discuss three examples
 
