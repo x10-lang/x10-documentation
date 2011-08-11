@@ -331,8 +331,12 @@
 \DeclareMathOperator{\dom}{dom}
 
 
-\newcommand{\async}[1]{\code{async~\lb}#1\rb}
+\newcommand{\async}[1]{\code{async}~#1}
 \newcommand{\asynct}[2]{\code{async(}{\tt #1})\lb#2\rb}
+\newcommand{\finisht}[2]{\code{finish(}{\tt #1})\lb#2\rb}
+\newcommand{\blockt}[2]{\code{(}{\tt #1})\lb#2\rb}
+\newcommand{\finishasynct}[2]{\code{[finish | async](}{\tt #1})\lb#2\rb}
+\newcommand{\finishasync}[1]{\code{[finish | async]}~#1}
 \newcommand{\finish}[1]{\code{finish~\lb}#1\rb}
 \newcommand{\clocked}[0]{\code{clocked}}
 \newcommand{\pclocked}[0]{\code{[clocked]}}

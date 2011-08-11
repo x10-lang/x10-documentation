@@ -99,13 +99,15 @@ set of capabilities.  For $X$ a partial function, we use the notation
 $X[v \mapsto e]$ to represent the partial function which is the same
 as $X$ except that it maps $v$ to $e$.
 
-The rules for termination, step, val, new, invoke, access and assign are standard.
-The only minor novelty is in how \hasync{} is defined. The
-critical rule is the last rule in~\RULE{(R-Step)}  -- it specifies the
-``asynchronous'' nature of \hasync{} by permitting \hS{} to make a step
-even if it is preceded by $\async{\hS_1}$. Further, each async records
-its set of capabilities. When descending into an async the
-async's own capabiliites are added to those obtained from the environment.
+The rules for termination, step, val, new, invoke, access and assign
+are standard.  The only minor novelty is in how \hasync{} is
+defined. The critical rule is the last rule in~\RULE{(R-Step)} -- it
+specifies the ``asynchronous'' nature of \hasync{} by permitting \hS{}
+to make a step even if it is preceded by $\async{\hS_1}$. Further,
+each async records its set of synchronous capabilities. When
+descending into an async the async's own capabiliites are added to
+those obtained from the environment.
+
 %
 The rule~\RULE{(R-New)} returns a new location that is bound to a new
 object that is an instance of \hC{} with none of its fields initialized.
@@ -236,7 +238,7 @@ $\typerule{
 }$~\RULE{(R-Acc-CA-R)}
 \\\\
 $\typerule{
-  \ha^{-}\in \pi\gap H(\ha)=\hAcc(\hr,\hv)\gap \hw=\hr(\hv,\hp)  
+  \ha\in \pi\gap H(\ha)=\hAcc(\hr,\hv)\gap \hw=\hr(\hv,\hp)  
 }{
   \ha \leftarrow \hp,H \preduce H[\ha \mapsto \hAcc(\hr,\hw)]
 }$~\RULE{(R-Acc-W)}
