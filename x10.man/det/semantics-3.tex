@@ -1,0 +1,299 @@
+Featherweight X10 (FX10) is a formal calculus for X10 intended to  complement Featherweight Java
+(FJ).  It models imperative aspects of X10 including the concurrency
+constructs \hfinish{} and \hasync{}.
+
+
+\paragraph{Overview of formalism}
+\Subsection{Syntax}
+
+\begin{figure}[htpb!]
+\begin{center}
+\begin{tabular}{|l|l|}
+\hline
+
+$\hP ::= \ol{\hL},\hS$ & Program. \\
+
+$\hL ::= \hclass ~ \hC~\hextends~\hD~\lb~\ol{\hF};~\ol{\hM}~\rb$
+& cLass declaration. \\
+
+$\hF ::= \hvar\,\hf:\hC$
+& Field declaration. \\
+
+$\hM ::= \hdef\ \hm(\ol{\hx}:\ol{\hC}):\hC\{\hS\}$
+& Method declaration. \\
+
+$\hp ::= \hl ~~|~~ \hx$
+& Path. \\ %(location or parameter)
+
+$\he ::=  \hp.\hf  ~|~ \hnew{\hC} ~|~ \hnew{\hAcc(\hr,\hz)}$
+& Expressions. \\ %: locations, parameters, field access\&assignment,  %invocation, \code{new}
+$\hB ::= \blockt{\pi}{\hS}$
+& Blocks. \\
+$\hS ::=  \epsilon ~|~\hp.\hf = \hp; ~|~ \hp.\hm(\ol{\hp});  ~|~ \valt{\hx}{\he}$ &\\
+$~~~~|~\acct{\hx}{\hnew{\hAcc(\hr,\hz)}} ~|~ \ha \leftarrow \hp$ &\\
+$~~~~|~ \pclocked~\finish{\hB}$&\\
+$~~~~|~ \pclocked~\async{\hB}~|~ \hS~\hS$
+& Statements. \\ %: locations, parameters, field access\&assignment, invocation, \code{new}
+
+\hline
+\end{tabular}
+\end{center}
+\caption{FX10 Syntax.
+    The terminals are locations (\hl), parameters and \hthis (\hx), field name (\hf), method name (\hm), class name (\hB,\hC,\hD,\hObject),
+        and keywords (\hhnew, \hfinish, \hasync, \code{val}).
+    The program source code cannot contain locations (\hl), because locations are only created during execution/reduction in \RULE{R-New} of \Ref{Figure}{reduction}.
+    }
+\label{Figure:syntax}
+\end{figure}
+
+\Ref{Figure}{syntax} shows the abstract syntax of FX10. 
+$\epsilon$ is the empty statement. Sequencing associates to the left.
+%\code{async}
+%and \code{finish} bind tighter than statement sequencing, so 
+%$\code{async}~\hS~\hS'$ is the sequencing of $\code{async}~\hS$ and
+%$\hS'$. 
+The block syntax in source code is just \code{\{\hS\}},
+however at run-time the block is augmented with (the initially empty) set of locations
+$\pi$ representing the write capabilities of the block.
+
+%(\Ref{Section}{val} will later add the \hval and \hvar field modifiers.)
+Expression~$\hval{\hx}{\he}{\hS}$ evaluates $\he$, assigns it to a
+new variable $\hx$, and then evaluates \hS. The scope of \hx{} is \hS.
+
+The syntax is similar to the real X10 syntax with the following difference:
+%Non-escaping methods are marked with \code{@NonEscaping}, such methods
+%can be invoked on raw objects (and can be used to initialize them).
+FX10 does not have constructors; instead, an object is initialized by
+assigning to its fields. X10 uses \code{acc} and not \code{val} for new
+accumulator declarations. These are minor simplifications intended to
+streamline the formal presentation.
+
+\Subsection{Reduction}
+A {\em heap}~$H$ is a mapping from a given set of locations to {\em
+  objects}. An object is a pair $C(F)$ where $C$ is a class (the exact
+class of the object), and $F$ is a partial map from the fields of $C$
+to locations.
+%We say the object~\hl is {\em total/cooked} (written~$\cooked_H(\hl)$)
+%    if its map is total, i.e.,~$H(\hl)=\hC(F) \gap \dom(F)=\fields(\hC)$.
+
+%We say that a heap~$H$ {\em satisfies} $\phi$ (written~$H \vdash \phi$)
+%    if the plus assertions in~$\phi$ (ignoring the minus assertions) are true in~$H$,
+%    i.e., if~$\phi \vdash +\hl$ then~$\hl$ is cooked in~$H$
+%    and if~$\phi \vdash +\hl.\hf$ then~$H(\hl)=\hC(F)$ and~$F(\hf)$ is cooked in~$H$.
+
+
+%An {\em annotation} $N$ for a heap $H$ maps each $l \in \dom(H)$ to a
+%possibly empty set of fields $a(H(l))$ of the class of $H(l)$ disjoint
+%from $\dom(H(l))$. (These are the fields currently being
+%asynchronously initialized.) The logic of initialization described
+%above is clearly sound for the obvious interpretation of formulas over
+%annotated heaps. For future reference, we say that that a heap $H$
+%{\em satisfies} $\phi$ if there is some annotation $N$ (and some
+%valuation $v$ assigning locations in $\dom(H)$ to free variables of
+%$\phi$) such that $\phi$ evaluates to true.
+
+The reduction relation is described in
+Figure~\ref{Figure:reduction}. An S-configuration is of the form
+$\hS,H$ where \hS{} is a statement and $H$ is a heap (representing a
+computation which is to execute $\hS$ in the heap $H$), or $H$
+(representing terminated computation). An
+E-configuration is of the form $\he,H$ and represents the
+computation which is to evaluate $\he$ in the configuration $H$. The
+set of {\em values} is the set of locations; hence E-configurations of
+the form $\hl,H$ are terminal.
+
+Two transition relations $\preduce{}$ are defined, one over
+S-configurations and the other over E-configurations. Here $\pi$ is a
+set of locations which can currently be asynchronously accessed.  Thus
+each transition is performed in a context that knows about the current
+set of capabilities.  For $X$ a partial function, we use the notation
+$X[v \mapsto e]$ to represent the partial function which is the same
+as $X$ except that it maps $v$ to $e$.
+
+The rules for termination, step, val, new, invoke, access and assign
+are standard.  The only minor novelty is in how \hasync{} is
+defined. The critical rule is the last rule in~\RULE{(R-Step)} -- it
+specifies the ``asynchronous'' nature of \hasync{} by permitting \hS{}
+to make a step even if it is preceded by $\async{\hS_1}$. Further,
+each async records its set of synchronous capabilities. When
+descending into an async the async's own capabiliites are added to
+those obtained from the environment.
+
+%
+The rule~\RULE{(R-New)} returns a new location that is bound to a new
+object that is an instance of \hC{} with none of its fields initialized.
+%
+The rule~\RULE{(R-Access)} ensures that the field is initialized before it is
+read ($\hf_i$ is contained in $\ol{\hf}$).
+%
+The rule~\RULE{(R-Acc-N)} adds the new location bound to the
+accumulator as a synchronous access capability to the current async.
+%
+
+The rule~\RULE{(R-Acc-A-R)} permits the accumulator to be read by an
+unclocked async provided that the current set of capabilities permit
+it, and provided that there is no nested async prior to the read
+(i.e.{} if there were any, they have terminated).
+
+The rule~\RULE{(R-Acc-CA-R)} permits the accumulator to be read by 
+clocked async provided that the current set of capabilities permit
+it, and provided that the only statements prior to the read are
+clocked asyncs that are stuck at an \hadvance. By convention we regard
+the empty statement as stuck, hence this rule can be applied even if
+there is no statement preceding the read. 
+
+The rule~\RULE{(R-Acc-W)} updates the current contents of the
+accumulator provided that the current set of capabilities permit
+asynchronous access to the accumulator.
+
+The rule~\RULE{(R-Advance)} permits a \code{clocked finish} to advance
+only if all the top-level \code{clocked asyncs} in the scope of the
+\code{clocked finish} and before an \code{advance} are stuck at an
+\code{advance}. A \code{clocked finish} can also advance if all the
+the top-level \code{clocked asyncs} in its scope are stuck. In this
+case, the statement in the body of hte \code{clocked finish} has
+terminated, and left behind only possibly clocked \code{async}. This
+rule corresponds to the notion that the body of a \code{clocked
+  finish} deregisters itself from the clock on local termination.
+Note that in both these rules unlocked \code{aync} may exist in the
+scope of the \code{clocked finish}; they do not come in the way of the
+\code{clocked finish} advancing.
+
+\begin{figure*}[t]
+\begin{center}
+\begin{tabular}{|c|}
+\hline
+
+$\typerule{
+}{
+ \epsilon,H \preduce H
+}$~\RULE{(R-Epsilon)}
+~
+$\typerule{
+ \hS,H \preduce \hS',H' ~|~ H'
+}{
+  \begin{array}{rcl}
+    \blockt{\pi_1}{\hS},H&\ptreduce &\blockt{\pi_1}{\hS'},H' 
+    ~|~ H' \gap \pi=\pi_1,\pi_2\\
+    \hS~\hS', H &\preduce& \hS',H' ~|~ H' 
+  \end{array}
+}$~\RULE{(R-Trans)}
+\\\\
+$\typerule{
+ \hB,H \preduce \hB',H' ~|~ H'
+}{
+    \pclocked~\finishasync{\hB},H \preduce
+    \pclocked~\finishasync{\hB'},H'  ~|~ H'
+}$~\RULE{(R-Trans-B)}
+\\\\
+$\typerule{
+  \hS,H \preduce \hS', H'
+}{
+    \async{\hB}~\hS, H \preduce \async{\hB}~\hS', H'\\
+}$~\RULE{(R-Async)}
+~
+$\typerule{
+  \he,H \reduce \hl,H'
+}{
+  \hval{\hx}{\he}{\hS},H \preduce \hS[\hl/\hx], H'\\
+ % \valt{\hx}{\he},H \preduce H'
+}$~\RULE{(R-Val)}
+\\\\
+$\typerule{
+    \hl' \not \in \dom(H)
+}{
+  \hnew{\hC},H \preduce \hl',H[ \hl' \mapsto \hC()]
+}$~\RULE{(R-New)}
+~
+$\typerule{
+    H(\hl')=\hC(\ldots)
+        \gap
+    \mbody{}(\hm,\hC)=\ol{\hx}.\hS
+}{
+  \hl'.\hm(\ol{\hl}),H \preduce \hS[\ol{\hl}/\ol{\hx},\hl'/\hthis],H
+}$~\RULE{(R-Invoke)}
+\\\\
+$\typerule{
+    H(\hl)=\hC(\ol{\hf}\mapsto\ol{\hl'})
+}{
+  \hl.\hf_i,H \preduce \hl_i',H
+}$~\RULE{(R-Access)}
+\quad
+$\typerule{
+    H(\hl)=\hC(F) 
+}{
+  \hl.\hf=\hl',H \preduce H[ \hl \mapsto \hC(F[ \hf \mapsto \hl'])]
+}$~\RULE{(R-Assign)}
+\\\\
+$\typerule{
+    \hl \not \in \dom(H)
+}{
+\blockt{\pi_1}{\acc{\hx}{\hnew{\hAcc(\hr,\hz)}}~\hS},H \preduce 
+   \blockt{\pi_1,l}{\hS[\hl/\hx]},H[ \hl \mapsto \hAcc(\hr,\hz)] \\
+%\blockt{\pi_1}{\acc{\hx}{\hnew{\hAcc(\hr,\hz)}}},H \preduce 
+%   H[ \hl \mapsto \hAcc(\hr,\hz)]
+}$~\RULE{(R-Acc-N)}
+\\\\
+$\typerule{}{
+    \epsilon \stuck
+}$~\RULE{(R-Stuck-CA)}
+~
+$\typerule{}{
+    \hclocked~\asynct{\pi}{\xadvance~\hS} \stuck
+}$~\RULE{(R-Stuck-CA)}
+~
+$\typerule{
+  \hS_1 \stuck \gap \hS_2 \stuck
+}{
+   \hS_1~\hS_2 \stuck
+}$~\RULE{(R-Stuck-S)}
+
+\\\\
+$\typerule{
+   \ha\in \pi_1 \gap H(a)=\hAcc(\hr,\hv) \gap S\stuck
+}{
+\blockt{\pi_1}{\hS~\hval{\hx}{\ha()}~\hS_1},H \preduce 
+\blockt{\pi_1}{\hS~\hS_1[\hv/\hx]}, H'
+}$~\RULE{(R-Acc-R)}
+\\\\
+$\typerule{
+  \ha\in \pi\gap H(\ha)=\hAcc(\hr,\hv)\gap \hw=\hr(\hv,\hp)  
+}{
+  \ha \leftarrow \hp,H \preduce H[\ha \mapsto \hAcc(\hr,\hw)]
+}$~\RULE{(R-Acc-W)}
+\\\\
+
+$\typerule{}{
+    \asynct{\pi}{\hS}\ureduce \asynct{\pi}{\hS}\\
+    \hclocked~\asynct{\pi}{\xadvance~\hS} \ureduce
+    \hclocked~\asynct{\pi}{\hS} \\
+    \hclocked~\finisht{\pi}{\hS}\ureduce \hclocked~\finisht{\pi}{\hS}\\
+}$~\RULE{(R-Advance-A,CA,CF)}
+\quad
+$\typerule{
+    \hS_1 \ureduce \hS_1'\ \     \hS_2 \ureduce \hS_2'
+}{
+  \hS_1~\hS_2\ureduce \hS_1'~\hS_2'
+}$~\RULE{(R-Advance-S)}
+\\\\
+$\typerule{
+    \hS \ureduce \hS'
+}{
+  \begin{array}{l}
+    \hclocked~\hfinish\blockt{\pi_1}{\hS~\xadvance~\hS_1},H\preduce \hclocked~\hfinish\blockt{\pi_1}{\hS'~\hS_1},H\\
+    \hclocked~\hfinish\blockt{\pi_1}{\hS},H\preduce  
+    \hclocked~\hfinish\blockt{\pi_1}{\hS'},H
+  \end{array}
+}$~\RULE{(R-Advance)}
+\\
+\hline
+\end{tabular}
+\end{center}
+
+
+\caption{FX10 Reduction Rules ($\hS,H \preduce \hS',H' ~|~H'$ and~$\he,H \preduce \hl,H'$).}
+\label{Figure:reduction}
+\end{figure*}
+
+
+\Subsection{Results}

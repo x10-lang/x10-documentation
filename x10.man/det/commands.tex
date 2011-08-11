@@ -241,6 +241,8 @@
 \mynewcommand{\mycooked}{\S{}\lb\initsep\rb}
 \newcommand{\hnew}[1]{\code{new}~#1}
 \newcommand{\hval}[3]{\code{val}~#1~=~#2;#3}
+\newcommand{\valt}[2]{\code{val}~#1~=~#2;}
+\newcommand{\acct}[2]{\code{acc}~#1~=~#2;}
 
 \newcommand{\lt}{\code{<}}%{\mathop{\textrm{\tt <}}}
 \newcommand{\gt}{\code{>}}%{\mathop{\textrm{\tt >}}}
@@ -337,7 +339,7 @@
 \newcommand{\blockt}[2]{\code{(}{\tt #1})\lb#2\rb}
 \newcommand{\finishasynct}[2]{\code{[finish | async](}{\tt #1})\lb#2\rb}
 \newcommand{\finishasync}[1]{\code{[finish | async]}~#1}
-\newcommand{\finish}[1]{\code{finish~\lb}#1\rb}
+\newcommand{\finish}[1]{\code{finish}~#1}
 \newcommand{\clocked}[0]{\code{clocked}}
 \newcommand{\pclocked}[0]{\code{[clocked]}}
 \newcommand{\hclocked}[0]{\code{clocked}}
