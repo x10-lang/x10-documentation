@@ -243,6 +243,7 @@
 \newcommand{\hval}[3]{\code{val}~#1~=~#2;#3}
 \newcommand{\valt}[2]{\code{val}~#1~=~#2;}
 \newcommand{\acct}[2]{\code{acc}~#1~=~#2;}
+\newcommand{\err}[0]{\Diamond}
 
 \newcommand{\lt}{\code{<}}%{\mathop{\textrm{\tt <}}}
 \newcommand{\gt}{\code{>}}%{\mathop{\textrm{\tt >}}}
@@ -337,7 +338,9 @@
 \newcommand{\asynct}[2]{\code{async(}{\tt #1})\lb#2\rb}
 \newcommand{\finisht}[2]{\code{finish(}{\tt #1})\lb#2\rb}
 \newcommand{\blockt}[2]{\code{(}{\tt #1})\lb#2\rb}
-\newcommand{\finishasynct}[2]{\code{[finish | async](}{\tt #1})\lb#2\rb}
+\newcommand{\finishasynct}[2]{\code{[finish | async](}{\tt
+    #1})\lb#2\rb}
+\newcommand{\clockedfinishasync}[1]{\code{[[clocked] finish | async]}~{\tt #1}}
 \newcommand{\finishasync}[1]{\code{[finish | async]}~#1}
 \newcommand{\finish}[1]{\code{finish}~#1}
 \newcommand{\clocked}[0]{\code{clocked}}

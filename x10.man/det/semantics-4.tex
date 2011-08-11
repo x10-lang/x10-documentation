@@ -268,29 +268,37 @@ $\typerule{
   \ha \leftarrow \hp,H \preduce \err
 }$~\RULE{(R-Acc-W-E)}
 \\\\
-
+$\typerule{
+  \hB \ureduce \hB'
+}{
+    \hclocked~\async{\hB} \ureduce \hclocked~\async{\hB'} \\
+}$~\RULE{(R-Adv-CA)}
+~
 $\typerule{}{
-    \asynct{\pi}{\hS}\ureduce \asynct{\pi}{\hS}\\
-    \hclocked~\asynct{\pi}{\xadvance~\hS} \ureduce
-    \hclocked~\asynct{\pi}{\hS} \\
-    \hclocked~\finisht{\pi}{\hS}\ureduce \hclocked~\finisht{\pi}{\hS}\\
-}$~\RULE{(R-Advance-A,CA,CF)}
-\quad
+    \clockedfinishasync{\hB}\ureduce \clockedfinishasync{\hB}\\
+    \xadvance~\hS \ureduce \hS\\
+}$~\RULE{(R-Adv-A,CAF)}
+\\\\
+
+$\typerule{
+  \hS \ureduce \hS'
+}{
+   \blockt{\pi}{\hS}\ureduce \blockt{\pi}{\hS'}
+}$~\RULE{(R-Adv-B)}
+~
 $\typerule{
     \hS_1 \ureduce \hS_1'\ \     \hS_2 \ureduce \hS_2'
 }{
   \hS_1~\hS_2\ureduce \hS_1'~\hS_2'
-}$~\RULE{(R-Advance-S)}
-\\\\
+}$~\RULE{(R-Adv-S)}
+~
 $\typerule{
-    \hS \ureduce \hS'
+    \hB \ureduce \hB'
 }{
   \begin{array}{l}
-    \hclocked~\hfinish\blockt{\pi_1}{\hS~\xadvance~\hS_1},H\preduce \hclocked~\hfinish\blockt{\pi_1}{\hS'~\hS_1},H\\
-    \hclocked~\hfinish\blockt{\pi_1}{\hS},H\preduce  
-    \hclocked~\hfinish\blockt{\pi_1}{\hS'},H
+    \hclocked~\finish{\hB},H\preduce  \hclocked~\finish{\hB'},H
   \end{array}
-}$~\RULE{(R-Advance)}
+}$~\RULE{(R-Adv)}
 \\\\
 \hline
 \end{tabular}
