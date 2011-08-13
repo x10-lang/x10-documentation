@@ -1,0 +1,38 @@
+Look at the refactoring slide deck --
+
+Monte Carlo.
+
+N Queens.
+
+All reduce.
+
+Compute/communicate overlap -- show the NAS PB FFT program.
+
+SpecJBB -- master/slave
+
+Map Reduce idioms
+
+Global Matrix library. -- matrix multiply code. SUMMA.
+
+Show the idiom for concurrent solvers.
+
+Concurrent Collections, CnC.
+
+Phasers.
+
+wave front pipelining?
+
+Work by Vivek, Vechev, Yahav and company on det.
+
+JGF benchmarks.
+
+Check the Armando paper. --- 
+
+Look at what Nalini did.
+
+Need to figure out how to express partition in the type system, and
+how to check the types.
+
+Why not just include polyhedral constraints?
+
+I had web pages on this stuff.

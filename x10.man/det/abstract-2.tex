@@ -1,0 +1,67 @@
+%\title{Sequential semantics for concurrent programs}
+
+The safe paralleization of sequential programs is an important and
+challenging task. A parallelization is safe if it ensures that no new
+behaviors are introduced; the semantics of the parallel program is
+identical to that of the sequential program. In particular the
+parallel program must not exhibit scheduler indeterminacy or deadlock.
+
+This is a challenging problems.  Imperative memory locations are
+famously indeterminate under concurrent read/write
+operations. Further, most concurrent programming languages support
+synchronization mechanisms that enable a thread to wait until some
+appropriate condition is true, thus leading to the possibility of
+deadlock.
+
+In this paper we develop a very rich fragment of the concurrent,
+imperative programming language \Xten{} in which {\em all} programs
+have sequential semantics. The advantages of such a language are
+striking: the programmer simply cannot introduce determinacy or
+deadlock-related errors. All programs can be debugged as if they are
+sequential programs, without having to reason about all possible
+interleaving of threads. 
+
+The fragment includes all of \Xten{}'s most powerful constructs --
+(clocked) \code{finish} and \code{async}, places and {}\code{at}. We
+introduce two new abstractions -- {\em accumulators} and {\em clocked
+  values} -- with lightweight compiler and run-time
+support. Accumulators of type \code{T} permit multiple concurrent
+writes, these are reduced into a single value by a user-specified
+reduction operator. Accumulators are designed to be determinate and
+deadlock-free at run-time, under all possible uses.  Clocked values of
+type \code{T} operate on two values of \code{T} (the {\em current} and
+the {\em next}). Read operations are performed on the current value,
+write operations on the next. Such values are implicitly associated
+with a clock and the current and next values are switched
+(determinately) on quiescence of the clock. Clocked values capture the
+common ``double buffering'' idiom. Accumulators and clocked values are
+designed in such a way that they are deadlock-free and determinate
+even in the presence of arbitrary aliasing and patterns of
+concurrency.
+
+We combine these notions with a lightweight framework for detecting
+disjointness of access via static effects checking. 
+
+We show all programs written in this fragment of the language are
+guaranteed to have sequential semantics. That is, programs in this
+fragment may be developed and debugged as if they are sequential,
+without running into the state explosion problem. 
+
+Further, many common patterns of concurrent execution can be written
+in this language in an ``obvious'' way. These patterns include
+histograms, all-to-all reductions, stencil computations, master/slave
+execution, and most of the important HPC computing idioms. We show
+that there are simple statically-checkable rules that can establish
+for many common idioms that some run-time synchronization checks can
+be avoided.
+
+The key technical problem addressed is unrestricting aliasing in the
+heap.  We develop the idea of an {\em implicit ownership domain}
+(first introduced in the semantics of clocks in \Xten{} in a paper in
+Concur 2005) that newly created objects may be registered with the
+current activity so that they can be operated upon only by this
+activity and its newly spawned children activity subtree.  This
+permits determinacy and deadlock freedom to be established locally,
+independent of the context in which the code is being run.
+
+

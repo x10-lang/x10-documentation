@@ -25,7 +25,7 @@ $\hM ::= \hdef\ \hm(\ol{\hx}:\ol{\hC}):\hC\{\hS\}$
 $\hp ::= \hl ~~|~~ \hx$
 & Path. \\ %(location or parameter)
 
-$\he ::=  \hp.\hf  ~|~ \hnew{\hC} ~|~ \hnew{\hAcc(\hr,\hz)}$
+$\he ::=  \hp.\hf  ~|~ \hnew{\hC} ~|~ \hnew{\hAcc(\hr,\hz)}~|~ \ha()$
 & Expressions. \\ %: locations, parameters, field access\&assignment,  %invocation, \code{new}
 $\hB ::= \blockt{\pi}{\hS}$
 & Blocks. \\
@@ -160,119 +160,119 @@ scope of the \code{clocked finish}; they do not come in the way of the
 \\\\
 $\typerule{
 }{
- \epsilon,H \preduce H
+ \epsilon,\cH \preduce \cH
 }$~\RULE{(R-Epsilon)}
 ~
 $\typerule{
- \hS,H \preduce \hS',H' ~|~ H' ~|~ \err
+ \hS,\cH \preduce \hS',\cH' ~|~ \cH' ~|~ \err
 }{
   \begin{array}{rcl}
-    \blockt{\pi_1}{\hS},H&\ptreduce &\blockt{\pi_1}{\hS'},H' 
-    ~|~ H' ~|~ \err \gap \pi=\pi_1,\pi_2\\
-    \hS~\hS', H &\preduce& \hS',H' ~|~ H' ~|~ \err
+    \blockt{\pi_1}{\hS},\cH&\ptreduce &\blockt{\pi_1}{\hS'},\cH' 
+    ~|~ \cH' ~|~ \err \gap \pi=\pi_1,\pi_2\\
+    \hS~\hS', \cH &\preduce& \hS',\cH' ~|~ \cH' ~|~ \err
   \end{array}
 }$~\RULE{(R-Trans)}
 \\\\
 $\typerule{
- \hB,H \preduce \hB',H' ~|~ H' ~|~ \err
+ \hB,\cH \preduce \hB',\cH' ~|~ \cH' ~|~ \err
 }{
-    \pclocked~\finishasync{\hB},H \preduce
-    \pclocked~\finishasync{\hB'},H'  ~|~ H' ~|~ \err
+    \pclocked~\finishasync{\hB},\cH \preduce
+    \pclocked~\finishasync{\hB'},\cH'  ~|~ \cH' ~|~ \err
 }$~\RULE{(R-Trans-B)}
 \\\\
 $\typerule{
-  \hS,H \preduce \hS', H'
+  \hS,\cH \preduce \hS', \cH'
 }{
-    \async{\hB}~\hS, H \preduce \async{\hB}~\hS', H'\\
+  \pclocked~\async{\hB}~\hS, \cH \preduce \pclocked~\async{\hB}~\hS', \cH'\\
 }$~\RULE{(R-Async)}
-~
-$\typerule{
-  \he,H \reduce \hl,H'
-}{
-  \hval{\hx}{\he}{\hS},H \preduce \hS[\hl/\hx], H'\\
- % \valt{\hx}{\he},H \preduce H'
-}$~\RULE{(R-Val)}
 \\\\
 $\typerule{
-    \hl' \not \in \dom(H)
+  \he,\cH \reduce \hl,\cH'
 }{
-  \hnew{\hC},H \preduce \hl',H[ \hl' \mapsto \hC()]
+  \hval{\hx}{\he}{\hS},\cH \preduce \hS[\hl/\hx], \cH'\\
+ % \valt{\hx}{\he},\cH \preduce \cH'
+}$~\RULE{(R-Val)}
+~
+$\typerule{
+    \hl' \not \in \dom(\cH)
+}{
+  \hnew{\hC},\cH \preduce \hl',\cH[ \hl' \mapsto \hC()]
 }$~\RULE{(R-New)}
 ~
 $\typerule{
-    H(\hl')=\hC(\ldots)
+    \cH(\hl')=\hC(\ldots)
         \gap
     \mbody{}(\hm,\hC)=\ol{\hx}.\hS
 }{
-  \hl'.\hm(\ol{\hl}),H \preduce \hS[\ol{\hl}/\ol{\hx},\hl'/\hthis],H
+  \hl'.\hm(\ol{\hl}),\cH \preduce \hS[\ol{\hl}/\ol{\hx},\hl'/\hthis],\cH
 }$~\RULE{(R-Invoke)}
 \\\\
 $\typerule{
-    H(\hl)=\hC(\ol{\hf}\mapsto\ol{\hl'})
+    \cH(\hl)=\hC(\ol{\hf}\mapsto\ol{\hl'})\gap\gap 
+g=\hf_i ~|~g\not\in\ol{\hf}
 }{
-  \hl.\hf_i,H \preduce \hl_i',H
+  \hl.\hg,\cH \preduce \hl_i',\cH ~|~ \err
 }$~\RULE{(R-Access)}
 \quad
 $\typerule{
-    H(\hl)=\hC(F) 
+    \cH(\hl)=\hC(F) 
 }{
-  \hl.\hf=\hl',H \preduce H[ \hl \mapsto \hC(F[ \hf \mapsto \hl'])]
+  \hl.\hf=\hl',\cH \preduce \cH[ \hl \mapsto \hC(F[ \hf \mapsto \hl'])]
 }$~\RULE{(R-Assign)}
 \\\\
 $\typerule{
-    \hl \not \in \dom(H)
+    \hl \not \in \dom(\cH)
 }{
-\blockt{\pi_1}{\acc{\hx}{\hnew{\hAcc(\hr,\hz)}}~\hS},H \preduce 
-   \blockt{\pi_1,l}{\hS[\hl/\hx]},H[ \hl \mapsto \hAcc(\hr,\hz)] \\
-%\blockt{\pi_1}{\acc{\hx}{\hnew{\hAcc(\hr,\hz)}}},H \preduce 
-%   H[ \hl \mapsto \hAcc(\hr,\hz)]
+\blockt{\pi_1}{\acc{\hx}{\hnew{\hAcc(\hr,\hz)}}~\hS},\cH \preduce 
+   \blockt{\pi_1,l}{\hS[\hl/\hx]},\cH[ \hl \mapsto \hAcc(\hr,\hz)] \\
+%\blockt{\pi_1}{\acc{\hx}{\hnew{\hAcc(\hr,\hz)}}},\cH \preduce 
+%   \cH[ \hl \mapsto \hAcc(\hr,\hz)]
 }$~\RULE{(R-Acc-N)}
 \\\\
 $\typerule{}{
     \epsilon \stuck
-}$~\RULE{(R-Stuck-CA)}
+}$~\RULE{(R-Q-CA)}
 ~
-$\typerule{}{
-    \hclocked~\asynct{\pi}{\xadvance~\hS} \stuck
-}$~\RULE{(R-Stuck-CA)}
+$\typerule{B\stuck}{
+    \hclocked~\async~B\stuck
+}$~\RULE{(R-Q-CA)}
+~
+$\typerule{\hS\stuck}{
+   \blockt{\pi}{\hS}\stuck\\
+   \blockt{\pi}{\hS~\xadvance~\hS'}\stuck\\
+}$~\RULE{(R-Q-B)}
 ~
 $\typerule{
   \hS_1 \stuck \gap \hS_2 \stuck
 }{
    \hS_1~\hS_2 \stuck
-}$~\RULE{(R-Stuck-S)}
-
+}$~\RULE{(R-Q-S)}
 \\\\
 $\typerule{
-   \ha\in \pi_1 \gap H(a)=\hAcc(\hr,\hv) \gap S\stuck
+\cH(a)=\hAcc(\hr,\hv) \gap S\stuck \gap \gap    \ha\in \pi_1 ~|~
+\ha\not\in \pi_1
 }{
-\blockt{\pi_1}{\hS~\hval{\hx}{\ha()}~\hS_1},H \preduce 
-\blockt{\pi_1}{\hS~\hS_1[\hv/\hx]}, H'
+\blockt{\pi_1}{\hS~\hval{\hx}{\ha()}~\hS_1},\cH \preduce 
+\blockt{\pi_1}{\hS~\hS_1[\hv/\hx]}, \cH' ~|~ \err
 }$~\RULE{(R-Acc-R)}
 ~
 $\typerule{
-   \ha\not\in \pi_1 \gap S\stuck
+  \cH(\ha)=\hAcc(\hr,\hv)\gap \hw=\hr(\hv,\hp)  \gap\gap \ha\in \pi~|~ \ha\not\in\pi
 }{
-\blockt{\pi_1}{\hS~\hval{\hx}{\ha()}~\hS_1},H \preduce \err
-}$~\RULE{(R-Acc-R-E)}
+  \ha \leftarrow \hp,\cH \preduce \cH[\ha \mapsto \hAcc(\hr,\hw)] ~|~ \err
+}$~\RULE{(R-Acc-W)}
 \\\\
 $\typerule{
-  \ha\in \pi\gap H(\ha)=\hAcc(\hr,\hv)\gap \hw=\hr(\hv,\hp)  
+\hS_1\stuck \gap\gap \hS,\cH \preduce \hS',\cH'
 }{
-  \ha \leftarrow \hp,H \preduce H[\ha \mapsto \hAcc(\hr,\hw)]
-}$~\RULE{(R-Acc-W)}
-~
-$\typerule{
-  \ha\not\in \pi  
-}{
-  \ha \leftarrow \hp,H \preduce \err
-}$~\RULE{(R-Acc-W-E)}
+   \hS_1~\hS,\cH \preduce \hS_1~\hS',\cH'
+}$~\RULE{(R-Q)}
 \\\\
 $\typerule{
   \hB \ureduce \hB'
 }{
     \hclocked~\async{\hB} \ureduce \hclocked~\async{\hB'} \\
-}$~\RULE{(R-Adv-CA)}
+}$~\RULE{(R-Adv-S)}
 ~
 $\typerule{}{
     \clockedfinishasync{\hB}\ureduce \clockedfinishasync{\hB}\\
@@ -296,7 +296,7 @@ $\typerule{
     \hB \ureduce \hB'
 }{
   \begin{array}{l}
-    \hclocked~\finish{\hB},H\preduce  \hclocked~\finish{\hB'},H
+    \hclocked~\finish{\hB},\cH\preduce  \hclocked~\finish{\hB'},\cH
   \end{array}
 }$~\RULE{(R-Adv)}
 \\\\
@@ -305,7 +305,7 @@ $\typerule{
 \end{center}
 
 
-\caption{FX10 Reduction Rules ($\hS,H \preduce \hS',H' ~|~H'$ and~$\he,H \preduce \hl,H'$).}
+\caption{FX10 Reduction Rules ($\hS,\cH \preduce \hS',\cH' ~|~\cH'$ and~$\he,\cH \preduce \hl,\cH'$).}
 \label{Figure:reduction}
 \end{figure*}
 

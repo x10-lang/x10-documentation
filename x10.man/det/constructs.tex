@@ -191,6 +191,33 @@ is then returned.
   }
 \end{lstlisting}
 
+An attractive aspect of collecting finish is that nesting is used
+quite naturally to reflect the relationship between the parallel
+computation performing the accumulation and the value returned. In
+particular there is no need to explicitly introduce the notion of an
+accumulator, or to register it with the current block, or to check
+that other activities in the current block have quiesced. 
+
+On the other hand, this strength is also a limitation. It is not
+possible to use the same idiom for clocked code, i.e.{} collect values
+being offered by multiple \code{clocked} asyncs in the current phase.
+Further, using this idiom safely across method calls requires the
+addition of \code{offers T} clauses (similar to \code{throws T})
+clauses, specifying the type of the value being offered. Otherwise at
+run-time a value of an incompatible type may be offered leading to a
+run-time exception. Finally, the lack of a name for the result being
+collecting means that it is difficult to use the same computation to
+accumulate multiple separate values without more contortions. e.g.{}
+one could set the return type to be a tuple of values, but then the
+\code{offer} statement would need to specify the index for which the
+\code{offer} was intended. Now it is not clear that the index type
+should be arithmetic -- why should not one be able to collect into the
+range of a \code{HashMap} (so the index type could be an arbitrary
+type \code{Key})? 
+
+We feel that these decisions are all orthogonal to the actual process
+of accumulating and should be dealt with by the data-structuring
+aspects of the language design.
 
 \subsection{Clocked types}
 
@@ -273,42 +300,10 @@ performing a read or write operation on user-accessible memory.
 performs the current/next swap) is run at the clock quiescent point
 before the user specified closure is run.)
 
+
 \begin{example}
 \begin{lstlisting}
-@det
-def stencil(a:Array[Double], eps:Double, P:Int) {
-    val red = new Reducible[Double]() {
-            public def zero()=0.0D;
-            public operator this(x:Double, y:Double) = Math.max(x,y);
-        };
-    val err = new ClockedAcc[Double](Double.MAX_VALUE,
-       Double.MAX_VALUE, red);
-    val b = new Clocked[Array[Double](1)](
-               new Array[Double](a.region, (p:Point(a.rank))=>0.0D);
-               new Array[Double](a.region, (p:Point(a.rank))=>a(p)));
-
-    clocked finish 
-       for (myRegion in a.region.partition(P)) 
-       clocked async {
-       while (err() > eps) {
-         for (k in myRegion) {
-
-            val ck = (b()(k-1)+b()(k+1))/2;
-
-            err() <- Double.abs(ck - b()(k));
-
-            // @Write invocation on next. Det because each async
-            // writes into its myRegion and each element of the array
-            // of regions produced by a.region.partition(P) is disjoint
-            // from the other.
-
-            b()(k) = ck;
-         }
-         Clock.advanceAll();
-       }
-    }
-    return b.finalized();
-}
+\input {examples/stencil.x10}
 \end{lstlisting}
 \end{example}
 

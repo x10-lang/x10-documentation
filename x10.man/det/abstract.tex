@@ -1,10 +1,38 @@
-Imperative memory locations are famously indeterminate under
-concurrent read/write operations. This means that it is very difficult
-to systematically design data-structures that are determinate and
-deadlock-free.
+%\title{Sequential semantics for concurrent programs}
 
-There are two fundamental ways to ensure determinacy -- run-time
-checks and static types. 
+
+Imperative memory locations are famously indeterminate under
+concurrent read/write operations. Further, to support reliable
+communication most concurrent programming languages support
+synchronization mechanisms that enable a thread to wait until some
+appropriate condition is true, thus leading to the possibility of
+deadlock. Sequential programs are fundamentally determinate and
+deadlock-free; thus it is very difficult to systematically write
+concurrent programs with sequential semantics, even if the program is
+in fact a parallelization of a sequential program. 
+
+In this paper we develop a fragment of the programming language
+\Xten{} in which all programs have sequential semantics.  \Xten{} is
+based on a very powerful imperative calculus supporting fine-grained
+asynchronous concurrency, multi-place execution, messaging and clocked
+synchronization. We introduce two new abstractions -- {\em
+  accumulators} and {\em clocked values} -- with lightweight compiler
+and run-time support. Accumulators of type \code{T} permit multiple
+concurrent writes, these are reduced into a single value by a
+user-specified reduction operator. Clocked values of type \code{T}
+operate on two values of \code{T} (the {\em current} and the {\em
+  next}). Read operations are performed on the current value and write
+operations on the next. Such values are implicitly associated with a
+clock and the current and next values are switched (determinately) on
+quiescence of the clock. Clocked values capture the common ``double
+buffering'' or ``red/black'' concurrency idiom.
+
+We introduce
+the notion 
+
+In this paper we present some lightweight techniques that enable a
+large class of concurrent programs to be written in such a way that
+their semantics 
 
 The former can lead to run-time overheads and the latter to brittle
 programs since it is very difficult to smoothly extend the rich type
@@ -16,17 +44,8 @@ handle on concurrent access to a shared location.
 
 In this paper we show that a middle path can be successful for a
 language based on structured concurrency, such as \Xten.  We introduce
-two new abstractions -- {\em accumulators} and {\em clocked values}
-with very modest compiler support. Accumulators of type \code{T}
-permit multiple concurrent writes, these are reduced into a single
-value by a user-specified reduction operator. Clocked values of type
-\code{T} operate on two values of \code{T} (the {\em current} and the
-     {\em next}). Read operations are performed on the current value
-     and write operations on the next. Such values are implicitly
-     associated with a clock \cite{vj-radha-x10} and the current and
-     next values are switched (determinately) on quiescence of the
-     clock. Clocked values capture the common ``double buffering'' or
-     ``red/black'' concurrency idiom.
+two new abstractions -- 
+
 
 We show that these abstractions (by design) determinate and
 deadlock-free in any usage, though executions may throw exceptions
