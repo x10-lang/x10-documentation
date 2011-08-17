@@ -1,0 +1,586 @@
+
+
+Crypt - parallel
+
+
+finish for (var i:Int = 0; i < text1.size; i += 8) 
+{
+val ii: Int = i;
+async {
+   var i1: Int = ii;                 // Index into first text array.
+   var i2: Int = ii;                 // Index into second text array.
+   var ik: Int;                     // Index into key array.
+   var x1: Int;
+   var x2: Int;
+   var x3: Int;
+   var x4: Int;
+   var t1: Int;
+   var t2: Int; // Four "16-bit" blocks, two temps.
+   var r: Int;                      // Eight rounds of processing.
+   ik = 0;                 // Restart key index.
+   r = 8;                  // Eight rounds of processing.
+   // Load eight plain1 bytes as four 16-bit "unsigned" integers.
+   // Masking with 0xff prevents sign extension with cast to int.
+   x1 = text1(i1++) & 0xff;          // Build 16-bit x1 from 2 bytes,
+   x1 |= (text1(i1++) & 0xff) << 8;  // assuming low-order byte first.
+   x2 = text1(i1++) & 0xff;
+   x2 |= (text1(i1++) & 0xff) << 8;
+   x3 = text1(i1++) & 0xff;
+   x3 |= (text1(i1++) & 0xff) << 8;
+   x4 = text1(i1++) & 0xff;
+   x4 |= (text1(i1++) & 0xff) << 8;
+   do {
+// 1) Multiply (modulo 0x10001), 1st text sub-block
+// with 1st key sub-block.
+x1 =  ( (x1 as Long) * key(ik++) % 0x10001L & 0xffff) as Int;
+// 2) Add (modulo 0x10000), 2nd text sub-block
+// with 2nd key sub-block.
+x2 = x2 + key(ik++) & 0xffff;
+// 3) Add (modulo 0x10000), 3rd text sub-block
+// with 3rd key sub-block.
+x3 = x3 + key(ik++) & 0xffff;
+// 4) Multiply (modulo 0x10001), 4th text sub-block
+// with 4th key sub-block.
+x4 = ((x4 as Long) * key(ik++) % 0x10001L & 0xffff) as Int;
+// 5) XOR results from steps 1 and 3.
+t2 = x1 ^ x3;
+// 6) XOR results from steps 2 and 4.
+// Included in step 8.
+// 7) Multiply (modulo 0x10001), result of step 5
+// with 5th key sub-block.
+t2 = ((t2 as Long) * key(ik++) % 0x10001L & 0xffff) as Int;
+// 8) Add (modulo 0x10000), results of steps 6 and 7.
+t1 = t2 + (x2 ^ x4) & 0xffff;
+// 9) Multiply (modulo 0x10001), result of step 8
+// with 6th key sub-block.
+t1 = ((t1 as Long) * key(ik++) % 0x10001L & 0xffff) as Int;
+// 10) Add (modulo 0x10000), results of steps 7 and 9.
+t2 = t1 + t2 & 0xffff;
+// 11) XOR results from steps 1 and 9.
+x1 ^= t1;
+// 14) XOR results from steps 4 and 10. (Out of order).
+x4 ^= t2;
+// 13) XOR results from steps 2 and 10. (Out of order).
+t2 ^= x2;
+// 12) XOR results from steps 3 and 9. (Out of order).
+x2 = x3 ^ t1;
+x3 = t2;        // Results of x2 and x3 now swapped.
+   } while (--r != 0);  // Repeats seven more rounds.
+   // Final output transform (4 steps).
+   // 1) Multiply (modulo 0x10001), 1st text-block
+   // with 1st key sub-block.
+   x1 = ( (x1 as Long) * key(ik++) % 0x10001L & 0xffff) as Int;
+// 2) Add (modulo 0x10000), 2nd text sub-block
+// with 2nd key sub-block. It says x3, but that is to undo swap
+// of subblocks 2 and 3 in 8th processing round.
+x3 = x3 + key(ik++) & 0xffff;
+// 3) Add (modulo 0x10000), 3rd text sub-block
+// with 3rd key sub-block. It says x2, but that is to undo swap
+// of subblocks 2 and 3 in 8th processing round.
+x2 = x2 + key(ik++) & 0xffff;
+// 4) Multiply (modulo 0x10001), 4th text-block
+// with 4th key sub-block.
+x4 =  (( x4 as Long) * key(ik++) % 0x10001L & 0xffff) as Int;
+// Repackage from 16-bit sub-blocks to 8-bit byte array text2.
+text2(i2++) =  x1 as Byte;
+text2(i2++) =  (x1 >>> 8) as Byte;
+text2(i2++) =  x3 as Byte;                // x3 and x2 are switched
+text2(i2++) =  (x3 >>> 8) as Byte;        // only in name.
+text2(i2++) =  x2 as Byte;
+text2(i2++) =  (x2 >>> 8) as Byte;
+text2(i2++) =  x4 as Byte;
+text2(i2++) = (x4 >>> 8) as Byte;
+}
+}   // End for loop.
+}   // End routine.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+MolDyn - distributed
+finish async {
+val C: Clock = Clock.make();
+ateach ([j]: Point in D) P(j).runiters(C);
+}
+public def runiters(val C: Clock): void = {
+
+
+var n: int = 0;
+move = 0;
+for (move = 0; move<movemx; move++) {
+
+
+for (i = 0; i<mdsize; i++) {
+one(i).domove(side);        /* move the particles and update velocities */
+}
+
+
+epot = 0.0;
+vir = 0.0;
+
+
+for (i = 0+rank; i<mdsize; i += nprocess) {
+one(i).force(side, rcoff, mdsize, i, this);  /* compute forces */
+}
+
+
+/* global reduction on partial sums of the forces, epot, vir and interactions */
+Clock.advanceAll();
+allreduce();
+Clock.advanceAll();
+
+
+sum = 0.0;
+
+
+for (i = 0; i<mdsize; i++) {
+sum = sum + one(i).mkekin(hsq2);    /*scale forces, update velocities */
+}
+
+
+ekin = sum/hsq;
+
+
+vel = 0.0;
+count = 0.0;
+
+
+for (i = 0; i<mdsize; i++) {
+vel = vel + one(i).velavg(vaverh, h, this); /* average velocity */
+}
+
+
+vel = vel / h;
+
+
+/* tmeperature scale if required */
+if ((move < istop) && (((move+1) % irep) == 0)) {
+sc = Math.sqrt(tref / (tscale*ekin));
+for (i = 0; i<mdsize; i++) {
+one(i).dscal(sc, 1);
+}
+ekin = tref / tscale;
+}
+
+
+/* sum to get full potential energy and virial */
+if (((move+1) % iprint) == 0) {
+ek = 24.0*ekin;
+epot = 4.0*epot;
+etot = ek + epot;
+temp = tscale * ekin;
+pres = den * 16.0 * (ekin - vir) / mdsize;
+vel = vel / mdsize;
+rp = (count / mdsize) * 100.0;
+}
+}
+Clock.advanceAll();
+}
+
+
+def allreduce(): void = {
+// Place holder for now to emulate allreduce. To be optimized
+if (rank != 0) return;
+val P: DistArray[md](1) = JGFMolDynBench.P;
+val t: md = new md();
+t.mdsize = mdsize;
+t.one = new Array[Particle](mdsize);
+val tref = GlobalRef(t); //createa  global ref to use with t
+for ([k]: Point in 0..(mdsize-1)) t.one(k) = new Particle(0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
+
+
+// sum reduction
+for ([j]: Point in P) {
+for ([k]: Point in 0..(mdsize-1)) {
+val temp = () => at (P.dist(j)) P(j).one(k) ;
+t.one(k).xforce += Future.make(() => at (P.dist(j)) P(j).one(k).xforce).force();
+t.one(k).yforce += Future.make(() => at (P.dist(j)) P(j).one(k).yforce).force();
+t.one(k).zforce += Future.make(() => at (P.dist(j)) P(j).one(k).zforce).force();
+}
+t.vir += Future.make(() => at (P.dist(j)) P(j).vir).force();
+t.epot += Future.make(() => at (P.dist(j)) P(j).epot).force();
+t.interactions += Future.make(() => at (P.dist(j)) P(j).interactions).force();
+}
+
+
+// broadcast
+finish ateach ([j]: Point in P.dist) {
+for ([k]: Point in 0..(mdsize-1)) {
+P(j).one(k).xforce = Future.make(() => at (tref.home()) tref().one(k).xforce).force();
+P(j).one(k).yforce = Future.make(() => at (tref.home()) tref().one(k).yforce).force();
+P(j).one(k).zforce = Future.make(() => at (tref.home()) tref().one(k).zforce).force();
+}
+P(j).vir = Future.make(() => at (tref.home()) tref().vir).force();
+P(j).epot = Future.make(() => at (tref.home()) tref().epot).force();
+P(j).interactions = Future.make(() => at (tref.home()) tref().interactions).force();
+}
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+MolDyn - Parallel
+
+
+public def JGFinitialise() {
+    finish for ([j] in 0..(P.size-1)) async (P(j)).initialise();
+  }
+
+
+  public def JGFapplication() {
+    JGFInstrumentor.startTimer("Section3:MolDyn:Run");
+    finish async {
+      val C: Clock = Clock.make();
+      for ([j] in 0..(P.size-1)) async P(j).runiters(C);
+    }
+    JGFInstrumentor.stopTimer("Section3:MolDyn:Run");
+  }
+
+
+  public def JGFvalidate() {
+    finish for ([j] in 0..(P.size-1)) async {
+      val myNode = P(j);
+
+
+      val refval: Array[Double] = [ 275.97175611773514, 7397.392307839352 ];
+
+
+      val dev: Double = Math.abs(myNode.ek - refval(size));
+
+
+      if (dev > 1.0e-10) {
+        Console.OUT.println("Validation failed at thread "+j);
+        Console.OUT.println("Kinetic Energy = " + myNode.ek + "  " + 
+                            dev + "  " + refval(size));
+        throw new Error("Validation failed");
+      }
+    }
+  }
+
+
+public def runiters(C: Clock) {
+    for ([move] in 0..(movemx-1)) {
+      for ([i] in 0..(mdsize-1)) {
+        one(i).domove(side); // move the particles and update velocities
+      }
+
+
+      epot = 0.0;
+      vir = 0.0;
+
+
+      for (var i: Int = 0+rank; i < mdsize; i += nprocess) {
+        one(i).force(side, rcoff, mdsize, i, this); // compute forces
+      }
+
+
+      // global reduction on partial sums of the forces, epot, vir and
+      // interactions 
+      Clock.advanceAll();
+      allreduce();
+      Clock.advanceAll();
+
+
+      var sum: double = 0.0;
+      for ([i] in 0..(mdsize-1)) {
+        sum = sum + one(i).mkekin(hsq2);  // scale forces, update velocities
+      }
+      ekin = sum/hsq;
+
+
+      var vel: Double = 0.0;
+      count = 0.0;
+      for ([i] in 0..(mdsize-1)) {
+        vel = vel + one(i).velavg(vaverh, h, this); /* average velocity */
+      }
+      vel = vel / h;
+
+
+      // temperature scale if required
+      if ((move < istop) && (((move+1) % irep) == 0)) {
+        sc = Math.sqrt(tref / (tscale*ekin));
+        for ([i] in 0..(mdsize-1)) {
+          one(i).dscal(sc, 1);
+        }
+        ekin = tref / tscale;
+      }
+
+
+      // sum to get full potential energy and virial
+      if (((move+1) % iprint) == 0) {
+        ek = 24.0*ekin;
+        epot = 4.0*epot;
+        // etot = ek + epot; // UNUSED
+        // temp = tscale * ekin; // UNUSED
+        // pres = den * 16.0 * (ekin - vir) / mdsize; // UNUSED
+        vel = vel / mdsize;
+        // rp = (count / mdsize) * 100.0; // UNUSED
+      }
+    }
+    Clock.advanceAll();
+  }
+
+
+def allreduce() {
+    // Place holder for now to emulate allreduce. To be optimized
+
+
+    if (rank != 0) return;
+
+
+    val P = JGFMolDynBench.P;
+    val t = new md(mdsize, new Array[Particle](mdsize));
+
+
+    for ([k] in 0..(mdsize-1)) {
+      t.one(k) = new Particle(0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
+    }
+
+
+    // sum reduction
+    for ([j] in 0..(P.size-1)) {
+      for ([k] in 0..(mdsize-1)) {
+        t.one(k).xforce += P(j).one(k).xforce;
+        t.one(k).yforce += P(j).one(k).yforce;
+        t.one(k).zforce += P(j).one(k).zforce;
+      }
+      t.vir += P(j).vir;
+      t.epot += P(j).epot;
+      t.interactions += P(j).interactions;
+    }
+
+
+    // broadcast
+    finish for ([j] in 0..(P.size-1)) async {
+      for ([k] in 0..(mdsize-1)) {
+        P(j).one(k).xforce = t.one(k).xforce;
+        P(j).one(k).yforce = t.one(k).yforce;
+        P(j).one(k).zforce = t.one(k).zforce;
+      }
+      P(j).vir = t.vir;
+      P(j).epot = t.epot;
+      P(j).interactions = t.interactions;
+    }
+  }
+
+
+
+
+
+
+
+
+Raytracer - Parallel
+
+
+public def render(val interval: Interval): void = {
+
+
+// Screen variables
+val row: Array[int] = new Array[int](interval.width * (interval.yto-interval.yfrom));
+var pixCounter: int = 0; //iterator
+
+
+// Rendering variables
+val frustrumwidth: double = view.dist * Math.tan(view.angle);
+val viewVec: Vec = Vec.sub(view.att, view.from).normalized();
+val tmpVec: Vec = new Vec(viewVec).scale(Vec.dot(view.up, viewVec));
+val upVec: Vec = Vec.sub(view.up, tmpVec).normalized().scale(-frustrumwidth);
+val leftVec: Vec = Vec.cross(view.up, viewVec).normalized().scale(view.aspect*frustrumwidth);
+
+
+// All loops are reversed for 'speedup' (cf. thinking in java p331)
+// For each line
+//for (y = interval.yfrom; y < interval.yto; y++) { // }
+finish for ([y]: Point in interval.yfrom..(interval.yto-1)) async {
+var r: Ray = new Ray(view.from, voidVec);
+var ylen: double = (2.0 * y) / interval.width - 1.0;
+// For each pixel of the line
+for ([x]: Point in 0..(interval.width-1)) {
+var xlen: double = (2.0 * x) / interval.width - 1.0;
+r = r.d(Vec.comb(xlen, leftVec, ylen, upVec).added(viewVec).normalized());
+var col: Vec = trace(0, 1.0, r, new Isect(), new Ray());
+
+
+// computes the color of the ray
+var red: int = (col.x * 255.0) as int;
+if (red > 255) red = 255;
+var green: int = (col.y * 255.0) as int;
+if (green > 255) green = 255;
+var blue: int = (col.z * 255.0) as int;
+if (blue > 255) blue = 255;
+
+
+atomic checksum += red + green + blue;
+
+
+// RGB values for .ppm file
+// Sets the pixels
+// row[y*interval.width+x] =  alpha | (red << 16) | (green << 8) | (blue);
+} // end for (x)
+} // end for (y)
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+SparseMatmult - Distributed
+
+
+finish for ([id]: Point in Dist.makeUnique(PlaceGroup.WORLD)) async
+for ([reps]: Point in 0..(NUM_ITERATIONS-1)) 
+for ([i]: Point in Region.make(lowsum(id), highsum(id)-1)) 
+finish async at (y.dist(row(i))) { y(row(i)) += x(col(i))*vall(i); }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+SparseMatmult - Parallel
+
+
+public static def test(val y: DistArray[double], val vall: DistArray[double], val row: DistArray[int], val col: DistArray[int], val x: DistArray[double], val NUM_ITERATIONS: int, val numthreads: int, val lowsum: DistArray[int], val highsum: DistArray[int]): void = {
+val nz: int = vall.region.size();
+
+
+JGFInstrumentor.startTimer("Section2:SparseMatmult:Kernel");
+
+
+finish for ([id]: Point in 0..(numthreads-1)) async
+for ([reps]: Point in 0..(NUM_ITERATIONS-1)) 
+for ([i]: Point in Region.make(lowsum(id), highsum(id)-1)) 
+y(row(i)) += x(col(i))*vall(i);
+
+
+JGFInstrumentor.stopTimer("Section2:SparseMatmult:Kernel");
+for ([i]: Point in 0..(nz-1)) {
+ytotal.value += y(row(i));
+}
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Series - Distributed
+finish {
+ateach ([p]: Point in U) {
+var ilow: int;
+
+
+if (U(p).isFirst()) {
+ilow = 1;
+} else {
+ilow = 0;
+}
+for ([n,i]: Point in testArray.dist| here) {
+if (i >= ilow) {
+
+
+// Calculate A[i] terms. Note, once again, that we
+// can ignore the 2/period term outside the integral
+// since the period is 2 and the term cancels itself
+// out.
+if (n == 0) {
+testArray(0, i) = TrapezoidIntegrate(0.0 as double,
+2.0 as double,
+1000,
+omega * i as double,
+1);                       // 1 = cosine term.
+} else {
+// Calculate the B[i] terms.
+
+
+testArray(n, i) = TrapezoidIntegrate(0.0 as double,
+2.0 as double,
+1000,
+omega * i as double,
+2);                       // 2 = sine term.
+}
+}
+}
+}
+}
+
+
+
+
+
+
+Thanks,
+
+
+Nate
