@@ -1,26 +1,37 @@
 Look at the refactoring slide deck --
 
-Monte Carlo.
+Monte Carlo. (ok)
 
-N Queens.
+N Queens. (ok)
 
-All reduce.
+All reduce. (ok)
+
+Butterfly. (ok)
 
 Compute/communicate overlap -- show the NAS PB FFT program.
+This is the fact that a clocked async can be sent to the other
+side. to update the location there. Is that accumulative>
+
+LU -- the blocks being communicated down the column and row are simply
+accumulated into the result.
+
+Show the idiom for concurrent solvers. Here need an @Own iteration,
+solver i writes its contribution to solver j. Need associativity,
+cannot assume commutativity hence have to let the receiver order the
+inputs. That is why an accumulator cannot be used.
 
 SpecJBB -- master/slave
 
-Map Reduce idioms
+Map Reduce idioms (ok, basically collecting finish. Use DistWordCount
+to discuss this.)
 
 Global Matrix library. -- matrix multiply code. SUMMA.
 
-Show the idiom for concurrent solvers.
-
 Concurrent Collections, CnC.
 
-Phasers.
+Phasers. should be ok, is messy, so mention in passing.
 
-wave front pipelining?
+Wave front pipelining?
 
 Work by Vivek, Vechev, Yahav and company on det.
 
@@ -28,11 +39,34 @@ JGF benchmarks.
 
 Check the Armando paper. --- 
 
-Look at what Nalini did.
+Look at what Nalini did in DDC.
 
 Need to figure out how to express partition in the type system, and
 how to check the types.
 
 Why not just include polyhedral constraints?
 
-I had web pages on this stuff.
+How about keeping location Int, but marking the phase as @Acc(v, Int.Resucer.Plus)?
+
+========
+
+What cannot be expressed -- application level determinism.
+
+graph algorithms, minimal spanning tree. You could do the version
+where you are accumulating into the graph node (via a min operation)
+the parent with the smallest id.
+
+here a problem is that you need to pre-arrange your mutable
+data-structure (graph) to have these additional locations. But
+different algorithms will need different locations, and the underlying
+data-structure should be fixed. 
+
+So creating a fresh set of locations is going to be tough. 
+
+This is part of the problem of using these idioms in the context of a
+million lines of code when a bunch of these decisions have already
+been made.
+
+Need a way to attach an overlay on existing data-structures.
+
+

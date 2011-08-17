@@ -1,4 +1,7 @@
 \subsection{Accumulators}
+%% Compare with OpenMP reductoin clause.
+%% DOMP has arbitrarty reduction types.
+
 Each async (dynamically) has a set of registered \code{@Sync} accumulators
   and \code{@Async} accumulators.
   \begin{itemize}
@@ -99,14 +102,7 @@ Notes:
 \subsection{Example use of \code{Acc}}
 \begin{example}[Histogram]
 \begin{lstlisting}
- @det
- def histogram(N:Int, A:Rail[Int(0..N)]):Rail[Int](N+1) {
-    val result = new Rail[Acc[Int]](N+1, (Int)=>new Acc[Int](0,Int.+));
-    finish for (i in A.values()) async {
-       result(i) <- 1;
-    }
-    return new Rail[Int](N+1, (i:Int)=> result(i));
- }
+
 \end{lstlisting}
 \end{example}
 
@@ -253,7 +249,9 @@ For \code{x:Clocked[T]} the following operations available to any activity on wh
 is registered:
 \begin{itemize}
 \item \code{x()} -- this returns the value of the current field. 
-\item \code{x() = t} -- this sets the value of the next field. Note:
+
+\item \code{x() = t} -- This is translated to x.next()=t. That is, the
+  value of the next field is set. Note:
      write-write conflicts are possible since multiple activities may
      try to set the value at the same time.
 \item\code{x.finalized()} -- this returns the value of the now field

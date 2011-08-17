@@ -1,3 +1,89 @@
+A {\em safe} parallel program is one that can be executed with a
+sequential (depth-first) schedule $S$ and for which every schedule
+produces the same result as $S$.  Such a program is semantically a
+sequential program, hence it is scheduler-determinate and
+deadlock-free.
+
+A {\em safe programming language} is an imperative parallel
+programming language in which every legal program is a safe
+program. Programmers can write code in such a language secure in the
+knowledge that they will not encounter a large class of parallel
+programming problems. Such a language is particularly useful for
+parallelizing sequential (imperative) programs. In such cases ({\em
+  contra} reactive programming) the desired application semantics are
+sequential, and parallelism is needed purely for efficient
+implementation.
+
+The key property of a safe programming language is that the {\em same}
+program can be developed and debugged as a sequential program and then
+safely run in parallel. Parallel execution is guaranteed to effect
+only performance, not correctness. Safety is a very strong property.
+
+\begin{figure}
+  \begin{lstlisting}
+    
+  \end{lstlisting}
+  \caption{A program that is not sequential}
+  
+\end{figure}
+In this paper we establish that a very rich fragment of X10 is safe.
+The fragment supports multi-place, fine-grained concurrency
+over an arbitrary heap, clocked computations, concurrent accumulators,
+and {\em clocked types} that safely capture the ``red black'' idiom
+for iterative computations. It also uses a very lightweight effects
+mechanism to reason about disjointness of acccess. We show that a
+large variety of concurrency and communication idioms can be naturally
+expressed in Safe X10.
+
+Determinism in parallel programming is a very active area of research.
+Guava \cite{guava} introduces restrictions on shared memory Java
+programs that ensure no data-races primarily by distinguishing
+monitors (all access is synchronized) from values (immutable) and
+objects (private to a thread). However Guava is not safe since Guava
+programs may use \code{wait}/\code{notify} for arbitrary concurrent
+signalling and hence may not executable with a sequential
+schedule. The Revisions programming model \cite{Revisions} guarantees
+determinism by isolating asynchronous tasks but merging their writes
+determinately. However, the model explicitly does not require that
+a sequential schedule be valid (c.f. Figure~1 in \cite{Revisions}).
+
+DPJ develops the ``determinacy-by-default'' slogan using a static
+type-and-effects system to establish commutativity of concurrent
+actions.  The deterministic fragment of DPJ is safe according to the
+definition above. Safe X10 offers a much richer concurrency model
+which guarantees the safety of common idioms such as accumulators and
+cyclic tasks (clocks) without relying on effects annotations. The
+lightweight effects mechanism in X10 can be extended to support a much
+richer effects framework (along the lines of DPJ) using X10's
+constrained type system.  We leave this as future work.
+
+The SafeJava language \cite{SafeJava} is unfortunately not safe
+according to our definition, even though it guarantees determinacy and
+deadlock freedom, using ownership types, unique pointers and partially
+ordered lock levels. Again, a sequential scheduler is not admissible
+for the model.
+
+Some data-flow synchronization based languages and frameworks (e.g.{}
+Kahn style process networks \cite{kahn,kahn-mcqueen}, concurrent
+constraint programming \cite{ccp}, \cite{SHIM}) are guaranteed
+determinate but not safe according to our definition since they do not
+permit sequential schedules. Indeed they permit the possibility of
+deadlock. (The notion of safety is also not quite relevant since these
+frameworks do not support shared mutable variables.)
+
+Determinizing run-times support coarse-grained fork-join concurrency
+by maintaining a different copy of memory for each activity and
+merging them determinately at finish points (\cite{grace},
+\cite{core-det}, \cite{dmp}, \cite{kendo},\cite{determinator}). Safe
+X10 can run on such systems in principle, but does not require them.
+To execute Safe X10, such systems need to support fine-grained
+asynchrony (with some form of work-stealing or fork-joining
+scheduler), clocks and accumulators.
+
+
+
+
+%% Anything from Blelloch?
 
 Desiderata:
 
