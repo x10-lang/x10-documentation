@@ -1,3 +1,4 @@
+%% Includes treatment of clocked variables.
 Featherweight X10 (FX10) is a formal calculus for X10 intended to  complement Featherweight Java
 (FJ).  It models imperative aspects of X10 including the concurrency
 constructs \hfinish{} and \hasync{}.
@@ -134,13 +135,14 @@ $\hM ::= \hdef\ \hm(\ol{\hx}:\ol{\hC}):\hC\{\hS\}$
 $\hp ::= \hl ~~|~~ \hx$
 & Path. \\ %(location or parameter)
 
-$\he ::=  \hp.\hf  ~|~ \hnew{\hC} ~|~ \hnew{\hAcc(\hr,\hz)}~|~ \ha()$
+$\he ::=  \hp.\hf  ~|~ \hnew{\hC} ~|~ \ha()$
 & Expressions. \\ %: locations, parameters, field access\&assignment,  %invocation, \code{new}
 $\hB ::= \blockt{\pi}{\hS}$
 & Blocks. \\
 $\hS ::=  \epsilon ~|~\hp.\hf = \hp; ~|~ \hp.\hm(\ol{\hp});  ~|~ \valt{\hx}{\he}$ &\\
-$~~~~|~\acct{\hx}{\hnew{\hAcc(\hr,\hz)}} ~|~ \ha \leftarrow \hp$ &\\
-$~~~~|~ \pclocked~\finish{\hB}$&\\
+$~~~~|~\valt{\hx}{\hnew{\hAcc(\hp,\hp)}} ~|~ \ha \leftarrow \hp$ &\\
+$~~~~|~\valt{\hx}{\hnew{\hClocked(\hp,\hp)}} ~|~ \ha() = \hp$ &\\
+$~~~~|~ \pclocked~\finish{\ol{\hp}}{\hB}$&\\
 $~~~~|~ \pclocked~\async{\hB}~|~ \hS~\hS$
 & Statements. \\ %: locations, parameters, field access\&assignment, invocation, \code{new}
 
@@ -170,8 +172,8 @@ $\typerule{
  \hS,\cH \preduce \hS',\cH' ~|~ \cH' ~|~ \err
 }{
   \begin{array}{rcl}
-    \blockt{\pi_1}{\hS},\cH&\ptreduce &\blockt{\pi_1}{\hS'},\cH' 
-    ~|~ \cH' ~|~ \err \gap \pi=\pi_1,\pi_2\\
+    \blockt{\ol{\hl}}{\hS},\cH&\ptreduce &\blockt{\ol{\hl}}{\hS'},\cH' 
+    ~|~ \cH' ~|~ \err \gap \pi=\pi'_1,\ol{\hl};\pi'_2\\
     \hS~\hS_1, \cH &\preduce& \hS'~\hS_1,\cH' ~|~ \hS_1,\cH' ~|~ \err
   \end{array}
 }$~\RULE{(R-Trans)}
@@ -179,8 +181,10 @@ $\typerule{
 $\typerule{
  \hB,\cH \preduce \hB',\cH' ~|~ \cH' ~|~ \err
 }{
-    \pclocked~\finishasync{\hB},\cH \preduce
-    \pclocked~\finishasync{\hB'},\cH'  ~|~ \cH' ~|~ \err
+    \pclocked~\async{\hB},\cH \preduce 
+   \pclocked~\async{\hB'},\cH'  ~|~ \cH' ~|~ \err \\
+    \pclocked~\finish{\ol{\hl}}{\hB},\cH \ptreduce 
+   \pclocked~\finish{\ol{\hl}}{\hB'},\cH'  ~|~ \cH' ~|~ \err \gap\gap \pi=\pi_1';\pi_2',\ol{\hl}\\
 }$~\RULE{(R-Trans-B)}
 \\\\
 $\typerule{
@@ -212,7 +216,7 @@ $\typerule{
 \\\\
 $\typerule{
     \cH(\hl)=\hC(\ol{\hf}\mapsto\ol{\hl'})\gap\gap 
-g=\hf_i ~|~g\not\in\ol{\hf}
+\hg=\hf_i ~|~\hg\not\in\ol{\hf}
 }{
   \hl.\hg,\cH \preduce \hl_i',\cH ~|~ \err
 }$~\RULE{(R-Access)}
@@ -222,6 +226,18 @@ $\typerule{
 }{
   \hl.\hf=\hl',\cH \preduce \cH[ \hl \mapsto \hC(F[ \hf \mapsto \hl'])]
 }$~\RULE{(R-Assign)}
+\\\\
+$\typerule{
+    \cH(\hl)=\hClocked(\ho,\he) \gap \hl\in \pi_2 ~|~ \hl\not\in\pi_2
+}{
+  \hl()=\hl',\cH \preduce \cH[ \hl \mapsto \hClocked(\ho,\hl')] ~|~ \err
+}$~\RULE{(R-Clocked-A)}
+\quad
+$\typerule{
+  \cH(\hl)=\hClocked(\ho,\he) \gap \hl\in\pi_2 ~|~ \hl\not\in\pi_2
+}{
+  \hval{\hx}{\hl()}{\hS},\cH \preduce \hS[\ho/\hx], \cH ~|~ \err\\
+}$~\RULE{(R-Clocked-R)}
 \\\\
 $\typerule{
     \hl \not \in \dom(\cH)
@@ -241,8 +257,8 @@ $\typerule{B\stuck}{
 }$~\RULE{(R-Q-CA)}
 ~
 $\typerule{\hS\stuck}{
-   \blockt{\pi}{\hS}\stuck\\
-   \blockt{\pi}{\hS~\xadvance~\hS'}\stuck\\
+   \blockt{\ol{\hl}}{\hS}\stuck\\
+   \blockt{\ol{\hl}}{\hS~\xadvance~\hS'}\stuck\\
 }$~\RULE{(R-Q-B)}
 ~
 $\typerule{
@@ -252,15 +268,15 @@ $\typerule{
 }$~\RULE{(R-Q-S)}
 \\\\
 $\typerule{
-\cH(a)=\hAcc(\hr,\hv) \gap S\stuck \gap \gap    \ha\in \pi_1 ~|~
-\ha\not\in \pi_1
+\cH(\ha)=\hAcc(\hr,\hv) \gap S\stuck \gap \gap    \ha\in \ol{\hl} ~|~
+\ha\not\in \ol{\hl}
 }{
-\blockt{\pi_1}{\hS~\hval{\hx}{\ha()}~\hS_1},\cH \preduce 
-\blockt{\pi_1}{\hS~\hS_1[\hv/\hx]}, \cH' ~|~ \err
+\blockt{\ol{\hl}}{\hS~\hval{\hx}{\ha()}~\hS_1},\cH \preduce 
+\blockt{\ol{\hl}}{\hS~\hS_1[\hv/\hx]}, \cH' ~|~ \err
 }$~\RULE{(R-Acc-R)}
 ~
 $\typerule{
-  \cH(\ha)=\hAcc(\hr,\hv)\gap \hw=\hr(\hv,\hp)  \gap\gap \ha\in \pi~|~ \ha\not\in\pi
+  \cH(\ha)=\hAcc(\hr,\hv)\gap \hw=\hr(\hv,\hp)  \gap\gap \ha\in \pi_1~|~ \ha\not\in\pi_1
 }{
   \ha \leftarrow \hp,\cH \preduce \cH[\ha \mapsto \hAcc(\hr,\hw)] ~|~ \err
 }$~\RULE{(R-Acc-W)}
@@ -278,7 +294,8 @@ $\typerule{
 }$~\RULE{(R-Adv-S)}
 ~
 $\typerule{}{
-    \clockedfinishasync{\hB}\ureduce \clockedfinishasync{\hB}\\
+  \hclocked~\finishasync{\hB} \ureduce  \\
+\quad\quad\quad \hclocked~\finishasync{\hB}\\
     \xadvance~\hS \ureduce \hS\\
 }$~\RULE{(R-Adv-A,CAF)}
 \\\\
@@ -286,7 +303,7 @@ $\typerule{}{
 $\typerule{
   \hS \ureduce \hS'
 }{
-   \blockt{\pi}{\hS}\ureduce \blockt{\pi}{\hS'}
+   \blockt{\ol{\hl}}{\hS}\ureduce \blockt{\ol{\hl}}{\hS'}
 }$~\RULE{(R-Adv-B)}
 ~
 $\typerule{
@@ -296,10 +313,11 @@ $\typerule{
 }$~\RULE{(R-Adv-S)}
 ~
 $\typerule{
-    \hB \ureduce \hB'
+    \hB \ureduce \hB' \gap H'=H[\ol{\hl}\mapsto H[\ol{\hl}]']
 }{
   \begin{array}{l}
-    \hclocked~\finish{\hB},\cH\preduce  \hclocked~\finish{\hB'},\cH
+    \hclocked~\finish{\ol{\hl}}{\hB},\cH\preduce \\
+\quad\quad\quad \hclocked~\finish{\ol{\hl}}{\hB'},\cH'
   \end{array}
 }$~\RULE{(R-Adv)}
 \\\\

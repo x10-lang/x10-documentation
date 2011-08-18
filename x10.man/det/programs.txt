@@ -70,3 +70,46 @@ been made.
 Need a way to attach an overlay on existing data-structures.
 
 
+===================
+what about non-termination.
+
+Why choose DFS? Sequential. Debugging. 
+
+If dfs gives you non-termination then will every parallel schedule
+give you non-termination?
+
+This language is closely related to Steele's.
+
+Lcassen and Gifford had serial semantics. But what control constructs
+did they have?
+
+Contributions:
+   * We develop clocked types and 
+   * Effects for a language with unrestricted nesting of async, finish
+     and procedure calls.
+   * Effect system built using constrained types.
+   * Formal semantics for Safe X10.
+   * 
+
+Clocked computations allow pipelining?
+
+Same as Steele: if it terminates, then all executions terminate.
+So what do we have over Steele's language? 
+We do permit a more dynamic notion of interaction between concurrent
+threads, via accumulators. 
+
+No run-time overhead,
+static checking that all the operations are performed
+
+What is the advantage of clocked types? Without them you could write
+next version, read current version, and you would have to explicitly
+switch. messy and error-prone. Difficult to statically ensure that
+read operations are performed on the red copy and write operations on
+the black copy. 
+
+We also permit code to be run in advance()?
+
+Can that not be used to implement clocked types, with some
+registration mechanism?
+
+There are rules! 

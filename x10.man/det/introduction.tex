@@ -1,8 +1,9 @@
-A {\em safe} parallel program is one that can be executed with a
-sequential (depth-first) schedule $S$ and for which every schedule
-produces the same result as $S$.  Such a program is semantically a
-sequential program, hence it is scheduler-determinate and
-deadlock-free.
+A serial schedule for a parallel program is one which always executes
+the first enabled step in program order. A {\em safe} parallel program
+is one that can be executed with a serial schedule $S$ and for which
+every schedule produces the same result as $S$.  Such a program is
+semantically a sequential program, hence it is scheduler-determinate
+and deadlock-free.
 
 A {\em safe programming language} is an imperative parallel
 programming language in which every legal program is a safe
@@ -19,12 +20,38 @@ program can be developed and debugged as a sequential program and then
 safely run in parallel. Parallel execution is guaranteed to effect
 only performance, not correctness. Safety is a very strong property.
 
+Figure~\ref{fig:1} shows  the famous ``parallel Or'' program of Plotkin 
+ (in X10 syntax, \cite{x10}). This program can be executed with a
+depth-first schedule, is partially determinate and deadlock-free, but {\em not}
+safe. The result of running the sequential schedule is not the same as
+the result that can be obtained with other schedules. Specifically
+\code{parallelOr(()=> CONT, ()=>TRUE)} will diverge (exhibit an
+infinite exection sequence) under the depth-first schedule, but will
+return \code{true} under any fair schedule that permits the second
+async to progress.
+
 \begin{figure}
   \begin{lstlisting}
-    
+static val CONT=1, TRUE=2, FALSE=3;
+def run(done:Cell[Boolean], a:()=>Int) {
+ var aa:Int=a();
+ var cont:Boolean=true;         
+   for (; aa==CONT && cont;aa=a()) {
+      atomic cont = !done();  
+   }
+   if (aa==TRUE)
+     atomic done()=true;
+}
+def parallelOr(a:()=>Int, b:()=>Int):Boolean {
+  val done=new Cell[Boolean](false);
+  finish {
+    async run(done, a);
+    async run(done, b);
+  }
+  return done();
+}
   \end{lstlisting}
-  \caption{A program that is not sequential}
-  
+  \caption{A program that is not sequential}\label{fig:1}
 \end{figure}
 In this paper we establish that a very rich fragment of X10 is safe.
 The fragment supports multi-place, fine-grained concurrency
@@ -141,3 +168,7 @@ SVN head and will be in the next release of \Xten.
 
 Semantics and theorems for an abstract version of the language.
 
+
+\subsection{Related Work}
+
+\cite{Steele:1989:MAP:96709.96731} introduced the idea of 

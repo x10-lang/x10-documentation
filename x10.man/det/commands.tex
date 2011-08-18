@@ -130,8 +130,9 @@
 \newcommand{\reducesto}[0]{\rightsquigarrow}
 \newcommand{\reduce}[0]{\rightsquigarrow}
 \newcommand{\preduce}[0]{\rightsquigarrow_{\pi}}
+\newcommand{\plreduce}[0]{\rightsquigarrow_{\pi[\ol{\hl}]}}
 \newcommand{\ureduce}[0]{\stackrel{+}{\rightsquigarrow}}
-\newcommand{\ptreduce}[0]{\rightsquigarrow_{\pi_2}}
+\newcommand{\ptreduce}[0]{\rightsquigarrow_{\pi'}}
 
 
 %% For typesetting theorems and some math symbols (\rightsquigarrow).
@@ -342,11 +343,13 @@
 \newcommand{\finishasynct}[2]{\code{[finish | async](}{\tt
     #1})\lb#2\rb}
 \newcommand{\clockedfinishasync}[1]{\code{(async | [clocked] finish)}~{\tt #1}}
-\newcommand{\finishasync}[1]{\code{[finish | async]}~#1}
-\newcommand{\finish}[1]{\code{finish}~#1}
+\newcommand{\finishasync}[1]{\code{[finish values(}\ol{\hp}\code{)| async]}~#1}
+\newcommand{\finish}[2]{\code{finish values(}#1\code{)}~#2}
 \newcommand{\clocked}[0]{\code{clocked}}
 \newcommand{\pclocked}[0]{\code{[clocked]}}
 \newcommand{\hclocked}[0]{\code{clocked}}
+\newcommand{\hClocked}[0]{\code{Clocked}}
+\newcommand{\hvalues}[0]{\code{values}}
 \newcommand{\xadvance}[0]{\code{advance;}}
 \newcommand{\hadvance}[0]{\code{advance}}
 \newcommand{\stuck}[0]{\downarrow}
