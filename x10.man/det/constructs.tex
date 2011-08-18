@@ -22,9 +22,9 @@ creation to point of use. e.g.{} arrays of accumulators, hash-maps,
 etc. In particular, accumulators can be passed into arbitrary method
 invocations, returned from methods etc, with no restrictions.
 
-The method 
+The method
 \begin{lstlisting}
-Runtime.isRegistered[T](x:Acc[T]):Int  
+Runtime.isRegistered[T](x:Acc[T]):Int
 \end{lstlisting}
 
 \noindent returns \code{0} if \code{x} is not registered with the
@@ -35,56 +35,56 @@ it is \code{@Async} registered.
 %%    for symmetry.
 
 An invocation \code{e.m(e1,...,en)} of an \code{@Sync} method on an \code{Acc} is
-  translated to: 
+  translated to:
 \begin{lstlisting}
-{ 
+{
   val x = e;
-  if (Runtime.isRegistered(x) !=1) 
+  if (Runtime.isRegistered(x) !=1)
     throw new IllegalAccAccess(x);
   Runtime.sync();
   x.m(e1,...,en)
-}      
+}
 \end{lstlisting}
 The \code{@Sync} methods on an \code{Acc} are ones that return its
 current value (\code{@Read}) and ones that reset it (\code{@Write}).
 
-An invocation \code{e.m(e1,...,en)} of an \code{@Async} method on an 
-\code{Acc} is translated to: 
+An invocation \code{e.m(e1,...,en)} of an \code{@Async} method on an
+\code{Acc} is translated to:
 \begin{lstlisting}
-{ 
+{
   val x = e;
-  if (Runtime.isRegistered(x)==0) 
+  if (Runtime.isRegistered(x)==0)
     throw new IllegalAccAccess(x);
   x.m(e1,...,en);
-}    
+}
 \end{lstlisting}
 
 The only \code{@Async} method on an \code{Acc} is the one that offers an
 update to its value (\code{@Write}).
 
 In many cases the compiler can statically evaluate whether
-\code{Runtime.isRegistered(x) > 0} and/or whether a call to 
-\code{Runtime.sync()}  will suspend. 
+\code{Runtime.isRegistered(x) > 0} and/or whether a call to
+\code{Runtime.sync()}  will suspend.
 
 It may then appropriately simplify the above code. e.g.{}~in the code below
 \begin{lstlisting}
 val x:Acc[Int] = new Acc[Int](0, Int.+);
 finish for (i in 0..100000) async
    x <- i;
-Console.OUT.println("x is " + x());  
+Console.OUT.println("x is " + x());
 \end{lstlisting}
 \noindent the compiler can infer that \code{x()} wont suspend, due to
 the \code{finish}. Hence it may eliminate the run-time suspension
 check. Further it can establish that \code{x} is \code{@Sync}
 registered with the current activity, hence it can eliminate the
-access check. 
+access check.
 
 Notes:
 \begin{itemize}
-\item 
+\item
    Accs are first-class values. There are no restrictions in storing
    them in data-structures, reading them, passing them as arguments to
-   methods, returning them from methods etc. 
+   methods, returning them from methods etc.
 
    However, any attempt to use it will fail unless the Acc is
    registered with the current activity.
@@ -96,7 +96,7 @@ Notes:
 \end{itemize}
 
 \begin{proposition}
-\code{Acc}'s are determinate under arbitrary usage.   
+\code{Acc}'s are determinate under arbitrary usage.
 \end{proposition}
 
 \subsection{Example use of \code{Acc}}
@@ -110,9 +110,9 @@ Notes:
 \begin{lstlisting}
  // A DistHashMap is used because the input is a DistStream
 
- @det 
+ @det
  def wordCount(m:DistStream[Word]):DistHashMap[Word,Int](m.dist) {
-   val a = new DistHashMap[Word, Acc[Int]](m.dist, 
+   val a = new DistHashMap[Word, Acc[Int]](m.dist,
           (w:Word)=> new Acc[Int](Int.Sum)));
    finish for (p in m.dist.places()) async at(p) {
       for (word in m(p).words())
@@ -121,7 +121,7 @@ Notes:
    return  new DistHashMap[Word, Int](m.dist, (w:Word)=> a(w));
 }
 \end{lstlisting}
-  
+
 \end{example}
 
 
@@ -144,7 +144,7 @@ def reduce[T](in:DistArray[T], red:Reducible[T]):T {
     async at(origin) temp() <- x;
   }
   return acc();
-}    
+}
 \end{lstlisting}
 \end{example}
 
@@ -152,13 +152,13 @@ An \code{allReduce} can be implemented by following the above
 operation with a broadcast:
 \begin{lstlisting}
   @det
-  def allReduce[T](in:DistArray[T]{self.dist==Dist.UNIQUE}, 
+  def allReduce[T](in:DistArray[T]{self.dist==Dist.UNIQUE},
     red:Reducible[T], out:DistArray[T](in.dist)):void {
     val x = reduce(in, red);
     finish for (dest in out.dist.places()) async at (dest) {
       for (p in out.dist |here)
         out(p)=x;
-    }      
+    }
   }
 \end{lstlisting}
 One can write this code using a clock (to avoid two finish nests).
@@ -175,7 +175,7 @@ The collecting \code{finish} construct is of the form \code{finish(r)
 execution of the statement \code{offer t;} results in a value \code{t}
 being accumulated in a set. (\code{t} must be of type \code{T}.) The
 result of the reduction of this set of \code{T} values with \code{r}
-is then returned. 
+is then returned.
 
 \begin{lstlisting}
   {
@@ -192,7 +192,7 @@ quite naturally to reflect the relationship between the parallel
 computation performing the accumulation and the value returned. In
 particular there is no need to explicitly introduce the notion of an
 accumulator, or to register it with the current block, or to check
-that other activities in the current block have quiesced. 
+that other activities in the current block have quiesced.
 
 On the other hand, this strength is also a limitation. It is not
 possible to use the same idiom for clocked code, i.e.{} collect values
@@ -209,7 +209,7 @@ one could set the return type to be a tuple of values, but then the
 \code{offer} was intended. Now it is not clear that the index type
 should be arithmetic -- why should not one be able to collect into the
 range of a \code{HashMap} (so the index type could be an arbitrary
-type \code{Key})? 
+type \code{Key})?
 
 We feel that these decisions are all orthogonal to the actual process
 of accumulating and should be dealt with by the data-structuring
@@ -243,12 +243,12 @@ has created, and the ones registered to its parent activity.
 \code{Clocked[T]}  has a constructor that takes two \code{T} arguments, these are
 used to initialize the now and next fields. These arguments should be
 ``new'' (that is, no other data-structure should have a reference to
-these arguments). 
+these arguments).
 
 For \code{x:Clocked[T]} the following operations available to any activity on which \code{x}
 is registered:
 \begin{itemize}
-\item \code{x()} -- this returns the value of the current field. 
+\item \code{x()} -- this returns the value of the current field.
 
 \item \code{x() = t} -- This is translated to x.next()=t. That is, the
   value of the next field is set. Note:
@@ -267,7 +267,7 @@ reducer is used to perform accumulate operations.
 
 Operations for \code{x:ClockedAcc[T]}:
 \begin{itemize}
-\item \code{x()} -- this returns the value of the now field. 
+\item \code{x()} -- this returns the value of the now field.
 \item\code{x() <- t} -- this accumulates \code{t} into the next field. Note: No
      write-write conflicts are possible.
 \item\code{x() = t} -- this resets the value of the next field to \code{t}. To avoid
@@ -299,11 +299,7 @@ performs the current/next swap) is run at the clock quiescent point
 before the user specified closure is run.)
 
 
-\begin{example}
-\begin{lstlisting}
 \input {examples/stencil.x10}
-\end{lstlisting}
-\end{example}
 
 
 In the example above there is no need to reinitialize the value of
@@ -314,10 +310,8 @@ errors. The the above code would change as follows. We would pass in a
 different reduction operation red that sums rather than returns a max.
 Further, we would replace the \code{Clock.advanceAll()} call with
 \begin{lstlisting}
-  Clock.advanceAll(()=>{err()=0.0D;});  
+  Clock.advanceAll(()=>{err()=0.0D;});
 \end{lstlisting}
 
 This resets the next value of err to be \code{0.0D} before the accumulations
 start to happen.
-
-

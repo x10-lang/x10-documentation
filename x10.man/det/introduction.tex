@@ -20,7 +20,7 @@ program can be developed and debugged as a sequential program and then
 safely run in parallel. Parallel execution is guaranteed to effect
 only performance, not correctness. Safety is a very strong property.
 
-Figure~\ref{fig:1} shows  the famous ``parallel Or'' program of Plotkin 
+Figure~\ref{fig:1} shows  the famous ``parallel Or'' program of Plotkin
  (in X10 syntax, \cite{x10}). This program can be executed with a
 depth-first schedule, is partially determinate and deadlock-free, but {\em not}
 safe. The result of running the sequential schedule is not the same as
@@ -35,20 +35,20 @@ async to progress.
 static val CONT=1, TRUE=2, FALSE=3;
 def run(done:Cell[Boolean], a:()=>Int) {
  var aa:Int=a();
- var cont:Boolean=true;         
-   for (; aa==CONT && cont;aa=a()) {
-      atomic cont = !done();  
-   }
-   if (aa==TRUE)
-     atomic done()=true;
+ var cont:Boolean=true;
+ for (; aa==CONT && cont;aa=a()) {
+  atomic cont = !done();
+ }
+ if (aa==TRUE)
+  atomic done()=true;
 }
 def parallelOr(a:()=>Int, b:()=>Int):Boolean {
-  val done=new Cell[Boolean](false);
-  finish {
-    async run(done, a);
-    async run(done, b);
-  }
-  return done();
+ val done=new Cell[Boolean](false);
+ finish {
+  async run(done, a);
+  async run(done, b);
+ }
+ return done();
 }
   \end{lstlisting}
   \caption{A program that is not sequential}\label{fig:1}
@@ -119,7 +119,7 @@ Desiderata:
    deadlock-free.
 \item They should be first-class -- they can be stored in
   data-structures/read from them, passed as arguments to
-  procedures/returned etc with no restrictions. 
+  procedures/returned etc with no restrictions.
 \item Usable -- common idioms should be naturally and elegantly expressible.
 \item Additional static type-checking can provide extra guarantees
   (e.g.{} no concurrency related run-time exceptions) that may aid
@@ -136,7 +136,7 @@ Challenge
   Arbitrary nature of object graphs.
 
 
-{\em 
+{\em
 \begin{enumerate}
 \item Use activity registration as a mechanism to tame object graphs.
 \item Focus on structured concurrency. Using scoping and block-structure
@@ -152,9 +152,9 @@ Challenge
 }
 
 Key contributions:
-{\em 
+{\em
 \begin{enumerate}
-\item Identification of determinate, deadlock-free data-structures. 
+\item Identification of determinate, deadlock-free data-structures.
 \item Discussion of design alternatives which points out the
   difficulty of integrating these ideas in a modern OO language.
 \item Discussion of various idioms expressible using these data-structures.
@@ -171,4 +171,4 @@ Semantics and theorems for an abstract version of the language.
 
 \subsection{Related Work}
 
-\cite{Steele:1989:MAP:96709.96731} introduced the idea of 
+\cite{Steele:1989:MAP:96709.96731} introduced the idea of

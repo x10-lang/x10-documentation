@@ -1,3 +1,5 @@
+\begin{example}
+\begin{lstlisting}
 @det
 def stencil(a:Array[Double], eps:Double, P:Int) {
     val red = Double.Reducible.max; 
@@ -21,3 +23,5 @@ def stencil(a:Array[Double], eps:Double, P:Int) {
         }
     return b.finalized();
 }
+\end{lstlisting}
+\end{example}
