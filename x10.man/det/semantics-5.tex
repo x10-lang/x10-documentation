@@ -1,58 +1,53 @@
 %% Includes treatment of clocked variables.
 Featherweight X10 (FX10) is a formal calculus for X10 intended to  complement Featherweight Java
 (FJ).  It models imperative aspects of X10 including the concurrency
-constructs \hfinish{} and \hasync{}.
+constructs \hfinish{}, \hasync{}, clocks and accumulators.
 
 
 \paragraph{Overview of formalism}
 \Subsection{Syntax}
 
 
-\Ref{Figure}{syntax} shows the abstract syntax of FX10. 
+\Ref{Figure}{syntax} shows the abstract syntax of FX10.
 $\epsilon$ is the empty statement. Sequencing associates to the left.
 %\code{async}
-%and \code{finish} bind tighter than statement sequencing, so 
+%and \code{finish} bind tighter than statement sequencing, so
 %$\code{async}~\hS~\hS'$ is the sequencing of $\code{async}~\hS$ and
-%$\hS'$. 
+%$\hS'$.
 The block syntax in source code is just \code{\{\hS\}},
 however at run-time the block is augmented with (the initially empty) set of locations
-$\pi$ representing the write capabilities of the block.
+$\pi$ representing the objects registered on the block,
+     which are those that were created in that block.
 
 %(\Ref{Section}{val} will later add the \hval and \hvar field modifiers.)
-Expression~$\hval{\hx}{\he}{\hS}$ evaluates $\he$, assigns it to a
+Statement~$\hval{\hx}{\he}{\hS}$ evaluates $\he$, assigns it to a
 new variable $\hx$, and then evaluates \hS. The scope of \hx{} is \hS.
 
+Statement $\hp_1 \leftarrow \hp_2$ is legal only when $\hp_1$ is an accumulator,
+    and it accumulates $\hp_2$ into $\hp_1$ (given the reduction operator that was supplied when the accumulator was created).
+Statement $\hp_1() = \hp_2$ is legal only when $\hp_1$ is a clocked value,
+    and it writes $\hp_2$ into the next value of $\hp_1$.
+Expression $\hp()$ is legal only when $\hp$ is an accumulator or a clocked value.
+%    for a clocked-value it checks that $\hp$ is in $\pi$,
+%    and for an accumulator it checks at runtime that it was executed in the block that created $\hp$
+%    and it waits until all activities created in the block have terminated or got stuck.
+
+The \hfinish statement $\pclocked \finish{\ol{\hp}}{\hB}$ explicitly states all the clocked-values
+    that will be advanced when the clock is advanced;
+    these clocked-values must have been registered in the enclosing block.
+
 The syntax is similar to the real X10 syntax with the following difference:
-%Non-escaping methods are marked with \code{@NonEscaping}, such methods
-%can be invoked on raw objects (and can be used to initialize them).
-FX10 does not have constructors; instead, an object is initialized by
-assigning to its fields. X10 uses \code{acc} and not \code{val} for new
-accumulator declarations. These are minor simplifications intended to
-streamline the formal presentation.
+A constructor in FX10 assigns its arguments to the object's fields.
+Field assignment was removed from FX10, however objects are still mutable because clocked values and accumulators
+    are mutable.
+(X10 has an effect system that guarantees that \hasync{} only accesses immutable state, clocked values and accumulators.)
+These are minor simplifications intended to
+    streamline the formal presentation.
 
 \Subsection{Reduction}
 A {\em heap}~$H$ is a mapping from a given set of locations to {\em
-  objects}. An object is a pair $C(F)$ where $C$ is a class (the exact
-class of the object), and $F$ is a partial map from the fields of $C$
-to locations.
-%We say the object~\hl is {\em total/cooked} (written~$\cooked_H(\hl)$)
-%    if its map is total, i.e.,~$H(\hl)=\hC(F) \gap \dom(F)=\fields(\hC)$.
-
-%We say that a heap~$H$ {\em satisfies} $\phi$ (written~$H \vdash \phi$)
-%    if the plus assertions in~$\phi$ (ignoring the minus assertions) are true in~$H$,
-%    i.e., if~$\phi \vdash +\hl$ then~$\hl$ is cooked in~$H$
-%    and if~$\phi \vdash +\hl.\hf$ then~$H(\hl)=\hC(F)$ and~$F(\hf)$ is cooked in~$H$.
-
-
-%An {\em annotation} $N$ for a heap $H$ maps each $l \in \dom(H)$ to a
-%possibly empty set of fields $a(H(l))$ of the class of $H(l)$ disjoint
-%from $\dom(H(l))$. (These are the fields currently being
-%asynchronously initialized.) The logic of initialization described
-%above is clearly sound for the obvious interpretation of formulas over
-%annotated heaps. For future reference, we say that that a heap $H$
-%{\em satisfies} $\phi$ if there is some annotation $N$ (and some
-%valuation $v$ assigning locations in $\dom(H)$ to free variables of
-%$\phi$) such that $\phi$ evaluates to true.
+  objects}. An object is a pair $\hC(\ol{\hl})$ where $\hC$ is a class (the exact
+class of the object), and $\ol{\hl}$ are the values in the fields.
 
 The reduction relation is described in
 Figure~\ref{Figure:reduction}. An {\em S-configuration} is of the form
@@ -73,7 +68,7 @@ set of capabilities.  For $X$ a partial function, we use the notation
 $X[v \mapsto e]$ to represent the partial function which is the same
 as $X$ except that it maps $v$ to $e$.
 
-The rules for termination, step, val, new, invoke, access and assign
+The rules for termination, step, val, new, invoke, and access
 are standard.  The only minor novelty is in how \hasync{} is
 defined. The critical rule is the last rule in~\RULE{(R-Step)} -- it
 specifies the ``asynchronous'' nature of \hasync{} by permitting \hS{}
@@ -84,13 +79,25 @@ those obtained from the environment.
 
 %
 The rule~\RULE{(R-New)} returns a new location that is bound to a new
-object that is an instance of \hC{} with none of its fields initialized.
+object that is an instance of \hC{} with its fields set to the argument;
+    the new object is registered with the block.
+(It is enough to register only clocked-values and accumulators, but
+    for simplicity we register all newly created objects.)
+Given a set of registered objects $\ol{\hl}$ in a heap $H$,
+    we define
+    $\hAcc(\ol{\hl})$ to return only the accumulators in~$\ol{\hl}$.
+ %   and (ii)~$\fclocked(\ol{\hl})$ only the clocked-values.
+
+
+Rule \RULE{(R-Trans-B-Check)} verifies that the set of clocked-values the \hfinish
+    will advance was indeed registered on the enclosing block.
+Rule \RULE{(R-Trans-B-Check)} has priority over \RULE{(R-Trans-B)},
+    i.e., we only apply \RULE{(R-Trans-B)} if the check was successful.
+%todo: give an example of registration and legality.
+
 %
 The rule~\RULE{(R-Access)} ensures that the field is initialized before it is
 read ($\hf_i$ is contained in $\ol{\hf}$).
-%
-The rule~\RULE{(R-Acc-N)} adds the new location bound to the
-accumulator as a synchronous access capability to the current async.
 %
 The rule~\RULE{(R-Acc-A-R)} permits the accumulator to be read in a
 block provided that the current set of capabilities permit it (if not,
@@ -107,11 +114,11 @@ only if all the top-level \code{clocked asyncs} in the scope of the
 \code{clocked finish} and before an \code{advance} are stuck at an
 \code{advance}. A \code{clocked finish} can also advance if all the
 the top-level \code{clocked asyncs} in its scope are stuck. In this
-case, the statement in the body of hte \code{clocked finish} has
+case, the statement in the body of the \code{clocked finish} has
 terminated, and left behind only possibly clocked \code{async}. This
 rule corresponds to the notion that the body of a \code{clocked
   finish} deregisters itself from the clock on local termination.
-Note that in both these rules unlocked \code{aync} may exist in the
+Note that in both these rules un-clocked \code{aync} may exist in the
 scope of the \code{clocked finish}; they do not come in the way of the
 \code{clocked finish} advancing.
 
@@ -135,16 +142,16 @@ $\hM ::= \hdef\ \hm(\ol{\hx}:\ol{\hC}):\hC\{\hS\}$
 $\hp ::= \hl ~~|~~ \hx$
 & Path. \\ %(location or parameter)
 
-$\he ::=  \hp.\hf  ~|~ \hnew{\hC} ~|~ \ha()$
-& Expressions. \\ %: locations, parameters, field access\&assignment,  %invocation, \code{new}
+$\he ::=  \hp.\hf  ~|~ \hnew{\hC}(\ol{\hp}) ~|~ \hp()$
+& Expressions. \\ %: locations, parameters, field access,  %invocation, \code{new}
 $\hB ::= \blockt{\pi}{\hS}$
 & Blocks. \\
-$\hS ::=  \epsilon ~|~\hp.\hf = \hp; ~|~ \hp.\hm(\ol{\hp});  ~|~ \valt{\hx}{\he}$ &\\
-$~~~~|~\valt{\hx}{\hnew{\hAcc(\hp,\hp)}} ~|~ \ha \leftarrow \hp$ &\\
-$~~~~|~\valt{\hx}{\hnew{\hClocked(\hp,\hp)}} ~|~ \ha() = \hp$ &\\
+$\hS ::=  \epsilon ~|~ \hadvance; ~|~ \hp.\hm(\ol{\hp});  ~|~ \valt{\hx}{\he}$ &\\
+$~~~~|~ \hp \leftarrow \hp$ &\\
+$~~~~|~ \hp() = \hp$ &\\
 $~~~~|~ \pclocked~\finish{\ol{\hp}}{\hB}$&\\
 $~~~~|~ \pclocked~\async{\hB}~|~ \hS~\hS$
-& Statements. \\ %: locations, parameters, field access\&assignment, invocation, \code{new}
+& Statements. \\ %: locations, parameters, field access, invocation, \code{new}
 
 \hline
 \end{tabular}
@@ -172,7 +179,7 @@ $\typerule{
  \hS,\cH \preduce \hS',\cH' ~|~ \cH' ~|~ \err
 }{
   \begin{array}{rcl}
-    \blockt{\ol{\hl}}{\hS},\cH&\ptreduce &\blockt{\ol{\hl}}{\hS'},\cH' 
+    \blockt{\ol{\hl}}{\hS},\cH&\ptreduce &\blockt{\ol{\hl}}{\hS'},\cH'
     ~|~ \cH' ~|~ \err \gap \pi=\pi',\ol{\hl} \\
     \hS~\hS_1, \cH &\preduce& \hS'~\hS_1,\cH' ~|~ \hS_1,\cH' ~|~ \err\\
   \end{array}
@@ -181,11 +188,24 @@ $\typerule{
 $\typerule{
  \hB,\cH \preduce \hB',\cH' ~|~ \cH' ~|~ \err
 }{
-    \async{\hB},\cH \ptreduce  \async{\hB'},\cH'  ~|~ \cH' ~|~ \err \gap \pi=\hAcc(\pi')\\
-    \hfinish~\hB,\cH \ptreduce \hfinish~\hB',\cH'  ~|~ \cH' ~|~ \err \gap \pi=\hAcc(\pi')\\
     \hclocked~\async{\hB},\cH \preduce \hclocked~\async{\hB'},\cH'  ~|~ \cH' ~|~ \err \\
-
+    \async{\hB},\cH \ptreduce  \async{\hB'},\cH'  ~|~ \cH' ~|~ \err \gap \pi=\hAcc(\pi')\\
+%    \pclocked \finish{\ol{\hl'}}{\hB},\cH \ptreduce \finish{}{\hB'},\cH'  ~|~ \cH' ~|~ \err \gap \pi=\hAcc(\pi') \cup \ol{\hl'}\\
+               \finish{}{\hB},\cH \ptreduce \finish{}{\hB'},\cH'  ~|~ \cH' ~|~ \err \gap \pi=\hAcc(\pi')
 }$~\RULE{(R-Trans-B)}
+\\\\
+$\typerule{
+\hS_1\stuck\gap \ol{\hl'}\not\subseteq\ol{\hl}
+}{
+   \blockt{\ol{\hl}}{\hS_1~\hclocked~\finish{\ol{\hl'}}{\hS}},\cH \preduce \err
+}$~\RULE{(R-Trans-CF-E)}
+\\\\
+$\typerule{
+\hS_1\stuck\gap \ol{\hl'}\subseteq\ol{\hl}\gap \hB,\cH \preduce \hB',\cH' ~|~ \cH' ~|~ \err
+}{
+   \blockt{\ol{\hl}}{\hS_1~\hclocked~\finish{\ol{\hl'}}{\hB}},\cH \ptreduce
+  \blockt{\ol{\hl}}{\hS_1~\hclocked~\finish{\ol{\hl'}}{\hB'}},\cH' ~|~ \cH' ~|~ \err \gap \pi=\hAcc(\pi') \cup \ol{\hl'}\\
+}$~\RULE{(R-Trans-CF)}
 \\\\
 $\typerule{
   \hS,\cH \preduce \hS', \cH'
@@ -201,12 +221,6 @@ $\typerule{
 }$~\RULE{(R-Val)}
 ~
 $\typerule{
-    \hl' \not \in \dom(\cH)
-}{
-  \hnew{\hC},\cH \preduce \hl',\cH[ \hl' \mapsto \hC()]
-}$~\RULE{(R-New)}
-~
-$\typerule{
     \cH(\hl')=\hC(\ldots)
         \gap
     \mbody{}(\hm,\hC)=\ol{\hx}.\hS
@@ -215,17 +229,11 @@ $\typerule{
 }$~\RULE{(R-Invoke)}
 \\\\
 $\typerule{
-    \cH(\hl)=\hC(\ol{\hf}\mapsto\ol{\hl'})\gap\gap 
+    \cH(\hl)=\hC(\ol{\hf}\mapsto\ol{\hl'})\gap\gap
 \hg=\hf_i ~|~\hg\not\in\ol{\hf}
 }{
   \hl.\hg,\cH \preduce \hl_i',\cH ~|~ \err
 }$~\RULE{(R-Access)}
-\quad
-$\typerule{
-    \cH(\hl)=\hC(F) 
-}{
-  \hl.\hf=\hl',\cH \preduce \cH[ \hl \mapsto \hC(F[ \hf \mapsto \hl'])]
-}$~\RULE{(R-Assign)}
 \\\\
 $\typerule{
     \cH(\hl)=\hClocked(\ho,\he) \gap \hl\in \pi ~|~ \hl\not\in\pi
@@ -262,7 +270,7 @@ $\typerule{
 \hS_1\stuck \gap\cH(\ha)=\hAcc(\hr,\hv) \gap  \gap \ha\in \ol{\hl} ~|~
 \ha\not\in \ol{\hl}
 }{
-\blockt{\ol{\hl}}{\hS_1~\hval{\hx}{\ha()}~\hS},\cH \preduce 
+\blockt{\ol{\hl}}{\hS_1~\hval{\hx}{\ha()}~\hS},\cH \preduce
 \blockt{\ol{\hl}}{\hS_1~\hS[\hv/\hx]}, \cH' ~|~ \err
 }$~\RULE{(R-Acc-R)}
 ~
@@ -273,26 +281,13 @@ $\typerule{
 }$~\RULE{(R-Acc-W)}
 \\\\
 $\typerule{
-\hS_1\stuck\gap \ol{\hm}\subseteq\ol{\hl}\gap \hS,\cH \preduce \hS',\cH' ~|~ \cH' ~|~ \err
+    \hS_1\stuck\gap\hl' \not \in \dom(\cH)
 }{
-   \blockt{\ol{\hl}}{\hS_1~\hclocked~\finish{\ol{\hm}}{\hS}},\cH \preduce \\
-\quad\quad\quad   \blockt{\ol{\hl}}{\hS_1~\hclocked~\finish{\ol{\hm}}{\hS'}},\cH' ~|~ \cH' ~|~ \err 
-}$~\RULE{(R-Trans-CF)}
-~
-$\typerule{
-\hS_1\stuck\gap \ol{\hm}\not\subseteq\ol{\hl}
-}{
-   \blockt{\ol{\hl}}{\hS_1~\hclocked~\finish{\ol{\hm}}{\hS}},\cH \preduce \err 
-}$~\RULE{(R-CF-F)}
-\\\\
-$\typerule{
-    \hS_1\stuck\gap\hl \not \in \dom(\cH)
-}{
-\blockt{\ol{\hm}}{\hS_1~\valt{\hx}{\hnew{\hAcc(\hr,\hz)}}~\hS},\cH \preduce 
-   \blockt{\ol{\hm},\hl}{\hS_1~\hS[\hl/\hx]},\cH[ \hl \mapsto \hAcc(\hr,\hz)] \\
-%\blockt{\pi_1}{\acc{\hx}{\hnew{\hAcc(\hr,\hz)}}},\cH \preduce 
+\blockt{\ol{\hm}}{\hS_1~\valt{\hx}{\hnew{\hC(\ol{\hl})}}~\hS},\cH \preduce
+   \blockt{\ol{\hm},\hl}{\hS_1~\hS[\hl'/\hx]},\cH[ \hl' \mapsto \hC(\ol{\hl})] \\
+%\blockt{\pi_1}{\acc{\hx}{\hnew{\hAcc(\hr,\hz)}}},\cH \preduce
 %   \cH[ \hl \mapsto \hAcc(\hr,\hz)]
-}$~\RULE{(R-Acc-N)}
+}$~\RULE{(R-New)}
 ~
 $\typerule{
 \hS_1\stuck \gap\gap \hS,\cH \preduce \hS',\cH'
