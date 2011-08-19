@@ -192,23 +192,23 @@ $\typerule{
     \async{\hB},\cH \ptreduce  \async{\hB'},\cH'  ~|~ \cH' ~|~ \err \gap \pi=\hAcc(\pi')\\
     \finish{}{\hB},\cH \ptreduce \finish{}{\hB'},\cH'  ~|~ \cH' ~|~ \err \gap \pi=\hAcc(\pi')\\
     \hclocked~\async{\hB},\cH \preduce \hclocked~\async{\hB'},\cH'  ~|~ \cH' ~|~ \err \\
-   \blockt{\ol{\hl}}{\hS_1~\hclocked~\finish{\hB} \hS},\cH \ptreduce
-  \blockt{\ol{\hl}}{\hS_1~\hclocked~\finish{\hB'} \hS},\cH' ~|~ \blockt{\ol{\hl}}{\hS_1 \hS},\cH' ~|~ \err \gap \pi=\hAcc(\pi') \cup \ol{\hl} \gap \hS_1\stuck
+   \blockt{\ol{\hl}}{\hS_1~\hclocked~\finish{\hB}~\hS},\cH \ptreduce
+  \blockt{\ol{\hl}}{\hS_1~\hclocked~\finish{\hB'}~\hS},\cH' ~|~ \blockt{\ol{\hl}}{\hS_1~\hS},\cH' ~|~ \err \gap \pi=\hAcc(\pi') \cup \ol{\hl} \gap \hS_1\ureduce^{(0+,0+)}\hS'_1
 }$~\RULE{(R-Trans-B)}
 \\\\
 $\typerule{
   \hS,\cH \preduce \hS', \cH'
 }{
   \pclocked~\async{\hB}~\hS, \cH \preduce \pclocked~\async{\hB}~\hS', \cH'\\
-}$~\RULE{(R-Async)}
+}$~\RULE{(R-Async)-}
 \\\\
 $\typerule{
-  \he,\cH \reduce \hl,\cH'
+\hS_1\ureduce^{(1+,0)}\hS'_1 \gap\gap \hS,\cH \preduce \hS',\cH'
 }{
-  \hval{\hx}{\he}{\hS},\cH \preduce \hS[\hl/\hx], \cH'\\
- % \valt{\hx}{\he},\cH \preduce \cH'
-}$~\RULE{(R-Val)}
-~
+   \hS_1~\hS,\cH \preduce \hS_1~\hS',\cH'
+}$~\RULE{(R-Sequential)+}
+\\\\
+
 $\typerule{
     \cH(\hl')=\hC(\ldots)
         \gap
@@ -218,10 +218,9 @@ $\typerule{
 }$~\RULE{(R-Invoke)}
 \\\\
 $\typerule{
-    \cH(\hl)=\hC(\ol{\hf}\mapsto\ol{\hl'})\gap\gap
-\hg=\hf_i ~|~\hg\not\in\ol{\hf}
+    \cH(\hl)=\hC(\ol{\hl'})
 }{
-  \hl.\hg,\cH \preduce \hl_i',\cH ~|~ \err
+  \hval{\hx}{\hl.\hf_i}{\hS},\cH \preduce \hS[\hl_i'/\hx],\cH
 }$~\RULE{(R-Access)}
 \\\\
 $\typerule{
@@ -236,27 +235,8 @@ $\typerule{
   \hval{\hx}{\hl()}{\hS},\cH \preduce \hS[\ho/\hx], \cH ~|~ \err\\
 }$~\RULE{(R-Clocked-R)}
 \\\\
-$\typerule{}{
-    \epsilon \stuck
-}$~\RULE{(R-Q-CA)}
-~
-$\typerule{\hB\stuck}{
-    \hclocked~\async~\hB\stuck
-}$~\RULE{(R-Q-CA)}
-~
-$\typerule{\hS\stuck}{
-   \blockt{\ol{\hl}}{\hS}\stuck\\
-   \blockt{\ol{\hl}}{\hS~\xadvance~\hS'}\stuck\\
-}$~\RULE{(R-Q-B)}
-~
 $\typerule{
-  \hS_1 \stuck \gap \hS_2 \stuck
-}{
-   \hS_1~\hS_2 \stuck
-}$~\RULE{(R-Q-S)}
-\\\\
-$\typerule{
-\hS_1\stuck \gap\cH(\ha)=\hAcc(\hr,\hv) \gap  \gap \ha\in \ol{\hl} ~|~
+\hS_1\ureduce^{(0+,0)}\hS'_1 \gap\cH(\ha)=\hAcc(\hr,\hv) \gap  \gap \ha\in \ol{\hl} ~|~
 \ha\not\in \ol{\hl}
 }{
 \blockt{\ol{\hl}}{\hS_1~\hval{\hx}{\ha()}~\hS},\cH \preduce
@@ -270,52 +250,47 @@ $\typerule{
 }$~\RULE{(R-Acc-W)}
 \\\\
 $\typerule{
-    \hS_1\stuck\gap\hl' \not \in \dom(\cH)
+    \hS_1\ureduce^{(0+,0+)}\hS'_1\gap\hl' \not \in \dom(\cH)
 }{
 \blockt{\ol{\hm}}{\hS_1~\valt{\hx}{\hnew{\hC(\ol{\hl})}}~\hS},\cH \preduce
    \blockt{\ol{\hm},\hl}{\hS_1~\hS[\hl'/\hx]},\cH[ \hl' \mapsto \hC(\ol{\hl})] \\
 %\blockt{\pi_1}{\acc{\hx}{\hnew{\hAcc(\hr,\hz)}}},\cH \preduce
 %   \cH[ \hl \mapsto \hAcc(\hr,\hz)]
 }$~\RULE{(R-New)}
-~
-$\typerule{
-\hS_1\stuck \gap\gap \hS,\cH \preduce \hS',\cH'
-}{
-   \hS_1~\hS,\cH \preduce \hS_1~\hS',\cH'
-}$~\RULE{(R-Q)}
-\\\\
-$\typerule{
-  \hB \ureduce \hB'
-}{
-    \hclocked~\async{\hB} \ureduce \hclocked~\async{\hB'} \\
-}$~\RULE{(R-Adv-S)}
-~
-$\typerule{}{
-  \hclocked~\finishasync{\hB} \ureduce  \\
-\quad\quad\quad \hclocked~\finishasync{\hB}\\
-    \xadvance~\hS \ureduce \hS\\
-}$~\RULE{(R-Adv-A,CAF)}
 \\\\
 
 $\typerule{
-  \hS \ureduce \hS'
 }{
-   \blockt{\ol{\hl}}{\hS}\ureduce \blockt{\ol{\hl}}{\hS'}
-}$~\RULE{(R-Adv-B)}
+    \epsilon \ureduce^{(0,0)} \epsilon \\
+}$~\RULE{(R-Adv-Epsilon)}
 ~
 $\typerule{
-    \hS_1 \ureduce \hS_1'\ \     \hS_2 \ureduce \hS_2'
 }{
-  \hS_1~\hS_2\ureduce \hS_1'~\hS_2'
+  \async{\hB} \ureduce^{(0,1)} \async{\hB}
+}$~\RULE{(R-Adv-A)-}
+\\\\
+
+$\typerule{
+  \hS_1 \ureduce^{(c,a)} \hS'_1
+}{
+    \hclocked~\async~\blockt{\ol{\hl}}{\hS_1} \ureduce^{(c,a)} \hclocked~\async~\blockt{\ol{\hl}}{\hS'_1} \\
+    \hclocked~\async~\blockt{\ol{\hl}}{\hS_1~\xadvance~\hS_2} \ureduce^{(c+1,a)} \hclocked~\async~\blockt{\ol{\hl}}{\hS'_1~\xadvance~\hS_2}
+}$~\RULE{(R-Adv-C-A)}
+\\\\
+
+$\typerule{
+    \hS_1 \ureduce^{(c_1,a_1)} \hS_1' \gap     \hS_2 \ureduce^{(c_2,a_2)} \hS_2'
+}{
+  \hS_1~\hS_2\ureduce^{(c_1+c_2,a_1+a_2)} \hS_1'~\hS_2'
 }$~\RULE{(R-Adv-S)}
-~
+\\\\
+
+
 $\typerule{
-    \hS_1 \stuck \gap \hB \ureduce \hB' \gap H'=H[\ol{\hl}\mapsto \hswitch~H[\ol{\hl}]]
+    \hS_1 \ureduce^{(0+,0+)}\hS_1 \gap \hclocked~\async~\hB \ureduce^{(1+,0+)} \hclocked~\async~\hB' \gap H'=\hswitch(H,\ol{\hl})
 }{
-  \begin{array}{l}
-  \blockt{\ol{\hl}}{\hS_1~\hclocked~\finish{\hB} \hS},\cH\preduce \\
-\quad\quad\quad \blockt{\ol{\hl}}{\hS_1~\hclocked~\finish{\hB'} \hS},\cH'
-  \end{array}
+  \blockt{\ol{\hl}}{\hS_1~\hclocked~\finish{\hB}~\hS"},\cH\preduce
+  \blockt{\ol{\hl}}{\hS_1~\hclocked~\finish{\hB'}~\hS"},\cH'
 }$~\RULE{(R-Adv)}
 \\\\
 \hline
@@ -323,7 +298,10 @@ $\typerule{
 \end{center}
 
 
-\caption{FX10 Syntax and Reduction Rules ($\hS,\cH \preduce \hS',\cH' ~|~\cH'$ and~$\he,\cH \preduce \hl,\cH'$).}
+\caption{FX10 Reduction Rules ($\hS,\cH \preduce \hS',\cH' ~|~\cH'~|~\err$) for the \emph{concurrent} scheduler
+    (\RULE{(\ldots)+} is not mandatory).
+    The \emph{sequential} scheduler is obtained by removing \RULE{(\ldots)-}.
+    }
 \label{Figure:reduction}
 \end{figure*}
 
