@@ -300,18 +300,3 @@ before the user specified closure is run.)
 
 
 \input {examples/stencil.x10}
-
-
-In the example above there is no need to reinitialize the value of
-\code{err()} between phases since the value will monotonically
-decrease. However for some other computations this may be
-necessary. For example, suppose the error metric was the sum of all
-errors. The the above code would change as follows. We would pass in a
-different reduction operation red that sums rather than returns a max.
-Further, we would replace the \code{Clock.advanceAll()} call with
-\begin{lstlisting}
-  Clock.advanceAll(()=>{err()=0.0D;});
-\end{lstlisting}
-
-This resets the next value of err to be \code{0.0D} before the accumulations
-start to happen.
