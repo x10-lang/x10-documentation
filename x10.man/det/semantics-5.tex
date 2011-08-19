@@ -193,7 +193,7 @@ $\typerule{
     \finish{}{\hB},\cH \ptreduce \finish{}{\hB'},\cH'  ~|~ \cH' ~|~ \err \gap \pi=\hAcc(\pi')\\
     \hclocked~\async{\hB},\cH \preduce \hclocked~\async{\hB'},\cH'  ~|~ \cH' ~|~ \err \\
    \blockt{\ol{\hl}}{\hS_1~\hclocked~\finish{\hB}~\hS},\cH \ptreduce
-  \blockt{\ol{\hl}}{\hS_1~\hclocked~\finish{\hB'}~\hS},\cH' ~|~ \blockt{\ol{\hl}}{\hS_1~\hS},\cH' ~|~ \err \gap \pi=\hAcc(\pi') \cup \ol{\hl} \gap \hS_1\ureduce^{(0+,0+)}\hS'_1
+  \blockt{\ol{\hl}}{\hS_1~\hclocked~\finish{\hB'}~\hS},\cH' ~|~ \blockt{\ol{\hl}}{\hS_1~\hS},\cH' ~|~ \err \gap \pi=\hAcc(\pi') \cup \ol{\hl} \gap \hS_1\ureduce{0+,0+}\hS'_1
 }$~\RULE{(R-Trans-B)}
 \\\\
 $\typerule{
@@ -203,7 +203,7 @@ $\typerule{
 }$~\RULE{(R-Async)-}
 \\\\
 $\typerule{
-\hS_1\ureduce^{(1+,0)}\hS'_1 \gap\gap \hS,\cH \preduce \hS',\cH'
+\hS_1\ureduce{1+,0}\hS'_1 \gap\gap \hS,\cH \preduce \hS',\cH'
 }{
    \hS_1~\hS,\cH \preduce \hS_1~\hS',\cH'
 }$~\RULE{(R-Sequential)+}
@@ -236,7 +236,7 @@ $\typerule{
 }$~\RULE{(R-Clocked-R)}
 \\\\
 $\typerule{
-\hS_1\ureduce^{(0+,0)}\hS'_1 \gap\cH(\ha)=\hAcc(\hr,\hv) \gap  \gap \ha\in \ol{\hl} ~|~
+\hS_1\ureduce{0+,0}\hS'_1 \gap\cH(\ha)=\hAcc(\hr,\hv) \gap  \gap \ha\in \ol{\hl} ~|~
 \ha\not\in \ol{\hl}
 }{
 \blockt{\ol{\hl}}{\hS_1~\hval{\hx}{\ha()}~\hS},\cH \preduce
@@ -250,7 +250,7 @@ $\typerule{
 }$~\RULE{(R-Acc-W)}
 \\\\
 $\typerule{
-    \hS_1\ureduce^{(0+,0+)}\hS'_1\gap\hl' \not \in \dom(\cH)
+    \hS_1\ureduce{0+,0+}\hS'_1\gap\hl' \not \in \dom(\cH)
 }{
 \blockt{\ol{\hm}}{\hS_1~\valt{\hx}{\hnew{\hC(\ol{\hl})}}~\hS},\cH \preduce
    \blockt{\ol{\hm},\hl}{\hS_1~\hS[\hl'/\hx]},\cH[ \hl' \mapsto \hC(\ol{\hl})] \\
@@ -261,33 +261,33 @@ $\typerule{
 
 $\typerule{
 }{
-    \epsilon \ureduce^{(0,0)} \epsilon \\
+    \epsilon \ureduce{0,0} \epsilon \\
 }$~\RULE{(R-Adv-Epsilon)}
 ~
 $\typerule{
 }{
-  \async{\hB} \ureduce^{(0,1)} \async{\hB}
+  \async{\hB} \ureduce{0,1} \async{\hB}
 }$~\RULE{(R-Adv-A)-}
 \\\\
 
 $\typerule{
-  \hS_1 \ureduce^{(c,a)} \hS'_1
+  \hS_1 \ureduce{c,a} \hS'_1
 }{
-    \hclocked~\async~\blockt{\ol{\hl}}{\hS_1} \ureduce^{(c,a)} \hclocked~\async~\blockt{\ol{\hl}}{\hS'_1} \\
-    \hclocked~\async~\blockt{\ol{\hl}}{\hS_1~\xadvance~\hS_2} \ureduce^{(c+1,a)} \hclocked~\async~\blockt{\ol{\hl}}{\hS'_1~\xadvance~\hS_2}
+    \hclocked~\async~\blockt{\ol{\hl}}{\hS_1} \ureduce{c,a} \hclocked~\async~\blockt{\ol{\hl}}{\hS'_1} \\
+    \hclocked~\async~\blockt{\ol{\hl}}{\hS_1~\xadvance~\hS_2} \ureduce{c+1,a} \hclocked~\async~\blockt{\ol{\hl}}{\hS'_1~\xadvance~\hS_2}
 }$~\RULE{(R-Adv-C-A)}
 \\\\
 
 $\typerule{
-    \hS_1 \ureduce^{(c_1,a_1)} \hS_1' \gap     \hS_2 \ureduce^{(c_2,a_2)} \hS_2'
+    \hS_1 \ureduce{c_1,a_1} \hS_1' \gap     \hS_2 \ureduce{c_2,a_2} \hS_2'
 }{
-  \hS_1~\hS_2\ureduce^{(c_1+c_2,a_1+a_2)} \hS_1'~\hS_2'
+  \hS_1~\hS_2\ureduce{c_1+c_2,a_1+a_2} \hS_1'~\hS_2'
 }$~\RULE{(R-Adv-S)}
 \\\\
 
 
 $\typerule{
-    \hS_1 \ureduce^{(0+,0+)}\hS_1 \gap \hclocked~\async~\hB \ureduce^{(1+,0+)} \hclocked~\async~\hB' \gap H'=\hswitch(H,\ol{\hl})
+    \hS_1 \ureduce{0+,0+}\hS_1 \gap \hclocked~\async~\hB \ureduce{1+,0+} \hclocked~\async~\hB' \gap H'=\hswitch(H,\ol{\hl})
 }{
   \blockt{\ol{\hl}}{\hS_1~\hclocked~\finish{\hB}~\hS"},\cH\preduce
   \blockt{\ol{\hl}}{\hS_1~\hclocked~\finish{\hB'}~\hS"},\cH'
