@@ -343,15 +343,14 @@
 \newcommand{\asynct}[2]{\code{async(}{\tt #1})\lb#2\rb}
 \newcommand{\finisht}[2]{\code{finish(}{\tt #1})\lb#2\rb}
 \newcommand{\blockt}[2]{\code{(}{\tt #1}\code{)}\lb#2\rb}
-\newcommand{\finishasynct}[2]{\code{[finish | async](}{\tt
-    #1})\lb#2\rb}
+\newcommand{\finishasynct}[2]{\code{[finish | async]}({\tt #1})\lb#2\rb}
 \newcommand{\clockedfinishasync}[1]{\code{(async | [clocked] finish)}~{\tt #1}}
-\newcommand{\finishasync}[1]{\code{[finish values(}\ol{\hp}\code{)| async]}~#1}
-\newcommand{\finish}[2]{\code{finish values(}#1\code{)}~#2}
+\newcommand{\finishasync}[1]{\code{[finish | async]}~#1}
+\newcommand{\finish}[1]{\code{finish~#1}}
 \newcommand{\clocked}[0]{\code{clocked}}
 \newcommand{\pclocked}[0]{\code{[clocked]}}
 \newcommand{\hclocked}[0]{\code{clocked}}
-\newcommand{\hClocked}[0]{\code{Clocked}}
+\newcommand{\hClockedAcc}[0]{\code{ClockedAcc}}
 \newcommand{\hvalues}[0]{\code{values}}
 \newcommand{\xadvance}[0]{\code{advance;}}
 \newcommand{\hadvance}[0]{\code{advance}}

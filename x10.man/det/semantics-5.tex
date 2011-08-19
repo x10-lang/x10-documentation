@@ -6,9 +6,25 @@ constructs \hfinish{}, \hasync{}, clocks and accumulators.
 
 \paragraph{Overview of formalism}
 \Subsection{Syntax}
+There are three predefined classes in FX10:
+    \code{Object},
+    \code{Acc} (representing accumulators),
+    and \code{ClockedAcc} (representing clocked accumulators).
+X10 has an effect system that guarantees that
+    \hasync{} only accesses immutable state, clocked values and accumulators.
+The effect system also ensures that clocked values can only be assigned once every phase,
+    however clocked accumulators can be assigned multiple times.
+FX10 only models the runtime behavior without the effect system.
+Therefore, in order to guarantee determinacy without an effect system,
+    FX10 does not model field assignment nor clocked values (only clocked accumulators).
+Objects are still mutable because accumulators and clocked accumulators
+    are mutable.
+
 
 
 \Ref{Figure}{syntax} shows the abstract syntax of FX10.
+A constructor in FX10 assigns its arguments to the object's fields.
+
 $\epsilon$ is the empty statement. Sequencing associates to the left.
 %\code{async}
 %and \code{finish} bind tighter than statement sequencing, so
@@ -32,17 +48,6 @@ Expression $\hp()$ is legal only when $\hp$ is an accumulator or a clocked value
 %    and for an accumulator it checks at runtime that it was executed in the block that created $\hp$
 %    and it waits until all activities created in the block have terminated or got stuck.
 
-The \hfinish statement $\pclocked \finish{\ol{\hp}}{\hB}$ explicitly states all the clocked-values
-    that will be advanced when the clock is advanced;
-    these clocked-values must have been registered in the enclosing block.
-
-The syntax is similar to the real X10 syntax with the following difference:
-A constructor in FX10 assigns its arguments to the object's fields.
-Field assignment was removed from FX10, however objects are still mutable because clocked values and accumulators
-    are mutable.
-(X10 has an effect system that guarantees that \hasync{} only accesses immutable state, clocked values and accumulators.)
-These are minor simplifications intended to
-    streamline the formal presentation.
 
 \Subsection{Reduction}
 A {\em heap}~$H$ is a mapping from a given set of locations to {\em
@@ -89,10 +94,6 @@ Given a set of registered objects $\ol{\hl}$ in a heap $H$,
  %   and (ii)~$\fclocked(\ol{\hl})$ only the clocked-values.
 
 
-Rule \RULE{(R-Trans-B-Check)} verifies that the set of clocked-values the \hfinish
-    will advance was indeed registered on the enclosing block.
-Rule \RULE{(R-Trans-B-Check)} has priority over \RULE{(R-Trans-B)},
-    i.e., we only apply \RULE{(R-Trans-B)} if the check was successful.
 %todo: give an example of registration and legality.
 
 %
@@ -149,8 +150,8 @@ $\hB ::= \blockt{\pi}{\hS}$
 $\hS ::=  \epsilon ~|~ \hadvance; ~|~ \hp.\hm(\ol{\hp});  ~|~ \valt{\hx}{\he}$ &\\
 $~~~~|~ \hp \leftarrow \hp$ &\\
 $~~~~|~ \hp() = \hp$ &\\
-$~~~~|~ \pclocked~\finish{\ol{\hp}}{\hB}$&\\
-$~~~~|~ \pclocked~\async{\hB}~|~ \hS~\hS$
+$~~~~|~ \pclocked~\finishasync{\hB}$&\\
+$~~~~|~ \hS~\hS$
 & Statements. \\ %: locations, parameters, field access, invocation, \code{new}
 
 \hline
@@ -188,24 +189,12 @@ $\typerule{
 $\typerule{
  \hB,\cH \preduce \hB',\cH' ~|~ \cH' ~|~ \err
 }{
-    \hclocked~\async{\hB},\cH \preduce \hclocked~\async{\hB'},\cH'  ~|~ \cH' ~|~ \err \\
     \async{\hB},\cH \ptreduce  \async{\hB'},\cH'  ~|~ \cH' ~|~ \err \gap \pi=\hAcc(\pi')\\
-%    \pclocked \finish{\ol{\hl'}}{\hB},\cH \ptreduce \finish{}{\hB'},\cH'  ~|~ \cH' ~|~ \err \gap \pi=\hAcc(\pi') \cup \ol{\hl'}\\
-               \finish{}{\hB},\cH \ptreduce \finish{}{\hB'},\cH'  ~|~ \cH' ~|~ \err \gap \pi=\hAcc(\pi')
+    \finish{}{\hB},\cH \ptreduce \finish{}{\hB'},\cH'  ~|~ \cH' ~|~ \err \gap \pi=\hAcc(\pi')\\
+    \hclocked~\async{\hB},\cH \preduce \hclocked~\async{\hB'},\cH'  ~|~ \cH' ~|~ \err \\
+   \blockt{\ol{\hl}}{\hS_1~\hclocked~\finish{\hB} \hS},\cH \ptreduce
+  \blockt{\ol{\hl}}{\hS_1~\hclocked~\finish{\hB'} \hS},\cH' ~|~ \blockt{\ol{\hl}}{\hS_1 \hS},\cH' ~|~ \err \gap \pi=\hAcc(\pi') \cup \ol{\hl} \gap \hS_1\stuck
 }$~\RULE{(R-Trans-B)}
-\\\\
-$\typerule{
-\hS_1\stuck\gap \ol{\hl'}\not\subseteq\ol{\hl}
-}{
-   \blockt{\ol{\hl}}{\hS_1~\hclocked~\finish{\ol{\hl'}}{\hS}},\cH \preduce \err
-}$~\RULE{(R-Trans-CF-E)}
-\\\\
-$\typerule{
-\hS_1\stuck\gap \ol{\hl'}\subseteq\ol{\hl}\gap \hB,\cH \preduce \hB',\cH' ~|~ \cH' ~|~ \err
-}{
-   \blockt{\ol{\hl}}{\hS_1~\hclocked~\finish{\ol{\hl'}}{\hB}},\cH \ptreduce
-  \blockt{\ol{\hl}}{\hS_1~\hclocked~\finish{\ol{\hl'}}{\hB'}},\cH' ~|~ \cH' ~|~ \err \gap \pi=\hAcc(\pi') \cup \ol{\hl'}\\
-}$~\RULE{(R-Trans-CF)}
 \\\\
 $\typerule{
   \hS,\cH \preduce \hS', \cH'
@@ -236,13 +225,13 @@ $\typerule{
 }$~\RULE{(R-Access)}
 \\\\
 $\typerule{
-    \cH(\hl)=\hClocked(\ho,\he) \gap \hl\in \pi ~|~ \hl\not\in\pi
+    \cH(\hl)=\hClockedAcc(\hr,\ho,\he) \gap \hl\in \pi ~|~ \hl\not\in\pi
 }{
-  \hl()=\hl',\cH \preduce \cH[ \hl \mapsto \hClocked(\ho,\hl')] ~|~ \err
+  \hl()=\hl',\cH \preduce \cH[ \hl \mapsto \hClockedAcc(\hr,\ho,\hr(\he,\hl'))] ~|~ \err
 }$~\RULE{(R-Clocked-A)}
 \quad
 $\typerule{
-  \cH(\hl)=\hClocked(\ho,\he) \gap \hl\in\pi ~|~ \hl\not\in\pi
+  \cH(\hl)=\hClockedAcc(\hr,\ho,\he) \gap \hl\in\pi ~|~ \hl\not\in\pi
 }{
   \hval{\hx}{\hl()}{\hS},\cH \preduce \hS[\ho/\hx], \cH ~|~ \err\\
 }$~\RULE{(R-Clocked-R)}
@@ -321,11 +310,11 @@ $\typerule{
 }$~\RULE{(R-Adv-S)}
 ~
 $\typerule{
-    \hB \ureduce \hB' \gap H'=H[\ol{\hl}\mapsto \hswitch~H[\ol{\hl}]]
+    \hS_1 \stuck \gap \hB \ureduce \hB' \gap H'=H[\ol{\hl}\mapsto \hswitch~H[\ol{\hl}]]
 }{
   \begin{array}{l}
-    \hclocked~\finish{\ol{\hl}}{\hB},\cH\preduce \\
-\quad\quad\quad \hclocked~\finish{\ol{\hl}}{\hB'},\cH'
+  \blockt{\ol{\hl}}{\hS_1~\hclocked~\finish{\hB} \hS},\cH\preduce \\
+\quad\quad\quad \blockt{\ol{\hl}}{\hS_1~\hclocked~\finish{\hB'} \hS},\cH'
   \end{array}
 }$~\RULE{(R-Adv)}
 \\\\
