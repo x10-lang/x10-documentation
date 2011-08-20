@@ -3,13 +3,13 @@
 The X10 construct \code{async S} spawns a new activity to execute
 \code{S}. This activity can access variables in the lexical
 environment. The construct \code{finish S} executes \code{S} and waits
-for all asyncs spawned within \code{S} to terminate. 
+for all asyncs spawned within \code{S} to terminate.
 
 X10 2.2 introduces {\em clocked} versions of \code{async} and
 \code{finish}. This design (which is the one we will consider in this
 paper) is a simplification of the original design and has the nice
 property that clocks are not present as data objects in the source
-program, thus removing a potential source of error. 
+program, thus removing a potential source of error.
 
 Clocks are motivated by the desire to support barrier computations in
 which all threads in a given group must reach a point in the code (a
@@ -17,7 +17,7 @@ barrier) before all of them can progress past it. X10 permits many
 clocks to exist at the same time, permits an activity to operate on
 multiple clocks at the same time, and permits newly created activities
 to operate on existing clocks.
- 
+
 X10 2.2 permits \code{async S} and \code{finish S} to be optionally
 modified with a \code{clocked} qualifier.  When an activity executes
 \code{clocked finish S} it creates a new clock \code{c}, registers
@@ -30,28 +30,28 @@ clock; \code{async S} should be used to spawn an async that is {\em
 
 Note that \code{finish} blocks can be arbitarily nested, so an
 activity may at any given time be registered on a stack of clocks. The
-current clock is always the one most recently pushed on to the stack. 
+current clock is always the one most recently pushed on to the stack.
 No support is provided to register an activity on an ancestor
-clock. 
+clock.
 
 When a clocked async terminates it automatically de-registers from the
 clock; when the parent activity that entered the \code{clocked finish}
 block reaches the end of the block it also automatically de-registers
-from the clock. 
+from the clock.
 
 The special statement \code{advance} can be used to advance the
 current clock.  Whenever an activity hits \code{advance} it blocks on
 the current clock it is registered with. (It is illegal for an
 un-clocked \code{async} to execute \code{advance}.) Once all
 activities registered on the clock have reached an advance, all of
-them can progress. 
+them can progress.
 
 Additionally, X10 permits computations to be run on multiple places. A
 place consists of data as well as activities that operate on
 it. Typically a place is realized as  an operating system process in a
 cluster or multi-node computer. The \code{at (p) S} construct is used
 to cause the current activity to shift to place \code{p} and execute
-\code{S}. 
+\code{S}.
 
 \code{at} blocks and (\code{clocked}) \code{async}, \code{finish}
 blocks can be arbitrarily nested and arbitrarily combined with
@@ -70,13 +70,13 @@ concurrency.
 The class \code{Acc[T]} implements the notion of an accumulator. To
 construct an instance of this class a binary associative and
 commutative operator  \code{f} over \code{T} (the {\em reduction operator}) must be supplied,
-together with the zero for the operator, \code{z} (satisfying
-  \code{f(z)=z}), and an initial value from \code{T}. The accumulator
+together with the zero for the operator, \code{z} (satisfying \code{f(v,z)=z}
+  for all \code{v}), and an initial value from \code{T}. The accumulator
   provides the following operations. For \code{a} such a value, the
   operator \code{a() <- v} accumulates the value \code{v} into
   \code{a}. The operator \code{a()} returns the current value. The
   operator \code{a() = v} sets the value of the accumulator to
-  \code{v}. 
+  \code{v}.
 
 There are no restrictions on storing accumulators into heap
 data-structures, or aliasing them.  However, each accumulator is {\em
@@ -100,7 +100,7 @@ activities can perform multiple Map Reduce patterns simultaneously.
 However, the read operation \code{a()} and the update operation
 \code{a()=v} are subject to a dynamic restriction. (1)~They may only
 be performed by the activity that created \code{a}. (2)~Say that an
-activity \code{A} is in {\em synchronous mode}) if all asyncs spawned
+activity \code{A} is in {\em synchronous mode} if all asyncs spawned
 by \code{A} have terminated or stopped at a next on a clock registered
 on \code{A}.  In such a situation there is no concurrent mutator of
 \code{a} (an activity not in the subtree of \code{A} that may have
@@ -108,7 +108,7 @@ acquired a reference to \code{a} through the heap is unable to perform
 any operation on it). Hence it is safe to read \code{a}. Similarly for
 update. Therefore the semantics of these operations require that the
 operation {\em suspend} until such time as the synchronous condition
-is true. 
+is true.
 
 Intuitively, this does not introduce any deadlocks since the
 spawned activities cannot be waiting for any operation by the parent
@@ -131,7 +131,7 @@ finish for (i in 0..100000) async
    x <- i;
 Console.OUT.println("x is " + x());
 \end{lstlisting}
-  
+
 \end{example}
 
 \subsection{Clocked types}
@@ -150,7 +150,7 @@ versions are switched.
 unlike the former the latter permits accumulation operations.
 
 Clocked objects are registered with activities, just like
-accumulators.  Only the activity that created a 
+accumulators.  Only the activity that created a
 \code{Clocked[T]} or \code{ClockedAcc[T]} value \code{v} can enter a
 \code{clocked finish S} block within which \code{v} can be operated on
 by multiple activities. Such a block is said to be the {\em current
@@ -185,15 +185,15 @@ Note: write-write conflicts are possible since multiple activities may
 try to set the value at the same time. So a lightweight static
 technique should be used to establish that at most one activity is
 writing to that location. In the case of arrays of clocked types this
-can often be established using an ``owner computes'' rule. 
+can often be established using an ``owner computes'' rule.
 \end{itemize}
 
 \code{ClockedAcc[T]} has a constructor that takes two \code{T} values and a
 \code{Reducer[T]} as argument. The two \code{T} values are used to initialize the
 \code{current} and \code{next} fields. These arguments should be ``new'' (that is, no
-other data-structure should have a reference to these arguments). 
+other data-structure should have a reference to these arguments).
 The reducer is used to perform
-accumulate operations. 
+accumulate operations.
 
 Operations for \code{x:ClockedAcc[T]}:
 \begin{itemize}
@@ -225,6 +225,3 @@ A possible implementation of \code{Clocked[T]} and
 \code{ClockedAcc[T]} is that a system-synthesized closure (that
 performs the current/next swap) is run at the clock quiescent point
 before the user specified closure is run.}
-
-
-
