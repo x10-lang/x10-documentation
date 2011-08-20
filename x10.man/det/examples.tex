@@ -127,4 +127,33 @@ aspects of the language design.
 
 \subsection{Clocked computations}
 
+\begin{example}[Pipeline]
+This example creates $3$ stages in parallel. Stage $1$ gets the input
+(in this case generating the natural numbers), Stage $2$ increments it
+by $1$, Stage $3$ doubles it and prints the value.
+\begin{lstlisting}
+def pipeline() {
+    val a = new ClockedAcc[Int](0,0,Int.plus);
+    val b = new ClockedAcc[Int](0,0,Int.plus);
+    val c = new ClockedAcc[Int](0,0,Int.plus);
+    clocked finish {
+        clocked async {
+            for (var i:Int=0;; i++) {
+                a <-i;
+                advance;}}
+        clocked async {
+            advance;
+            for (;;) {
+                b <- a()+1; // b is 1,2,3,...
+                advance;}}
+        advance;
+        advance;
+        for(;;) {
+            c <- 2*b();
+            Console.OUT.println(c()); // Prints 2,4,6,...
+            advance;
+        }}}
+  \end{lstlisting}
+\end{example}
+
 \input {examples/stencil.x10}

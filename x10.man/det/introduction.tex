@@ -77,15 +77,45 @@ can only be used by the activity that created it and by its children,
 and hence the spawn tree structure can be used to avoid depends-for
 cycles.
 
-To obtain determinacy, another idea is required. The central problem
+To understand the conditions under which such programs may be safe we
+need to understand what it means to execute such a program with a
+serial schedule. In a serial schedule, the statement \code{async
+  \{S1\} S2} is executed by first executing \code{S1}, and then, on
+its completion, executing \code{S2} (since the first enabled step of
+\code{async \{S1\} S2} in program order will be the first enabled step
+of \code{async \{S1\}}.  That is, \code{async S1} behaves like
+\code{S1}. Similarly, \code{finish \{S1\} S2} is executed by first
+executing \code{S1} to completion and then executing \code{S2}. Thus
+under a serial schedule, \code{finish} and \code{async} behave like
+``no-ops''.
+
+The situation is slightly different for \code{clocked finish} and
+\code{clocked async}. The first enabled step of \code{clocked finish
+  \{S1\} S2} is going to be the first step of \code{S1}. However, the
+first enabled step of \code{clocked async \{S1\} S2} may be the first
+step of \code{S2} -- e.g.{} when \code{S1} is \code{advance; S3} and
+the clocked async must wait until all other such asyncs in the scope
+of the clocked finish are ready to advance. Thus a \code{clocked
+  finish \{S\}} exhibits ``round-robin'' scheduling of \code{S}. For
+instance, through this reasoning we can establish that 
+\begin{lstlisting}
+  clocked finish {
+    clocked async { S1; advance; S2}
+    clocked async { S3; advance; S4}
+  }
+  S5
+\end{lstlisting}
+would give the same result as the program: \code{S1;S2;S3;S4;S5}.
+
+When is such a program safe? The central problem
 is to ensure that in the statement \code{async \{S\} S1} it is not the
 case that \code{S} can write to a location that \code{S1} can read
 from or read from a location that \code{S} can read from. Otherwise
-the behavior is not determinate. One line of attack has been the pursuit
+the behavior is not equivalent to a serial schedule. One line of attack has been the pursuit
 of {\em effect systems} \cite{Lucassen:1988:PES:73560.73564},
 \cite{Leino:2002:UDG:543552.512559},
 \cite{boyland:01interdependence},
-\cite{DPJ}. At a broad conceptual level, static effects systems call
+\cite{DPJ}. Broadly, static effects systems call
 for a user-specified partitioning of heap into {\em regions} in a
 fine-grained enough way to show that operations that may occur
 simultaneously work on different regions. For instance \cite{DPJ}
@@ -121,7 +151,9 @@ commercial-strength software systems is yet to be establishd.
 In this paper we chose a different approach, a {\em lightweight}
 approach to safety. We introduce two simple ideas -- {\em
   accumulators} and {\em clocked types} -- which require very modest
-compiler support and can be implemented efficiently at run-time.
+compiler support and can be implemented efficiently at run-time. We
+show that programs written using accumulators and clocked accumulators
+as the only shared variables are safe. 
 
 Accumulators arise very naturally in concurrent programming: an
 accumulator is a mutable location associated with a commutative and
@@ -133,11 +165,11 @@ that they do not compromise safety: a serial execution precisely
 captures results generable from any execution.
 
 Similarly clocked computations (barrier-based synchronization) is
-quite common in parallel programming e.g. in the SPMD model, BSP model
+quite common in parallel programming e.g.{} in the SPMD model, BSP model
 etc. We observe that many clocked programs can be written in such a
 way that shared variables take on a single value in one phase of the
 clock. Further, clocked computations are often iterative and operate
-on large aggregate data-structures (e.g. arrays, hash-maps) in a
+on large aggregate data-structures (e.g.{} arrays, hash-maps) in a
 data-parallel fashion, reading one version of the data-structure (the
 ``red'' version) while simultaneously writing another version (the
  ``black'' version). To support this widely used idiom, we introduce
@@ -156,7 +188,6 @@ before activities start in the next phase -- the \code{now} and
   extended to $k$-buffered clocked types where each clock tick rotates
   the buffer. This idea is related to the K-bounded Kahn networks of
 \cite{Cohen:2006:NSK:1111320.1111054}.}
-
 
 We show that clocked types can be defined in a safe way, provided that
 accumulators are used to resolve write-write conflicts. The only

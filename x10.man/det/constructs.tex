@@ -93,7 +93,9 @@ with no restrictions. The only restriction is that the accumulator can
 only be used by the activity that created it or its children.
 
 There are no restrictions on the use of the accumulate operation
-\code{a()<- v}. 
+\code{a()<- v}. The same activity can perform multiple accumulate
+operations on one or more accumulators. Thus, the same set of spawned
+activities can perform multiple Map Reduce patterns simultaneously.
 
 However, the read operation \code{a()} and the update operation
 \code{a()=v} are subject to a dynamic restriction. (1)~They may only
