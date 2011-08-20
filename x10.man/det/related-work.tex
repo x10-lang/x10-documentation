@@ -1,6 +1,6 @@
 \label{sec:related}
 
-\subsection{Programming Models} 
+\subsection{Programming Models}
 Determinism in parallel programming is a very active area of research.
 Guava \cite{guava} introduces restrictions on shared memory Java
 programs that ensure no data-races primarily by distinguishing
@@ -48,7 +48,7 @@ causalities. Causalities are similar to deadlocks, but can be easily
 detected at compile-time.  The problem with synchronous models is that
 they do not perform well. To out knowledge, most Esterel compilers
 generate sequential code and not concurrent.
- 
+
 SHIM~\cite{edwards2005shim2,tardieu2006scheduling-independent} is also
 a deterministic concurrent programming language, but SHIM programs may
 deadlocks.  Secondly, SHIM allows only a single task to write at any
@@ -61,24 +61,24 @@ determinism. It has simple static verification techniques for deadlock
 and buffer-overflow.  However, StreamIt is a strict subset of SHIM and
 StreamIt's design limits it to a small class of streaming
 applications.
- 
 
 
-In contrast, 
+
+In contrast,
 Cilk~\cite{blumofe1995cilk} is a non-deterministic language that it covers a larger
 class of applications. It is C based
-and the programmer must explicitly ask for parallelism using 
-the \emph{spawn} and the \emph{sync} constructs. 
+and the programmer must explicitly ask for parallelism using
+the \emph{spawn} and the \emph{sync} constructs.
 Cilk permits data races.
 %\figref{non-det}, for example,
-%is a non-deterministic concurrent program in Cilk. 
+%is a non-deterministic concurrent program in Cilk.
 Explicit techniques~\cite{cheng1998detecting} are
-required for checking data races in Cilk programs.  
+required for checking data races in Cilk programs.
 
 
 
 
-\subsection{Determinizing Tools} 
+\subsection{Determinizing Tools}
 Determinizing run-times support coarse-grained fork-join concurrency
 by maintaining a different copy of memory for each activity and
 merging them determinately at finish points (\cite{grace},
@@ -101,30 +101,31 @@ locks may still deadlock. Thirdly, the tool operates only when
 shared data is protected by locks.
 
 Software Transactional Memory (STM)~\cite{shavit1995software}
-  is an alternative to locks: a thread completes modifications to 
+  is an alternative to locks: a thread completes modifications to
 shared memory without regard for what other threads might be doing. At the end of the transaction,
 it validates and commits if the validation was successful, otherwise it rolls back and re-executes
 the transaction. STM mechanisms avoid races but do not solve the non-determinism problem.
 
 Berger's Grace\cite{berger2009grace} is a run-time tool
-that is based on STM. 
+that is based on STM.
 If there is a conflict during commit, the threads are committed in
-a particular sequential order (determined by the order
+a particular sequential order.
 The problem with Grace is that it incurs a lot of run-time
-overhead. This dissertation  partially solves this overhead problem
-by addressing the issue at compile-time and
-thereby reducing a considerable amount of run-time overhead.
+overhead.
+%This paper partially solves this overhead problem
+%by addressing the issue at compile-time and
+%thereby reducing a considerable amount of run-time overhead.
 
 Like Grace, Determinator\cite{aviram2010efficient} is another tool
-that allows parallel processes to execute as long as they do not share 
+that allows parallel processes to execute as long as they do not share
 resources. If they do share resources and the accesses are unsafe, then
-the operating throws an exception (a page fault). 
+the operating throws an exception (a page fault).
 
-Cored-Det~\cite{bergan2010coreDet}, based on DMP~\cite{devietti2009dmp} 
+Cored-Det~\cite{bergan2010coreDet}, based on DMP~\cite{devietti2009dmp}
 uses a deterministic token that is passed
 among all threads.  A thread to modify a shared variable must first
 wait for the token and for all threads to block on that
-token. DMP is hardware based. 
+token. DMP is hardware based.
 Although, deadlocks may be avoided, we believe this setting is
 non-distributed because it forces all threads to synchronize and
 therefore leads to a considerable performance penalty. In Safe X10,
@@ -134,8 +135,8 @@ on that channel; other threads can run independently.
  Deterministic replay systems~\cite{choi1998deterministic,altekar2009odr} facilitate debugging of concurrent programs to produce
 repeatable behavior. They are based on record/replay systems. The system
 replays a specific behavior (such as thread interleaving) of a concurrent
-program based on records. The primary purpose of replay systems 
-is debugging; they do not guarantee determinism. 
+program based on records. The primary purpose of replay systems
+is debugging; they do not guarantee determinism.
 They incur a high runtime overhead and are input dependent.
 For every new input, a new set of records is generally maintained.
 
@@ -143,20 +144,19 @@ Like replay systems, Burmin and Sen~\cite{Burnim2009asserting} provide a framewo
 checking determinism for multi-threaded programs. Their tool does not
 introduce deadlocks, but their tool does not guarantee determinism
 because it is merely a testing tool that checks the execution trace
-with previously executed traces to see if the values match. Our
-goal is to guarantee determinism at compile time -- given a program,
-it will generate the same output for a given input.
+with previously executed traces to see if the values match.
+%Our goal is to guarantee determinism at compile time -- given a program,
+%it will generate the same output for a given input.
 
 
 
-%\subsection{Type Systems and Verifiers} 
-%Finally, type and effect systems like DPJ~\cite{bocchino2009type} 
+%\subsection{Type Systems and Verifiers}
+%Finally, type and effect systems like DPJ~\cite{bocchino2009type}
 % have been designed for deterministic parallel programming to see if
-%memory locations overlap. Our technique is more explicit. 
+%memory locations overlap. Our technique is more explicit.
 %In general, type systems require the programmer to manually annotate the program. Our model can also be implemented using annotations in existing
 %programming languages - we in fact annotated the X10 programming language.
 
 %Martin Vechev's tool \cite{vechev2011automatic}
 %finds determinacy bugs in loops that run parallel bodies. It analyzes
-%array references and indices to ensure that there are no read-write and 
-
+%array references and indices to ensure that there are no read-write and
