@@ -42,12 +42,13 @@ Accumulators can be used to implement collective operations such as
 all-to-all reductions in a straightforward ``shared memory'' style.
 
 \begin{example}
-Here we show the single-sided, blocking version.
+Here we show the single-sided, blocking version. Spawned activities
+update an accumulator created by the parent activity, which reads it
+after a \code{finish}. 
   \begin{lstlisting}
 @safe
 def reduce[T](in:DistArray[T], red:Reducible[T]):T {
   val acc = new Acc[T](red);
-  val temp = new GlobalRef[Acc[T]](acc);
   finish for (dest in in.dist.places()) async at(dest) {
     for (p in in.dist | here) {
       acc <- in(p);
@@ -154,6 +155,15 @@ def pipeline() {
             advance;
         }}}
   \end{lstlisting}
+Note the serial schedule generates:
+\begin{lstlisting}
+  a<-0; advance;
+  a<-1; b<-1; advance;
+  a<-2; b<-2; c<-4; advance;
+  a<-3; b<-3; c<-6; advance;
+  ...
+\end{lstlisting}
+\noindent This shows the pipelined nature of the computation.
 \end{example}
 
 \input {examples/stencil.x10}
