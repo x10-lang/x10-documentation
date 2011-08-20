@@ -97,11 +97,11 @@ step of \code{S2} -- e.g.{} when \code{S1} is \code{advance; S3} and
 the clocked async must wait until all other such asyncs in the scope
 of the clocked finish are ready to advance. Thus a \code{clocked
   finish \{S\}} exhibits ``round-robin'' scheduling of \code{S}. For
-instance, through this reasoning we can establish that 
+instance, through this reasoning we can establish that
 \begin{lstlisting}
   clocked finish {
-    clocked async { S1; advance; S2}
-    clocked async { S3; advance; S4}
+    clocked async { S1; advance; S3}
+    clocked async { S2; advance; S4}
   }
   S5
 \end{lstlisting}
@@ -153,7 +153,7 @@ approach to safety. We introduce two simple ideas -- {\em
   accumulators} and {\em clocked types} -- which require very modest
 compiler support and can be implemented efficiently at run-time. We
 show that programs written using accumulators and clocked accumulators
-as the only shared variables are safe. 
+as the only shared variables are safe.
 
 Accumulators arise very naturally in concurrent programming: an
 accumulator is a mutable location associated with a commutative and
@@ -201,7 +201,8 @@ to use (\code{clocked}) \code{finish}/\code{async}, \code{at} with
 be run with a serial schedule and their I/O behavior is identical
 under any schedule.  We show that Safe X10 is surprisingly
 powerful. Many concurrent idioms can be expressed in this language --
-histograms, all-reduce, SpecJBB-style communication Indeed, even some
+histograms, all-reduce, and SpecJBB-style communication.
+Indeed, even some
 form of pipelined/systolic communication is expressible.
 
 Since the dynamic conditions introduced on accumulators and clocked

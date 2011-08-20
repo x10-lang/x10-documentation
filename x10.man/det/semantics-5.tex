@@ -13,7 +13,7 @@ Intuitively, the sequential scheduler performs a DFS over \code{async}.
 We prove that the concurrent and sequential schedulers always have the same result (i.e., isomorphic heaps).
 \Ref{Section}{syntax} presents FX10 syntax,
     \Ref{Section}{reduction} the reduction rules,
-    and \Ref{Section}{results} our main result that FX10 are always safe.
+    and \Ref{Section}{results} our main result that programs in FX10 are always safe.
 
 \Subsection[syntax]{Syntax}
 There are three predefined classes in FX10:
@@ -78,7 +78,7 @@ $\epsilon$ is the empty statement. Sequencing associates to the left.
 %and \code{finish} bind tighter than statement sequencing, so
 %$\code{async}~\hS~\hS'$ is the sequencing of $\code{async}~\hS$ and
 %$\hS'$.
-The block syntax in source code is just \code{\{\hS\}},
+The block syntax in source code is just \code{\{\hS{}\}},
 however at run-time the block is augmented with (the initially empty) set of locations
 $\pi$ representing the objects registered on the block,
      which are those that were created in that block.
