@@ -97,14 +97,16 @@ Expression $\hp()$ is legal only when $\hp$ is an accumulator;
 
 
 \Subsection[reduction]{Reduction}
-A {\em heap}~$H$ is a mapping from a given set of locations to {\em
+A {\em heap}~$\cH$ is a mapping from a given set of locations to {\em
   objects}. An object is a pair $\hC(\ol{\hl})$ where $\hC$ is a class (the exact
 class of the object), and $\ol{\hl}$ are the values in the fields.
 
 An {\em configuration} is of the form
-$\hS,H$ where \hS{} is a statement and $H$ is a heap (representing a
-computation which is to execute $\hS$ in the heap $H$), or $H$
+$\hS,\cH$ where \hS{} is a statement and $\cH$ is a heap (representing a
+computation which is to execute $\hS$ in the heap $\cH$), or $\cH$
 (representing a successfully terminated computation).
+The reduction rules define transitions between configurations.
+We define both a concurrent scheduler, and by removing two rules we also define a sequential scheduler.
 
 The reduction relation $\preduce{}$ is described in
     \Ref{Figure}{reduction}.
@@ -161,61 +163,67 @@ $X[v \mapsto e]$ to represent the partial function which is the same
 as $X$ except that it maps $v$ to $e$.
 
 We now explain the rules in detail.
-The rules for transition, invoke, and access
-are standard.
+The rules for \RULE{(R-Epsilon)}, \RULE{(R-Trans)}, \RULE{(R-Access)}, and \RULE{(R-Invoke)}
+    are standard.
 
-The only minor novelty is in how \hasync{} is
-defined. The critical rule is the last rule in~\RULE{(R-Async)} -- it
+One minor novelty is in how \hasync{} is
+defined. The critical rule is the last rule in~\RULE{(R-Async)-} -- it
 specifies the ``asynchronous'' nature of \hasync{} by permitting \hS{}
 to make a step even if it is preceded by $\async{\hS_1}$.
+For the sequential scheduler, we define \RULE{(R-Seq)+}
+    that permits \hS{}
+to make a step only if it is preceded by $\async{\hS_1}$ that cannot progress
+    (it has at least one \code{clocked async} waiting on \xadvance and no un-clocked \async).
 
 Further,
-each block records its set of synchronous capabilities. When
-descending into the body, the block's own capabiliites are added to
-those obtained from the environment.
+each block $\blockt{\ol{\hl}}{\hS}$ records the set of newly created objects~$\ol{\hl}$, which we say have registered on the block.
+When descending into the body in \RULE{(R-Trans)}, the newly registered objects are added to
+    those obtained from the environment.
+When descending into an \async or \finish in \RULE{(R-Trans-B)}, we need to take special care of the clocked
+    accumulators (because they cannot be used in a non-clocked construct).
+Given $\ol{\hl}$ and a heap $\cH$,
+    we define
+    $\hAcc(\ol{\hl})$ to return only the non-clocked accumulators in~$\ol{\hl}$
+    (dropping all the other objects).
+According to \RULE{(R-Trans-B)}, when descending into a non-clocked
+    \async or \finish, we keep only the non-clocked accumulators in $\pi$
+    (i.e., the clocked accumulators cannot be accessed).
+When descending into a clocked \async we keep $\pi$ unchanged.
+Finally, the most complicated case is descending into a clocked \finish:
+    then we keep all the non-clocked accumulators and also the newly created clocked-accumulators in the enclosing block
+    (these clocked accumulators will be advanced in rule \RULE{(R-Adv)} later).
 
-%
 The rule~\RULE{(R-New)} returns a new location that is bound to a new
-object that is an instance of \hC{} with its fields set to the argument;
+    object that is an instance of \hC{} with its fields set to the argument;
     the new object is registered with the block.
 (It is enough to register only clocked-values and accumulators, but
     for simplicity we register all newly created objects.)
-Given a set of registered objects $\ol{\hl}$ in a heap $H$,
-    we define
-    $\hAcc(\ol{\hl})$ to return only the accumulators in~$\ol{\hl}$.
- %   and (ii)~$\fclocked(\ol{\hl})$ only the clocked-values.
 
 
 %todo: give an example of registration and legality.
 
-%
-The rule~\RULE{(R-Access)} ensures that the field is initialized before it is
-read ($\hf_i$ is contained in $\ol{\hf}$).
-%
-The rule~\RULE{(R-Acc-A-R)} permits the accumulator to be read in a
+
+The rule~\RULE{(R-Acc-W)} updates the current contents of the
+accumulator provided that the current set of capabilities permit
+asynchronous access to the accumulator.
+Rule~\RULE{(R-Clocked-W)} is similar.
+
+The rule~\RULE{(R-Acc-R)} permits the accumulator to be read in a
 block provided that the current set of capabilities permit it (if not,
 an error is thrown), and provided that the only statements prior to
 the read are re is no nested async prior to the read are clocked
 asyncs that are stuck at an \hadvance.
-
-The rule~\RULE{(R-Acc-W)} updates the current contents of the
-accumulator provided that the current set of capabilities permit
-asynchronous access to the accumulator (if not, an erorr is thrown).
+Rule~\RULE{(R-Clocked-R)} immediately returns the old value of the accumulator (without waiting like in \RULE{(R-Acc-R)}).
 
 The rule~\RULE{(R-Adv)} permits a \code{clocked finish} to advance
 only if all the top-level \code{clocked asyncs} in the scope of the
-\code{clocked finish} and before an \code{advance} are stuck at an
-\code{advance}. A \code{clocked finish} can also advance if all the
-the top-level \code{clocked asyncs} in its scope are stuck. In this
-case, the statement in the body of the \code{clocked finish} has
-terminated, and left behind only possibly clocked \code{async}. This
-rule corresponds to the notion that the body of a \code{clocked
-  finish} deregisters itself from the clock on local termination.
-Note that in both these rules un-clocked \code{aync} may exist in the
+\code{clocked finish} are stuck at an
+\code{advance}.
+Note that an un-clocked \code{aync} may exist in the
 scope of the \code{clocked finish}; they do not come in the way of the
-\code{clocked finish} advancing.
-
-%\begin{figure}[htpb!]
+    \code{clocked finish} advancing.
+The resulting heap~$\cH'=\hswitch(\cH,\ol{\hl})$ is obtained from $\cH$ by switching
+    the current and next values in all clocked accumulators in $\ol{\hl}$.
 
 
 \begin{figure*}[t]
@@ -223,7 +231,6 @@ scope of the \code{clocked finish}; they do not come in the way of the
 \begin{center}
 \begin{tabular}{|c|}
 \hline
-
 $\typerule{
 }{
  \epsilon,\cH \preduce \cH
@@ -329,7 +336,7 @@ $\typerule{
 
 
 $\typerule{
-    \hS_1 \ureduce{0+,0+}\hUnused \gap \hclocked~\async~\hB \ureduce{1+,0+} \hclocked~\async~\hB' \gap H'=\hswitch(H,\ol{\hl})
+    \hS_1 \ureduce{0+,0+}\hUnused \gap \hclocked~\async~\hB \ureduce{1+,0+} \hclocked~\async~\hB' \gap \cH'=\hswitch(\cH,\ol{\hl})
 }{
   \blockt{\ol{\hl}}{\hS_1~\hclocked~\finish{\hB}~\hS"},\cH\preduce
   \blockt{\ol{\hl}}{\hS_1~\hclocked~\finish{\hB'}~\hS"},\cH'
@@ -362,3 +369,11 @@ $\typerule{
 
 
 \Subsection[results]{Results}
+Our main result is that all programs in FX10 are safe, i.e.,
+    all schedulers are deadlock-free and result in the same heap (up to isomorphism of locations).
+
+\begin{Theorem}
+Given a well-typed program $\ol{\hL},\hS$ in heap $\cH$,
+    if $\hS,\cH \stackrel{*}\reduce \cH'$ and $\hS,\cH \stackrel{*}\reduce \cH"$
+    then $\cH'$ and $\cH"$ are isomorphic.
+\end{Theorem}
