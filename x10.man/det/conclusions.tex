@@ -23,7 +23,7 @@ currently in progress.
 X10 already implements a very powerful dependent type system based on
 constraints. An object \code{o} is of type \code{T\{c\}} if it is of
 type \code{T} and further satisfies the constraint
-\code{c[o/self]}. Thus \code{Array[T]\{this.rank==R\}} is the type of all
+\code{c[o/self]}. Thus \code{Array[T]\{slef.rank==R\}} is the type of all
 the arrays of \code{T} with rank \code{R}.
 
 Types classify objects, i.e.{} types specify sets of
@@ -35,7 +35,7 @@ notion of regions into the language.
 
 The key insight is that two memory locations are distinct if they
 either have different names or they have the same name \code{f} and
-they live in two objects \code{m} and\code{n} such that for some
+they live in two objects \code{m} and \code{n} such that for some
 property \code{p}, \code{m.p != n.p} -- for then it must be the case
 that \code{m != n}. Therefore we introduce enough properties into
 classes to ensure that we can distinguish between objects that are
