@@ -187,7 +187,7 @@ before activities start in the next phase -- the \code{now} and
 We show that clocked types can be defined in a safe way, provided that
 accumulators are used to resolve write-write conflicts, or a light
 weight ``owner computes'' rule is used to check that only the $i$th async
-in a parallel loop writes into the $i$th location of an array. 
+in a parallel loop writes into the $i$th location of an array.
 The only dynamic check needed is that a value of this type is being operated
 upon only by the activity that created the value or its
 descendants.
@@ -195,7 +195,7 @@ descendants.
 In the following by Safe X10 we shall mean the language X10 restricted
 to use (\code{clocked}) \code{finish}/\code{async}, \code{at} with
 (clocked) accumulators, or with clocked types where an ``owner
-computes'' rule is used to establish disjointness of array writes. 
+computes'' rule is used to establish disjointness of array writes.
  All programs in Safe X10 are safe -- they can
 be run with a serial schedule and their I/O behavior is identical
 under any schedule.  We show that Safe X10 is surprisingly
@@ -240,10 +240,12 @@ In summary the contributions of this paper are as follows.
 In companion work we show how these ideas can be extended to support
 modularly defined effects analyses, using X10's dependent type system.
 
-The rest of this paper is as follows. In \Ref{Section}{related} we discuss
-related work. In \Ref{Section}{constructs} we present the constructs in detail,
-followed by examples of their use. \Ref{Section}{semantics} presents the
-semantics of these constructs. We discuss implementation in
+The rest of this paper is as follows. In \Ref{Section}{constructs} we present the constructs in detail,
+followed by examples of their use in \Ref{Section}{examples}. \Ref{Section}{semantics} presents the
+semantics of these constructs.
+In \Ref{Section}{related} we discuss
+related work.
+We discuss implementation in
 \Ref{Section}{conclusion} and finally conclude with future work.
 
 %%\cite{Gifford:1986:IFI:319838.319848}
