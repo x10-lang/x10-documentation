@@ -91,7 +91,8 @@ Statement $\hp_1 \leftarrow \hp_2$ is legal only when $\hp_1$ is an accumulator,
     and it accumulates $\hp_2$ into $\hp_1$ (given the reduction operator that was supplied when the accumulator was created).
 Expression $\hp()$ is legal only when $\hp$ is an accumulator;
     when the accumulator is clocked it immediately returns the old value of the accumulator,
-    and when it is not clocked it waits until all activities created in the block have terminated or are ready to advance.
+    and when it is not clocked it waits until all activities created in the block have terminated or are ready to advance
+    (then it is a safe point to read the accumulator because it cannot be further mutated).
 % it checks at runtime that it was executed in the block that created $\hp$
 
 
