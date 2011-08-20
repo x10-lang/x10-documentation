@@ -4,7 +4,7 @@ communication lie in Safe X10.
 \subsection{Example use of \code{Acc}}
 \begin{example}[Histogram]
 The histogram problem is easily represented with a \code{Rail} of
-accumulators:
+accumulators: 
 \begin{lstlisting}
  @safe
  def histogram(N:Int, A:Rail[Int(0..N)]):Rail[Int](N+1) {
@@ -29,7 +29,7 @@ Map Reduce applications such as word-count (that do not require
 intermediate sorting of results) can also be expressed directly:
 \begin{example}[Distributed word-count]
 Here the difference from histogram is that the accumulation may be
-done at a remote place.
+done at a remote place. 
 \begin{lstlisting}
  @safe
  def wordCount(m:DistStream[Word]):DistHashMap[Word,Int](m.dist) {
@@ -52,14 +52,14 @@ distributed reductions in a straightforward ``shared memory'' style.
 \begin{example}[Reduction]
 Here we show the single-sided, blocking version. Spawned activities
 update an accumulator created by the parent activity, which reads it
-after a \code{finish}.
+after a \code{finish}. 
   \begin{lstlisting}
 @safe
 def reduce[T](in:DistArray[T], red:Reducible[T]):T {
     val acc = new Acc[T](red);
     finish for (dest in in.dist.places())
         async
-            at (dest)
+            at (dest) 
                for (p in dist | here)
                  acc <- in(p);
     return acc();
@@ -142,37 +142,40 @@ This example creates $3$ stages in parallel. Stage $1$ gets the input
 (in this case generating the natural numbers), Stage $2$ increments it
 by $1$, Stage $3$ doubles it and prints the value.
 \begin{lstlisting}
+@safe
 def pipeline() {
-    val a = new ClockedAcc[Int](0,0,Int.plus);
-    val b = new ClockedAcc[Int](0,0,Int.plus);
-    val c = new ClockedAcc[Int](0,0,Int.plus);
+    val a = new Clocked[Int](0,0);
+    val b = new Clocked[Int](0,0);
+    val c = new Clocked[Int](0,0);
     clocked finish {
         clocked async {
             for (var i:Int=0;; i++) {
-                a <-i;
+                a()=i;
                 advance;}}
         clocked async {
             advance;
             for (;;) {
-                b <- a()+1; // b is 1,2,3,...
+                b()= a()+1; // b is 1,2,3,...
                 advance;}}
         advance;
         advance;
         for(;;) {
-            c <- 2*b();
+            c()= 2*b();
             Console.OUT.println(c()); // Prints 2,4,6,...
             advance;
         }}}
   \end{lstlisting}
 Note the serial schedule generates:
 \begin{lstlisting}
-  a<-0; advance;
-  a<-1; b<-1; advance;
-  a<-2; b<-2; c<-4; advance;
-  a<-3; b<-3; c<-6; advance;
+  a()=0; advance;
+  a()=1; b()=1; advance;
+  a()=2; b()=2; c()=2; advance;
+  a()=3; b()=3; c()=4; advance;
   ...
 \end{lstlisting}
-\noindent This shows the pipelined nature of the computation.
+\noindent This shows the pipelined nature of the computation. To show
+tht this program is safe, the compiler needs to establish that the
+first activity ``owns'' \code{a}, the second \code{b} and the third \code{c}.
 \end{example}
 
 \begin{example}[Butterfly idiom]
