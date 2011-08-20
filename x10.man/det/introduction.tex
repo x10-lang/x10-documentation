@@ -1,174 +1,286 @@
-A serial schedule for a parallel program is one which always executes
-the first enabled step in program order. A {\em safe} parallel program
-is one that can be executed with a serial schedule $S$ and for which
-every schedule produces the same result as $S$.  Such a program is
-semantically a sequential program, hence it is scheduler-determinate
-and deadlock-free.
+A {\em serial} schedule for a parallel program is one which always
+executes the first enabled step in program order. A {\em safe}
+parallel program is one that can be executed with a serial schedule
+$S$ and for which for every input every schedule produces the same
+result (error, correct termination, divergence) as $S$.  Such a
+program is semantically a sequential program, hence it is
+scheduler-determinate and deadlock-free.
 
-A {\em safe programming language} is an imperative parallel
+A {\em safe parallel programming language} is an imperative parallel
 programming language in which every legal program is a safe
 program. Programmers can write code in such a language secure in the
 knowledge that they will not encounter a large class of parallel
 programming problems. Such a language is particularly useful for
 parallelizing sequential (imperative) programs. In such cases ({\em
   contra} reactive programming) the desired application semantics are
-sequential, and parallelism is needed purely for efficient
+sequential, and parallelism is needed solely for efficient
 implementation.
 
-The key property of a safe programming language is that the {\em same}
-program can be developed and debugged as a sequential program and then
-safely run in parallel. Parallel execution is guaranteed to effect
-only performance, not correctness. Safety is a very strong property.
+The characteristic property of a safe programming language is that the
+{\em same} program has a sequential reading and a parallel reading,
+and both are compatible with each other. Hence the program can be
+developed and debugged as a sequential program, using the serial
+scheduler, and then run the unchanged program in parallel.  Parallel
+execution is guaranteed to effect only performance, not
+correctness. Safety is a very strong property.
 
-Figure~\ref{fig:1} shows  the famous ``parallel Or'' program of Plotkin
- (in X10 syntax, \cite{x10}). This program can be executed with a
-depth-first schedule, is partially determinate and deadlock-free, but {\em not}
-safe. The result of running the sequential schedule is not the same as
-the result that can be obtained with other schedules. Specifically
-\code{parallelOr(()=> CONT, ()=>TRUE)} will diverge (exhibit an
-infinite exection sequence) under the depth-first schedule, but will
-return \code{true} under any fair schedule that permits the second
-async to progress.
+There are many challenges in designing an efficient, usable, powerful,
+explicitly parallel imperative language that is safe. One central
+challenge is that 
 
-\begin{figure}
-  \begin{lstlisting}
-static val CONT=1, TRUE=2, FALSE=3;
-def run(done:Cell[Boolean], a:()=>Int) {
- var aa:Int=a();
- var cont:Boolean=true;
- for (; aa==CONT && cont;aa=a()) {
-  atomic cont = !done();
- }
- if (aa==TRUE)
-  atomic done()=true;
-}
-def parallelOr(a:()=>Int, b:()=>Int):Boolean {
- val done=new Cell[Boolean](false);
- finish {
-  async run(done, a);
-  async run(done, b);
- }
- return done();
-}
-  \end{lstlisting}
-  \caption{A program that is not sequential}\label{fig:1}
-\end{figure}
-In this paper we establish that a very rich fragment of X10 is safe.
-The fragment supports multi-place, fine-grained concurrency
-over an arbitrary heap, clocked computations, concurrent accumulators,
-and {\em clocked types} that safely capture the ``red black'' idiom
-for iterative computations. It also uses a very lightweight effects
-mechanism to reason about disjointness of acccess. We show that a
-large variety of concurrency and communication idioms can be naturally
-expressed in Safe X10.
+One way to get safety is through implicitly parallel languages (e.g.{}
+Jade~\cite{Rinard98thedesign},\cite{vonPraun:2007:IPO:1229428.1229443}). One
+starts with a sequential programming language, and adds constructs
+(e.g.{} tasks) that permit speculative execution while guaranteeing
+that the only observable write to a shared variable is the write by
+the last task to execute in program order.  While this work is
+promising, extracting usable parallelism from a wide variety of
+sequential programs remains very hard.
 
-Determinism in parallel programming is a very active area of research.
-Guava \cite{guava} introduces restrictions on shared memory Java
-programs that ensure no data-races primarily by distinguishing
-monitors (all access is synchronized) from values (immutable) and
-objects (private to a thread). However Guava is not safe since Guava
-programs may use \code{wait}/\code{notify} for arbitrary concurrent
-signalling and hence may not executable with a sequential
-schedule. The Revisions programming model \cite{Revisions} guarantees
-determinism by isolating asynchronous tasks but merging their writes
-determinately. However, the model explicitly does not require that
-a sequential schedule be valid (c.f. Figure~1 in \cite{Revisions}).
+Explicitly parallel programming languages provide a variety of
+constructs for spawning tasks in parallel and coordinating between
+them. Here the programmer can typically directly control the
+granularity of concurrency, and locality of access (e.g. placement of
+data-structures in a multi-node computation) and use efficient
+concurrent primitives (atomic reads/writes, test and sets, locks etc)
+to control their execution. 
 
-DPJ develops the ``determinacy-by-default'' slogan using a static
-type-and-effects system to establish commutativity of concurrent
-actions.  The deterministic fragment of DPJ is safe according to the
-definition above. Safe X10 offers a much richer concurrency model
-which guarantees the safety of common idioms such as accumulators and
-cyclic tasks (clocks) without relying on effects annotations. The
-lightweight effects mechanism in X10 can be extended to support a much
-richer effects framework (along the lines of DPJ) using X10's
-constrained type system.  We leave this as future work.
+For such languages proving that a program is safe -- much less that
+the programming language is safe -- now becomes very hard,
+particularly for modern object-oriented languages which allow the
+programmer to create arbitrarily complicated data-structures in the
+shared heap. It becomes very difficult to show that any possible
+schedule will produce the same result as the serial schedule.
 
-The SafeJava language \cite{SafeJava} is unfortunately not safe
-according to our definition, even though it guarantees determinacy and
-deadlock freedom, using ownership types, unique pointers and partially
-ordered lock levels. Again, a sequential scheduler is not admissible
-for the model.
+Our starting point is the language X10 \cite{x10} since it offers a
+simple and elegant treatment of concurrency and distribution, with
+some nice properties.  In brief, X10
+introduces the constructs \code{async S} to spawn an activity to
+execute \code{S}; \code{finish S} to execute \code{S} and wait until
+such time as all activities spawned during its execution have
+terminated; \code{at (p) S} to execute \code{S} at place
+\code{p}. These constructs can be nested arbitrarily -- this is a
+source of significant elegance and power. Additionally, X10 v 2.2
+introduces a simplified version of X10 clocks (adequate for many
+practical usages) -- \code{clocked finish S} and \code{clocked async
+  S}. Briefly, a clocked finish introduces a new barrier that can be
+used by this activity and its children activities for
+synchronization.\footnote{X10 also has a conditional atomic construct,
+  \code{when (c) S} which permits data-dependent synchronization and
+  can introduce deadlocks. We do not consider this construct in this paper.}
 
-Some data-flow synchronization based languages and frameworks (e.g.{}
-Kahn style process networks \cite{kahn,kahn-mcqueen}, concurrent
-constraint programming \cite{ccp}, \cite{SHIM}) are guaranteed
-determinate but not safe according to our definition since they do not
-permit sequential schedules. Indeed they permit the possibility of
-deadlock. (The notion of safety is also not quite relevant since these
-frameworks do not support shared mutable variables.)
+\cite{vj-clock} establishes that a large class of programs
+in X10, namely those that use \code{finish}, \code{async} and
+\code{clock}s are deadlock-free. The central intuition is that a clock
+can only be used by the activity that created it and by its children,
+and hence the spawn tree structure can be used to avoid depends-for
+cycles. 
 
-Determinizing run-times support coarse-grained fork-join concurrency
-by maintaining a different copy of memory for each activity and
-merging them determinately at finish points (\cite{grace},
-\cite{core-det}, \cite{dmp}, \cite{kendo},\cite{determinator}). Safe
-X10 can run on such systems in principle, but does not require them.
-To execute Safe X10, such systems need to support fine-grained
-asynchrony (with some form of work-stealing or fork-joining
-scheduler), clocks and accumulators.
+To obtain determinacy, another idea is required. The central problem
+is to ensure that in the statement \code{async \{S\} S1} it is not the
+case that \code{S} can write to a location that \code{S1} can read
+from or read from a location that \code{S} can read from. Otherwise
+the behavior is not determinate. One line of attack has been the pursuit
+of {\em effect systems} \cite{Lucassen:1988:PES:73560.73564},
+\cite{Leino:2002:UDG:543552.512559},
+\cite{boyland:01interdependence},
+\cite{DPJ}. At a broad conceptual level, static effects systems call
+for a user-specified partitioning of heap into {\em regions} in a
+fine-grained enough way to show that operations that may occur
+simultaneously work on different regions. For instance \cite{DPJ}
+introduces separate syntax for regions, introduces the ability to
+specify an arbitrary tree of regions, and new syntax for specifying
+which region mutable locations belong to. Methods must be associated
+with their read and write effects which capture the set of regions
+that can be operated upon during the execution of this
+method. Now determinacy can be established if it can be determined
+that that in \code{async \{S\} S1} it is the case that \code{S} does
+not write any region that \code{S1} reads or writes from, and vice
+versa ({\em disjoint parallelism}). 
 
+\cite{DPJ} develops these ideas in the context of a language with
+\code{cobegin/coend} and \code{forall} parallelism, and does not
+address arbitrary nested or clocked parallelism.  In particular it is
+not clear how to adapt these ideas to support some form of pipelined
+communication between multiple parallel activities. Once can think of
+these computations as requiring ``disjointness across time'' rather
+than disjointness across space. A producer is going to write into
+locations \code{w(t),w(t+1),w(t+2), \ldots}, but this does not
+conflict with a consumer reading from the same locations as long as
+the consumer can arrange to read the values in time-staggered order,
+i.e. read \code{w(t)} once the produce is writing \code{w(t+1)}.  
 
+We believe it is possible to significantly simplify this approach
+(e.g.{} using the dependent-type system of X10) and extend it to cover
+all of X10's concurrency constructs (see
+Section~\ref{future-work}). Nevertheless the cost of developing these
+region assertions is not trivial. Their viability for developing large
+commercial-strength software systems is yet to be establishd.
 
+In this paper we chose a different approach, a {\em lightweight}
+approach to safety. We introduce two simple ideas -- {\em
+  accumulators} and {\em clocked types} -- which require very modest
+compiler support and can be implemented efficiently at run-time.
 
-%% Anything from Blelloch?
+Accumulators arise very naturally in concurrent programming: an
+accumulator is a mutable location associated with a commutative and
+associative {\em reduction} operator that can be operated on
+simultaneously by multiple activities. Multiple values offered by
+multiple activities are combined by the reduction operator. We show
+that the concrete rules for accumulators can be defined in such a way
+that they do not compromise safety: a serial execution precisely
+captures results generable from any execution.
 
-Desiderata:
+Similarly clocked computations (barrier-based synchronization) is
+quite common in parallel programming e.g. in the SPMD model, BSP model
+etc. We observe that many clocked programs can be written in such a
+way that shared variables take on a single value in one phase of the
+clock. Further, clocked computations are often iterative and operate
+on large aggregate data-structures (e.g. arrays, hash-maps) in a
+data-parallel fashion, reading one version of the data-structure (the
+``red'' version) while simultaneously writing another version (the
+ ``black'' version). To support this widely used idiom, we introduce
+the notion of {\em clocked types}. An instance \code{a} of a  clocked type
+\code{Clocked[T]} keeps two instances of type \code{T}, the \code{now} and
+the \code{next} instance. \code{a} can be operated upon only by
+activities registered on the current clock.  All read operations
+during the current clock phase are directed to the \code{now} version,
+and write operation to the \code{next} version. This ensures that
+there are no read-write conflicts. There may be write-write conflicts
+-- these must be managed by either using accumulators or an effects
+system. Once computation in the current phase has quiesced -- and
+before activities start in the next phase -- the \code{now} and
+\code{next} versions are switched; \code{now} becomes \code{next} and
+\code{next} becomes \code{now}.\footnote{Clearly this idea can be
+  extended to $k$-buffered clocked types where each clock tick rotates
+  the buffer. This idea is related to the K-bounded Kahn networks of \cite{k-bounded-kahn}.}
+
+We show that clocked types can be defined in a safe way, provided that
+accumulators are used to resolve write-write conflicts. The only
+dynamic check needed is that a value of this type is being operated
+upon only by the activity that created the value or its
+descendants. 
+
+In the following by Safe X10 we shall mean the language X10 restricted
+to use (\code{clocked}) \code{finish}/\code{async}, \code{at} with
+(clocked) accumulators.  All programs in Safe X10 are safe -- they can
+be run with a serial schedule and their I/O behavior is identical
+under any schedule.  We show that Safe X10 is surprisingly
+powerful. Many concurrent idioms can be expressed in this language --
+histograms, all-reduce, SpecJBB-style communication Indeed, even some
+form of pipelined/systolic communication is expressible.
+
+Since the dynamic conditions introduced on accumulators and clocked
+types are not straightforward, we formalize the concurrent and serial
+semantics of an abstraction of Safe X10 using Plotkin's structural
+operational style. We are able to do this in such a way that the two
+proof systems share most of the proof rules, simplifying the proof. We
+establish that the language is safe -- for any program and any input,
+any execution sequence for the concurrent proof rules can be
+transformed into an execution sequence for the sequential proof rules
+with the same result. 
+
+In summary the contributions of this paper are as follows.
 
 \begin{itemize}
-\item Data-structures should by design by dynamically determinate and
-   deadlock-free.
-\item They should be first-class -- they can be stored in
-  data-structures/read from them, passed as arguments to
-  procedures/returned etc with no restrictions.
-\item Usable -- common idioms should be naturally and elegantly expressible.
-\item Additional static type-checking can provide extra guarantees
-  (e.g.{} no concurrency related run-time exceptions) that may aid
-  efficient implementation.
+\item We identify the notion of a {\em safe} program -- one which can
+  be executed with a serial schedule and for which 
+  every schedule produces the same result. Such a program is
+  simultaneously a sequential program and a parallel program with
+  identical I/O behavior. 
+\item We introduce accumulators and clocked types in the X10
+  programming model. These are introduced in such a way that arbitrary
+  programs using (\code{clocked}) \code{finish}, \code{async} and
+  \code{at} and in which the only variables shared between
+  concurrently executing activities are accumulators or clocked
+  accumulators are guaranteed to be safe.  
+\item We show that many common programming idioms can be expressed in
+  this language.
+\item We formalize a fairly rich subset of X10 -- including (clocked)
+  finish, async, accumulators and clocked accumulators.  This is the
+  first formalization of the nested clock design of X10 2.2, and is
+  substantially simpler than \cite{vj-clock}. We establish that this
+  language is safe. 
 \end{itemize}
+In companion work we show how these ideas can be extended to support
+modularly defined effects analyses, using X10's dependent type system.
 
-We discuss three examples
+The rest of this paper is as follows. In \Ref{related-work} we discuss
+related work. In \Ref{constructs} we present the constructs in detail,
+followed by examples of their use. \Ref{semantics} presents the
+semantics of these constructs. We discuss implementation in
+\Ref{implementation} and finally conclude with future work.
 
-  * clocks
-  * accumulators
-  * clocked types
-
-Challenge
-  Arbitrary nature of object graphs.
-
-
-{\em
-\begin{enumerate}
-\item Use activity registration as a mechanism to tame object graphs.
-\item Focus on structured concurrency. Using scoping and block-structure
-    to delimit regions of code that may execute in parallel and affect
-    the data structure.
-
-\item Accumulation can be defined safely by delaying. However, the delay
-    operation is guaranteed to be deadlock-free.
-
-\item Clocked types support phased computation, another common idiom
-    particularly for stencil computations.
-\end{enumerate}
-}
-
-Key contributions:
-{\em
-\begin{enumerate}
-\item Identification of determinate, deadlock-free data-structures.
-\item Discussion of design alternatives which points out the
-  difficulty of integrating these ideas in a modern OO language.
-\item Discussion of various idioms expressible using these data-structures.
-\item Proof of determinacy and deadlock-freedom in an abstract version
-  of the language.
-\end{enumerate}
-These constructs are implemented in \Xten, available as open source from
-SVN head and will be in the next release of \Xten.
-}
-
-
-Semantics and theorems for an abstract version of the language.
+%%\cite{Gifford:1986:IFI:319838.319848}
+%%
+%%
+%%Figure~\ref{fig:1} shows  the famous ``parallel Or'' program of Plotkin
+%% (in X10 syntax, \cite{x10}). This program can be executed with a
+%%depth-first schedule, is partially determinate and deadlock-free, but {\em not}
+%%safe. The result of running the sequential schedule is not the same as
+%%the result that can be obtained with other schedules. Specifically
+%%\code{parallelOr(()=> CONT, ()=>TRUE)} will diverge (exhibit an
+%%infinite exection sequence) under the depth-first schedule, but will
+%%return \code{true} under any fair schedule that permits the second
+%%async to progress.
+%%
+%%\begin{figure}
+%%  \begin{lstlisting}
+%%static val CONT=1, TRUE=2, FALSE=3;
+%%def run(done:Cell[Boolean], a:()=>Int) {
+%% var aa:Int=a();
+%% var cont:Boolean=true;
+%% for (; aa==CONT && cont;aa=a()) {
+%%  atomic cont = !done();
+%% }
+%% if (aa==TRUE)
+%%  atomic done()=true;
+%%}
+%%def parallelOr(a:()=>Int, b:()=>Int):Boolean {
+%% val done=new Cell[Boolean](false);
+%% finish {
+%%  async run(done, a);
+%%  async run(done, b);
+%% }
+%% return done();
+%%}
+%%  \end{lstlisting}
+%%  \caption{A program that is not sequential}\label{fig:1}
+%%\end{figure}
 
 
-\subsection{Related Work}
 
-\cite{Steele:1989:MAP:96709.96731} introduced the idea of
+%%{\em
+%%\begin{enumerate}
+%%\item Use activity registration as a mechanism to tame object graphs.
+%%\item Focus on structured concurrency. Using scoping and block-structure
+%%    to delimit regions of code that may execute in parallel and affect
+%%    the data structure.
+%%
+%%\item Accumulation can be defined safely by delaying. However, the delay
+%%    operation is guaranteed to be deadlock-free.
+%%
+%%\item Clocked types support phased computation, another common idiom
+%%    particularly for stencil computations.
+%%\end{enumerate}
+%%}
+%%
+%%Key contributions:
+%%{\em
+%%\begin{enumerate}
+%%\item Identification of determinate, deadlock-free data-structures.
+%%\item Discussion of design alternatives which points out the
+%%  difficulty of integrating these ideas in a modern OO language.
+%%\item Discussion of various idioms expressible using these data-structures.
+%%\item Proof of determinacy and deadlock-freedom in an abstract version
+%%  of the language.
+%%\end{enumerate}
+%%These constructs are implemented in \Xten, available as open source from
+%%SVN head and will be in the next release of \Xten.
+%%}
+
+
+%Semantics and theorems for an abstract version of the language.
+
+
+

@@ -1,3 +1,153 @@
-We show that many determinate concurrent programs can be written in
-\Xten{} using determinate, deadlock-free constructs, so that they are
-determinate by design.
+% 8/17/2011 5:03:31 AM
+
+\subsection{Adding static effects checking}
+
+The richness of the existing language can be substanitally enriched
+through the addition of statically checked effects
+\cite{Gifford:1986:IFI:319838.319848},\cite{DPJ}. 
+
+We discuss briefly how these ideas can be integrated into Safe X10,
+thereby substantially enriching its power. This summarizes work
+currently in progress.
+
+X10 already implements a very powerful dependent type system based on
+constraints. An object \code{o} is of type \code{T\{c\}} if it is of
+type \code{T} and further satisfies the constraint
+\code{c[o/self]}. Thus \code{Array[T]\{this.rank==R\}} is the type of all
+the arrays of \code{T} with rank \code{R}. 
+
+Types classify objects, i.e.{} types specify sets of
+objects. Therefore we can define a {\em location set} to be of the form
+\code{T.f} where \code{T} is a type and \code{f} is a mutable field of
+type \code{T}. It stands for the set of locations \code{x.f} where
+\code{x} is of type \code{T}. We do not need to introduce any distinct
+notion of regions into the language.
+
+The key insight is that two memory locations are distinct if they
+either have different names or they have the same name \code{f} and
+they live in two objects \code{m} and\code{n} such that for some
+property \code{p}, \code{m.p != n.p} -- for then it must be the case
+that \code{m != n}. Therefore we introduce enough properties into
+classes to ensure that we can distinguish between objects that are
+simultaneously being operated on. Specifically, the location sets
+\code{S\{c\}.f} and \code{S\{d\}.f} are disjoint if
+\code{c[x/self],d[x/self]} is not satisfiable for any \code{x:S}.
+
+Methods are decorated with \code{@Read(L)} and \code{@Write(M)}
+annotations, where \code{L},\code{M} are location sets. The annotation
+is {\em valid} if every read (write) of a mutable location \code{o.f} in the
+body of the method it is the case that \code{o.f} lies in (the set
+described by) \code{L} (\code{M}).
+
+We permit location sets to be named:
+\begin{lstlisting}
+  static locs Cargos = Tree.cargo;
+  static locs LeftCargo(up:Tree) = Tree{self.up==up,self.left==true}.cargo;
+\end{lstlisting}
+
+Unlike the region system of \cite{DPJ} we do not need to introduce
+explicitly named, intensional regions, rather we can work with
+extensional representations of location sets (the set of all locations
+satisfying a certain condition).  There is no need for a separate
+space of region names with constructors. Two location sets are
+disjoint if their constraints are mutually unsatisfiable, not because
+they are named differently. In particular, we do not need to assume
+that the heap is partitioned into a tree of regions.
+
+Two key properties of the X10 type system are worth recalling. The run-time
+heap cannot contain cycles involving only properties. This in turn
+depends on the fact that the X10 type system prevents \code{this} from
+escaping during object construction\cite{X10-object-initialization}.
+
+We mark a property as \code{@ersatz} to indicate that space is not
+allocated at run-time for this property. Therefore the value of this
+property is not accessible at run-time -- it cannot be read and stored
+into variables. It may only be accessed in constraints that are
+statically checked. Dynamic casts cannot refer to \code{@ersatz}
+properties.
+
+We enrich the vocabulary of constraints. First, we permit
+existentially quantified constraints \code{x:T\^c} -- this represents
+the constraint \code{c} in which the variable \code{x} of type
+\code{T} is existentially quantified. Second, we permit the {\em
+  extended field selector} \code{e.f\$i} where \code{e} is an
+expression, \code{f} a field name and \code{i} is a \code{UInt}. 
+
+%% Alternatively we just permit regular expressions as field
+%% selectors?
+%% So take T{self.r==x} where r is a regular expression to mean
+%% T{p:??^(p in r, self.p==x)}. So we have to have a notion of a
+%% type-consistent path, and then be able to select a path on a given
+%% receiver, maybe use some other operator for this, and not .?
+
+
+%% Hmm dont want to be able to count and do arithmetic, that will
+%% take us out of reg exp land. 
+
+%% Do we need MONA?
+%% May need to permit full-fledged regular expressions. 
+
+% Where do we need the flexibility of saying two region parameters are disjoint?
+
+We use an example from \cite{DPJ} to illustrate:
+  \begin{lstlisting}
+type Tree(t:Tree,l:Boolean)=Tree{self.up==t,self.left==l};
+class Tree (up:Tree, left:Boolean) {
+    var left:Tree(this,true);
+    var right:Tree(this,false);
+    var payload:Int;
+    //SubTree(t) is the type of all Trees o s.t. 
+    // for some UInt i, o.up...up=t (i-fold iteration).
+    static type SubTree(t:Tree)=Tree{i:UInt^self.up$i==t};
+    @Safe
+    def makeConstant(x:Int)
+        @Write[SubTree(this)].payload
+        @Read[SubTree(this)].(left,right) {
+          finish {
+            this.payload = x; 
+            if (left != null)
+              async left.makeConstant(x); 
+            if (right != null) 
+              async right.makeConstant(x); 
+          }}}
+  \end{lstlisting}
+In this example the fields \code{left},\code{right} and \code{cargo}
+are mutable. It is possible to mutate a tree \code{p} -- replace
+\code{p}'s \code{left} child with another tree \code{q}. However, \code{q} cannot be in
+\code{p}'s \code{right} subtree, because then its \code{up} field or
+\code{left} field would not have the right value. That is, once a
+\code{Tree} object is created it can only belong to a specific tree in
+a specific position.
+
+Note that a \code{Tree} can be created with \code{null} parent and
+children. This is how the root is created:
+\code{new Tree(null,true)} or \code{new tree(null, false)}.
+
+In checking the validity of the effect annotation on
+\code{makeConstant} the compiler must check that the effects of the
+body are contained in the declared effects of the method. This boils
+down to checking the subtyping relations. e.g.{} for the \code{@Write} annotation it must check:
+\begin{lstlisting}
+SubTreeTree
+Tree{i:UInt^(self.up$i.up==this,self.up$i.left==true} <: Tree{i:UInt^(self.up$i==this}
+Tree{i:UInt^(self.up$i.up==this,self.up$i.left==false} <: Tree{i:UInt^(self.up$i==this}
+Tree{self==this} <: Tree{i:UInt^(self.up$i==this)}
+\end{lstlisting}
+
+This is easily verified.
+The notion of ``distinctions from the left'' and ``distinctions from
+the right'' of \cite{DPJ} are not needed. These arise naturally
+through the use of constraints (distinct access paths, vs distinct fields).
+
+Note that the programmer may not desire to have the fields \code{up}
+and \code{left} be available at run-time. These fields can be marked
+as \code{@ghost} -- any attempt to access them at run-time will result
+in an error. 
+
+Constraints such as ``this array must point to distinct objects'' can
+also be naturally represented in the dependent type system. For more
+details please see \cite{effects-constrained-types}.
+
+
+
+

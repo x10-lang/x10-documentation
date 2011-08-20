@@ -1,3 +1,122 @@
 We now demonstrate that several common idioms of concurrency and
 communication lie in the semantically sequential subset of X10.
 
+\subsection{Example use of \code{Acc}}
+\begin{example}[Histogram]
+\begin{lstlisting}
+
+\end{lstlisting}
+\end{example}
+
+\begin{example}[Distributed word-count]
+\begin{lstlisting}
+ // A DistHashMap is used because the input is a DistStream
+
+ @det
+ def wordCount(m:DistStream[Word]):DistHashMap[Word,Int](m.dist) {
+   val a = new DistHashMap[Word, Acc[Int]](m.dist,
+          (w:Word)=> new Acc[Int](Int.Sum)));
+   finish for (p in m.dist.places()) async at(p) {
+      for (word in m(p).words())
+          a(word)<- 1;
+   }
+   return  new DistHashMap[Word, Int](m.dist, (w:Word)=> a(w));
+}
+\end{lstlisting}
+
+\end{example}
+
+
+Accumulators can be used to implement collective operations such as
+all-to-all reductions in a straightforward ``shared memory'' style.
+
+Here we show the single-sided, blocking version.
+\begin{example}
+  \begin{lstlisting}
+@det
+def reduce[T](in:DistArray[T], red:Reducible[T]):T {
+  val acc = new Acc[T](red);
+  val temp = new GlobalRef[Acc[T]](acc);
+  finish for (dest in in.dist.places()) async at(dest) {
+    val local = new Acc[T](red);
+    for (p in in.dist | here) {
+      local <- in(p);
+    }
+    val x = local();
+    async at(origin) temp() <- x;
+  }
+  return acc();
+}
+\end{lstlisting}
+\end{example}
+
+An \code{allReduce} can be implemented by following the above
+operation with a broadcast:
+\begin{lstlisting}
+  @det
+  def allReduce[T](in:DistArray[T]{self.dist==Dist.UNIQUE},
+    red:Reducible[T], out:DistArray[T](in.dist)):void {
+    val x = reduce(in, red);
+    finish for (dest in out.dist.places()) async at (dest) {
+      for (p in out.dist |here)
+        out(p)=x;
+    }
+  }
+\end{lstlisting}
+One can write this code using a clock (to avoid two finish nests).
+
+The collective style requires extending clock so the advance method
+takes arbitrary args and performs collective operations on them,
+mimicking the MPI API.
+
+\paragraph{Collecting \code{finish}}
+
+The collecting \code{finish} construct is of the form \code{finish(r)
+  S}, where \code{r} is an instance of \code{Reducible[T]} and
+\code{S} is a statement. Within the dynamic execution of \code{S}, any
+execution of the statement \code{offer t;} results in a value \code{t}
+being accumulated in a set. (\code{t} must be of type \code{T}.) The
+result of the reduction of this set of \code{T} values with \code{r}
+is then returned.
+
+\begin{lstlisting}
+  {
+    val x = new Acc[T](r);
+    finish {
+      S [ x <- t / offer t;]
+    }
+    x()
+  }
+\end{lstlisting}
+
+An attractive aspect of collecting finish is that nesting is used
+quite naturally to reflect the relationship between the parallel
+computation performing the accumulation and the value returned. In
+particular there is no need to explicitly introduce the notion of an
+accumulator, or to register it with the current block, or to check
+that other activities in the current block have quiesced.
+
+On the other hand, this strength is also a limitation. It is not
+possible to use the same idiom for clocked code, i.e.{} collect values
+being offered by multiple \code{clocked} asyncs in the current phase.
+Further, using this idiom safely across method calls requires the
+addition of \code{offers T} clauses (similar to \code{throws T})
+clauses, specifying the type of the value being offered. Otherwise at
+run-time a value of an incompatible type may be offered leading to a
+run-time exception. Finally, the lack of a name for the result being
+collecting means that it is difficult to use the same computation to
+accumulate multiple separate values without more contortions. e.g.{}
+one could set the return type to be a tuple of values, but then the
+\code{offer} statement would need to specify the index for which the
+\code{offer} was intended. Now it is not clear that the index type
+should be arithmetic -- why should not one be able to collect into the
+range of a \code{HashMap} (so the index type could be an arbitrary
+type \code{Key})?
+
+We feel that these decisions are all orthogonal to the actual process
+of accumulating and should be dealt with by the data-structuring
+aspects of the language design.
+
+\subsection{Clocked computations}
+
+\input {examples/stencil.x10}
