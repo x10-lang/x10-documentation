@@ -7,23 +7,30 @@ JGF benchmarks such as IDEA, Sor, Series, RayTrace, LUFact,
 SparseMatMul, Geometric Mean.  The speed of the programs written using
 accumulators and clocked types was compared to the corresponding
 programs written in plain X10. On the average we noticed about a 20\%
-degradation in performance. A new implementation is currently being
-worked on and we expect to have more up-to-date results for final submission.
+degradation in performance. 
+
+A new implementation is currently being worked on and we expect to
+have more up-to-date results for final submission. This implementation
+rides piggyback on the control messages exchanged to implement
+\code{finish} in order to update an \code{Acc} from multiple
+places. The rules for reads on \code{Acc} guarantee that intermediate
+accumulations can be stored at each place and do not need to be
+communicated to the place where the \code{Acc} lives until local
+computation has quiesced. 
+This results in a very efficient implementation. 
 
 \subsection{Adding static effects checking}
 
-The richness of the existing language can be substantially enriched
+Safe X10 can be substantially enriched
 through the addition of statically checked effects
-\cite{Gifford:1986:IFI:319838.319848},\cite{DPJ}.
-
-We discuss briefly how these ideas can be integrated into Safe X10,
-thereby substantially enriching its power. This summarizes work
+\cite{Gifford:1986:IFI:319838.319848},\cite{DPJ}, particularly to
+handle non-array-based computations. This section summarizes work
 currently in progress.
 
 X10 already implements a very powerful dependent type system based on
 constraints. An object \code{o} is of type \code{T\{c\}} if it is of
 type \code{T} and further satisfies the constraint
-\code{c[o/self]}. Thus \code{Array[T]\{slef.rank==R\}} is the type of all
+\code{c[o/self]}. Thus \code{Array[T]\{self.rank==R\}} is the type of all
 the arrays of \code{T} with rank \code{R}.
 
 Types classify objects, i.e.{} types specify sets of
@@ -69,11 +76,11 @@ heap cannot contain cycles involving only properties. This in turn
 depends on the fact that the X10 type system prevents \code{this} from
 escaping during object construction\cite{X10-object-initialization}.
 
-We mark a property as \code{@ersatz} to indicate that space is not
+We mark a property as \code{@ghost} to indicate that space is not
 allocated at run-time for this property. Therefore the value of this
 property is not accessible at run-time -- it cannot be read and stored
 into variables. It may only be accessed in constraints that are
-statically checked. Dynamic casts cannot refer to \code{@ersatz}
+statically checked. Dynamic casts cannot refer to \code{@ghost}
 properties.
 
 We enrich the vocabulary of constraints. First, we permit

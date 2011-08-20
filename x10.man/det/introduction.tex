@@ -25,7 +25,7 @@ execution is guaranteed to effect only performance, not
 correctness. Safety is a very strong property.
 
 One way to get safety is through implicitly parallel languages (e.g.{}
-Jade~\cite{Rinard98thedesign},\cite{vonPraun:2007:IPO:1229428.1229443}). One
+Jade~\cite{Rinard98thedesign},IPOT~\cite{vonPraun:2007:IPO:1229428.1229443}). One
 starts with a sequential programming language, and adds constructs
 (e.g.{} tasks) that permit speculative execution while guaranteeing
 that the only observable write to a shared variable is the write by
@@ -87,7 +87,7 @@ under a serial schedule, \code{finish} and \code{async} behave like
 The situation is slightly different for \code{clocked finish} and
 \code{clocked async} which can have the special \code{advance} statement to go to the next phase of the clock.%
     \footnote{In the paper we use \smallcode{advance} as a keyword,
-        however, in X10 one need to use the \smallcode{Clock.advanceAll()} method.}
+        however, in X10 one need to use the \smallcode{Clock.advance()} method.}
 The first enabled step of \code{clocked finish
   \{S1\} S2} is going to be the first step of \code{S1}. However, the
 first enabled step of \code{clocked async \{S1\} S2} may be the first
@@ -95,7 +95,8 @@ step of \code{S2} -- e.g.{} when \code{S1} is \code{advance; S3} and
 the clocked async must wait until all other such asyncs in the scope
 of the clocked finish are ready to advance. Thus a \code{clocked
   finish \{S\}} exhibits ``round-robin'' scheduling of \code{S}. For
-instance, through this reasoning we can establish that
+instance, through this reasoning we can establish that the serial
+schedule for
 \begin{lstlisting}
   clocked finish {
     clocked async { S1; advance; S3}
@@ -103,10 +104,10 @@ instance, through this reasoning we can establish that
   }
   S5
 \end{lstlisting}
-would give the same result as the program: \code{S1;S2;S3;S4;S5}.
+would execute in the order: \code{S1;S2;S3;S4;S5}.
 
 When is such a program safe? The central problem
-is to ensure that in the statement \code{async \{S\} S1} it is not the
+is to ensure that in the statement \code{[clocked] async \{S\} S1} it is not the
 case that \code{S} can write to a location that \code{S1} can read
 from or read from a location that \code{S} can read from. Otherwise
 the behavior is not equivalent to a serial schedule. One line of attack has been the pursuit
@@ -139,18 +140,19 @@ conflict with a consumer reading from the same locations as long as
 the consumer can arrange to read the values in time-staggered order,
 i.e. read \code{w(t)} once the produce is writing \code{w(t+1)}.
 
-We believe it is possible to significantly simplify this approach
-(e.g.{} using the dependent-type system of X10) and extend it to cover
-all of X10's concurrency constructs (see
-\Ref{Section}{conclusion}). Nevertheless the cost of developing these
-region assertions is not trivial. Their viability for developing large
+We believe it is possible to significantly simplify the approach of
+\cite{DPJ} (e.g.{} using the dependent-type system of X10, see
+\Ref{Section}{conclusion}) and extend it to cover more X10 concurrency
+constructs.  Nevertheless the cost of developing these region
+assertions is not trivial. Their viability for developing large
 commercial-strength software systems is yet to be established.
 
+\subsection{Lightweight safety}
 In this paper we chose a different approach, a {\em lightweight}
 approach to safety. We introduce two simple ideas -- {\em
   accumulators} and {\em clocked types} -- which require very modest
 compiler support and can be implemented efficiently at run-time. We
-show that programs written using accumulators and clocked accumulators
+show that programs written using accumulators and clocked types
 as the only shared variables are safe.
 
 Accumulators arise very naturally in concurrent programming: an
@@ -160,9 +162,11 @@ simultaneously by multiple activities. Multiple values offered by
 multiple activities are combined by the reduction operator. We show
 that the concrete rules for accumulators can be defined in such a way
 that they do not compromise safety: a serial execution precisely
-captures results generable from any execution.
+captures results generable from any execution. This is possible even
+though an accumulator is permitted to go through many phases of
+accumulations, with its value being observable between these phases.
 
-Similarly clocked computations (barrier-based synchronization) is
+Similarly clocked computations (barrier-based synchronization) are
 quite common in parallel programming e.g.{} in the SPMD model, BSP model
 etc. We observe that many clocked programs can be written in such a
 way that shared variables take on a single value in one phase of the
@@ -172,40 +176,44 @@ data-parallel fashion, reading one version of the data-structure (the
 ``red'' version) while simultaneously writing another version (the
  ``black'' version). To support this widely used idiom, we introduce
 the notion of {\em clocked types}. An instance \code{a} of a  clocked type
-\code{Clocked[T]} keeps two instances of type \code{T}, the \code{now} and
+\code{Clocked[T]} keeps two instances of type \code{T}, the \code{current} and
 the \code{next} instance. \code{a} can be operated upon only by
 activities registered on the current clock.  All read operations
-during the current clock phase are directed to the \code{now} version,
-and write operation to the \code{next} version. This ensures that
-there are no read-write conflicts. There may be write-write conflicts
--- these must be managed by either using accumulators or an effects
-system. Once computation in the current phase has quiesced -- and
+during the current clock phase are directed to the \code{current} version,
+and write operation to the \code{next} version. (Read operations on
+\code{T} must  be marked as \code{@Read}, and write operations as
+\code{@Async} or as \code{@Write} based on whether they are accumulative.) This ensures that
+there are no read-write conflicts. Invocations of \code{@Write}
+methods are subject to an ``owner computes'' rule (lightweight static
+effects checking): in a parallel loop \code{for i in R) async S},
+\code{S} may update only the \code{i}th element of an array.
+Once computation in the current phase has quiesced -- and
 before activities start in the next phase -- the \code{now} and
 \code{next} versions are switched; \code{now} becomes \code{next} and
 \code{next} becomes \code{now}.\footnote{Clearly this idea can be
   extended to $k$-buffered clocked types where each clock tick rotates
   the buffer. This idea is related to the K-bounded Kahn networks of
-\cite{Cohen:2006:NSK:1111320.1111054}.}
+\cite{Cohen:2006:NSK:1111320.1111054} and multi-version variables of
+John Mellor-Crummey.}
 
-We show that clocked types can be defined in a safe way, provided that
-accumulators are used to resolve write-write conflicts, or a light
-weight ``owner computes'' rule is used to check that only the $i$th async
-in a parallel loop writes into the $i$th location of an array.
-The only dynamic check needed is that a value of this type is being operated
-upon only by the activity that created the value or its
-descendants.
+We show that clocked types are safe. The only dynamic check needed is
+that values of this type (and the values of type \code{T} passed into
+it on creation) are being operated upon only by the activity that
+created the value or its descendants.
 
 In the following by Safe X10 we shall mean the language X10 restricted
 to use (\code{clocked}) \code{finish}/\code{async}, \code{at} with
-(clocked) accumulators, or with clocked types where an ``owner
-computes'' rule is used to establish disjointness of array writes.
- All programs in Safe X10 are safe -- they can
-be run with a serial schedule and their I/O behavior is identical
-under any schedule.  We show that Safe X10 is surprisingly
-powerful. Many concurrent idioms can be expressed in this language --
-histograms, all-reduce, and master/slave communication.
-Indeed, even some
-form of pipelined/systolic communication is expressible.
+accumulators, or with clocked types, and with the ``owner computes''
+rule checked statically for write-access to elements of clocked types.
+All programs in Safe X10 are safe -- they can be run with a serial
+schedule and their I/O behavior is identical under any schedule.  We
+show that Safe X10 is surprisingly powerful. Many concurrent idioms
+can be expressed in this language -- histograms, all-reduce, and
+master/slave communication.  Indeed, even some form of
+pipelined/systolic communication is expressible. This is a novel
+feature of our proposal -- past work such as
+\cite{Steele:1989:MAP:96709.96731} cannot deal with such clocked
+computation.
 
 Since the dynamic conditions introduced on accumulators and clocked
 types are not straightforward, we formalize the concurrent and serial
@@ -230,8 +238,7 @@ In summary the contributions of this paper are as follows.
   programs using (\code{clocked}) \code{finish}, \code{async} and
   \code{at} and in which the only variables shared between
   concurrently executing activities are accumulators or clocked
-  accumulators (or clocked types with an ``owner computes'' rule to
-  establish disjointness of updates) are guaranteed to be safe.
+  types are guaranteed to be safe.
 \item We show that many common programming idioms can be expressed in
   this language.
 \item We formalize a fairly rich subset of X10 -- including (clocked)

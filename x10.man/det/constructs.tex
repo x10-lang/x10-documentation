@@ -147,38 +147,45 @@ when all involved activities are quiescent -- the current and the next
 versions are switched.
 
 \code{Clocked[T]} and \code{ClockedAcc[T]} are distinguished in that
-unlike the former the latter permits accumulation operations.
+unlike the former the latter permits accumulation
+operations. \code{ClockedAcc[T]} is not the same as
+\code{Clocked[Acc[T]]} since the latter insists that only the creating
+activity be able to read the accumulator
 
 Clocked objects are registered with activities, just like
-accumulators.  Only the activity that created a
+accumulators.  This ensures that any other activity with access to the
+clocked object (or its encapsulated objects) throught he heap is
+unable to operate on them.  Only the activity that created a
 \code{Clocked[T]} or \code{ClockedAcc[T]} value \code{v} can enter a
 \code{clocked finish S} block within which \code{v} can be operated on
 by multiple activities. Such a block is said to be the {\em current
-  block} for \code{v}. Only and precisely the  \code{clocked asyncs}
+  block} for \code{v}. Only and precisely the \code{clocked asyncs}
 spawned dynamically at the top-level in the body of the current block
 can operate on \code{v}. In particular if a top-level clocked async
 were to further spawn a \code{clocked finish S1}, then \code{v} would
 not be considered accessible within \code{S1} (since the current block
-and current clock have changed).  Similarly, \code{v} is not accessible within a
-\code{async S1} spawned dynamically by \code{S} since \code{S1}
-operates asynchronously to the clock and hence cannot access \code{v}
-determinately. Note that a \code{clocked finish S} can advance on its
-clock even if \code{S} dynamically spawns an un-clocked \code{async}
-that is active. The only requirement to advance the clock is that all
-clocked asyncs registered on the clock have reached an
+and current clock have changed).  This is checked dynamically.
+
+Similarly, \code{v} is not accessible within a \code{async S1} spawned
+dynamically by \code{S} since \code{S1} operates asynchronously to the
+clock and hence cannot access \code{v} determinately. This is also
+checked dynamically. Note that a \code{clocked finish S} can advance
+on its clock even if \code{S} dynamically spawns an un-clocked
+\code{async} that is active. The only requirement to advance the clock
+is that all clocked asyncs registered on the clock have reached an
 \code{advance}.
 
-
-\code{Clocked[T]}  has a constructor that takes two \code{T} arguments, these are
-used to initialize the now and next fields. These arguments should be
-``new'' (that is, no other data-structure should have a reference to
-these arguments).
+\code{Clocked[T]} has a constructor that takes two \code{T} arguments,
+these are used to initialize the \code{current} and \code{next} fields. These arguments
+should be ``new'' (that is, no other data-structure should have a
+reference to these arguments), and are considered registered with the
+creating async and its descendants.
 
 For \code{x:Clocked[T]} the following operations available:
 \begin{itemize}
-\item \code{x()}: this returns the value of the current field. Note
+\item \code{x()}: this returns the value of the \code{current} field. Note
   that this operation can be called simultaneously by multiple
-  activities  (unlike \code{Acc}).
+  activities  (unlike \code{Acc}). 
 
 \item \code{x() = t}: This sets the value of the \code{next} field to \code{t}.
 Note: write-write conflicts are possible since multiple activities may
@@ -188,24 +195,42 @@ writing to that location. In the case of arrays of clocked types this
 can often be established using an ``owner computes'' rule.
 \end{itemize}
 
-\code{ClockedAcc[T]} has a constructor that takes two \code{T} values and a
-\code{Reducer[T]} as argument. The two \code{T} values are used to initialize the
-\code{current} and \code{next} fields. These arguments should be ``new'' (that is, no
-other data-structure should have a reference to these arguments).
-The reducer is used to perform
-accumulate operations.
+Further the compiler treats invocations of methods defined on \code{T}
+and invoked on \code{x()} specially. A method may be marked
+\code{@Read} -- such a method must not mutate any state (this is
+checkedby the compiler). Invocations of such methods are performed on
+the \code{current} field. For instance, for arrays, the accessor
+method is marked \code{@Read}.  A method may also be marked
+\code{@Write} or \code{@Async} -- these methods may mutate state and
+are invoked on the \code{next} field. The
+first kind of method must be called by at most one activity in a phase
+(and is subject at compile-time to the owner computes rule), the
+second may be called by more than one activity. The first is permitted
+to update state, the second may not, but may invoke reduction
+operations. For arrays and accumulators, the updater method is marked
+\code{@Write}. For accumulators, the accumulate method is marked
+\code{@Async}.
 
-Operations for \code{x:ClockedAcc[T]}:
-\begin{itemize}
-\item \code{x()}: this returns the value of the \code{current}
-  field. This can be called simultaneously by multiple activities.
-\item\code{x() <- t}:  this accumulates \code{t} into the next field. Note: No
-     write-write conflicts are possible.
-\item\code{x() = t} -- this resets the value of the next field to \code{t}. To avoid
-     read/write and write/write conflicts, this operation should be
-     invoked only by the closure argument of
-     \code{Clock.advance(closure)}. (See below.)
-\end{itemize}
+
+%%\code{ClockedAcc[T]} has a constructor that takes two \code{T} values and a
+%%\code{Reducer[T]} as argument. The two \code{T} values are used to initialize the
+%%\code{current} and \code{next} fields. These arguments should be ``new'' (that is, no
+%%other data-structure should have a reference to these arguments).
+%%The reducer is used to perform
+%%accumulate operations.
+%%
+%%Operations for \code{x:ClockedAcc[T]}:
+%%\begin{itemize}
+%%\item \code{x()}: this returns the value of the \code{current}
+%%  field. This can be called simultaneously by multiple activities.
+%%\item\code{x() <- t}:  this accumulates \code{t} into the next field. Note: No
+%%     write-write conflicts are possible.
+%%\item\code{x() = t} -- this resets the value of the next field to \code{t}. To avoid
+%%     read/write and write/write conflicts, this operation should be
+%%     invoked only by the closure argument of
+%%     \code{Clock.advance(closure)}. (See below.)
+%%\end{itemize}
+%%
 
 We add the following method on Clock:
 \begin{lstlisting}

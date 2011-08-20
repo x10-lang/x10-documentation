@@ -51,16 +51,12 @@ generate sequential code and not concurrent.
 
 SHIM~\cite{edwards2005shim2,tardieu2006scheduling-independent} is also
 a deterministic concurrent programming language, but SHIM programs may
-deadlocks.  Secondly, SHIM allows only a single task to write at any
-phase; we allow multiply writes.
-
-Apart from SHIM, there are a few programming models and languages that
-provide explicit determinism. StreamIt~\cite{thies2001streamit}, for
-example is a synchronous dataflow language that provides
-determinism. It has simple static verification techniques for deadlock
-and buffer-overflow.  However, StreamIt is a strict subset of SHIM and
-StreamIt's design limits it to a small class of streaming
-applications.
+deadlocks and allows only a single task to write at any
+phase. StreamIt~\cite{thies2001streamit} example is a synchronous
+dataflow language that provides determinism. It has simple static
+verification techniques for deadlock and buffer-overflow.  However,
+StreamIt is a strict subset of SHIM and StreamIt's design limits it to
+a small class of streaming applications.
 
 
 

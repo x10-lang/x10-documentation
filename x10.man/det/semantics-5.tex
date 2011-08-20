@@ -19,14 +19,14 @@ We prove that the concurrent and sequential schedulers always have the same resu
 There are three predefined classes in FX10:
     \code{Object},
     \code{Acc} (representing accumulators),
-    and \code{ClockedAcc} (representing clocked accumulators).
+    and \code{ClockedAcc} (taken as shorthand for \code{Clocked[Acc[T]]}).
 X10 has an effect system that guarantees that
     \hasync{} only accesses immutable state, clocked values and accumulators.
 The effect system also ensures that clocked values can only be assigned once every phase,
     however clocked accumulators can be assigned multiple times.
 FX10 only models the runtime behavior without the effect system.
 Therefore, in order to guarantee determinacy without an effect system,
-    FX10 does not model field assignment nor clocked values (only clocked accumulators).
+    FX10 does not model field assignment nor general clocked values (only clocked accumulators).
 Objects are still mutable because accumulators and clocked accumulators
     are mutable.
 
