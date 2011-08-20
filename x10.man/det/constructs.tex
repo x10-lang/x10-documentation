@@ -112,7 +112,9 @@ is true.
 
 Intuitively, this does not introduce any deadlocks since the
 spawned activities cannot be waiting for any operation by the parent
-(other than an \code{advance}) in order to progress. A more detailed
+(other than an \code{advance}) in order to progress. It clearly
+preserves serial semantics since a read will only reflect the results
+of accumulations performed earlier in program order. A more detailed
 treatment is provided in \Ref{Section}{semantics}.
 
 
@@ -146,17 +148,17 @@ data-structure. On detection of termination of the current phase --
 when all involved activities are quiescent -- the current and the next
 versions are switched.
 
-\code{Clocked[T]} and \code{ClockedAcc[T]} are distinguished in that
-unlike the former the latter permits accumulation
-operations. \code{ClockedAcc[T]} is not the same as
-\code{Clocked[Acc[T]]} since the latter insists that only the creating
-activity be able to read the accumulator
-
+%%\code{Clocked[T]} and \code{ClockedAcc[T]} are distinguished in that
+%%unlike the former the latter permits accumulation
+%%operations. \code{ClockedAcc[T]} is not the same as
+%%\code{Clocked[Acc[T]]} since the latter insists that only the creating
+%%activity be able to read the accumulator
+%%
 Clocked objects are registered with activities, just like
 accumulators.  This ensures that any other activity with access to the
 clocked object (or its encapsulated objects) throught he heap is
 unable to operate on them.  Only the activity that created a
-\code{Clocked[T]} or \code{ClockedAcc[T]} value \code{v} can enter a
+\code{Clocked[T]} value \code{v} can enter a
 \code{clocked finish S} block within which \code{v} can be operated on
 by multiple activities. Such a block is said to be the {\em current
   block} for \code{v}. Only and precisely the \code{clocked asyncs}
@@ -173,7 +175,10 @@ checked dynamically. Note that a \code{clocked finish S} can advance
 on its clock even if \code{S} dynamically spawns an un-clocked
 \code{async} that is active. The only requirement to advance the clock
 is that all clocked asyncs registered on the clock have reached an
-\code{advance}.
+\code{advance}. These rules imply that the activity that created
+\code{v} can operate on \code{v} in multiple successive \code{clocked
+  finish} statements, with arbitrary sequential code (accessing
+\code{v}) in between.
 
 \code{Clocked[T]} has a constructor that takes two \code{T} arguments,
 these are used to initialize the \code{current} and \code{next} fields. These arguments
@@ -246,7 +251,7 @@ clocked values.  At this point -- also called the {\em clock quiescent
 point} -- it is guaranteed that none of the other activities are
 performing a read or write operation on user-accessible memory.
 \footnote{
-A possible implementation of \code{Clocked[T]} and
-\code{ClockedAcc[T]} is that a system-synthesized closure (that
+A possible implementation of \code{Clocked[T]}
+is that a system-synthesized closure (that
 performs the current/next swap) is run at the clock quiescent point
 before the user specified closure is run.}

@@ -25,7 +25,7 @@ Safe X10 can be substantially enriched
 through the addition of statically checked effects
 \cite{Gifford:1986:IFI:319838.319848},\cite{DPJ}, particularly to
 handle non-array-based computations. This section summarizes work
-currently in progress.
+currently in progress \cite{effects-constrained-types}.
 
 X10 already implements a very powerful dependent type system based on
 constraints. An object \code{o} is of type \code{T\{c\}} if it is of
@@ -116,7 +116,7 @@ class Tree (up:Tree, left:Boolean) {
     //SubTree(t) is the type of all Trees o s.t.
     // for some UInt i, o.up...up=t (i-fold iteration).
     static type SubTree(t:Tree)=Tree{i:UInt^self.up$i==t};
-    @Safe
+    @safe
     def makeConstant(x:Int)
         @Write[SubTree(this)].payload
         @Read[SubTree(this)].(left,right) {
@@ -151,19 +151,17 @@ children. This is how the root is created:
 %%Tree{self==this} <: Tree{i:UInt^(self.up$i==this)}
 %%\end{lstlisting}
 
-This is easily verified.
-The notion of ``distinctions from the left'' and ``distinctions from
-the right'' of \cite{DPJ} are not needed. These arise naturally
-through the use of constraints (distinct access paths, vs distinct fields).
-
+This is easily verified. 
+%The notion of ``distinctions from the left''
+%and ``distinctions from the right'' of \cite{DPJ} are not
+%needed. These arise naturally through the use of constraints (distinct
+%access paths, vs distinct fields).
 Note that the programmer may not desire to have the fields \code{up}
 and \code{left} be available at run-time. These fields can be marked
 as \code{@ghost} -- any attempt to access them at run-time will result
 in an error.
-
-Constraints such as ``this array must point to distinct objects'' can
-also be naturally represented in the dependent type system. For more
-details please see \cite{effects-constrained-types}.
+%Constraints such as ``this array must point to distinct objects'' can
+%also be naturally represented in the dependent type system. 
 
 \subsection{Conclusion}
 

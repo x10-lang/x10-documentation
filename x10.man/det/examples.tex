@@ -146,42 +146,46 @@ aspects of the language design.
 \begin{example}[Pipeline]
 This example creates $3$ stages in parallel. Stage $1$ gets the input
 (in this case generating the natural numbers), Stage $2$ increments it
-by $1$, Stage $3$ doubles it and prints the value.
+by $1$, Stage $3$ doubles it and prints the value. An immutable array of 
+clocked values forms the pipeline.
 \begin{lstlisting}
 @safe
 def pipeline() {
-    val a = new Clocked[Int](0,0);
-    val b = new Clocked[Int](0,0);
-    val c = new Clocked[Int](0,0);
+    val a = [new Clocked[Int](0,0),
+             new Clocked[Int](0,0),
+             new Clocked[Int](0,0)];
     clocked finish {
-        clocked async {
-            for (var i:Int=0;; i++) {
-                a()=i;
+       for (i in a) {
+        if (i==0) 
+          clocked async {
+            for (var j:Int=0;; i++) {
+                a(i)()=j;
                 advance;}}
-        clocked async {
+        if (i==1)
+          clocked async {
             advance;
             for (;;) {
-                b()= a()+1; // b is 1,2,3,...
+                a(i)()= a(i-1)()+1; //1,2,3,...
                 advance;}}
-        advance;
-        advance;
-        for(;;) {
-            c()= 2*b();
-            Console.OUT.println(c()); // Prints 2,4,6,...
-            advance;
-        }}}
+        if (i==2) 
+          clocked async {
+           advance;
+           advance;
+           for(;;) {
+              a(i)()= 2*a(i-1)();
+              advance;
+              Console.OUT.println(a(i)()); //2,4...
+        }}}}}
   \end{lstlisting}
 Note the serial schedule generates:
 \begin{lstlisting}
-  a()=0; advance;
-  a()=1; b()=1; advance;
-  a()=2; b()=2; c()=2; advance;
-  a()=3; b()=3; c()=4; advance;
+  a(0)()=0; advance;
+  a(0)()=1; a(1)()=1; advance;
+  a(0)()=2; a(1)()=2; a(2)()=2; advance; //print 2
+  a(0)()=3; a(1)()=3; a(2)()=4; advance; //print 4
   ...
 \end{lstlisting}
-\noindent This shows the pipelined nature of the computation. To show
-tht this program is safe, the compiler needs to establish that the
-first activity ``owns'' \code{a}, the second \code{b} and the third \code{c}.
+\noindent This shows the pipelined nature of the computation. 
 \end{example}
 
 \begin{example}[Butterfly idiom]

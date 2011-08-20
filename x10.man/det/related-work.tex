@@ -58,8 +58,6 @@ verification techniques for deadlock and buffer-overflow.  However,
 StreamIt is a strict subset of SHIM and StreamIt's design limits it to
 a small class of streaming applications.
 
-
-
 In contrast,
 Cilk~\cite{blumofe1995cilk} is a non-deterministic language that it covers a larger
 class of applications. It is C based
@@ -70,7 +68,6 @@ Cilk permits data races.
 %is a non-deterministic concurrent program in Cilk.
 Explicit techniques~\cite{cheng1998detecting} are
 required for checking data races in Cilk programs.
-
 
 
 
@@ -87,9 +84,7 @@ scheduler), clocks and accumulators.
 Kendo is a purely software system that deterministically multi-threads
 concurrent applications.  Kendo~\cite{olszewski2009kendo} ensures a
 deterministic order of all lock acquisitions for a given program
-input.
-
-Kendo comes with three shortcomings. It operates completely at runtime,
+input. Kendo comes with three shortcomings. It operates completely at runtime,
 and there is considerable performance penalty. Secondly, if
 we have the sequence \emph{lock(A); lock (B)} in one thread and
 \emph{lock(B); lock(A)} in another thread, a deterministic ordering of
@@ -111,12 +106,12 @@ overhead.
 %This paper partially solves this overhead problem
 %by addressing the issue at compile-time and
 %thereby reducing a considerable amount of run-time overhead.
-
-Like Grace, Determinator\cite{aviram2010efficient} is another tool
+%
+Determinator\cite{aviram2010efficient} is another tool
 that allows parallel processes to execute as long as they do not share
 resources. If they do share resources and the accesses are unsafe, then
 the operating throws an exception (a page fault).
-
+%
 Cored-Det~\cite{bergan2010coreDet}, based on DMP~\cite{devietti2009dmp}
 uses a deterministic token that is passed
 among all threads.  A thread to modify a shared variable must first
@@ -128,21 +123,23 @@ therefore leads to a considerable performance penalty. In Safe X10,
 only threads that share a particular channel must synchronize
 on that channel; other threads can run independently.
 
- Deterministic replay systems~\cite{choi1998deterministic,altekar2009odr} facilitate debugging of concurrent programs to produce
-repeatable behavior. They are based on record/replay systems. The system
-replays a specific behavior (such as thread interleaving) of a concurrent
-program based on records. The primary purpose of replay systems
-is debugging; they do not guarantee determinism.
-They incur a high runtime overhead and are input dependent.
-For every new input, a new set of records is generally maintained.
+Deterministic replay
+systems~\cite{choi1998deterministic,altekar2009odr} facilitate
+debugging of concurrent programs to produce repeatable behavior. They
+are based on record/replay systems. The system replays a specific
+behavior (such as thread interleaving) of a concurrent program based
+on records. The primary purpose of replay systems is debugging; they
+do not guarantee determinism.  They incur a high runtime overhead and
+are input dependent.  For every new input, a new set of records is
+generally maintained.
 
 Like replay systems, Burmin and Sen~\cite{Burnim2009asserting} provide a framework for
 checking determinism for multi-threaded programs. Their tool does not
 introduce deadlocks, but their tool does not guarantee determinism
 because it is merely a testing tool that checks the execution trace
 with previously executed traces to see if the values match.
-%Our goal is to guarantee determinism at compile time -- given a program,
-%it will generate the same output for a given input.
+Our goal is to guarantee determinism at compile time -- given a program,
+it will generate the same output for a given input.
 
 
 
