@@ -6,14 +6,15 @@ communication lie in Safe X10.
 The histogram problem is easily represented with a \code{Rail} of
 accumulators: 
 \begin{lstlisting}
- @safe
- def histogram(N:Int, A:Rail[Int(0..N)]):Rail[Int](N+1) {
-    val result = new Rail[Acc[Int]](N+1, (Int)=>new Acc[Int](0,Int.+));
+@safe
+def histogram(N:Int, A:Rail[Int(0..N)]) :Rail[Int](N+1) {
+    val result = new Rail[Acc[Int]](N+1,
+      (Int)=>new Acc[Int](0,Int.+));
     finish for (i in A.values()) async {
-       result(i) <- 1;
+        result(i) <- 1;
     }
     return new Rail[Int](N+1, (i:Int)=> result(i));
- }
+}
 \end{lstlisting}
 \end{example}
 Note that programs that accumulate a figure of merit can be written
@@ -31,15 +32,15 @@ intermediate sorting of results) can also be expressed directly:
 Here the difference from histogram is that the accumulation may be
 done at a remote place. 
 \begin{lstlisting}
- @safe
- def wordCount(m:DistStream[Word]):DistHashMap[Word,Int](m.dist) {
+@safe
+def wordCount(m:DistStream[Word]) :DistHashMap[Word,Int](m.dist) {
    val a = new DistHashMap[Word, Acc[Int]](m.dist,
           (w:Word)=> new Acc[Int](Int.Sum)));
    finish for (p in m.dist.places()) async at(p) {
       for (word in m(p).words())
           a(word)<- 1;
    }
-   return  new DistHashMap[Word, Int](m.dist, (w:Word)=> a(w));
+   return new DistHashMap[Word, Int](m.dist, (w:Word)=> a(w));
 }
 \end{lstlisting}
 
@@ -55,13 +56,13 @@ update an accumulator created by the parent activity, which reads it
 after a \code{finish}. 
   \begin{lstlisting}
 @safe
-def reduce[T](in:DistArray[T], red:Reducible[T]):T {
+def reduce[T](da:DistArray[T], red:Reducible[T]):T {
     val acc = new Acc[T](red);
-    finish for (dest in in.dist.places())
+    finish for (dest in da.dist.places())
         async
             at (dest) 
                for (p in dist | here)
-                 acc <- in(p);
+                 acc <- da(p);
     return acc();
 }
 \end{lstlisting}
@@ -101,7 +102,7 @@ is then returned.
   {
     val x = new Acc[T](r);
     finish {
-      S [ x <- t / offer t;]
+      S [ x <- t / offer t]
     }
     x()
   }
@@ -123,7 +124,7 @@ clauses, specifying the type of the value being offered. Otherwise at
 run-time a value of an incompatible type may be offered leading to a
 run-time exception. Finally, the lack of a name for the result being
 collecting means that it is difficult to use the same computation to
-accumulate multiple separate values without more contortions. e.g.{}
+accumulate multiple separate values without more contortions. E.g.{}
 one could set the return type to be a tuple of values, but then the
 \code{offer} statement would need to specify the index for which the
 \code{offer} was intended. Now it is not clear that the index type
@@ -182,11 +183,11 @@ first activity ``owns'' \code{a}, the second \code{b} and the third \code{c}.
 This program uses a butterfly idiom to compute an all to all
 reduction.
 \begin{lstlisting}
-def reduce[T](in:DistArray[T], red:Reducible[T]) {
+def reduce[T](da:DistArray[T], red:Reducible[T]) {
     val P = Place.MAX_PLACES;
     val phases = Utils.log2(P);
-    val x = new DistArray[ClockedAcc[T]](in.dist,
-      (p:Point(in.rank))=>new ClockedAcc[T](in(p),in(p),red));
+    val x = new DistArray[ClockedAcc[T]](da.dist,
+      (p:Point(da.rank))=>new ClockedAcc[T](da(p),da(p),red));
     clocked finish  {
         for (p in x.dist.places()) clocked async at(p) {
             var shift:Int=1;
