@@ -1,5 +1,15 @@
 % 8/17/2011 5:03:31 AM
 
+\subsubsection{Implementation}
+An early version of this design was implemented in a branch of the X10
+system. Results were obtained for about twenty benchmarks, including
+JGF benchmarks such as IDEA, Sor, Series, RayTrace, LUFact,
+SparseMatMul, Geometric Mean.  The speed of the programs written using
+accumulators and clocked types was compared to the corresponding
+programs written in plain X10. On the average we noticed about a 20\%
+degradation in performance. A new implementation is currently being
+worked on and we expect to have more uptodate results for final submission.
+
 \subsection{Adding static effects checking}
 
 The richness of the existing language can be substanitally enriched
@@ -122,17 +132,17 @@ a specific position.
 Note that a \code{Tree} can be created with \code{null} parent and
 children. This is how the root is created:
 \code{new Tree(null,true)} or \code{new tree(null, false)}.
-
-In checking the validity of the effect annotation on
-\code{makeConstant} the compiler must check that the effects of the
-body are contained in the declared effects of the method. This boils
-down to checking the subtyping relations. e.g.{} for the \code{@Write} annotation it must check:
-\begin{lstlisting}
-SubTreeTree
-Tree{i:UInt^(self.up$i.up==this,self.up$i.left==true} <: Tree{i:UInt^(self.up$i==this}
-Tree{i:UInt^(self.up$i.up==this,self.up$i.left==false} <: Tree{i:UInt^(self.up$i==this}
-Tree{self==this} <: Tree{i:UInt^(self.up$i==this)}
-\end{lstlisting}
+%%
+%%In checking the validity of the effect annotation on
+%%\code{makeConstant} the compiler must check that the effects of the
+%%body are contained in the declared effects of the method. This boils
+%%down to checking the subtyping relations. e.g.{} for the \code{@Write} annotation it must check:
+%%\begin{lstlisting}
+%%SubTreeTree
+%%Tree{i:UInt^(self.up$i.up==this,self.up$i.left==true} <: Tree{i:UInt^(self.up$i==this}
+%%Tree{i:UInt^(self.up$i.up==this,self.up$i.left==false} <: Tree{i:UInt^(self.up$i==this}
+%%Tree{self==this} <: Tree{i:UInt^(self.up$i==this)}
+%%\end{lstlisting}
 
 This is easily verified.
 The notion of ``distinctions from the left'' and ``distinctions from
@@ -148,6 +158,9 @@ Constraints such as ``this array must point to distinct objects'' can
 also be naturally represented in the dependent type system. For more
 details please see \cite{effects-constrained-types}.
 
+\subsection{Conclusion}
 
+This paper presents a lightweight design for a safe language which
+permits very rich expression of concurrency idioms. 
 
 

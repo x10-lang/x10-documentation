@@ -16,6 +16,14 @@ accumulators:
  }
 \end{lstlisting}
 \end{example}
+Note that programs that accumulate a figure of merit can be written
+with accumulators. For instance the N-Queen program needs to use a
+single accumulator for collecting the result. Indeed it can be written
+with the even more restrictive collecting finish style discussed
+below. Similarly for Monte-Carlo simulations in which the main
+activity spawns several children activities to perform a simulation,
+adn the simulation returns results which can be accumulated to
+obtain the final anser.
 
 Map Reduce applications such as word-count (that do not require
 intermediate sorting of results) can also be expressed directly:
@@ -39,44 +47,45 @@ done at a remote place.
 
 
 Accumulators can be used to implement collective operations such as
-all-to-all reductions in a straightforward ``shared memory'' style.
+distributed reductions in a straightforward ``shared memory'' style.
 
-\begin{example}
+\begin{example}[Reduction]
 Here we show the single-sided, blocking version. Spawned activities
 update an accumulator created by the parent activity, which reads it
 after a \code{finish}. 
   \begin{lstlisting}
 @safe
 def reduce[T](in:DistArray[T], red:Reducible[T]):T {
-  val acc = new Acc[T](red);
-  finish for (dest in in.dist.places()) async at(dest) {
-    for (p in in.dist | here) {
-      acc <- in(p);
-    }
-  }
-  return acc();
+    val acc = new Acc[T](red);
+    finish for (dest in in.dist.places())
+        async
+            at (dest) 
+               for (p in dist | here)
+                 acc <- in(p);
+    return acc();
 }
 \end{lstlisting}
 \end{example}
 
-An \code{allReduce} can be implemented by following the above
-operation with a broadcast:
-\begin{lstlisting}
-  @safe
-  def allReduce[T](in:DistArray[T]{self.dist==Dist.UNIQUE},
-    red:Reducible[T], out:DistArray[T](in.dist)):void {
-    val x = reduce(in, red);
-    finish for (dest in out.dist.places()) async at (dest) {
-      for (p in out.dist |here)
-        out(p)=x;
-    }
-  }
-\end{lstlisting}
-One can write this code using a clock (to avoid two finish nests).
 
-The collective style requires extending clock so the advance method
-takes arbitrary args and performs collective operations on them,
-mimicking the MPI API.
+%%An \code{allReduce} can be implemented by following the above
+%%operation with a broadcast:
+%%\begin{lstlisting}
+%%  @safe
+%%  def allReduce[T](in:DistArray[T]{self.dist==Dist.UNIQUE},
+%%    red:Reducible[T], out:DistArray[T](in.dist)):void {
+%%    val x = reduce(in, red);
+%%    finish for (dest in out.dist.places()) async at (dest) {
+%%      for (p in out.dist |here)
+%%        out(p)=x;
+%%    }
+%%  }
+%%\end{lstlisting}
+%%One can write this code using a clock (to avoid two finish nests).
+%%
+%%The collective style requires extending clock so the advance method
+%%takes arbitrary args and performs collective operations on them,
+%%mimicking the MPI API.
 
 \paragraph{Collecting \code{finish}}
 
@@ -164,6 +173,28 @@ Note the serial schedule generates:
   ...
 \end{lstlisting}
 \noindent This shows the pipelined nature of the computation.
+\end{example}
+
+\begin{example}[Butterful idiom]
+This program uses a butterfly idiom to compute an all to all
+reduction. 
+\begin{lstlisting}
+def reduce[T](in:DistArray[T], red:Reducible[T]) {
+    val P = Place.MAX_PLACES;
+    val phases = Utils.log2(P);
+    val x = new DistArray[ClockedAcc[T]](in.dist,
+      (p:Point(in.rank))=>new ClockedAcc[T](in(p),in(p),red));
+    clocked finish  {
+    	for (p in x.dist.places()) clocked async at(p) {
+    		var shift:Int=1;
+    		for (phase in 0..phases-1) {
+                        x((p.id+shift)%P)() <- x(p.id)();
+    			shift *=2;
+    			advance;
+    		}}}
+    return x(0)();
+}
+\end{lstlisting}
 \end{example}
 
 \input {examples/stencil.x10}

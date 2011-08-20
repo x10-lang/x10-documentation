@@ -185,18 +185,22 @@ before activities start in the next phase -- the \code{now} and
 \cite{Cohen:2006:NSK:1111320.1111054}.}
 
 We show that clocked types can be defined in a safe way, provided that
-accumulators are used to resolve write-write conflicts. The only
-dynamic check needed is that a value of this type is being operated
+accumulators are used to resolve write-write conflicts, or a light
+weight ``owner computes'' rule is used to check that only the $i$th async
+in a parallel loop writes into the $i$th location of an array. 
+The only dynamic check needed is that a value of this type is being operated
 upon only by the activity that created the value or its
 descendants.
 
 In the following by Safe X10 we shall mean the language X10 restricted
 to use (\code{clocked}) \code{finish}/\code{async}, \code{at} with
-(clocked) accumulators.  All programs in Safe X10 are safe -- they can
+(clocked) accumulators, or with clocked types where an ``owner
+computes'' rule is used to establish disjointness of array writes. 
+ All programs in Safe X10 are safe -- they can
 be run with a serial schedule and their I/O behavior is identical
 under any schedule.  We show that Safe X10 is surprisingly
 powerful. Many concurrent idioms can be expressed in this language --
-histograms, all-reduce, and SpecJBB-style communication.
+histograms, all-reduce, and master/slave communication.
 Indeed, even some
 form of pipelined/systolic communication is expressible.
 
@@ -223,7 +227,8 @@ In summary the contributions of this paper are as follows.
   programs using (\code{clocked}) \code{finish}, \code{async} and
   \code{at} and in which the only variables shared between
   concurrently executing activities are accumulators or clocked
-  accumulators are guaranteed to be safe.
+  accumulators (or clocked types with an ``owner computes'' rule to
+  establish disjointness of updates) are guaranteed to be safe.
 \item We show that many common programming idioms can be expressed in
   this language.
 \item We formalize a fairly rich subset of X10 -- including (clocked)

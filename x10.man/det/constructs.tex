@@ -182,7 +182,10 @@ For \code{x:Clocked[T]} the following operations available:
 
 \item \code{x() = t}: This sets the value of the \code{next} field to \code{t}.
 Note: write-write conflicts are possible since multiple activities may
-try to set the value at the same time.
+try to set the value at the same time. So a lightweight static
+technique should be used to establish that at most one activity is
+writing to that location. In the case of arrays of clocked types this
+can often be established using an ``owner computes'' rule. 
 \end{itemize}
 
 \code{ClockedAcc[T]} has a constructor that takes two \code{T} values and a
@@ -201,7 +204,7 @@ Operations for \code{x:ClockedAcc[T]}:
 \item\code{x() = t} -- this resets the value of the next field to \code{t}. To avoid
      read/write and write/write conflics, this operation should be
      invoked only by the closure argument of
-     \code{Clock.advanceAll(closure)}. (See below.)
+     \code{Clock.advance(closure)}. (See below.)
 \end{itemize}
 
 We add the following method on Clock:
