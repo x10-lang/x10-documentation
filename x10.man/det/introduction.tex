@@ -113,7 +113,7 @@ i.e. read \code{w(t)} once the produce is writing \code{w(t+1)}.
 We believe it is possible to significantly simplify this approach
 (e.g.{} using the dependent-type system of X10) and extend it to cover
 all of X10's concurrency constructs (see
-Section~\ref{future-work}). Nevertheless the cost of developing these
+Section~\Ref{conclusion}). Nevertheless the cost of developing these
 region assertions is not trivial. Their viability for developing large
 commercial-strength software systems is yet to be establishd.
 
@@ -153,7 +153,9 @@ before activities start in the next phase -- the \code{now} and
 \code{next} versions are switched; \code{now} becomes \code{next} and
 \code{next} becomes \code{now}.\footnote{Clearly this idea can be
   extended to $k$-buffered clocked types where each clock tick rotates
-  the buffer. This idea is related to the K-bounded Kahn networks of \cite{k-bounded-kahn}.}
+  the buffer. This idea is related to the K-bounded Kahn networks of 
+\cite{Cohen:2006:NSK:1111320.1111054}.}
+
 
 We show that clocked types can be defined in a safe way, provided that
 accumulators are used to resolve write-write conflicts. The only

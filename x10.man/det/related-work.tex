@@ -25,46 +25,42 @@ lightweight effects mechanism in X10 can be extended to support a much
 richer effects framework (along the lines of DPJ) using X10's
 constrained type system.  We leave this as future work.
 
-The SafeJava language \cite{SafeJava} is unfortunately not safe
+The SafeJava language \cite{Rinard04safejava:a} is unfortunately not safe
 according to our definition, even though it guarantees determinacy and
 deadlock freedom, using ownership types, unique pointers and partially
 ordered lock levels. Again, a sequential scheduler is not admissible
 for the model.
 
 Some data-flow synchronization based languages and frameworks (e.g.{}
-Kahn style process networks \cite{kahn,kahn-mcqueen}, concurrent
-constraint programming \cite{ccp}, \cite{SHIM}) are guaranteed
+Kahn style process networks \cite{kahn1974semantics}, concurrent
+constraint programming \cite{saraswat1993concurrent}, \cite{SHIM}) are guaranteed
 determinate but not safe according to our definition since they do not
 permit sequential schedules. Indeed they permit the possibility of
 deadlock. (The notion of safety is also not quite relevant since these
 frameworks do not support shared mutable variables.)
 
-
 Synchronous programming languages like Esterel are completely
-deterministic. An Esterel program executes in clock steps and the
-outputs are conceptually synchronous with its inputs.  It is a finite
-state language that is easy to verify formally. An Esterel program is
-susceptible to causalities. Causalities are similar to deadlocks, but
-can be easily detected at compile-time.  The problem with synchronous
-models is that they do not perform well. To out knowledge, most
-Esterel compilers generate sequential code and there are hardly any
-compilers that generate concurrent code off Esterel.
-
+deterministic, but meant for embedded targets. An Esterel program
+executes in clock steps and the outputs are conceptually synchronous
+with its inputs.  It is a finite state language that is easy to verify
+formally. An Esterel program is susceptible to
+causalities. Causalities are similar to deadlocks, but can be easily
+detected at compile-time.  The problem with synchronous models is that
+they do not perform well. To out knowledge, most Esterel compilers
+generate sequential code and not concurrent.
  
 SHIM~\cite{edwards2005shim2,tardieu2006scheduling-independent} is also
-a deterministic concurrent programming language, but the improper use
-of its constructs leads to problems such as deadlocks i.e., a SHIM program
-may be susceptible to deadlocks. Any program written in our model is always
-deadlock-free. Secondly, SHIM allows only a single task to write at any phase;
-we allow multiply writes.
+a deterministic concurrent programming language, but SHIM programs may
+deadlocks.  Secondly, SHIM allows only a single task to write at any
+phase; we allow multiply writes.
 
- 
-Apart from SHIM, there are  a few programming models and languages 
-that provide explicit determinism. StreamIt~\cite{thies2001streamit}, for 
-example is a synchronous dataflow language that provides determinism. It 
-has simple static verification techniques for deadlock and buffer-overflow. 
-However, StreamIt is a strict subset of SHIM and StreamIt's design 
-limits it to a small class of streaming applications. 
+Apart from SHIM, there are a few programming models and languages that
+provide explicit determinism. StreamIt~\cite{thies2001streamit}, for
+example is a synchronous dataflow language that provides
+determinism. It has simple static verification techniques for deadlock
+and buffer-overflow.  However, StreamIt is a strict subset of SHIM and
+StreamIt's design limits it to a small class of streaming
+applications.
  
 
 
@@ -73,9 +69,7 @@ Cilk~\cite{blumofe1995cilk} is a non-deterministic language that it covers a lar
 class of applications. It is C based
 and the programmer must explicitly ask for parallelism using 
 the \emph{spawn} and the \emph{sync} constructs. 
-Cilk is definitely more
-expressive than $D^2C$.
-However, Cilk allows data races. 
+Cilk permits data races.
 %\figref{non-det}, for example,
 %is a non-deterministic concurrent program in Cilk. 
 Explicit techniques~\cite{cheng1998detecting} are
@@ -88,7 +82,7 @@ required for checking data races in Cilk programs.
 Determinizing run-times support coarse-grained fork-join concurrency
 by maintaining a different copy of memory for each activity and
 merging them determinately at finish points (\cite{grace},
-\cite{core-det}, \cite{dmp}, \cite{kendo},\cite{determinator}). Safe
+\cite{dmp}, \cite{kendo},\cite{determinator}). Safe
 X10 can run on such systems in principle, but does not require them.
 To execute Safe X10, such systems need to support fine-grained
 asynchrony (with some form of work-stealing or fork-joining
@@ -133,8 +127,8 @@ wait for the token and for all threads to block on that
 token. DMP is hardware based. 
 Although, deadlocks may be avoided, we believe this setting is
 non-distributed because it forces all threads to synchronize and
-therefore leads to a considerable performance penalty. In the $D^2C$ 
-setting, only threads that share a particular channel must synchronize
+therefore leads to a considerable performance penalty. In Safe X10,
+only threads that share a particular channel must synchronize
 on that channel; other threads can run independently.
 
  Deterministic replay systems~\cite{choi1998deterministic,altekar2009odr} facilitate debugging of concurrent programs to produce
