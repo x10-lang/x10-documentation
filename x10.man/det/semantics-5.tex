@@ -219,7 +219,7 @@ The rule~\RULE{(R-Adv)} permits a \code{clocked finish} to advance
 only if all the top-level \code{clocked asyncs} in the scope of the
 \code{clocked finish} are stuck at an
 \code{advance}.
-Note that an un-clocked \code{aync} may exist in the
+Note that an un-clocked \code{async} may exist in the
 scope of the \code{clocked finish}; they do not come in the way of the
     \code{clocked finish} advancing.
 The resulting heap~$\cH'=\hswitch(\cH,\ol{\hl})$ is obtained from $\cH$ by switching

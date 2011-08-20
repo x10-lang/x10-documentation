@@ -1,6 +1,6 @@
 %\title{Sequential semantics for concurrent programs}
 
-The safe paralleization of sequential programs is an important and
+The safe parallelization of sequential programs is an important and
 challenging task. A parallelization is safe if it ensures that no new
 behaviors are introduced; the semantics of the parallel program is
 identical to that of the sequential program. In particular, the
@@ -52,7 +52,7 @@ execution.  We show that there are simple statically-checkable rules
 that can establish for many common idioms that some run-time
 synchronization checks can be avoided.
 
-The key technical problem addressed is unrestricting aliasing in the
+The key technical problem addressed is unrestricted aliasing in the
 heap.  We develop the idea of an {\em implicit ownership domain}
 (first introduced in the semantics of clocks in \Xten{} in a paper in
 Concur 2005) that newly created objects may be registered with the

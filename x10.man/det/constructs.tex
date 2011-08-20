@@ -28,7 +28,7 @@ construct can be used to spawn an async registered on the current
 clock; \code{async S} should be used to spawn an async that is {\em
   not} registered on the current clock.
 
-Note that \code{finish} blocks can be arbitarily nested, so an
+Note that \code{finish} blocks can be arbitrarily nested, so an
 activity may at any given time be registered on a stack of clocks. The
 current clock is always the one most recently pushed on to the stack.
 No support is provided to register an activity on an ancestor
@@ -117,8 +117,8 @@ treatment is provided in \Ref{Section}{semantics}.
 
 
 In many cases the compiler can statically evaluate whether an activity
-is registered on the clock and/or whether a syncronous call will
-suspend. In such cases the checks can be eiminated.
+is registered on the clock and/or whether a synchronous call will
+suspend. In such cases the checks can be eliminated.
 \begin{example}
 In the following example, the compiler can infer that \code{x()} wont suspend, due to
 the \code{finish}. Hence it may eliminate the run-time suspension
@@ -159,11 +159,11 @@ spawned dynamically at the top-level in the body of the current block
 can operate on \code{v}. In particular if a top-level clocked async
 were to further spawn a \code{clocked finish S1}, then \code{v} would
 not be considered accessible within \code{S1} (since the current block
-and current clock have changed).  Similarly, \code{v} is not accesible within a
+and current clock have changed).  Similarly, \code{v} is not accessible within a
 \code{async S1} spawned dynamically by \code{S} since \code{S1}
 operates asynchronously to the clock and hence cannot access \code{v}
 determinately. Note that a \code{clocked finish S} can advance on its
-clock even if \code{S} dynamically spawns an unclocked \code{async}
+clock even if \code{S} dynamically spawns an un-clocked \code{async}
 that is active. The only requirement to advance the clock is that all
 clocked asyncs registered on the clock have reached an
 \code{advance}.
@@ -202,7 +202,7 @@ Operations for \code{x:ClockedAcc[T]}:
 \item\code{x() <- t}:  this accumulates \code{t} into the next field. Note: No
      write-write conflicts are possible.
 \item\code{x() = t} -- this resets the value of the next field to \code{t}. To avoid
-     read/write and write/write conflics, this operation should be
+     read/write and write/write conflicts, this operation should be
      invoked only by the closure argument of
      \code{Clock.advance(closure)}. (See below.)
 \end{itemize}

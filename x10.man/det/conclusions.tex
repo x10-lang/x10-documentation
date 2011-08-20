@@ -8,13 +8,13 @@ SparseMatMul, Geometric Mean.  The speed of the programs written using
 accumulators and clocked types was compared to the corresponding
 programs written in plain X10. On the average we noticed about a 20\%
 degradation in performance. A new implementation is currently being
-worked on and we expect to have more uptodate results for final submission.
+worked on and we expect to have more up-to-date results for final submission.
 
 \subsection{Adding static effects checking}
 
-The richness of the existing language can be substanitally enriched
+The richness of the existing language can be substantially enriched
 through the addition of statically checked effects
-\cite{Gifford:1986:IFI:319838.319848},\cite{DPJ}. 
+\cite{Gifford:1986:IFI:319838.319848},\cite{DPJ}.
 
 We discuss briefly how these ideas can be integrated into Safe X10,
 thereby substantially enriching its power. This summarizes work
@@ -24,7 +24,7 @@ X10 already implements a very powerful dependent type system based on
 constraints. An object \code{o} is of type \code{T\{c\}} if it is of
 type \code{T} and further satisfies the constraint
 \code{c[o/self]}. Thus \code{Array[T]\{this.rank==R\}} is the type of all
-the arrays of \code{T} with rank \code{R}. 
+the arrays of \code{T} with rank \code{R}.
 
 Types classify objects, i.e.{} types specify sets of
 objects. Therefore we can define a {\em location set} to be of the form
@@ -81,7 +81,7 @@ existentially quantified constraints \code{x:T\^c} -- this represents
 the constraint \code{c} in which the variable \code{x} of type
 \code{T} is existentially quantified. Second, we permit the {\em
   extended field selector} \code{e.f\$i} where \code{e} is an
-expression, \code{f} a field name and \code{i} is a \code{UInt}. 
+expression, \code{f} a field name and \code{i} is a \code{UInt}.
 
 %% Alternatively we just permit regular expressions as field
 %% selectors?
@@ -92,10 +92,10 @@ expression, \code{f} a field name and \code{i} is a \code{UInt}.
 
 
 %% Hmm dont want to be able to count and do arithmetic, that will
-%% take us out of reg exp land. 
+%% take us out of reg exp land.
 
 %% Do we need MONA?
-%% May need to permit full-fledged regular expressions. 
+%% May need to permit full-fledged regular expressions.
 
 % Where do we need the flexibility of saying two region parameters are disjoint?
 
@@ -106,7 +106,7 @@ class Tree (up:Tree, left:Boolean) {
     var left:Tree(this,true);
     var right:Tree(this,false);
     var payload:Int;
-    //SubTree(t) is the type of all Trees o s.t. 
+    //SubTree(t) is the type of all Trees o s.t.
     // for some UInt i, o.up...up=t (i-fold iteration).
     static type SubTree(t:Tree)=Tree{i:UInt^self.up$i==t};
     @Safe
@@ -114,11 +114,11 @@ class Tree (up:Tree, left:Boolean) {
         @Write[SubTree(this)].payload
         @Read[SubTree(this)].(left,right) {
           finish {
-            this.payload = x; 
+            this.payload = x;
             if (left != null)
-              async left.makeConstant(x); 
-            if (right != null) 
-              async right.makeConstant(x); 
+              async left.makeConstant(x);
+            if (right != null)
+              async right.makeConstant(x);
           }}}
   \end{lstlisting}
 In this example the fields \code{left},\code{right} and \code{cargo}
@@ -152,7 +152,7 @@ through the use of constraints (distinct access paths, vs distinct fields).
 Note that the programmer may not desire to have the fields \code{up}
 and \code{left} be available at run-time. These fields can be marked
 as \code{@ghost} -- any attempt to access them at run-time will result
-in an error. 
+in an error.
 
 Constraints such as ``this array must point to distinct objects'' can
 also be naturally represented in the dependent type system. For more
@@ -161,6 +161,4 @@ details please see \cite{effects-constrained-types}.
 \subsection{Conclusion}
 
 This paper presents a lightweight design for a safe language which
-permits very rich expression of concurrency idioms. 
-
-
+permits very rich expression of concurrency idioms.
