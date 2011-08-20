@@ -85,7 +85,10 @@ under a serial schedule, \code{finish} and \code{async} behave like
 ``no-ops''.
 
 The situation is slightly different for \code{clocked finish} and
-\code{clocked async}. The first enabled step of \code{clocked finish
+\code{clocked async} which can have the special \code{advance} statement to go to the next phase of the clock.%
+    \footnote{In the paper we use \smallcode{advance} as a keyword,
+        however, in X10 one need to use the \smallcode{Clock.advanceAll()} method.}
+The first enabled step of \code{clocked finish
   \{S1\} S2} is going to be the first step of \code{S1}. However, the
 first enabled step of \code{clocked async \{S1\} S2} may be the first
 step of \code{S2} -- e.g.{} when \code{S1} is \code{advance; S3} and
