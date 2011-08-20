@@ -1,18 +1,29 @@
 We now demonstrate that several common idioms of concurrency and
-communication lie in the semantically sequential subset of X10.
+communication lie in Safe X10.
 
 \subsection{Example use of \code{Acc}}
 \begin{example}[Histogram]
+The histogram problem is easily represented with a \code{Rail} of
+accumulators: 
 \begin{lstlisting}
-
+ @safe
+ def histogram(N:Int, A:Rail[Int(0..N)]):Rail[Int](N+1) {
+    val result = new Rail[Acc[Int]](N+1, (Int)=>new Acc[Int](0,Int.+));
+    finish for (i in A.values()) async {
+       result(i) <- 1;
+    }
+    return new Rail[Int](N+1, (i:Int)=> result(i));
+ }
 \end{lstlisting}
 \end{example}
 
+Map Reduce applications such as word-count (that do not require
+intermediate sorting of results) can also be expressed directly:
 \begin{example}[Distributed word-count]
+Here the difference from histogram is that the accumulation may be
+done at a remote place. 
 \begin{lstlisting}
- // A DistHashMap is used because the input is a DistStream
-
- @det
+ @safe
  def wordCount(m:DistStream[Word]):DistHashMap[Word,Int](m.dist) {
    val a = new DistHashMap[Word, Acc[Int]](m.dist,
           (w:Word)=> new Acc[Int](Int.Sum)));
@@ -30,20 +41,17 @@ communication lie in the semantically sequential subset of X10.
 Accumulators can be used to implement collective operations such as
 all-to-all reductions in a straightforward ``shared memory'' style.
 
-Here we show the single-sided, blocking version.
 \begin{example}
+Here we show the single-sided, blocking version.
   \begin{lstlisting}
-@det
+@safe
 def reduce[T](in:DistArray[T], red:Reducible[T]):T {
   val acc = new Acc[T](red);
   val temp = new GlobalRef[Acc[T]](acc);
   finish for (dest in in.dist.places()) async at(dest) {
-    val local = new Acc[T](red);
     for (p in in.dist | here) {
-      local <- in(p);
+      acc <- in(p);
     }
-    val x = local();
-    async at(origin) temp() <- x;
   }
   return acc();
 }
@@ -53,7 +61,7 @@ def reduce[T](in:DistArray[T], red:Reducible[T]):T {
 An \code{allReduce} can be implemented by following the above
 operation with a broadcast:
 \begin{lstlisting}
-  @det
+  @safe
   def allReduce[T](in:DistArray[T]{self.dist==Dist.UNIQUE},
     red:Reducible[T], out:DistArray[T](in.dist)):void {
     val x = reduce(in, red);
