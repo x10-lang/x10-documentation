@@ -3,16 +3,19 @@ Featherweight X10 (FX10) is a formal calculus for X10 intended to  complement Fe
 (FJ).  It models imperative aspects of X10 including the concurrency
 constructs \hfinish{}, \hasync{}, clocks and accumulators.
 
-We present the reductio rule for two schedulers:
+\paragraph{Overview of formalism}
+We present the reduction rules for two schedulers:
     a concurrent and a sequential scheduler.
 The sequential scheduler is obtained from the concurrent one by removing two rules.
 Intuitively, the sequential scheduler performs a DFS over \code{async}.
 %    it executes an activity until it is either terminated, or waits, or it creates a new activity.
 %When all clocked activities inside a clocked \finish are ready to advance,
 We prove that the concurrent and sequential schedulers always have the same result (i.e., isomorphic heaps).
+\Ref{Section}{syntax} presents FX10 syntax,
+    \Ref{Section}{reduction} the reduction rules,
+    and \Ref{Section}{results} our main result that FX10 are always safe.
 
-\paragraph{Overview of formalism}
-\Subsection{Syntax}
+\Subsection[syntax]{Syntax}
 There are three predefined classes in FX10:
     \code{Object},
     \code{Acc} (representing accumulators),
@@ -28,6 +31,44 @@ Objects are still mutable because accumulators and clocked accumulators
     are mutable.
 
 %todo: talk about stuck configurations.
+\begin{figure}[t]
+\begin{center}
+\begin{tabular}{|l|l|}
+\hline
+
+$\hP ::= \ol{\hL},\hS$ & Program. \\
+
+$\hL ::= \hclass ~ \hC~\hextends~\hD~\lb~\ol{\hF};~\ol{\hM}~\rb$
+& cLass declaration. \\
+
+$\hF ::= \hvar\,\hf:\hC$
+& Field declaration. \\
+
+$\hM ::= \hdef\ \hm(\ol{\hx}:\ol{\hC}):\hC\{\hS\}$
+& Method declaration. \\
+
+$\hp ::= \hl ~~|~~ \hx$
+& Path. \\ %(location or parameter)
+
+$\he ::=  \hp.\hf  ~|~ \hnew{\hC}(\ol{\hp}) ~|~ \hp()$
+& Expressions. \\ %: locations, parameters, field access,  %invocation, \code{new}
+$\hB ::= \blockt{\ol{\hl}}{\hS}$
+& Blocks. \\
+$\hS ::=  \epsilon ~|~ \hadvance; ~|~ \hp.\hm(\ol{\hp}); ~|~$ &  \\
+$~~~~~ \valt{\hx}{\he} ~|~ \hp \leftarrow \hp ~|~ \hS~\hS ~|~  $ &\\
+$~~~~~ \pclocked~\finishasync{\hB} $ & Statements. \\ %: locations, parameters, field access, invocation, \code{new}
+
+\hline
+\end{tabular}
+\end{center}
+FX10 Syntax.
+    The terminals are locations (\hl,\ha), parameters and \hthis (\hx), field name (\hf), method name (\hm), class name (\hB,\hC,\hD,\hObject),
+        and keywords. % (\hhnew, \hfinish, \hasync, \code{val}, \hadvance)
+    %The non-terminals are statements (\hS), blocks (\hB),
+    The program source code cannot contain locations (\hl), because locations are only created during execution/reduction in \RULE{R-New} of \Ref{Figure}{reduction}.
+
+\label{Figure:syntax}
+\end{figure}
 
 \Ref{Figure}{syntax} shows the abstract syntax of FX10.
 A constructor in FX10 assigns its arguments to the object's fields.
@@ -54,7 +95,7 @@ Expression $\hp()$ is legal only when $\hp$ is an accumulator;
 % it checks at runtime that it was executed in the block that created $\hp$
 
 
-\Subsection{Reduction}
+\Subsection[reduction]{Reduction}
 A {\em heap}~$H$ is a mapping from a given set of locations to {\em
   objects}. An object is a pair $\hC(\ol{\hl})$ where $\hC$ is a class (the exact
 class of the object), and $\ol{\hl}$ are the values in the fields.
@@ -72,9 +113,9 @@ each transition is performed in a context that knows about the current
 set of capabilities.
 
 \Ref{Figure}{reduction} also defines the \emph{advance relation} $\hS \ureduce{c,a} \hS'$
-    the is used to advance a statement to its next phase.
+    that is used to advance a statement to its next phase.
 The integer $c$ represent how many \code{clocked async} can advance to the next phase in \hS,
-    and $a$ represent how many non-nested \code{async} are in \hS.
+    and the integer $a$ represent how many non-nested \code{async} are in \hS.
 For example, the statement
 \begin{lstlisting}
 async { S1 }
@@ -86,7 +127,7 @@ clocked async {
 }
 clocked async { advance; S5 }
 \end{lstlisting}
-can be advanced (where $c=3$ and $a=2$) to
+can be advanced to (where $c=3$ and $a=2$)
 \begin{lstlisting}
 async { S1 }
 clocked async {
@@ -100,7 +141,7 @@ clocked async { S5 }
 We write  $\hS \ureduce{c,a} \hUnused$ if the result of advancing \hS is not used in the rule
     (i.e., \hUnused is the statement after advancing \hS, but it is unused.)
 Finally, we write $\hS \ureduce{c+,a+} \hS'$ if $\hS \ureduce{c',a'} \hS'$ and $c'\geq c$ and $a' \geq a$.
-For example, \RULE{(R-Sequential)+} uses $\hS \ureduce{1+,0} \hUnused$,
+For example, \RULE{(R-Seq)+} uses $\hS \ureduce{1+,0} \hUnused$,
     meaning that \hS has at least one \code{clocked async} waiting on \xadvance
     and it does not have any non-clocked \code{async}.
 (This rule is used for the sequential scheduler, to allow it to progress across stuck activities.
@@ -110,7 +151,8 @@ The advance relation is also used in the following places:
     to give context (it ensures that we can execute the statement after $\hS_1$).
 (ii)~$\hS_1 \ureduce{0+,0} \hUnused$ in \RULE{(R-Acc-R)} ensures that $\hS_1$ cannot progress
     and therefore it is a safe point to read the accumulator (because no other activity can mutate the accumulator).
-(iii)~$\ureduce{1+,0+}$ in \RULE{(R-Adv)} guarantees that we can advance to the next phase.
+(iii)~$\ureduce{1+,0+}$ in \RULE{(R-Adv)} guarantees that we can advance to the next phase
+    (there must be at least one \xadvance that is removed).
 
 
 For $X$ a partial function, we use the notation
@@ -172,50 +214,14 @@ scope of the \code{clocked finish}; they do not come in the way of the
 \code{clocked finish} advancing.
 
 %\begin{figure}[htpb!]
+
+
 \begin{figure*}[t]
-\begin{center}
-\begin{tabular}{|l|l|}
-\hline
-
-$\hP ::= \ol{\hL},\hS$ & Program. \\
-
-$\hL ::= \hclass ~ \hC~\hextends~\hD~\lb~\ol{\hF};~\ol{\hM}~\rb$
-& cLass declaration. \\
-
-$\hF ::= \hvar\,\hf:\hC$
-& Field declaration. \\
-
-$\hM ::= \hdef\ \hm(\ol{\hx}:\ol{\hC}):\hC\{\hS\}$
-& Method declaration. \\
-
-$\hp ::= \hl ~~|~~ \hx$
-& Path. \\ %(location or parameter)
-
-$\he ::=  \hp.\hf  ~|~ \hnew{\hC}(\ol{\hp}) ~|~ \hp()$
-& Expressions. \\ %: locations, parameters, field access,  %invocation, \code{new}
-$\hB ::= \blockt{\ol{\hl}}{\hS}$
-& Blocks. \\
-$\hS ::=  \epsilon ~|~ \hadvance; ~|~ \hp.\hm(\ol{\hp});  ~|~ \valt{\hx}{\he} ~|~ \hp \leftarrow \hp ~|~
-    \pclocked~\finishasync{\hB} ~|~ \hS~\hS$ & Statements. \\ %: locations, parameters, field access, invocation, \code{new}
-
-\hline
-\end{tabular}
-\end{center}
-FX10 Syntax.
-    The terminals are locations (\hl,\ha), parameters and \hthis (\hx), field name (\hf), method name (\hm), class name (\hB,\hC,\hD,\hObject),
-        and keywords. % (\hhnew, \hfinish, \hasync, \code{val}, \hadvance)
-    %The non-terminals are statements (\hS), blocks (\hB),
-    The program source code cannot contain locations (\hl), because locations are only created during execution/reduction in \RULE{R-New} of \Ref{Figure}{reduction}.
-
-\label{Figure:syntax}
-%\end{figure}
-
-%\begin{figure*}[t]
 
 \begin{center}
 \begin{tabular}{|c|}
 \hline
-\\\\
+
 $\typerule{
 }{
  \epsilon,\cH \preduce \cH
@@ -230,30 +236,31 @@ $\typerule{
     \hS~\hS_1, \cH &\preduce& \hS'~\hS_1,\cH' ~|~ \hS_1,\cH' \\
   \end{array}
 }$~\RULE{(R-Trans)}
+~
+$\typerule{
+\hS_1\ureduce{1+,0}\hUnused \gap\gap \hS,\cH \preduce \hS',\cH'
+}{
+   \hS_1~\hS,\cH \preduce \hS_1~\hS',\cH'
+}$~\RULE{(R-Seq)+}
 \\\\
 $\typerule{
  \hB,\cH \preduce \hB',\cH' ~|~ \cH'
 }{
     \finishasync{\hB},\cH \ptreduce  \finishasync{\hB'},\cH'  ~|~ \cH'  \gap \pi=\hAcc(\pi')\\
     %\finish{}{\hB},\cH \ptreduce \finish{}{\hB'},\cH'  ~|~ \cH'  \gap \pi=\hAcc(\pi')\\
+    \vspace{-0.5em}
     \hclocked~\async{\hB},\cH \preduce \hclocked~\async{\hB'},\cH'  ~|~ \cH'  \\
    \blockt{\ol{\hl}}{\hS_1~\hclocked~\finish{\hB}~\hS},\cH \ptreduce
   \blockt{\ol{\hl}}{\hS_1~\hclocked~\finish{\hB'}~\hS},\cH' ~|~ \blockt{\ol{\hl}}{\hS_1~\hS},\cH' \gap \pi=\hAcc(\pi') \cup \ol{\hl} \gap \hS_1\ureduce{0+,0+}\hUnused
 }$~\RULE{(R-Trans-B)}
 \\\\
-$\typerule{
-  \hS,\cH \preduce \hS', \cH'
-}{
-  \pclocked~\async{\hB}~\hS, \cH \preduce \pclocked~\async{\hB}~\hS', \cH'\\
-}$~\RULE{(R-Async)-}
-\\\\
-$\typerule{
-\hS_1\ureduce{1+,0}\hUnused \gap\gap \hS,\cH \preduce \hS',\cH'
-}{
-   \hS_1~\hS,\cH \preduce \hS_1~\hS',\cH'
-}$~\RULE{(R-Sequential)+}
-\\\\
 
+$\typerule{
+    \cH(\hl)=\hC(\ol{\hl'})
+}{
+  \hval{\hx}{\hl.\hf_i}{\hS},\cH \preduce \hS[\hl_i'/\hx],\cH
+}$~\RULE{(R-Access)}
+\gap
 $\typerule{
     \cH(\hl')=\hC(\ldots)
         \gap
@@ -263,22 +270,16 @@ $\typerule{
 }$~\RULE{(R-Invoke)}
 \\\\
 $\typerule{
-    \cH(\hl)=\hC(\ol{\hl'})
+  \cH(\ha)=\hClockedAcc(\hr,\ho,\he) \gap \ha\in\pi
 }{
-  \hval{\hx}{\hl.\hf_i}{\hS},\cH \preduce \hS[\hl_i'/\hx],\cH
-}$~\RULE{(R-Access)}
-\\\\
-$\typerule{
-    \cH(\hl)=\hClockedAcc(\hr,\ho,\he) \gap \hl\in \pi
-}{
-  \hl\leftarrow\hl',\cH \preduce \cH[ \hl \mapsto \hClockedAcc(\hr,\ho,\hr(\he,\hl'))]
-}$~\RULE{(R-Clocked-W)}
-\quad
-$\typerule{
-  \cH(\hl)=\hClockedAcc(\hr,\ho,\he) \gap \hl\in\pi
-}{
-  \hval{\hx}{\hl()}{\hS},\cH \preduce \hS[\ho/\hx], \cH \\
+  \hval{\hx}{\ha()}{\hS},\cH \preduce \hS[\ho/\hx], \cH \\
 }$~\RULE{(R-Clocked-R)}
+\gap
+$\typerule{
+    \cH(\ha)=\hClockedAcc(\hr,\ho,\hv) \gap \hw=\hr(\hv,\hl) \gap \hl\in \pi
+}{
+  \ha\leftarrow\hl,\cH \preduce \cH[ \hl \mapsto \hClockedAcc(\hr,\ho,\hw)]
+}$~\RULE{(R-Clocked-W)}
 \\\\
 $\typerule{
 \hS_1\ureduce{0+,0}\hUnused \gap\cH(\ha)=\hAcc(\hr,\hv) \gap  \gap \ha\in \ol{\hl}
@@ -288,9 +289,9 @@ $\typerule{
 }$~\RULE{(R-Acc-R)}
 ~
 $\typerule{
-  \cH(\ha)=\hAcc(\hr,\hv)\gap \hw=\hr(\hv,\hp)  \gap\gap \ha\in \pi
+  \cH(\ha)=\hAcc(\hr,\hv)\gap \hw=\hr(\hv,\hl)  \gap \ha\in \pi
 }{
-  \ha \leftarrow \hp,\cH \preduce \cH[\ha \mapsto \hAcc(\hr,\hw)]
+  \ha \leftarrow \hl,\cH \preduce \cH[\ha \mapsto \hAcc(\hr,\hw)]
 }$~\RULE{(R-Acc-W)}
 \\\\
 $\typerule{
@@ -305,13 +306,15 @@ $\typerule{
 
 $\typerule{
 }{
-    \epsilon \ureduce{0,0} \epsilon \\
+    \epsilon \ureduce{0,0} \epsilon
 }$~\RULE{(R-Adv-Epsilon)}
-~
+\gap
+
 $\typerule{
+    \hS_1 \ureduce{c_1,a_1} \hS_1' \gap     \hS_2 \ureduce{c_2,a_2} \hS_2'
 }{
-  \async{\hB} \ureduce{0,1} \async{\hB}
-}$~\RULE{(R-Adv-A)-}
+  \hS_1~\hS_2\ureduce{c_1+c_2,a_1+a_2} \hS_1'~\hS_2'
+}$~\RULE{(R-Adv-S)}
 \\\\
 
 $\typerule{
@@ -320,13 +323,6 @@ $\typerule{
     \hclocked~\async~\blockt{\ol{\hl}}{\hS_1} \ureduce{c,a} \hclocked~\async~\blockt{\ol{\hl}}{\hS'_1} \\
     \hclocked~\async~\blockt{\ol{\hl}}{\hS_1~\xadvance~\hS_2} \ureduce{c+1,a} \hclocked~\async~\blockt{\ol{\hl}}{\hS'_1~\xadvance~\hS_2}
 }$~\RULE{(R-Adv-C-A)}
-\\\\
-
-$\typerule{
-    \hS_1 \ureduce{c_1,a_1} \hS_1' \gap     \hS_2 \ureduce{c_2,a_2} \hS_2'
-}{
-  \hS_1~\hS_2\ureduce{c_1+c_2,a_1+a_2} \hS_1'~\hS_2'
-}$~\RULE{(R-Adv-S)}
 \\\\
 
 
@@ -338,16 +334,29 @@ $\typerule{
 }$~\RULE{(R-Adv)}
 \\\\
 \hline
+
+$\typerule{
+}{
+  \async{\hB} \ureduce{0,1} \async{\hB}
+}$~\RULE{(R-Adv-A)-}
+\gap
+$\typerule{
+  \hS,\cH \preduce \hS', \cH'
+}{
+  \pclocked~\async{\hB}~\hS, \cH \preduce \pclocked~\async{\hB}~\hS', \cH'\\
+}$~\RULE{(R-Async)-}
+\\
+\hline
 \end{tabular}
 \end{center}
 
 
 \caption{FX10 Reduction Rules ($\hS,\cH \preduce \hS',\cH' ~|~\cH'$) for the \emph{concurrent} scheduler
-    (\RULE{(R-Sequential)+} is not mandatory in the concurrent scheduler; it was added so that the sequential scheduler will progress if an \hasync cannot advance.)
-    The \emph{sequential} scheduler is obtained by removing the two \RULE{(\ldots)-}.
+    (\RULE{(R-Seq)+} is not mandatory in the concurrent scheduler; it was added so that the sequential scheduler will progress if an \hasync cannot advance.)
+    The \emph{sequential} scheduler is obtained by removing \RULE{(R-Adv-A)-} and \RULE{(R-Async)-}.
     }
 \label{Figure:reduction}
 \end{figure*}
 
 
-\Subsection{Results}
+\Subsection[results]{Results}
