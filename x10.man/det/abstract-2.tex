@@ -34,10 +34,11 @@ the {\em next}). Read operations are performed on the current value,
 write operations on the next. Such values are implicitly associated
 with a clock and the current and next values are switched
 (determinately) on quiescence of the clock. Clocked values capture the
-common ``double buffering'' idiom. Accumulators and clocked values are
-designed in such a way that they are deadlock-free and determinate
-even in the presence of arbitrary aliasing and patterns of
-concurrency.
+common ``double buffering'' idiom. (Clocked) Accumulators are designed
+in such a way that they are safe even in the presence of arbitrary
+aliasing and patterns of concurrency. Non-accumulator clocked types
+can often be established safe with lightweight reasoning such as an
+``owner computes'' rule to establish disjointness of writes within a phase.
 
 We show all programs written in this fragment of the language are
 guaranteed to have sequential semantics. That is, programs in this
@@ -47,10 +48,9 @@ without running into the state explosion problem.
 Further, many common patterns of concurrent execution can be written
 in this language in an ``obvious'' way. These patterns include
 histograms, all-to-all reductions, stencil computations, master/slave
-execution, and most of the important HPC computing idioms. We show
-that there are simple statically-checkable rules that can establish
-for many common idioms that some run-time synchronization checks can
-be avoided.
+execution.  We show that there are simple statically-checkable rules
+that can establish for many common idioms that some run-time
+synchronization checks can be avoided.
 
 The key technical problem addressed is unrestricting aliasing in the
 heap.  We develop the idea of an {\em implicit ownership domain}
