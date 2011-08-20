@@ -3,10 +3,10 @@
 The safe paralleization of sequential programs is an important and
 challenging task. A parallelization is safe if it ensures that no new
 behaviors are introduced; the semantics of the parallel program is
-identical to that of the sequential program. In particular the
+identical to that of the sequential program. In particular, the
 parallel program must not exhibit scheduler indeterminacy or deadlock.
 
-This is a challenging problems.  Imperative memory locations are
+This is a challenging problem.  Imperative memory locations are
 famously indeterminate under concurrent read/write
 operations. Further, most concurrent programming languages support
 synchronization mechanisms that enable a thread to wait until some
@@ -16,10 +16,10 @@ deadlock.
 In this paper we develop a very rich fragment of the concurrent,
 imperative programming language \Xten{} in which {\em all} programs
 have sequential semantics. The advantages of such a language are
-striking: the programmer simply cannot introduce determinacy or
+striking: the programmer simply cannot introduce indeterminacy or
 deadlock-related errors. All programs can be debugged as if they are
 sequential programs, without having to reason about all possible
-interleaving of threads. 
+interleaving of threads.
 
 The fragment includes all of \Xten{}'s most powerful constructs --
 (clocked) \code{finish} and \code{async}, places and {}\code{at}. We
@@ -42,7 +42,7 @@ concurrency.
 We show all programs written in this fragment of the language are
 guaranteed to have sequential semantics. That is, programs in this
 fragment may be developed and debugged as if they are sequential,
-without running into the state explosion problem. 
+without running into the state explosion problem.
 
 Further, many common patterns of concurrent execution can be written
 in this language in an ``obvious'' way. These patterns include
@@ -60,5 +60,3 @@ current activity so that they can be operated upon only by this
 activity and its newly spawned children activity subtree.  This
 permits determinacy and deadlock freedom to be established locally,
 independent of the context in which the code is being run.
-
-

@@ -26,7 +26,8 @@ correctness. Safety is a very strong property.
 
 There are many challenges in designing an efficient, usable, powerful,
 explicitly parallel imperative language that is safe. One central
-challenge is that 
+challenge is that
+\todo{what???}
 
 One way to get safety is through implicitly parallel languages (e.g.{}
 Jade~\cite{Rinard98thedesign},\cite{vonPraun:2007:IPO:1229428.1229443}). One
@@ -43,7 +44,7 @@ them. Here the programmer can typically directly control the
 granularity of concurrency, and locality of access (e.g. placement of
 data-structures in a multi-node computation) and use efficient
 concurrent primitives (atomic reads/writes, test and sets, locks etc)
-to control their execution. 
+to control their execution.
 
 For such languages proving that a program is safe -- much less that
 the programming language is safe -- now becomes very hard,
@@ -74,7 +75,7 @@ in X10, namely those that use \code{finish}, \code{async} and
 \code{clock}s are deadlock-free. The central intuition is that a clock
 can only be used by the activity that created it and by its children,
 and hence the spawn tree structure can be used to avoid depends-for
-cycles. 
+cycles.
 
 To obtain determinacy, another idea is required. The central problem
 is to ensure that in the statement \code{async \{S\} S1} it is not the
@@ -96,7 +97,7 @@ that can be operated upon during the execution of this
 method. Now determinacy can be established if it can be determined
 that that in \code{async \{S\} S1} it is the case that \code{S} does
 not write any region that \code{S1} reads or writes from, and vice
-versa ({\em disjoint parallelism}). 
+versa ({\em disjoint parallelism}).
 
 \cite{DPJ} develops these ideas in the context of a language with
 \code{cobegin/coend} and \code{forall} parallelism, and does not
@@ -108,7 +109,7 @@ than disjointness across space. A producer is going to write into
 locations \code{w(t),w(t+1),w(t+2), \ldots}, but this does not
 conflict with a consumer reading from the same locations as long as
 the consumer can arrange to read the values in time-staggered order,
-i.e. read \code{w(t)} once the produce is writing \code{w(t+1)}.  
+i.e. read \code{w(t)} once the produce is writing \code{w(t+1)}.
 
 We believe it is possible to significantly simplify this approach
 (e.g.{} using the dependent-type system of X10) and extend it to cover
@@ -153,7 +154,7 @@ before activities start in the next phase -- the \code{now} and
 \code{next} versions are switched; \code{now} becomes \code{next} and
 \code{next} becomes \code{now}.\footnote{Clearly this idea can be
   extended to $k$-buffered clocked types where each clock tick rotates
-  the buffer. This idea is related to the K-bounded Kahn networks of 
+  the buffer. This idea is related to the K-bounded Kahn networks of
 \cite{Cohen:2006:NSK:1111320.1111054}.}
 
 
@@ -161,7 +162,7 @@ We show that clocked types can be defined in a safe way, provided that
 accumulators are used to resolve write-write conflicts. The only
 dynamic check needed is that a value of this type is being operated
 upon only by the activity that created the value or its
-descendants. 
+descendants.
 
 In the following by Safe X10 we shall mean the language X10 restricted
 to use (\code{clocked}) \code{finish}/\code{async}, \code{at} with
@@ -180,29 +181,29 @@ proof systems share most of the proof rules, simplifying the proof. We
 establish that the language is safe -- for any program and any input,
 any execution sequence for the concurrent proof rules can be
 transformed into an execution sequence for the sequential proof rules
-with the same result. 
+with the same result.
 
 In summary the contributions of this paper are as follows.
 
 \begin{itemize}
 \item We identify the notion of a {\em safe} program -- one which can
-  be executed with a serial schedule and for which 
+  be executed with a serial schedule and for which
   every schedule produces the same result. Such a program is
   simultaneously a sequential program and a parallel program with
-  identical I/O behavior. 
+  identical I/O behavior.
 \item We introduce accumulators and clocked types in the X10
   programming model. These are introduced in such a way that arbitrary
   programs using (\code{clocked}) \code{finish}, \code{async} and
   \code{at} and in which the only variables shared between
   concurrently executing activities are accumulators or clocked
-  accumulators are guaranteed to be safe.  
+  accumulators are guaranteed to be safe.
 \item We show that many common programming idioms can be expressed in
   this language.
 \item We formalize a fairly rich subset of X10 -- including (clocked)
   finish, async, accumulators and clocked accumulators.  This is the
   first formalization of the nested clock design of X10 2.2, and is
   substantially simpler than \cite{vj-clock}. We establish that this
-  language is safe. 
+  language is safe.
 \end{itemize}
 In companion work we show how these ideas can be extended to support
 modularly defined effects analyses, using X10's dependent type system.
@@ -283,6 +284,3 @@ semantics of these constructs. We discuss implementation in
 
 
 %Semantics and theorems for an abstract version of the language.
-
-
-
