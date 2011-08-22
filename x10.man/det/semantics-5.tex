@@ -116,8 +116,10 @@ each transition is performed in a context that knows about the current
 set of capabilities.
 
 \Ref{Figure}{reduction} also defines the \emph{advance relation} $\hS \ureduce{c,a} \hS'$
-    that is used to advance a statement to its next phase.
-The integer $c$ represent how many \code{clocked async} can advance to the next phase in \hS,
+    that is used to advance a statement to its next phase,
+    assuming that~\hS includes only \code{async} and ``stuck" \code{clocked async}
+    (i.e., \code{clocked async} whose next statement is \xadvance).
+The integer $c$ represent how many \code{clocked async} are stuck on \xadvance in \hS,
     and the integer $a$ represent how many non-nested \code{async} are in \hS.
 For example, the statement
 \begin{lstlisting}
@@ -330,7 +332,7 @@ $\typerule{
   \hS_1 \ureduce{c,a} \hS'_1
 }{
     \hclocked~\async~\blockt{\ol{\hl}}{\hS_1} \ureduce{c,a} \hclocked~\async~\blockt{\ol{\hl}}{\hS'_1} \\
-    \hclocked~\async~\blockt{\ol{\hl}}{\hS_1~\xadvance~\hS_2} \ureduce{c+1,a} \hclocked~\async~\blockt{\ol{\hl}}{\hS'_1~\xadvance~\hS_2}
+    \hclocked~\async~\blockt{\ol{\hl}}{\hS_1~\xadvance~\hS_2} \ureduce{c+1,a} \hclocked~\async~\blockt{\ol{\hl}}{\hS'_1~\hS_2}
 }$~\RULE{(R-Adv-C-A)}
 \\\\
 
@@ -378,4 +380,16 @@ Given a well-typed program $\ol{\hL},\hS$ in heap $\cH$,
     then $\cH'$ and $\cH"$ are isomorphic.
 \end{Theorem}
 
-% Also, the sequential scheduler has at most one possibility to reduce.
+Another result is that the sequential scheduler is indeed sequential,
+    i.e., a configuration has at most one successor configuration.
+\begin{Theorem}
+%Let~$\stackrel{\text{seq}}\reduce$ denote the sequential reduction rules (after removing \RULE{(R-Adv-A)-} and \RULE{(R-Async)-}).
+Given a configuration~$\hS,\cH$ and well-typed program $\ol{\hL},\hS$,
+    then at most one of the reduction rules (excluding \RULE{(R-Adv-A)-} and \RULE{(R-Async)-})
+    is applicable on~$\hS,\cH$.
+\end{Theorem}
+
+Finally, a stuck configuration in a well-typed program has one of the following forms:
+    (i)~an \xadvance not inside a \code{clocked async},
+    (ii)~a \code{clocked async} with an \xadvance without an enclosing \finish,
+    (iii)~an illegal read/write of an accumulator.
