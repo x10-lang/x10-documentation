@@ -147,7 +147,7 @@ assignment) at
 most once, and must be given a value before it is used.  Usually this is
 achieved by declaring and initializing the variable in a single statement, 
 such as \Xcd{val x = 3}, with syntax 
-(\ref{prod:LocVarDecl}) using the {\it VariableDeclarators} or {\it
+(\ref{prod:LocVarDecln}) using the {\it VariableDeclarators} or {\it
 VarDelcsWType} alternatives.
 
 \begin{ex}
@@ -172,7 +172,7 @@ val b = (a+1)*(a-1);
 
 In two special cases, the declaration and assignment are separate.  One 
 case is how constructors give values to \xcd`val` fields of objects.  In this
-case, production (\ref{prod:LocVarDecl}) is taken, with the {\it
+case, production (\ref{prod:LocVarDecln}) is taken, with the {\it
 FormalDeclarators} option, such as  \Xcd{var n:Int;}.  
 
 \begin{ex} The

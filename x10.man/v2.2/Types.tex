@@ -41,7 +41,7 @@ variables of class type -- except for types which have a constraint
 (\Sref{ConstrainedTypes}) which specifically excludes \xcd`null`.
 
 These runtime values are classified by {\em types}. Types are used in
-variable declarations (\Sref{sect:LocalVarDecl}), 
+variable declarations (\Sref{sect:LocalVarDecln}), 
 coercions and  explicit conversions (\Sref{sect:ConvAndCoerc}),
 object creation (\Sref{ClassCreation}),
 static state and method accessors (\Sref{FieldAccess}),
@@ -180,7 +180,7 @@ formal parameters of the parameterized type \xcd`M`.
 \xcd`Pair[Int]`, above, is an example of a use of the generic type \xcd`Pair`. 
 
 A type of form {$(4)$}, \xcd`T.U`, is a qualified type: a unit \xcd`U` appearing inside of
-the unit \xcd`T`, as described in \Sref{nuQualifiedTypes}.
+the unit \xcd`T`, as described in \Sref{InnerClasses}.
 
 \begin{ex}
 %~~gen ^^^ Types50f9f
@@ -232,7 +232,7 @@ assert square(5) == 25;
 A term of form {$(6)$}, such as \xcd`M[T](e)`, is an instance of a
 parameterized type definition.  Such types may be parameterized by both types
 and values. 
-This is described in \Sref{nuTypedef}.
+This is described in \Sref{TypeDefs}.
 
 \begin{ex}
 \xcd`Array[Int](1)` is the type of one-dimensional arrays of
@@ -277,7 +277,7 @@ val u : ( Int )=>Int          = t;
 
 A term of form {$(7)$}, \xcd`T{c}`, is a type whose values are the values of
 type \xcd`T` for which the constraint \xcd`c` is true.  This is described in
-\Sref{nuConstrainedType}. 
+\Sref{ConstrainedTypes}. 
 
 \begin{ex}
 A variable of class \xcd`Point`, unconstrained, can contain \xcd`null`: 
@@ -1110,7 +1110,7 @@ constraint expression \xcd`c` may be attached to a basic type \xcd`T`, giving
 a {\em constrained type} \xcd`T{c}`. The values of type \xcd`T{c}` are the
 values of \xcd`T` for which \xcd`c` is true.
 Constraint expressions also serve as guards on methods (\Sref{sect:Methods})
-and functions (\Sref{FunctionLiterals}), and
+and functions (\Sref{FunctionLiteral}), and
 invariants on unit types (\Sref{DepType:ClassGuard}.
 
 \index{self}When constraining a value of type \xcd`T`, \xcd`self` refers to the object of
@@ -3110,6 +3110,7 @@ class Extra {
 \end{ex}
 
 \section{Limitations of Strict Typing}
+\label{sect:LimitationOfStrictTyping}
 
 X10's type checking provides substantial guarantees.  In most cases, a program
 that passes the X10 type checker will not have any runtime type errors.

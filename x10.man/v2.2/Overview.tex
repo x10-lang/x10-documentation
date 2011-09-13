@@ -469,12 +469,11 @@ barrier-based or lock-based synchronization in many cases.
 
 \paragraph{Safety and correctness.}
 
-\forvijay{The 'type safe' claim isn't true.  How would you like to rephrase it
-to make it true?}
 
 
 Programs written in \Xten{} are guaranteed to be statically
-\emph{type safe}, \emph{memory safe} and \emph{pointer safe}. 
+\emph{type safe}, \emph{memory safe} and \emph{pointer safe},
+with certain exceptions given in \Sref{sect:LimitationOfStrictTyping}.
 
 Static type safety guarantees that every location contains only values whose
 dynamic type agrees with the location's static type. The compiler allows a
