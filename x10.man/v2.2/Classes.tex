@@ -675,7 +675,7 @@ guard on the method.
 \begin{ex}
 For example, \xcd`example(x)` is only
 well-defined when \xcd`x != null`, as \xcd`null.toString()` throws a null
-pointer exception: 
+pointer exception, and returns nothing: 
 %~~gen ^^^ Classes80
 % package Classes.methodwithconstraintthingie;
 % 
@@ -683,7 +683,7 @@ pointer exception:
 \begin{xten}
 class Example {
    var f : String = "";
-   def setF(x:Object){x != null} = {
+   def setF(x:Object){x != null} : void = {
       this.f = x.toString();
    }
 }
