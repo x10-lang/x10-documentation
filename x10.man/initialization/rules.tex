@@ -108,7 +108,7 @@ For example, \code{m2} is \emph{implicitly} non-escaping (and therefore cannot l
 The user could also mark \code{m2} \emph{explicitly} as non-escaping by using the annotation
     \code{@NonEscaping}.
 (Like in Java, \code{@} is used for annotations in X10.)
-We recommend explicitly marking public methods as \code{@NonEscaping} to show intent,
+We recommend explicitly marking non-escaping methods as \code{@NonEscaping} to show intent,
     as done on method \code{m3}.
 Without this annotation the call \code{super.m3()} in \code{B} would be illegal,
     due to rule~\userule{Rule4}.
@@ -484,8 +484,9 @@ Java's primitive types (\code{int}, \code{byte}, etc) are represented as structs
 Structs, as opposed to classes, do not contain the value \code{null}.
 
 \emph{Generics} in X10 are reified, i.e, not erased as in Java.
-For example, instances of \code{Box[Byte]} and \code{Box[Double]}
-    would have the same size in Java but different sizes in X10.
+For example, a \code{Box[T]} has a single field of type \code{T},
+    and instances of \code{Box[Byte]} and \code{Box[Double]}
+    have the same size in Java but different sizes in X10.
 %an instance of type \code{Box[Byte]} would have a different size than one of type \code{Box[Byte]}
 Although generics are not a new concept,
     the combination of generics and the lack of default values
@@ -813,7 +814,7 @@ We now present a data-flow analysis for guaranteeing
     and that a final field is assigned exactly once.
 Java performs an \emph{intra}-procedural data-flow analysis in \emph{constructors} to calculate
     when a \emph{final} field is definitely-assigned and definitely-unassigned.
-In contrast, X10 performs an \emph{inter}-procedural (fixed-point) data-flow analysis
+In contrast, X10 performs an \emph{inter}-procedural fixed-point data-flow analysis
     in all \emph{non-escaping methods} (and constructors) to calculate
     when {a} field (\emph{both final and non-final}) is
     definitely-assigned, \emph{definitely-asynchronously-assigned}, and definitely-unassigned.

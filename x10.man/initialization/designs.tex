@@ -131,7 +131,7 @@ becoming fully constructed.
 
 Consider \code{\itshape err5} in Fig.~\ref{Figure:Cyclic}.
 If we had inferred the type of \code{c} to be non-proto,
-    then we could have read the uninitialized field \code{this.next}.
+    then we could have read the uninitialized field \code{c.next.next} (because \code{c.next} points to \code{this}).
 To solve this problem, we must ensure that the whole cycle becomes fully
 constructed together.
 This can be arranged by changing the type of \texttt{new

@@ -1,0 +1,576 @@
+Thank you for all the comments and feedback!
+All the typos and presentation issues are now fixed (including the typing rules that are now presented in a single table and not in the figures).
+
+You have raised 2 major concerns:
+1) previous work already solved this problem
+2) empirical evaluation
+
+Concern 1:
+We were not aware of Summers&Muller work (Freedom Before Commitment), but it is almost identical to our proto proposal.
+Proto was used in X10 in the past 3 years prior to X10 2.2, and was discarded because it does not work well in practice (see example below).
+Summers&Muller use free (=proto), committed (=non-proto), and unclassified 
+(which X10 did not need because you cannot read from a proto reference).
+Summers&Muller handled only non-null types in a Java-like language where all types contain null, 
+and therefore reading a field is always allowed (even if the field wasn't assigned yet, in which case you return null).
+Phrased differently, reading a field of type "Something!" from a free/proto object returns "Something?".
+In contrast, X10 has an advanced type system with constraints and structs, and structs do not contain the null value,
+and therefore reading a field is only allowed if it was definitely assigned.
+(Another example would be reading a field of type Int{self>5} from a free/proto object. Returning 0 is not intuitive and it might break a class invariant. See default value design in Sec 3.1.)
+Definite-assignment for final and non-final fields was not discussed in Summers&Muller.
+
+Finally, Summers&Muller do not describe their dataflow analysis, and their proposal doesn't work in real world examples such as in Java's collection:
+class LinkedList extends AbstractSequentialList {
+  final Entry! header = new Entry();
+  LinkedList(Collection c) {
+    addAll(c);
+  }
+  public boolean addAll(Collection c) [Unclassified] { // receiver is either free (when called from the ctor) or committed (when called on a committed object)
+    // reading "this.header" will return "Entry?" in Summers&Muller (and is illegal in X10 that has no default values. That was the main reason proto was discarded.)
+  }
+}
+It is tempting to think that their dataflow analysis can modularly prove that "header" is always assigned before calling "addAll",
+but that is not true due to possible overriding (AbstractSequentialList may call "addAll" before "header" is assigned).
+X10 2.2 manages to modularly type-check this code because addAll is non-escaping and thus cannot be overridden.
+
+Previous initialization proposals did not address all language aspects: default values, final fields, dataflow analysis, overriding, etc.
+This is the major novelty of our work: a thorough treatment of initialization inside a sophisticated type system.
+The interactions with all the aspects of X10 surprised us many times (e.g., with custom serialization, raw objects that leaked to closures and remote places, etc.) 
+The inter-procedural fixed-point algorithm and definite-async-assigned are also novel.
+
+By the way, the proto proposal was formalized in 2010:
+https://x10.svn.sf.net/svnroot/x10/documentation/trunk/x10.man/proto_formalism/
+but after it was removed in X10 2.2 there was no point in publishing it.
+
+Concern 2: empirical evaluation
+Due to page limitation, we mainly focused on the formal effect system for POPL, 
+but we can easily add an empirical evaluation section that describes some test cases (where minor code refactoring was needed) and shows the annotation burden.
+X10 has only two possible method annotations: @NonEscaping, @NoThisAccess.
+Methods transitively called from a constructor are implicitly non-escaping (but the compiler issues a warning that they should be marked as @NonEscaping).
+SPECjbb and M3R are closed-source whereas the rest is open-source and publicly available at x10-lang.org
+
+------------------------------------------------------------------------------
+Programs:			XRX	SPECjbb		M3R	UTS	Other
+# of lines			27153	14603		71682	2765	155345
+# of files			257	63		294	14	2283
+# of constructors		276	267		401	23	1297
+# of methods			2216	2475		2831	124	8273
+# of non-escaping methods	8	38		34	3	83
+# of @NonEscaping		7	7		13	1	62
+# of @NoThisAccess		1	0		1	0	12
+------------------------------------------------------------------------------
+XRX: X10 Runtime (and libraries)
+SPECjbb: SPECjbb from 2005 converted to X10
+M3R: Map-reduce in X10
+UTS: Global load balancing
+Other: Programmer guide examples, test suite, issues, samples
+------------------------------------------------------------------------------
+
+As can be seen, the annotations burden is minor.
+
+Asynchronous initialization was not used in our applications because they pre-date this feature.
+(It is used in our examples and tests 50 times.)
+However, it is a useful pattern, especially for local variables.
+More importantly, the analysis prevents bugs such as:
+val res:Int;
+finish {
+  async {
+    res = doCalculation();
+  }
+  // WRONG to use res here
+}
+// OK to use res here
+
+Here are two examples for the use of annotations:
+1) In Any.x10 we have:
+@NoThisAccess def typeName():String
+Method typeName is overridden in subclasses to return a constant string (all structs automatically override this method).
+This annotation allows typeName() to be called even during construction.
+2) In HashMap.x10, after we added the strict initializations rules, we had to refactor put and rehash methods into:
+public def put(k: K, v: V) = putInternal(k,v);
+@NonEscaping protected final def putInternal(k: K, v: V) {...}
+(Similarly, we have rehash() and rehashInternal())
+The reason is that putInternal is called from the deserialization constructor:
+def this(x:SerialData) { ... putInternal(...) ... }
+And we still want subclasses to be able to override the "put" method.
+
+
+Minor comments:
+> mutable heap cycles with non-null pointers are common
+X10 currently allows cyclic mutable structures,
+because "var" fields can be mutated after the object is created.
+One needs "proto" only for immutable cycles.
+
+> I'm convinced that deserialization needs to be treated like object construction, but
+> whether this is via a constructor or a "special" method seems like a minor point, or a distinction without a difference.
+The difference is that constructors have the special privilege of assigning to final fields (which normal methods cannot do).
+
+> Fig 8:  Why is the write to f2 in the constructor for B an error?
+Due to rule 10, you can access the fields of "this" only after the property(...) statement.
+
+> 3.2:  "we could have read the uninitialized field this.next"  Do you mean c.next?
+c.next is an alias to this, therefore reading "c.next.next" means reading "this.next", which hasn't been assigned yet.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Reviewer 2:
+initialization properties
+are generated from a whole-program analysis
+default annotations usually suffice
+error messages
+
+Reviewer 3:
+> that analysis is quite standard
+Concurrency (async-assignment)
+
+
+Reviewer 4:
+
+
+
+
+
+For me:
+
+Other:
+TorontoSuite	38723	515
+sourceforge\x10.tests	112655	1729
+sourceforge\x10.dist\samples	3967 39
+Total: 155345	2283
+
+C:\cygwin\home\Yoav\test\Hello.x10
+
+C:\cygwin\home\Yoav\intellij\sourceforge\x10.runtime\src-x10
+C:\cygwin\home\Yoav\intellij\apps\x10.mr
+
+C:\cygwin\home\Yoav\intellij\benchmarks\UTS\Counter.x10:            [3, 39, 1, 1, 0]
+C:\cygwin\home\Yoav\intellij\benchmarks\UTS\FixedSizeStack.x10:     [1, 3, 0, 0, 0]
+C:\cygwin\home\Yoav\intellij\benchmarks\UTS\HUTS.x10:               [2, 14, 1, 0, 0]
+C:\cygwin\home\Yoav\intellij\benchmarks\UTS\MyStack.x10:            [1, 7, 0, 0, 0]
+C:\cygwin\home\Yoav\intellij\benchmarks\UTS\NetworkGenerator.x10:   [0, 10, 0, 0, 0]
+C:\cygwin\home\Yoav\intellij\benchmarks\UTS\PAdicNumber.x10:        [2, 11, 0, 0, 0]
+C:\cygwin\home\Yoav\intellij\benchmarks\UTS\ParUTS.x10:             [2, 15, 1, 0, 0]
+C:\cygwin\home\Yoav\intellij\benchmarks\UTS\ParUTSBin.x10:          [1, 10, 0, 0, 0]
+C:\cygwin\home\Yoav\intellij\benchmarks\UTS\SHA1Rand.x10:           [3, 2, 0, 0, 0]
+C:\cygwin\home\Yoav\intellij\benchmarks\UTS\TreeExpander.x10:       [0, 3, 0, 0, 0]
+C:\cygwin\home\Yoav\intellij\benchmarks\UTS\UTS.x10:                [8, 9, 0, 0, 0]
+C:\cygwin\home\Yoav\intellij\benchmarks\UTS\UTSBin.x10:             [0, 1, 0, 0, 0]
+
+
+
+
+OveMer	Nov	Imp	Con	Cla	RevExp
+Review #40A		4	3	3	3	4	3	
+Review #40B		2	2	3	2	2	4	
+Review #40C		2	2	2	3	3	3	
+Review #40D		3	3	3	2	4	3
+
+Thanks,
+Yoav
+
+
+Reviews:
+
+===========================================================================
+                           POPL 2012 Review #40A
+                 Updated Tuesday 26 Jul 2011 6:33:41pm EDT
+---------------------------------------------------------------------------
+                  Paper #40: Object Initialization in X10
+---------------------------------------------------------------------------
+
+                      Overall merit: 4. Accept
+                            Novelty: 3. Solid
+                         Importance: 3. Useful
+                         Conviction: 3. Solid
+                            Clarity: 4. Lucid
+                 Reviewer expertise: 3. Knowledgeable
+
+                         ===== Paper summary =====
+
+This paper does what its title claims: It describes in thorough and
+thoughtful detail the rules for object initialization in X10.  Many
+people may be surprised that the language-design trade-offs for making
+sure fields are written before they are read are so difficult to
+resolve -- it is not too provocative to say that the fact that we are
+still wrestling with this in 2011 is a failure of the field, and that
+solutions would have more useful impact than many of the topics the
+community works on.
+
+This paper will be a very valuable contribution in this regard: It
+takes a pragmatic but advanced approach and is being used in a real
+language.  It support many nontrivial features, including generics,
+types for which there is no default value (perhaps even no value at
+all!), and concurrency.  The system provides a strong correctness
+guarantee and is understandable.  It gives up one feature -- the
+ability to create cyclic immutable data -- though an alternative more
+complicated design is discussed in some detail.
+
+The real strength of this paper is a careful, thorough, and
+well-organized exposition with canonical examples of each
+feature/rule/problem.  It will become a must-read for anyone designing
+a language and wanting to support field initialization well, which in turn
+is necessary for enforcing things like class invariants and final
+fields properly.  Therefore, I strongly advocate accepting it -- it's
+about industrial-strength language design in a way that the POPL
+community can (or should be able to) appreciate: explaining what it
+takes to adapt principled ideas to full-featured languages.
+
+One could quibble about the evaluation of the design in various ways.
+First, the formalism is not particularly interesting and omits a
+number of relevant features.  However, adding more features would make
+it much more complicated and probably not make it more interesting.
+Second, I would have liked more information about the experience of
+converting 200K+ lines of code to abide by the system -- this is
+mentioned once in the introduction and not revisited, but that can be
+fixed.  Third, some very relevant related work is missing, but this
+will be easy to fix.  Fourth, the authors aim for "simpler" solutions,
+but I think this is a strength not a weakness.  Fifth, it's just hard
+to believe that this isn't all well-worn territory for language
+design, but this paper does a very nice job of explaining where
+previous solutions (e.g., in Java) are either inferior or
+inappropriate in X10.  Sixth, the authors sometimes make it look easy,
+but that's how a language design should look in hindsight.
+
+                      ===== Comments for author =====
+
+I know of two papers you should read carefully and include in related
+work.  It makes sense you would not know about them, since one is very
+recent and the other covers many more topics than just object
+initialization:
+
+1. Freedom Before Commitment : A Lightweight Type System for Object
+Initialisation, OOPSLA 2011
+
+2. "The Design of a Class Mechanism for Moby", PLDI 1999 (see Section
+3.3)
+
+The first one is very relevant to your discussion about supporting
+cyclic immutable data.
+
+The second one is very relevant to your discussion of properties and
+establishing class invariants (Section 2.6).
+
+As discussed above, I'd really like to see a discussion of the
+experience of porting existing code to the new more restrictive
+design.  Surely there are metrics you can collect.  For example, was
+asynchronous initialization important in practice -- I find that doubtful.
+
+Minor things:
+
+Page 1, "Simple": You argue that dynamic dispatch is "error-prone and
+often surprises the user".  While I agree, this isn't substantiated
+and one could just as well argue the other way -- that the core
+problem is making methods overridable by default and that this
+"surprises the user" /in general/ -- not just in constructors and
+related to initialization.  Yet it's the core run-time behavior of
+OOP.
+
+Page 2: the discussion of subclasses and overriding factory methods at
+the end of 1.1 lost me and this discussion was never revisited later
+in the paper.
+
+Page 3: "To summarize, custom serialization in Java is incompatible
+with final fields." -- the previous discussion was good, but this
+final sentence seems too strong since the Java solution of requiring
+an inefficient workaround seems okay if not great.  I would just
+delete this sentence since you have made your technical points
+already.
+
+Page 3: [The next sentence] -- I'm not convinced using a constructor
+versus a readObject method is an important distinction.  I'm convinced
+that deserialization needs to be treated like object construction, but
+whether this is via a constructor or a "special" method seems like a
+minor point, or a distinction without a difference.
+
+Page 5: "We recommend explicitly marking public methods as
+@NonEscaping..." -- I'm confused: In light of Rule 3, how can a public
+method be @NonEscaping ?
+
+Page 6: Not being familiar with X10 properties, I found the syntax
+weird, namely that property(x) is positional rather than by variable
+(property(a=x)).
+
+Page 6: "captured by the closure" -- this is not how the word
+"capture" is usually used related to closures, so I would choose a
+different word.
+
+Page 7: The reader has to guess what the Box class definition is.
+
+Page 7: "inter-procedural (fixed-point)" -- drop the parentheses and
+perhaps point out that Java's intraprocedural analysis happens not to
+require a fixed-point.  inter vs. intra and fixed-point vs. not are
+entirely orthogonal concepts.
+
+Page 10: Your formalism seems to omit final (val) fields but these are
+quite central to the rest of the paper.  And the paragraph explaining
+all the things you don't support says you omit private/final locals,
+did you mean to write fields here?
+
+Page 10: "An annotation N" -- this is an entirely uninformative name,
+giving no indication that it is related to asynchronous initialization.
+
+Very minor things:
+
+* you often use "between" when "among" is a better word choice
+  ("between" is for exactly 2 and "among" is for any number)
+
+* page 4: You refer to version 2.1 of X10 but the abstract refers to 2.2
+
+* page 5: "one of the reason" -> "one of the reasons"
+
+* page 5: "main-stream" -> "mainstream"
+
+* page 8: "dead-lock" -> "deadlock"
+
+* page 8: "that that" -> "that"
+
+* page 9: "Hardhat" -> "hardhat"
+
+* page 9: "sub-typing" -> "subtyping"
+
+* page 12: some paper titles need proper nouns capitalized
+
+===========================================================================
+                           POPL 2012 Review #40B
+                  Updated Sunday 4 Sep 2011 1:32:00pm EDT
+---------------------------------------------------------------------------
+                  Paper #40: Object Initialization in X10
+---------------------------------------------------------------------------
+
+                      Overall merit: 2. Weak reject
+                            Novelty: 2. Incremental
+                         Importance: 3. Useful
+                         Conviction: 2. Weak
+                            Clarity: 2. Needs improvement
+                 Reviewer expertise: 4. Expert
+
+                         ===== Paper summary =====
+
+This paper describes a way to achieve sound object initialization in
+the language X10. Sound initialization is needed in X10 because some
+types lack a default. The paper combines two previous ideas: (1) the "hardhat"
+construction approach of Gil and Shragai, which places fairly strong
+restrictions on what can be done with an object that is still not
+fully cooked, and (2) the "masked types" of Qi and Myers, which
+provide detailed field-level reasoning about initialization of
+objects. Unlike in the masked-types work, initialization properties
+are generated from a whole-program analysis; therefore, programmers do
+not have the expressive power to perform cyclic initialization, but
+are also not confronted with the complexity of the conditionally
+masked types that are needed for such initialization. Some new
+type-level annotations are nevertheless introduced: @NonEscaping and
+@NoThisAccess.  The concurrency and distribution features of X10 also
+create some new issues that are addressed. Two designs are discussed
+that trade off expressiveness for complexity. The simpler one is
+formalized in a calculus called "FX-10" that is proved to enforce
+field initialization before reads.
+
+Overall, this seems like a interesting approach that might offer a
+nice balance between expressiveness and complexity, but based on what
+is in the paper, the work doesn't seem ready.
+
+The authors assert early on in the paper that the 200K lines of code
+of the X10 code base have been converted to this hardhat
+initialization approach. So I was very much looking forward to an
+analysis of how well the approach worked on real code But the paper
+does not report on this at all. This is a glaring weakness.
+
+I was particularly interested in seeing this part of the evaluation
+because pushing initialization work off to methods that happen after
+the constructor seems to be punting on satisfying necessary object
+constraints in the constructor.  Refactoring or weakening of
+invariants seems to be required in general. I would like to understand
+to what extent this affects reasoning about code.
+
+Another issue that evaluation on real code could shed light on is the
+annotation burden. Earlier type-based approaches such as delayed types
+and masked types have more complex source-level annotations, but the
+annotation burden is lessened because default annotations usually
+suffice. Here there are some required annotations -- is the annotation
+burden really lighter, as the authors repeatedly assert? No real
+evidence is presented.
+
+The approach taken here doesn't allow programmers to express precise
+initialization effects, but precise initialization effects are
+nevertheless inferred at the granularity of individual fields as in
+the masked types work. Is this really simpler? It seems that the error
+messages that are going to be reported to a programmer are going to be
+of a similar nature and complexity.
+
+One selling point is that explicit effect annotations can be avoided
+through dataflow-based inference.  I don't understand, in fact, how
+this is reasonable in an object-oriented language like X10.  More
+justification is needed. A subclass of class C must conform to the
+effects inferred for class C, as the authors note.  Automatically
+inferred effects might be overly restrictive for subclasses to be
+introduced later. It seems to me that the programmer is going to want
+to be able to write down effects so that initialization can be
+reasoned about in a modular way.
+
+Considering concurrency and distribution does add to the contribution
+here. But I wondered how important it really is to reason precisely
+about concurrency. Is asynchronous initialization such a common
+pattern that definitely-asynchronously-assigned is a useful thing to
+compute? Again, something a real code base should have shed light on.
+
+                      ===== Comments for author =====
+
+Section 1 should be split into two sections. The second half of it is
+really a section in its own right.
+
+A lot of the space in the paper is spent on X10-specific issues. I
+would suggest reorganizing so that the parts of the work that are
+generic to OO languages come first, and issues specific to X10 are
+delayed. For example, Section 1.3 (parallelism/distribution in X10)
+seemed disruptive.
+
+The discussion in 2.1 about constructors interacting with
+initialization felt largely redundant after just reading through an
+extensive example in 1.1. I think I would try to merge these two
+examples.
+
+Sections 2.1, 2.2, 2.11 seem like the heart of this work. But they are
+spread out over multiple pages and don't do a clear job of setting out
+the rules and the new annotations introduced.  I didn't like the way
+rules were presented inline with figures captions.  The reader needs
+to do too much work to pull this together now.
+
+Around 2.5 I start to wish we were hearing more about interesting
+principles and less about X10 specifics. Are constraints and
+properties important?  Shouldn't we be getting the explanation of the
+basic mechanism and why it works well first?
+
+The properties in 2.13 sound like principles worth articulating much earlier.
+
+Minor editorial stuff:
+
+p.1 "Hardhat was termed in [5]" -- does not make sense
+
+First sentence of 2.2 is confused about its tense.
+
+2.4: ..."because when you create an inner instance -- mixed tense
+
+inconsistent use of hyphens, e.g. "type safe" vs. "type-safe"
+chose the later -> chose the latter
+main-stream -> mainstream
+
+===========================================================================
+                           POPL 2012 Review #40C
+                 Updated Monday 22 Aug 2011 1:24:43pm EDT
+---------------------------------------------------------------------------
+                  Paper #40: Object Initialization in X10
+---------------------------------------------------------------------------
+
+                      Overall merit: 2. Weak reject
+                            Novelty: 2. Incremental
+                         Importance: 2. Okay
+                         Conviction: 3. Solid
+                            Clarity: 3. Well written
+                 Reviewer expertise: 3. Knowledgeable
+
+                         ===== Paper summary =====
+
+The paper presents the approach to safe object initialization in X10.  The goal is to ensure that an object is fully initialized before its fields can be read.  The paper describes several problems that can arise due to interaction of object construction with various X10 language features and presents rules that prevent problematic interactions.  The authors illustrate the approach through a number of small examples.  They also describe a more expressive alternative approach that they considered.  Finally, they formalize their approach as a type-and-effect system in the context of a core calculus for X10 and prove a type soundness theorem.
+
+                      ===== Comments for author =====
+
+The paper is well written, and I like that you describe the approach clearly through a number of concrete examples.  The formalism also appears to be quite elegant.  The resulting system provides strong guarantees for object initialization in X10, in the face of a variety of interesting  language features.
+
+However, I didn't find all that much technically new here.  There has been a lot of prior work addressing this exact problem, as the authors describe.  From what I can tell, the current approach is just a small variation of that described in prior work.  Namely, it's essentially using the original "raw types" idea of Fahndrich and Leino, but it also incorporates an interprocedural analysis among the constructor and the "raw" methods to ensure full initialization.  Prior work has done that in the form of a type system (e.g., the masked types of Qi and Myers, which is more expressive than the current system but requires more annotations), so the use of an analysis to infer this information appears to be new.  However, that analysis is quite standard, and no interesting issues seem to arise in that context.
+
+The paper discusses interaction with a variety of X10 constructs that have not been previously considered.  However, I felt that most of these interactions are pretty minor and dealt with in a way that is unsurprising, namely by further restricting what one can do with an uninitialized object (e.g. a closure cannot capture a raw this, a raw this cannot be the receiver of new, etc.).  This is true even for distinctive aspects of X10 like distribution (a raw this cannot be captured by an at).  
+
+The most interesting aspect technically is the treatment of concurrency, which requires tracking the asyncs that definitely finish (via the "finish" construct) before the end of construction.  The issue with types that don't have a zero element is also interesting, arising from X10's constraint-based type system.  However, I don't find these aspects of the approach to be technically challenging enough or novel enough in the solution to warrant acceptance.
+
+Small comments:
+
+1.1: "it is possible to fix the bugs in this example"  Yes, but your proposed fix changes the behavior of the program, disallowing the original functionality.  It would be interesting to know if you have experience using your system on real X10 code and how restrictive it is in practice.  That could certainly add more value to the paper.
+
+1.2.1:  What does "freezing" a final field mean?
+
+Fig 8:  Why is the write to f2 in the constructor for B an error?
+
+2.12:  "Reading a static field in this phase waits..."  Could you instead do an analysis (similar to other things you already do) to check whether it is possible to read a static field before it is initialized?
+
+3.1:  "Specifying default values seems like a cumbersome design."  Possibly, but it's not clear that this would be more cumbersome than having all the new restrictions you impose, along with new annotations (e.g., @NoThisAccess), etc. Probably the bigger issue is not the cumbersome nature but the fact that this approach (like Java's) would not ensure that a final field is only read after initialization.
+
+3.2:  "we could have read the uninitialized field this.next"  Do you mean c.next?
+
+5:  "simply disables the type system"  This point is not clear.  My understanding of raw types would not be that it disables the type system altogether, but simply allows some constraints to be unfulfilled until the end of the constructor.  That seems similar to your approach as well.  I'd like to see an example illustrating your point.
+
+===========================================================================
+                           POPL 2012 Review #40D
+                 Updated Sunday 11 Sep 2011 8:45:31pm EDT
+---------------------------------------------------------------------------
+                  Paper #40: Object Initialization in X10
+---------------------------------------------------------------------------
+
+                      Overall merit: 3. Weak accept
+                            Novelty: 3. Solid
+                         Importance: 3. Useful
+                         Conviction: 2. Weak
+                            Clarity: 4. Lucid
+                 Reviewer expertise: 3. Knowledgeable
+
+                         ===== Paper summary =====
+
+This paper describes extensions to the X10 object-oriented language to ensure safe initialization of fields.  This is particularly important when fields are final (immutable) and when fields do not have natural default (zero) values.  The paper surveys the issues in the context of Java, presents implemented extensions to X10 to ensure safe initialization, proposes another extension to support safely initialized cyclic data structures, and formalizes initialization support for X10's async/finish construct.
+
+                      ===== Comments for author =====
+
+Before reviewing the other 11 pages of the paper, let me skip straight to section 3.2, which proposes a very simple "proto" annotation on method parameters to allow safely initialized cyclic data structures.  I think this is a great idea.  Earlier work on delayed types and masked types also supported cyclic data structures, but the "proto" proposal is far simpler, and thus has a better chance of being integrated with mainstream languages.  I think the authors undersell their own proposal when they say, "We ultimately decided that immutable heap cycles are too rare in practice to justify including these extra mechanisms in the language."  While immutable heap cycles are rare, mutable heap cycles with non-null pointers are common (e.g. cyclic lists, doubly-linked lists with sentinels).  The paper's proposal would allow cyclic data structures to declare their fields as non-null, while still being able to safely initialize these fields.
+
+It happens that Summers and M?ller have concurrently written an entire paper on this idea, which will appear in OOPSLA in October 2011 ("Freedom Before Commitment - A Lightweight Type System for Object Initialisation").  They use the terms "free" and "committed" for "proto" and fully constructed, and they also have an "unclassified" state that serves as a supertype for free and committed, allowing some field reads from "free" objects.  They also formalize the system, since the argument is subtle.  For example, section 3.2's point that "the only way a type can lose its proto is by becoming fully constructed" requires a precise statement of when an object becomes fully constructed (it has to be after the call the "new" completes; it's not fully constructed at the end of a constructor).
+
+Now, back to the other 11 pages of the paper.  The paper starts off with a gentle and lengthy survey of the issues surrounding field initialization in object-oriented languages.  The paper takes the position that a simple "hardhat" approach [5], rather than more exotic approaches like delayed types and masked types, is appropriate for X10.  Given this initial decision, the remaining decisions seem like straightforward applications of the "hardhat" idea.  Thus, this part of the paper seems more of an experience report than a novel approach.  Ideas like "nothisaccess" (aka "semi-static methods"[5]) and "nonescaping" have appeared in earlier papers.  The rules for async/finish definite assignment are novel, but it's a pretty straightforward data-flow analysis.
+
+The formalization at the end of the paper makes the analysis for async/finish precise.  The key idea is that you can flip all the initialization states to "-" (async initialization) at an async statement and flip all the initialization states to "+" (initialized) at a "finished" statement.  I don't think there are major surprises here.
+
+I have one technical concern about the formalization.  When I see "exists x. phi", I expect to be able to alpha-rename the bound variable x.  However, the rules T-ACCESS and T-NEW appear to use a bound variable "x" in phi and a free variable "x" in statement "S" (assuming I parse "exists x.phi S psi" as "(exists x.phi) S psi", as is required to fit the general form of the judgments "phi S psi").  If the bound variable x can be alpha-renamed, it will no longer match the free variable x.  The text cryptically mentions that "we must take care to project x out of psi since x is not accessible outside its scope S; similarly we must take care to project x out of phi when checking S".  I don't know what this means, and I don't see how it could connect the two unrelated x variables in "(exists x.phi) S psi".  Perhaps a notation "exists x.(phi S psi)" would be more appropriate (or, more conventionally, a use of a separate environment to track variable declarations).  Also, the examples at the end of section 4.3 don't show the "exists" at all.
+
+A related issue is section 4.3's statement "if the exact class of x is C ...".  Where in your rules do you track whether the variable x holds an exact class or a holds a possible subclass?
+
+
+minor comments:
+
+page 1: "Another source of subtle bugs is due to the synchronization barrier at the end of a constructor [8]".  Maybe reword this (the barrier isn't the source of the subtle bugs; the subtlety is that barriers only exist in a few places).
+
+Section 1.2: it's probably worth mentioning the phrases "sequential consistency" and "weak consistency" so that people understand that this particular problem wouldn't arise in a sequentially consistent system.
+
+section 1.2.1: "There is an RFC (for a future version of X10) for adding static method and constructor signatures to interfaces; with that feature, the CustomSerialization interface would not be (partly) magical".  This is a lot of detail to have in the introduction.
+
+Figure 6: explain the notation "Outer.this.new"
+
+Figure 7: I assume you could also assign "i3 = 3;" in the body of the constructor rather than in the declaration of i3, but I can't tell for sure from the figure and the text.
+
+Figure 8: Can types of properties refer to "this"?  (E.g. "a:Int{this.a == self.a}", to pick a silly example.)  I'm guessing no.
+
+Figure 10: Rule 12: "A type must be consistent, i.e., it cannot contradict the environment."  This is vague -- what does "contradict the environment" mean?
+
+Figure 10: Rule 12: "invariants.."
+
+Section 2.12: "However, in practice, deadlock is rare, and usually found quickly the first time a program is executed."  Does "usually found quickly" mean "always found, and usually quickly"?  In other words, does initialization happen deterministically every time the program starts?  If not, can it be made deterministic?
+
+Section 3.1: "The disadvantage of this approach is that the type system becomes more complex and more type annotations are required."  Another disadvantage is that default values are potential bugs, because I might accidentally leave a default value in a field where I intended to put a real value, and the static checking wouldn't catch this mistake.
+
+Figure 14: "void m(n:proto C)".  Should this be "void m(n:proto C{self!=null})"?
+
+Section 4.3: move definition of phi, psi syntax to figure 15
+
+Section 4.3: "(2) if the exact class of x is C, and C has the fields f, then phi ? +p ...".  What the connection here between x and p?
+
+Figure 16: does "," mean "/\"?  (E.g. "Psi_1,Psi_2")
+
+Theorem 4.1: the beginning of the theorem says "phi S psi" and the end says "psi' S phi" -- did the phi and psi get reversed?
+
+Section 5: "An early work to support non-null types in Java [2] has the notion of a type constructor raw .... This simply disables the type system while an object is partially constructed while ensuring the rest of the program is typed normally."  It "disables the type system"?  Maybe it strategically weakens some rules in some places, but surely the type system remains enabled.
