@@ -1,1 +1,57 @@
 implementation design, overheads, some measurements, etc.
+
+outlines our implementation within the X10 compiler using the polyglot framework,
+    the compilation time overhead of checking these initialization rules,
+    and the annotation overhead in our X10 code base.
+
+
+Due to page limitation, we mainly focused on the formal effect system for POPL,
+but we can easily add an empirical evaluation section that describes some test cases (where minor code refactoring was needed) and shows the annotation burden.
+X10 has only two possible method annotations: @NonEscaping, @NoThisAccess.
+Methods transitively called from a constructor are implicitly non-escaping (but the compiler issues a warning that they should be marked as @NonEscaping).
+SPECjbb and M3R are closed-source whereas the rest is open-source and publicly available at x10-lang.org
+
+------------------------------------------------------------------------------
+Programs:           XRX SPECjbb     M3R UTS Other
+# of lines          27153   14603       71682   2765    155345
+# of files          257 63      294 14  2283
+# of constructors       276 267     401 23  1297
+# of methods            2216    2475        2831    124 8273
+# of non-escaping methods   8   38      34  3   83
+# of @NonEscaping       7   7       13  1   62
+# of @NoThisAccess      1   0       1   0   12
+------------------------------------------------------------------------------
+XRX: X10 Runtime (and libraries)
+SPECjbb: SPECjbb from 2005 converted to X10
+M3R: Map-reduce in X10
+UTS: Global load balancing
+Other: Programmer guide examples, test suite, issues, samples
+------------------------------------------------------------------------------
+
+As can be seen, the annotations burden is minor.
+
+Asynchronous initialization was not used in our applications because they pre-date this feature.
+(It is used in our examples and tests 50 times.)
+However, it is a useful pattern, especially for local variables.
+More importantly, the analysis prevents bugs such as:
+val res:Int;
+finish {
+  async {
+    res = doCalculation();
+  }
+  // WRONG to use res here
+}
+// OK to use res here
+
+Here are two examples for the use of annotations:
+1) In Any.x10 we have:
+@NoThisAccess def typeName():String
+Method typeName is overridden in subclasses to return a constant string (all structs automatically override this method).
+This annotation allows typeName() to be called even during construction.
+2) In HashMap.x10, after we added the strict initializations rules, we had to refactor put and rehash methods into:
+public def put(k: K, v: V) = putInternal(k,v);
+@NonEscaping protected final def putInternal(k: K, v: V) {...}
+(Similarly, we have rehash() and rehashInternal())
+The reason is that putInternal is called from the deserialization constructor:
+def this(x:SerialData) { ... putInternal(...) ... }
+And we still want subclasses to be able to override the "put" method.

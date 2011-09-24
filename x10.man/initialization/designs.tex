@@ -7,7 +7,7 @@ Java first initializes fields with either $0$, \texttt{false}, or \texttt{null}
 the fields according to the programmer's wishes.  If every X10 type had a
 default value that was statically known, then Java's object initialization
 scheme could be used in X10.  This would have the advantage of familiarity for
-Java programmers that are learning X10.  The disadvantages are that that
+Java programmers that are learning X10.  The disadvantages are that
 observing final fields changing value is nonintuitive, and that reading the
 field before initialization is prone to undetectable errors.
 
@@ -39,7 +39,7 @@ Specifying default values seems like a cumbersome design.
 
 \subsection{Proto Design}
 
-If we want to allow some of the programs that the Hardhat design rejects, such
+If we want to allow some of the programs that the hardhat design rejects, such
 as immutable cycles in the object graph, but we do not want to burden the type
 system with default value annotations, then one solution is to allow
 \texttt{this} to escape in certain cases while still preventing reads from
@@ -120,7 +120,7 @@ If a type has the \texttt{proto} keyword, then its fields (both var and val)
 may have partially constructed objects assigned to them, but fields may not be
 read.  Conversely, the absence of \texttt{proto} means that the fields may be
 read but var fields may not have partially constructed objects assigned to them.
-This means that \texttt{proto C} and \texttt{C} are not related by sub-typing.
+This means that \texttt{proto C} and \texttt{C} are not related by subtyping.
 In other words, \texttt{proto C} means definitely partially constructed and
 \texttt{C} means definitely fully constructed.  Consequently it makes no sense
 to allow casting between the two types, and one may not extend or implement a

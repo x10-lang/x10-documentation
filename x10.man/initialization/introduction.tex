@@ -5,7 +5,7 @@ Constructing an object in a safe way is not easy:
     and various type systems and verifiers have been proposed to
     handle safe object initialization~\cite{Hubert:2010:ESO:1888881.1888890,Zibin:2010:OIG:1869459.1869509,Fahndrich:2007:EOI:1297027.1297052,XinQi:2009}.
 As languages become more and more complex,
-    new pitfalls are created due to the interactions between
+    new pitfalls are created due to the interactions among
     language features.
 
 X10 is an object oriented programming language with a sophisticated
@@ -85,9 +85,9 @@ We believe a design for object initialization should have these
   \item[Immutable objects are thread-safe]
     Immutable classes are a common pattern where fields are final/const
         and instances have no mutable state, e.g., \code{String} in Java.
-    Immutable objects are often shared between threads without any explicit synchronization,
-        because programmers assume that if another thread gets a handle to an object
-        that that thread should see all assignments done during initialization.
+    Immutable objects are often shared among threads without any explicit synchronization,
+        because programmers assume that if another thread gets a handle to an object, then
+        that thread should see all assignments done during initialization.
     However, weak memory models today do not necessarily have this guarantee
         and immutable objects could be thread-\emph{unsafe}!
     \Ref{Figure}{TwoPitfalls} below will show that this can happen in Java
@@ -265,6 +265,13 @@ The essence of the hardhat design are these two rules:
         except \code{@NoThisAccess} methods that may be overridden but they cannot access \this.
 These two rules prevent the two pitfalls of leaking \this and dynamic dispatching during construction.
 
+Initialization in X10 has the following main attributes (\Ref{Section}{Virtues} revisits these attributes after the rules are given):
+(i)~\this is the only accessible raw/uninitialized object in scope,
+(ii)~only \code{@NoThisAccess} methods can be dynamically dispatched during construction,
+(iii)~one can read a field only after it was assigned, and all fields are assigned by the time the constructor finishes,
+(iv)~reading a final field always results in the same value.
+
+
 \Ref{Figure}{TwoPitfallsFix} shows how to convert the code of \Ref{Figure}{TwoPitfalls} to the hardhat design
     and thus avoid these two pitfalls (but the original program behavior is changed).
 We made the following changes:
@@ -440,8 +447,11 @@ If one would have wanted to write a custom serializer for \code{String},
 
 On the other hand, X10 de-serializes an object by calling a \emph{constructor} with a \code{SerialData}
     argument (as opposed to \code{readObject} in Java which is a \emph{method}).
-Therefore, de-serialization in X10 can assign to final fields, without using reflection
-    and without special cases in the memory model (i.e., a freeze only happens at the end of a constructor).
+Constructors, as opposed to methods, are special in the type system and can assign to final fields
+    (without using reflection
+    and without special cases in the memory model).
+This simplifies the memory model because a \emph{freeze} only happens at the end of a constructor.
+(When a final field is \emph{frozen} then its value cannot change and it is the same in all threads. See \cite{JSR133}.)
 
 Currently, the \code{CustomSerialization} interfaces only specify the serializer method:
 
@@ -555,7 +565,7 @@ class Fib {
     Concurrent code is expressed using \code{async} and \code{finish}:
         \code{async} starts an asynchronous activity,
         and \code{finish} waits for all spawned activities to finish.
-    Distributed code uses \code{at} to shift between
+    Distributed code uses \code{at} to shift among
         \emph{places};
         \code{here} denotes the current place.
     \code{at(p) E} evaluates expression \code{E}
@@ -612,15 +622,16 @@ Leaking \this to another place before it is fully initialized
 
 
 The rest of this paper is organized as follows.
-\Ref{Section}{rules} presents the hardhat initialization rules of X10 version 2.1
+\Ref{Section}{rules} presents the hardhat initialization rules of X10 version 2.2
     using examples,
     by slowly adding language features and describing their interaction with
     object initialization.
 \Ref{Section}{designs} describes alternative designs for object initialization
-    (one was implemented in X10 version 2.0 and another was under consideration for 2.1),
+    (one was implemented in X10 version 2.0 and another was under consideration for 2.2),
     weighing the pros and cons of each.
-%\Ref{Section}{implementation} outlines our implementation within the X10 compiler using the polyglot framework.
-%    and the compilation time overhead of checking these initialization rules.
+\Ref{Section}{implementation} outlines our implementation within the X10 compiler using the polyglot framework,
+    the compilation time overhead of checking these initialization rules,
+    and the annotation overhead in our X10 code base.
 %\Ref{Section}{case-study} investigates the consequences of having a hardhat design
 %    in a case study that converted a large collection of Java classes to X10.
 \Ref{Section}{formalism} presents Featherweight X10 (FX10), which is a formalization of core X10

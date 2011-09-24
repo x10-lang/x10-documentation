@@ -215,7 +215,7 @@ Exceptions combined with inheritance interact with initialization in the followi
     must end normally as well.
 Phrased differently, in a constructor it should not be possible to
     recover from an exception thrown by a this or super constructor call.
-This is one of the reason why a constructor call must be the first statement in Java;
+This is one of the reasons why a constructor call must be the first statement in Java;
     failure to verify this led to a famous security attack~\cite{Dean:1996}.
 
 \begin{figure}
@@ -304,7 +304,7 @@ In our rules, we assume that there is a single \this reference,
 
 
 We now turn our attention to X10's sophisticated type-system
-    features not found in main-stream languages:
+    features not found in mainstream languages:
     constraints, properties, class invariants, closures, (non-erased) generics, and structs.
 
 \subsection{Constraints and default/zero values}
@@ -867,12 +867,12 @@ Unlike Java, X10 does not support dynamic class loading,
 Thus, initialization of static fields is a one-time phase %, denoted the static-init phase,
     that is done before the \code{main} method is executed.
 Reading a static field in this phase \emph{waits} until the field is initialized,
-    which may lead to dead-lock.
+    which may lead to deadlock.
 However, in practice, deadlock is rare,
     and usually found quickly the first time a program is executed.
 %The exact details can be found in the language specification.
 
-\subsection{Virtues and attributes of initialization in X10}
+\Subsection[Virtues]{Virtues and attributes of initialization in X10}
 We assume there is a single \this variable, because all nested classes can be converted to static,
     as described in \Ref{Section}{Inner}.
 Therefore, initialization in X10 has the following attributes:
