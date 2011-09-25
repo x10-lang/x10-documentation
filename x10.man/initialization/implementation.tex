@@ -13,13 +13,13 @@ SPECjbb and M3R are closed-source whereas the rest is open-source and publicly a
 
 ------------------------------------------------------------------------------
 Programs:           XRX SPECjbb     M3R UTS Other
-# of lines          27153   14603       71682   2765    155345
-# of files          257 63      294 14  2283
-# of constructors       276 267     401 23  1297
-# of methods            2216    2475        2831    124 8273
-# of non-escaping methods   8   38      34  3   83
-# of @NonEscaping       7   7       13  1   62
-# of @NoThisAccess      1   0       1   0   12
+\# of lines          27153   14603       71682   2765    155345
+\# of files          257 63      294 14  2283
+\# of constructors       276 267     401 23  1297
+\# of methods            2216    2475        2831    124 8273
+\# of non-escaping methods   8   38      34  3   83
+\# of @NonEscaping       7   7       13  1   62
+\# of @NoThisAccess      1   0       1   0   12
 ------------------------------------------------------------------------------
 XRX: X10 Runtime (and libraries)
 SPECjbb: SPECjbb from 2005 converted to X10
@@ -55,3 +55,16 @@ public def put(k: K, v: V) = putInternal(k,v);
 The reason is that putInternal is called from the deserialization constructor:
 def this(x:SerialData) { ... putInternal(...) ... }
 And we still want subclasses to be able to override the "put" method.
+
+
+
+Compilation time:   XRX SPECjbb     M3R UTS Other
+total           65241   78952       254020  72205   548547
+Fields          156 1649        3330    1272    2862
+Locals          32  51      117 33  126
+
+
+Implementation lines of code:
+CheckEscapingThis: 951
+InitChecker: 805
+Polyglot dataflow framework: DataFlow 1309

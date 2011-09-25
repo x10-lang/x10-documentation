@@ -13,11 +13,8 @@ been explored \cite{Hubert:2010:ESO:1888881.1888890}.
 An early work to support non-null types in Java
 \cite{Fahndrich:2003:DCN:949305.949332} has the notion of a type constructor
 $raw$ that can be applied to object types and means that the fields of the
-object (in X10 terminology) may violate the constraints in their types.  This
-simply disables the type-system while an object is partially constructed while
-ensuring the rest of the program is typed normally.  Our approach prevents
-errors during constructors as it does not disable the type-system, and it also
-permits optimization of the representation of fields whose types are very
+object (in X10 terminology) may violate the constraints in their types.
+Our approach permits optimization of the representation of fields whose types are very
 constrained, since they will never have to hold a value other than the values
 allowed by their type constraint.
 
@@ -33,7 +30,7 @@ the specific time when its constructor terminates.
 
 Masked types~\cite{XinQi:2009} present types that
     describe the exact fields that have not yet been initialized.
-Summers and M{\"u}ller~\cite{Summers:Mulller:2007} describe a simpler type system that is almost identical to our \code{proto} design,
+Summers and M{\"u}ller~\cite{Summers:Mulller:2011} describe a simpler type system that is almost identical to our \code{proto} design,
     however they only treat non-null types and they allow reading a field before it was assigned.
 Our type system is simpler but less expressive because it cannot handle immutable cyclic structures.
 %as we only distinguish between the empty set of fields, and some non-empty set of fields.

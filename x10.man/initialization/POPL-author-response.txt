@@ -151,7 +151,7 @@ Total: 155345	2283
 C:\cygwin\home\Yoav\test\Hello.x10
 
 C:\cygwin\home\Yoav\intellij\sourceforge\x10.runtime\src-x10
-C:\cygwin\home\Yoav\intellij\apps\x10.mr
+
 
 C:\cygwin\home\Yoav\intellij\benchmarks\UTS\Counter.x10:            [3, 39, 1, 1, 0]
 C:\cygwin\home\Yoav\intellij\benchmarks\UTS\FixedSizeStack.x10:     [1, 3, 0, 0, 0]
@@ -166,8 +166,21 @@ C:\cygwin\home\Yoav\intellij\benchmarks\UTS\TreeExpander.x10:       [0, 3, 0, 0,
 C:\cygwin\home\Yoav\intellij\benchmarks\UTS\UTS.x10:                [8, 9, 0, 0, 0]
 C:\cygwin\home\Yoav\intellij\benchmarks\UTS\UTSBin.x10:             [0, 1, 0, 0, 0]
 
-
-
+Compilation time:	XRX	SPECjbb		M3R	UTS	Other
+total			65241	78952		254020	72205	548547
+Fields			156	1649		3330	1272	2862
+Locals			32	51		117	33	126
+	
+XRX
+all files=65241 CheckEscapingThis=1564 InitChecker=32
+SPECjbb2005
+all files=78952 CheckEscapingThis=1649 InitChecker=51
+m3r
+all files=254020 CheckEscapingThis=3330 InitChecker=117
+UTS
+all files=72205 CheckEscapingThis=1272 InitChecker=33
+other
+all files=548547 CheckEscapingThis=2862 InitChecker=126
 
 OveMer	Nov	Imp	Con	Cla	RevExp
 Review #40A		4	3	3	3	4	3	
@@ -453,8 +466,6 @@ basic mechanism and why it works well first?
 The properties in 2.13 sound like principles worth articulating much earlier.
 
 Minor editorial stuff:
-
-p.1 "Hardhat was termed in [5]" -- does not make sense
 
 First sentence of 2.2 is confused about its tense.
 

@@ -32,7 +32,9 @@ class Person { val birthday:Date{self!=null}; ...}
 Then in this design the programmer would have to specify a default value for this field,
     e.g., \code{Date.MIN\_DATE}.
 The field would be initialized with this default value, and its final value would be assigned only later.
-Specifying default values seems like a cumbersome design.
+Specifying default values seems like a cumbersome design,
+    and it would not have the important property that a final field
+        has a single value and it can only be read after it was assigned.
 %However, in most cases this default value is not even used because
 %    a final field should be read only after it was written.
 %Therefore, forcing a programmer to assign default values seemed like a problematic design.

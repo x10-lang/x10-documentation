@@ -154,9 +154,9 @@ class B {
 todo: discuss final in Java and String class.
 (people think that removing final may only hurt performance, but it may be semantic changing.)
 
-type safety and the weak memory model:
+type-safety and the weak memory model:
 * in Java if you don't use final fields correctly or leak this, you will simply see default values (you don't lose type-safety)
-* in X10 it could break type safety (if we don't put a barrier at the end of a ctor).
+* in X10 it could break type-safety (if we don't put a barrier at the end of a ctor).
 
 class Box[T] {T haszero} {
   var value:T;

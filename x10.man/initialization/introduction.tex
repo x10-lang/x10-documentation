@@ -16,13 +16,13 @@ This paper shows that object initialization is a cross-cutting concern
 We discuss several language designs that restrict these interactions,
     and explain why we chose the \emph{hardhat} design for X10.
 
-{Hardhat} was termed in~\cite{Gil:2009:WRS:1615184.1615216}
-    and it describes a design that prohibits dynamic dispatch
+{Hardhat}~\cite{Gil:2009:WRS:1615184.1615216}
+    is a design that prohibits dynamic dispatch
     or leaking \this (e.g., storing \this in the heap) during construction.
-A hardhat design limits the user
+Such a design limits the user
     but also protects her from future bugs
     (see \Ref{Figure}{TwoPitfalls} below for two such bugs).
-X10's hardhat design is even stricter due to additional language features
+X10's hardhat design is more complex due to additional language features
     such as concurrency, places, and closures.
 
 On the other end of the spectrum,
@@ -36,7 +36,7 @@ As a consequence,
     a half-baked object can leak before all its fields are set. %\cite{Seo:2007:SBD:1522565.1522587} - reading uninitialized field references
 Phrased differently,
     when reading a final field, one can read the default value initially and later read a different value.
-Another source of subtle bugs is due to the synchronization barrier
+Another source of subtle bugs is related to the synchronization barrier
     at the end of a constructor~\cite{JSR133}
     after which all assignments to final fields are guaranteed to be written.
 The programmer is warned (in the documentation only!)
@@ -108,7 +108,7 @@ We believe a design for object initialization should have these
     The user should be able to express the common idioms
         found in other languages with minor variations.
 
-  \item[Type safe]
+  \item[Type-safe]
     The language should continue to be statically type-safe even
         if it has rich types that do not have a default or zero value,
         such as non-null types (\code{T\lb{}self!=null\rb} in X10's syntax).
@@ -348,6 +348,8 @@ However, this is not the case due to interaction between initialization and conc
 
 The synchronization barrier was added to the memory model of Java 5
     to ensure that the common pattern of immutable objects is thread-safe.
+The memory model does not guarantee \emph{sequential consistency}, but only \emph{weak consistency}.
+(The barrier would not be needed with sequential consistency.)
 Without this barrier another thread might see the default value of a field
     instead of its final value.
 For example, it is well-known that \code{String} is immutable in Java,
@@ -597,7 +599,7 @@ When both calculations globally terminate, the \code{finish} unblocks,
 
 We note that using \emph{final local variables} for \code{fib2} and \code{fib1} instead of fields
     would have made this example
-    more elegant, however we chose the later because this paper focuses on \emph{object} initialization.
+    more elegant, however we chose the latter because this paper focuses on \emph{object} initialization.
 X10 has similar initialization rules for final locals and final fields,
     but it is outside the scope of this paper to present all forms of initialization in X10
     (including local variables and static fields).

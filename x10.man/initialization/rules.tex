@@ -122,7 +122,7 @@ Finally, we note that all errors in this example are due to rule~\userule{Rule3}
 
 \vspace{-0.2cm}
 \subsection{Dynamic dispatch}
-Dynamic dispatch interacts with initialization by transferring control to the subclass
+Dynamic dispatch may transfer control to the subclass
     before the superclass completed its initialization.
 \Ref{Figure}{Dynamic-dispatch} demonstrates why dynamic dispatch is error-prone during construction:
     calling \code{m1} in \code{A} would dynamically dispatch
@@ -287,7 +287,7 @@ class Outer {
 In fact, it is possible to view this rule as a special case to the rule that
     prohibits leaking a raw \this
     (because when you create an inner instance on a raw \this receiver,
-    you created an alias,
+    you create an alias of \this,
     and now you have two raw objects: \code{Inner.this} and \code{Outer.this}).
 We wish to keep the invariant that only one \this can be raw.
 
@@ -385,7 +385,7 @@ class B(b:Int) {b==a} extends A {
     val i1 = super.a;
     val i2 = this.b; //err
     val i3 = this.f1; //err
-    f2 = 2; //err
+    f2 = 2; //err (must be after property assignment)
     property(x);
     f3 = new A(this.a);
   }
@@ -518,7 +518,7 @@ class Usage {
 \end{lstlisting}\vspace{-0.2cm}
 \definerule{Rule21}
     \caption{\code{haszero} type predicate example.
-    \myrule{\arabic{Rule21}}{A type must be consistent, i.e., it cannot contradict the environment; the environment includes final variables in scope, method guards, and class invariants.}
+    \myrule{\arabic{Rule21}}{A type must be consistent, i.e., it cannot contradict method guards or class invariants}
     }
 \label{Figure:Generics}
 \end{figure}
@@ -868,8 +868,9 @@ Thus, initialization of static fields is a one-time phase %, denoted the static-
     that is done before the \code{main} method is executed.
 Reading a static field in this phase \emph{waits} until the field is initialized,
     which may lead to deadlock.
+%(A static analysis to prevent deadlocks would require whole program analysis.)
 However, in practice, deadlock is rare,
-    and usually found quickly the first time a program is executed.
+    and usually found quickly the first time a program is executed.\
 %The exact details can be found in the language specification.
 
 \Subsection[Virtues]{Virtues and attributes of initialization in X10}
