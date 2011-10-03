@@ -1,70 +1,134 @@
-implementation design, overheads, some measurements, etc.
+This section discusses our implementation inside the X10 compiler of the hardhat initialization rules.
+Our X10 code-base of more than 200K lines of code (loc) uses only 104 annotations.
+We give some measurements such as compilation time and annotation overhead,
+	and conclude with two examples for \code{@NonEscaping} and \code{@NoThisAccess}.
+	
+The X10 compiler is based on the Polyglot extensible compiler framework,
+	which includes a dataflow framework that has 1309 loc. % DataFlow
+X10 initialization rules extend this dataflow framework
+	using two classes:
+	one for checking definite-initialization for \emph{local variables} (805 loc), %InitChecker
+	and another for \emph{fields} (951 loc). % CheckEscapingThis
+(The rules of local variables are simpler than those for fields
+	because local variables do not span multiple methods 
+	and they must be assigned before use.
+	The focus point of this paper has been object initialization,
+		therefore these rules 
+		were not described in this paper.)
+The dataflow algorithm tracks for each field (or local)
+	the flow of this information:
+	(i)~whether the field was read (to find the set of fields each non-escaping method {reads}),
+	(ii)~the minimal and maximal number of times it was sequential and asynchronously written %	minSeq, maxSeq, minAsync, maxAsync
+	(to make sure a variable is assigned before read, and that final variables are assigned exactly once).
+The number of times a variable is assigned is sufficient to range between 0, 1, 
+	and \emph{more-than-one}, 
+	because the error message is the same whether a final variable
+	was assigned twice or more.
+When flowing out of an \code{async}, sequential writes become asynchronous writes,
+	and the opposite happens for a \code{finish}.
 
-outlines our implementation within the X10 compiler using the polyglot framework,
-    the compilation time overhead of checking these initialization rules,
-    and the annotation overhead in our X10 code base.
+Our code-base consists of 5 major components:
+	(i)~XRX: X10 runtime and libraries,
+	(ii)~SPECjbb: SPECjbb from 2005 converted to X10,
+	(iii)~M3R: map-reduce in X10,
+	(iv)~UTS: global load balancing library,
+	(v)~MISC: those include examples from our programmer guide, our test suite, jira issues, and samples.
+SPECjbb and M3R are still under development and not publicly available,
+	whereas the rest are open-source and available at \code{x10-lang.org}
+	(see revision 23028 of \code{https://x10.svn.sf.net/svnroot/x10/trunk}).
 
 
-Due to page limitation, we mainly focused on the formal effect system for POPL,
-but we can easily add an empirical evaluation section that describes some test cases (where minor code refactoring was needed) and shows the annotation burden.
-X10 has only two possible method annotations: @NonEscaping, @NoThisAccess.
-Methods transitively called from a constructor are implicitly non-escaping (but the compiler issues a warning that they should be marked as @NonEscaping).
-SPECjbb and M3R are closed-source whereas the rest is open-source and publicly available at x10-lang.org
+\Ref{Table}{CompilationTime} shows the compilation times broken down according to the time spent 
+	for checking fields and locals.
+We can see that the initialization rules take only a small fraction (0-2\%) 
+	from the total compilation time, and a maximum of 3.3 seconds for the entire M3R project.
 
-------------------------------------------------------------------------------
-Programs:           XRX SPECjbb     M3R UTS Other
-\# of lines          27153   14603       71682   2765    155345
-\# of files          257 63      294 14  2283
-\# of constructors       276 267     401 23  1297
-\# of methods            2216    2475        2831    124 8273
-\# of non-escaping methods   8   38      34  3   83
-\# of @NonEscaping       7   7       13  1   62
-\# of @NoThisAccess      1   0       1   0   12
-------------------------------------------------------------------------------
-XRX: X10 Runtime (and libraries)
-SPECjbb: SPECjbb from 2005 converted to X10
-M3R: Map-reduce in X10
-UTS: Global load balancing
-Other: Programmer guide examples, test suite, issues, samples
-------------------------------------------------------------------------------
+\begin{table}[htpb!]
+\begin{center}
+\begin{tabular}{|l|r|r|r|r|r|}
+\hline
+&  XRX & SPECjbb  &   M3R & UTS & MISC \\
+\hline
+total   &        65,241 &  78,952  &     254,020 & 72,205  & 548,547 \\
+fields  &        156 & 1,649   &     3,330  &  1,272  &  2,862 \\
+locals  &        32 & 51    &  117 & 33 & 126 \\
+\hline
+\end{tabular}
+\end{center}
+\caption{Compilation times in milliseconds of our code-base broken down into the time spent by the initialization rules for fields and locals.
+	We used a standard lenovo T500 laptop with 4GB of RAM and Intel Core 2 Duo processor.} %Intel Core 2 Duo T9600 (2.80GHz, 1066MHz FSB, 6MB Cache)
+\label{Table:CompilationTime}
+\end{table}
 
-As can be seen, the annotations burden is minor.
 
-Asynchronous initialization was not used in our applications because they pre-date this feature.
-(It is used in our examples and tests 50 times.)
-However, it is a useful pattern, especially for local variables.
-More importantly, the analysis prevents bugs such as:
-val res:Int;
+\Ref{Table}{AnnotationBurden} shows the annotation burden in our code-base.
+X10 has only two possible method annotations: \code{@NonEscaping} and \code{@NoThisAccess}.
+Recall that 
+	all methods transitively called from a constructor are implicitly non-escaping,
+	i.e., the user does not have to explicitly annotate them as \code{@NonEscaping},
+	however 
+	the compiler issues a warning recommending that they should be marked as such to show intent.
+Obviously, the number of non-escaping methods is always greater or equal to the number of \code{@NonEscaping} annotations.
+As can be seen, the annotations burden is minor: only 104 annotations in total.
+	
+
+\begin{table*}[htpb!]
+\begin{center}
+\begin{tabular}{|l|r|r|r|r|r|}
+\hline
+&  XRX & SPECjbb  &   M3R & UTS & MISC \\
+\hline
+\# of lines         		& 27,153 	&  14,603  &71,682 	&  2,765 &   155,345 \\
+\# of files         		& 257 		& 63      &294 		&14  	&2,283 \\
+\# of constructors   		&    276 	& 267     &401 		&23  	&1,297 \\
+\# of methods        		&    2,216   & 2,475    &2,831    	&124 	&8,273 \\
+\# of non-escaping methods 	&  8  		& 38      &34  		&3   	&83 \\
+\# of \code{@NonEscaping}	&   7 		&  7      & 13  	&1   	&62 \\
+\# of \code{@NoThisAccess} &  1 		&  0      & 1   	&0   	&12 \\
+\hline
+\end{tabular}
+\end{center}
+\caption{The annotation burden in our code-base.}
+\label{Table:AnnotationBurden}
+\end{table*}
+
+Our applications only use \code{@NoThisAccess} twice:
+	once in M3R to allow a subclass to determine the value of a final field of the superclass during initialization,
+	and the second time in XRX in method \code{typeName()} of interface \code{Any}
+	(this method may be overridden  and it is often called during construction for debugging purposes).
+
+The following example shows a common pattern for using \code{@NonEscaping} 
+	and a common refactoring that was done when converting Java code to X10.
+%Should we mention converting the harmony classes to X10?
+Class \code{HashMap} in Java calls \code{put} in two constructors:
+	the deserialization constructor and the copy constructor (that gets a map argument and creates a copy of that map).
+However, \code{put} is not a final method and it might be useful to override it in subclasses,
+	and therefore it cannot be called during construction.
+Thus, we refactored this code in X10 and called instead a non-escaping method called \code{putInternal}
+	and method \code{put} delegates to that method:
+\begin{lstlisting}
+public def put(k: K, v: V) { putInternal(k,v); }
+@NonEscaping protected final def putInternal(k:K, v:V) {
+  ... }
+\end{lstlisting}
+A similar refactoring was also done in \code{HashMap} for method \code{rehash}.
+%def this(x:SerialData) { ... putInternal(...) ... }
+
+\emph{Asynchronous initialization} was not used in our big applications because they pre-date this feature.
+(It is used in our smaller examples and tests more than 50 times.)
+The pattern is especially useful for local variables,
+	and more importantly, the analysis prevents bugs such as:
+\begin{lstlisting}
+val x:Int;
+val y:Int;
 finish {
   async {
-    res = doCalculation();
+    x = doCalculation1();
   }
-  // WRONG to use res here
+  y = doCalculation2();
+  // WRONG to use variable x here
 }
-// OK to use res here
-
-Here are two examples for the use of annotations:
-1) In Any.x10 we have:
-@NoThisAccess def typeName():String
-Method typeName is overridden in subclasses to return a constant string (all structs automatically override this method).
-This annotation allows typeName() to be called even during construction.
-2) In HashMap.x10, after we added the strict initializations rules, we had to refactor put and rehash methods into:
-public def put(k: K, v: V) = putInternal(k,v);
-@NonEscaping protected final def putInternal(k: K, v: V) {...}
-(Similarly, we have rehash() and rehashInternal())
-The reason is that putInternal is called from the deserialization constructor:
-def this(x:SerialData) { ... putInternal(...) ... }
-And we still want subclasses to be able to override the "put" method.
+// OK to use variable x here
+\end{lstlisting}
 
 
-
-Compilation time:   XRX SPECjbb     M3R UTS Other
-total           65241   78952       254020  72205   548547
-Fields          156 1649        3330    1272    2862
-Locals          32  51      117 33  126
-
-
-Implementation lines of code:
-CheckEscapingThis: 951
-InitChecker: 805
-Polyglot dataflow framework: DataFlow 1309
