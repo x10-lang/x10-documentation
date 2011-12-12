@@ -19,12 +19,12 @@ would be a legitimate run of the program, but
 
 The program creates a clock \xcd`cl` to manage the phases.  Each participating
 activity does
-the work of its first phase, and then executes \xcd`Clock.resumeAll();` to
+the work of its first phase, and then executes \xcd`Clock.advanceAll();` to
 signal that it 
-is finished with that work. \xcd`Clock.resumeAll();` is blocking, and causes the participant to
+is finished with that work. \xcd`Clock.advanceAll();` is blocking, and causes the participant to
 wait until all participant have finished with the phase -- as measured by the
 clock \xcd`cl` to which they are both registered.  
-Then they do the second phase, and another \xcd`Clock.resumeAll();` to make sure that
+Then they do the second phase, and another \xcd`Clock.advanceAll();` to make sure that
 neither proceeds to the third phase until both are ready.  This example uses
 \xcd`finish` to wait for both particiants to finish.  
 
@@ -43,17 +43,17 @@ class ClockEx {
       val cl = Clock.make();
       async clocked(cl) {// Activity A
         say("A-1");
-        Clock.resumeAll();
+        Clock.advanceAll();
         say("A-2");
-        Clock.resumeAll();
+        Clock.advanceAll();
         say("A-3"); 
       }// Activity A
 
       async clocked(cl) {// Activity B
         say("B-1");
-        Clock.resumeAll();
+        Clock.advanceAll();
         say("B-2");
-        Clock.resumeAll();
+        Clock.advanceAll();
         say("B-3"); 
       }// Activity B
     }
@@ -95,7 +95,7 @@ that it is registered upon are:
       of the next phase, \viz, until all other activities registered on that
       clock have called \xcd`c.resume()`.
 \item It may {\em block} on all the clocks it is registered with
-      simultaneously, by the command \xcd`Clock.resumeAll();`.  This, in effect, calls
+      simultaneously, by the command \xcd`Clock.advanceAll();`.  This, in effect, calls
       \xcd`c.advance()` simultaneously 
       on all clocks \xcd`c` that the current activity is registered with.
 \item Other miscellaneous operations are available as well; see the
@@ -107,7 +107,7 @@ that it is registered upon are:
 \index{clock!operations on}
 There are two language constructs for working with clocks. 
 \xcd`async clocked(cl) S` starts a new activity registered on one or more
-clocks.  \xcd`Clock.resumeAll();` blocks the current activity until all the activities
+clocks.  \xcd`Clock.advanceAll();` blocks the current activity until all the activities
 sharing clocks with it are ready to proceed to the next clock phase. 
 Clocks are objects, and have a number of useful methods on them as well.
 
@@ -245,11 +245,16 @@ and has not yet dropped (\Sref{sec:clock:drop}). A
 condition is violated. Nothing happens if the activity has already invoked a
 \xcd"resume" on this clock in the current phase.
 
-\subsection{Advancing clocks}\index{clock!resumeAll}\label{sec:clock:next}
+An activity may invoke \xcd`Clock.resumeAll()` to resume all the clocks that
+it is registered with and has not yet dropped.  This \xcd`resume()`s all
+these clocks in parallel, or, equivalently, sequentially in some arbitrary
+order.  
+
+\subsection{Advancing clocks}\index{clock!advanceAll}\label{sec:clock:next}
 An activity may execute the following method call to signal that it is done
 with the current phase.
 \begin{xten}
-Clock.resumeAll();
+Clock.advanceAll();
 \end{xten}
 
 \noindent 
@@ -258,16 +263,16 @@ activity is registered with (if any) have advanced. (The activity
 implicitly issues a \xcd"resume" on all clocks it is registered
 with before suspending.)
 
-\xcd`Clock.resumeAll();` may be thought of as calling \xcd`c.advance()` in parallel for all
+\xcd`Clock.advanceAll();` may be thought of as calling \xcd`c.advance()` in parallel for all
 clocks that the current activity is registered with.  (The parallelism is
 conceptually important: if activities {$a$} and {$b$} are both
 registered on clocks \xcd`c` and \xcd`d`, and {$a$} executes
 \xcd`c.advance(); d.advance()` while {$b$} executes \xcd`d.advance(); c.advance()`,
 then the two will deadlock.  However, if the two clocks are waited on in
-parallel, as \xcd`Clock.resumeAll();` does, {$a$} and {$b$} will not deadlock.)
+parallel, as \xcd`Clock.advanceAll();` does, {$a$} and {$b$} will not deadlock.)
 
-Equivalently, \xcd`Clock.resumeAll();` sequentially calls \xcd`c.resume()` for each
-registered clock \xcd`c`, in arbitrary order, and then \xcd`c.wait()` for each
+Equivalently, \xcd`Clock.advanceAll();` sequentially calls \xcd`c.resume()` for each
+registered clock \xcd`c`, in arbitrary order, and then \xcd`c.advance()` for each
 clock, again in arbitrary order.  
 
 
@@ -295,7 +300,7 @@ is:
 \begin{itemize}
 \item The \xcd`advance()` {instance method} shall not be called on any clock.
       (The 
-      \xcd`Clock.resumeAll();` method is allowed for this discipline.)
+      \xcd`Clock.advanceAll();` method is allowed for this discipline.)
 \item Inside of \xcd`finish{S}`, all clocked \xcd`async`s shall be in the scope
       an unclocked \xcd`async`.  
 \end{itemize}
@@ -316,9 +321,9 @@ The second clause prevents the following deadlock.
 val c:Clock = Clock.make();
 async clocked(c) {                // (A) 
       finish async clocked(c) {   // (B) Violates clause 2
-            Clock.resumeAll();   // (Bnext)
+            Clock.advanceAll();   // (Bnext)
       }
-      Clock.resumeAll();         // (Anext)
+      Clock.advanceAll();         // (Anext)
 }
 \end{xten}
 %~~siv
@@ -339,13 +344,13 @@ equivalences hold:
 
 {\small
 \begin{eqnarray}
- \mbox{\xcd"c.resume(); Clock.resumeAll();"}       &=& \mbox{\xcd"Clock.resumeAll();"}\\
+ \mbox{\xcd"c.resume(); Clock.advanceAll();"}       &=& \mbox{\xcd"Clock.advanceAll();"}\\
  \mbox{\xcd"c.resume(); d.resume();"} &=& \mbox{\xcd"d.resume(); c.resume();"}\\
  \mbox{\xcd"c.resume(); c.resume();"} &=& \mbox{\xcd"c.resume();"}
 \end{eqnarray}
 }
 
-Note that \xcd"Clock.resumeAll(); Clock.resumeAll();" is not the same as \xcd"Clock.resumeAll();". The
+Note that \xcd"Clock.advanceAll(); Clock.advanceAll();" is not the same as \xcd"Clock.advanceAll();". The
 first will wait for clocks to advance twice, and the second
 once.  
 
@@ -374,7 +379,7 @@ the surrounding \xcd`clocked finish`.
 
 The bodies of the \xcd`clocked finish` and \xcd`clocked async`
 statements  may use the
-\xcd`Clock.resumeAll()` 
+\xcd`Clock.advanceAll()` 
 method call to advance the implicit clock.  Since the implicit clock is not
 available in a variable, it cannot be manipulated directly. (If you want to
 manipulate the clock directly, use an explicit clock, not a \xcd`clocked finish`.)
@@ -393,12 +398,12 @@ phase.
 clocked finish {
   clocked async {
      phase("A", 1);
-     Clock.resumeAll();
+     Clock.advanceAll();
      phase("A", 2);
   }
   clocked async {
      phase("B", 1);
-     Clock.resumeAll();
+     Clock.advanceAll();
      phase("B", 2);
   }
 }
