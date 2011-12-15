@@ -1,7 +1,11 @@
+import x10.interop.java.Throws;
 public class JavaException {
     static class A implements JavaExceptionIntf {
         public def f():void {}
         public def g():void {}
+    }
+    static interface Q {
+        public def test3():java.io.File @Throws[java.io.IOException];
     }
     static def testa() {
         val a = new A();
@@ -28,7 +32,7 @@ public class JavaException {
         }
         return f;
     }
-    @Throws("java.io.IOException") static def test3():java.io.File { // should be OK
+    static def test3():java.io.File @Throws[java.io.IOException] { // should be OK
         return java.io.File.createTempFile("temp", null);
     }
     // static def test4():java.io.File { // should be type check error
@@ -38,4 +42,7 @@ public class JavaException {
     //     val f = new java.io.File("foo.txt");
     //     return f.createNewFile();
     // }
+    static def test6() @Throws[java.io.IOException] { // should be OK
+        return java.io.File.createTempFile("temp", null);
+    }
 }
