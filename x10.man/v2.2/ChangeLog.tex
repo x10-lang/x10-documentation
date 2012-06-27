@@ -1,5 +1,18 @@
 \chapter{Change Log}
 
+\section{Changes from \Xten{} v2.2}
+
+\begin{enumerate}
+
+\item In previous versions of \Xten{} static fields were
+  eagerly initialized in \xcd{Place 0} and the resulting values were
+  serialized to all other places before execution of the user main
+  function was started. Starting with \Xten{} v2.3, static fields are
+  lazily initialized on a per-Place basis when the field is first read
+  by an activity executing in a given Place.
+
+\end{enumerate}
+
 \section{Changes from \Xten{} v2.1}
 
 \begin{enumerate}

@@ -1347,66 +1347,78 @@ class Ret(n:Int) {
 
 \section{Static initialization}
 \label{StaticInitialization}
-\index{initialization!static}
-The \Xten{} runtime implements the following procedure to ensure
-reliable initialization of the static state of classes.
+\index{initialization!static} 
+Static fields in \Xten{} are immutable and are guaranteed to be
+initialized before they are accessed. Static fields are initialized on
+a per-Place basis; thus an activity that reads a static field in two
+different Places may read different values for the content of the
+field in each Place.  Static fields are not eagerly initialized, thus
+if a particular static field is not accessed in a given Place then the
+initializer expression for that field will not be evaluated in that
+Place.
 
+When an activity running in a Place \Xcd{P} attempts to read a static
+field \Xcd{F} that has not yet been initialized in \Xcd{P}, then the
+activity will evaluate the initializer expression for \Xcd{F} and
+store the resulting value in \Xcd{F}. It is guaranteed that at most
+one activity in each Place will attempt to evaluate the initializer
+expression for a given static field.  If a second activity attempts to
+read \Xcd{F} while the first activity is executing the initializer
+expression it will suspend until the first activity finishes
+evaluating the initializer and stores the resulting value in \Xcd{F}. 
 
-Execution (of an entire X10 program) commences with a single thread executing
-the 
-\emph{initialization} phase of an \Xten{} computation at place \Xcd{0}. This
-phase must complete successfully before the body of the \Xcd{main} method is
-executed.
+The initializer expression may directly or indirectly read other
+static fields in the program.  If there is a cycle in the field
+initialization dependency graph for a set of static fields, then any
+activities accessing those fields may deadlock, which in turn may
+result in the program deadlocking.\footnote{The current \Xten{}
+  runtime does not dynamically detect this situation. Future versions
+  of \Xten may be able to dectect this and convert such a deadlock into the
+  throwing of an CyclicFieldInitializationException.}.
 
-The initialization phase should be thought of as if it is implemented in
-the following fashion. (The implementation may do something more
-efficient as long as it is faithful to this semantics.)
+If an exception is raised during the evaluation of a static field's
+initializer expression, then the field is deemed uninitializable in
+that Place and any subsequent attempt to access the static field's
+value by another activity in the Place will also result in an
+exception being raised.\footnote{The implementation will make a best
+  effort attempt to present stack trace information about the original
+  cause of the exception in all subsequent raised exceptions}.  Failure
+to initialize a field in one Place does not impact the initialization
+status of the field in other Places.
+
+\subsection{Compatability with Prior Versions of \Xten{}}
+Previous versions of \Xten{} eagerly initialized all static fields in
+the program at Place 0 and serialized the resulting values to all
+other Places before beginning execution of the user main function.  It
+is possible to simulate these serialization semantics for specific
+static fields under the lazy per-Place initialization semantics
+by using the idiom below:
 
 \begin{xten}
-finish
-   for every static field f of every class C 
-      (with type T and initializer e):
-   async {
-     val l = e; 
-     ateach (Dist.makeUnique()) {
-        assign l to the static f field of 
-            the local C class object;
-        mark the f field of the local C 
-            class object as initialized;
-     }
-   }
+// Pre X10 2.3 code
+// expr evaluated once in Place 0 and resulting value 
+// serialized to all other places
+public static val x:T = expr;
+
+// X10 2.3 code when T haszero is false
+private static val x_holder:Cell[T] = 
+    (here == Place.FIRST_PLACE) ? new Cell[T](expr): null;
+public static val x:T = at (Place.FIRST_PLACE) x_holder();
+
+// simpler X10 2.3 code when T haszero is true
+private static val x_holder:T = 
+    (here == Place.FIRST_PLACE) ? expr : Zero.get[T]();
+public static val x:T = at (Place.FIRST_PLACE) x_holder;
+
 \end{xten}
 
-During this phase, any read of a static field \Xcd{C.f} (where \Xcd{f} is of type \Xcd{T})
-is replaced by a call to the method \Xcd{C.read\_f():T} defined on class \Xcd{C}
-as follows
-
-\begin{xten}
-def read_f():T {
-   when (initialized(C.f)){};
-   return C.f;
-}
-\end{xten}
- 
-
-If all these activities terminate normally, all static fields have values of
-their declared types, 
-and the \Xcd{finish} terminates normally. If
-any activity throws an exception, the \Xcd{finish} throws an
-exception. Since no user code is executing which can catch exceptions
-thrown by the finish, such exceptions are printed on the console, and
-computation aborts.
-
-If the activities deadlock, the implementation deadlocks.
-
-In all cases, the main method is executed only once all static fields
-have been initialized correctly.
-
-Since static state is immutable and is replicated to all places via 
-the initialization phase as described above, it can be accessed from
-any place.
-
-
+A slightly more complex variant of the above idiom in which the
+initializer expression for the public field conditionally does the \xcd{at}
+only when not executed at \xcd{Place.FIRST_PLACE} can be used to
+obtain exactly the same serialization behavior as the pre \Xten{} v2.3
+semantics.  When necessary, eager initialization for specific static fields
+can be simulated by reading the static fields in \xcd{main} before
+executing the rest of the program.
 
 \section{User-Defined Operators}
 \label{sect:operators}
