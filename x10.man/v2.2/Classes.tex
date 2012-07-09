@@ -1354,7 +1354,7 @@ a per-Place basis; thus an activity that reads a static field in two
 different Places may read different values for the content of the
 field in each Place.  Static fields are not eagerly initialized, thus
 if a particular static field is not accessed in a given Place then the
-initializer expression for that field will not be evaluated in that
+initializer expression for that field may not be evaluated in that
 Place.
 
 When an activity running in a Place \Xcd{P} attempts to read a static
@@ -1363,9 +1363,10 @@ activity will evaluate the initializer expression for \Xcd{F} and
 store the resulting value in \Xcd{F}. It is guaranteed that at most
 one activity in each Place will attempt to evaluate the initializer
 expression for a given static field.  If a second activity attempts to
-read \Xcd{F} while the first activity is executing the initializer
-expression it will suspend until the first activity finishes
-evaluating the initializer and stores the resulting value in \Xcd{F}. 
+read \Xcd{F} while the first activity is still executing the
+initializer expression the second activity will be suspended until the
+first activity finishes evaluating the initializer and stores the
+resulting value in \Xcd{F}.
 
 The initializer expression may directly or indirectly read other
 static fields in the program.  If there is a cycle in the field
@@ -1373,8 +1374,8 @@ initialization dependency graph for a set of static fields, then any
 activities accessing those fields may deadlock, which in turn may
 result in the program deadlocking.\footnote{The current \Xten{}
   runtime does not dynamically detect this situation. Future versions
-  of \Xten may be able to dectect this and convert such a deadlock into the
-  throwing of an CyclicFieldInitializationException.}.
+  of \Xten may be able to detect this and convert such a deadlock into the
+  throwing of an \Xcd{ExceptionInInitializer} exception.}.
 
 If an exception is raised during the evaluation of a static field's
 initializer expression, then the field is deemed uninitializable in
