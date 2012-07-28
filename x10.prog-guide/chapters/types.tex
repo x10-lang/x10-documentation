@@ -1,0 +1,1325 @@
+\chapter{A First Look At \Xten's Types}\label{chp:types}
+
+\Xten's type system is not quite the same as any other object-oriented
+language's, but it is not really all that different, either. We'll look at
+some of the main features here. We don't assume that you are familiar with any
+particular language already, but we do assume that you have had some
+experience with at least one object-oriented language. We'll make references
+to Java and C++, since they are so widely taught as a first language, but only
+to help compare \Xten{} with them.
+
+\section{What's In An {\tt .x10} Source File?}
+An {\tt .x10} source file comes in three parts:
+\begin{itemize}
+\item first, an optional ``package'' statement
+\item then zero or more ``import''  statements
+\item and finally, one or more type declarations, at most one of which is declared to be public.
+\end{itemize}
+Let's look at each of these parts in detail.
+\begin{quote}
+{\bf Optional package name:}  The first line in the file, other than blank lines and
+comments, can be a ``{\tt package}'' statement.  The syntax is
+\begin{quote}{\tt package {\em packageName};}\end{quote}
+The package name, by convention, is a ``{\tt .}''-separated  series of
+lower-case identifiers, \eg{} {\tt com.ibm.math}.  The identfiers can only
+consist of letters, underscores (``{\tt \_}''), and numbers. It must begin with
+a letter.
+
+You don't need to have a package spec, and our examples will generally not
+bother with them, although we give some examples later for those unfamiliar
+with what is at stake.   When no {\tt package} declaration appears, the
+declaration in the file is said to be ``in the default package''.
+
+Packages were introduced to allow large projects to organize
+their classes.  They provide firewalls behind which to hide classes that are
+needed but should not be generally visible, and they provide a systematic scheme
+for avoiding name clashes. Before we explain all this, we need the next
+ingredient in the file, {\tt import} statements.
+
+{\bf Optional Import Statements}  After the package statement, if there is one,
+come the {\tt import} statements:
+\begin{quote}\hspace*{2em}{\tt import {\em fullPackageName.properName};}\\
+or\\
+\hspace*{2em}{\tt import {\em fullPackageName.}*;}
+\end{quote}
+
+The full package name is, as we've said, a sequence of ``{\tt .}'' separated
+lower-case names. The final part, ``{\tt properName}'', should {\em always} be a
+capitalized name: for example, ``{\tt import x10.util.Ran\-dom}''. 
+
+The import
+statement tells the compiler where to find whatever it is you are importing.  ''{\tt
+x10.}{\tt util.}{\tt Ran\-dom}'', for example, means that in the file system
+where {\tt Random.x10} was created, there will be a directory named {\tt x10}
+with a subdirectory {\tt util} that contains the source file {\tt Random.x10}.
+Which brings up an important point: how does the compiler know where to look
+for these directories?   What you have supplied is a {\em relative path}
+for the class's {\tt .x10} file.  
+Someone has to provide the absolute path that serves as the relative
+path's starting point.
+The command-line option {\tt -classpath} does this job:
+\begin{quote}
+  If
+no class path is specified, the compiler will look in the current directory
+and in the \Xten{} standard library.  If it needs to look elsewhere, you need
+to say so by using \\
+\hspace*{3em}{\tt -classpath path1;path2;...}\\
+in your {\tt x10c} or {\tt x10c++} commenad line.  The value of the
+option uses the same system-dependent syntax that you use for the
+{\tt PATH} environment variable.  We have shown the Unix style here.
+\end{quote}
+We don't want to belabor the point here: \Xten{} is consistent with
+Java in its use of class paths, and you can find a thorough
+discussion of that in 
+\href{http://en.wikipedia.org/wiki/Classpath_%28Java%29}
+{Wikipedia's article on class paths} or any introduction to Java.
+
+The second form of the {\tt import} statement---the one with an asterisk,
+rather than a class name, as its final
+part---instructs the compiler to import every class in the package.
+`` {\tt import x10.util.*}.'' gets you every last class in the {\tt x10.util}
+package.
+When to use the catch-all and when it is better to do individual imports is a
+matter of taste.
+
+You don't {\em have} to import {\tt x10.util.Random} to use it in your code,
+but if you don't, you need to refer to everywhere you use it as
+{\tt x10.util.Ran\-dom}---you can't just write {\tt Random}.\footnote{This
+should explain why, even though a package spec is a proxy for a file system path, dots and not
+slashes are used to punctuate it: first, the dot is file-system independent, and
+second, it is consistent with the notation for selecting a field within an object.}
+
+Another situation where you might have to use the fully qualified name is the
+rare, but not unknown, case of having two classes with the same proper
+name.  
+Suppose, for instance, we needed to use both \Xten's class {\tt Random}
+and another class named {\tt Random} that was supplied by some other
+library.  How do we tell the compiler which one to use for any given call?
+Use package names in the code at every reference:
+\begin{xten}
+val ours = new x10.util.Random();
+val theirs = new com.foo.bar.Random();
+\end{xten}
+When we said the packages help avoid name clashes, it is this sort of
+example that we had in mind.
+
+{\bf One or more type declarations:}  After the optional package and import 
+statements come one or more of three possible types of ``type'' declarations:
+either classes, interfaces or structs.  We assume you're familiar with classes,
+and we'll get to the other two in sections \ref{sec:mata} and \ref{sec:guitge}.
+The overwhelming majority of the
+time, exactly one appears, but there is no hard and fast rule.  One rule does
+apply: there can be at most one type in the file that is declared {\tt public}, 
+and the name of that type must be the same as the file's name, minus the
+``{\tt .x10}'' file type.
+Public classes are usable by anyone, anywhere. 
+A type that is declared without that keyword, \eg{} just ``{\tt class X \{...\}}'',
+is accessible only for use by classes {\em in exactly the same package.}
+This is one of the protection features packages provide. 
+
+If you want to put several type declarations in one file, make sure that the first has the
+same name as the source file.  Be kind, though: remember that when someone who
+is reading some \Xten{} code sees a reference to a class {\tt C} and wants to
+look at the source for that class, they really expect
+to find {\tt C} in {\tt C.x10} in the appropriate directory, whether it is
+private to a package or not.
+
+{\bf That's it:}  Yes, nothing more, other than comments, appears in an \Xten{} source file.
+\end{quote}
+\section{What's In A Class?}
+
+The best way to see what's in a class is an example that says it all. {\tt
+Ship} in Figure \ref{fig:nark}, on page \pageref{fig:nark}, is it.
+We work our way through the code
+line-by-line. First, some terminology:
+
+\begin{quote}
+A {\bf field} of a class holds a piece of data.\\
+A {\bf method} is a piece of code (a function)\\
+The {\bf members} of a class are the fields, methods and other types defined within it. 
+\end{quote}
+\begin{figure}[!htbp]
+\hrulefill
+
+%%START X10: Ship.x10 ship
+\fromfile{Ship.x10}
+\begin{xtennum}[]
+public class Ship {
+    public static DEFAULT_SIZE = 500;
+    public  val name: String;
+    private var passengers: Array[String](1);
+    private var onBoard: Int = 0;
+    
+    public def this(name: String) {
+       this(name, DEFAULT_SIZE);
+    } 
+    public def this(name:String, initialCapacity:Int) {
+       this.name = name;  
+       passengers = new Array[String](1..initialCapacity);
+    }
+
+    static def resize(size:Int, na:Ship) { /*...*/ }
+
+    public def addPassenger(name: String) { /*...*/ }
+    def throwOverboard(name: String, why: String) { /*...*/ }
+    protected def showPassengers() { /*...*/ }
+    
+    public static def main(args: Array[String](1)) { /*...*/ } 
+    
+    static class FareClasses { /*...*/ }   
+    protected class Galley { 
+        private val platesPerPerson = 4;
+        public def platesRequiredToday() {
+           return Ship.this.onBoard * this.platesPerPerson;
+        }
+        def this(){}
+     }
+    private var galley : Galley = null ; 
+    public def galley() = this.galley; 
+    public def makeGalley() {
+       this.galley = this.new Galley(); 
+    }
+
+   }
+\end{xtennum}
+%%END X10: Ship.x10 ship
+
+\hrulefill
+\caption{A class with lots of stuff.}\label{fig:nark}
+\end{figure}
+\begin{description}
+\item {\bf line \xlref{ship-a}{2}:} 
+\xline{ship-a}{public static DEFAULT\_SIZE = 500;}
+  A ``{\tt static}'' field of a class is a constant
+associated with the class. Its lifetime is the same as that of the class: it
+is available once the class is available (\ie{} once the class is ``loaded'')
+and stays available until the application terminates.  We could have said ``{\tt
+static val DEFAULT\_SIZE}'',  but the ``{\tt val}'' is implied.  The initial
+value need not be a literal constant, as it is here---it can even be a run-time
+calculation, but the expression should not involve any non-static methods or data.
+
+There are no variable static members.  This may seem a bit harsh to Java and
+C++ programmers, but there is a good reason.  \Xten, unlike these languages,
+has been intended from the start to make full use of a multi-processor system. 
+By restricting the data associated with a class to that which is put in place
+at the time the class is loaded, the \Xten{} runtime is free to copy the loaded
+class from {\tt Place} to {\tt Place} as needed, with every {\tt Place} always
+seeing a consistent view of the class.
+
+\item{\bf line \xlref{ship-b}{3}:} a public {\tt val} instance member.\\
+An instance field that is a {\tt val} names a constant that
+must be computed either as part of its declaration or by the constructor.
+The whole point of an {\em
+instance} {\tt val} is that it is a {\em per instance} constant, not a {\em per
+class} one, so the constructor would normally use information from its
+arguments---the values that make a particular instance what it is---to compute
+the  field's value.
+
+We've shown this instance member as {\tt public}.  As with classes, we could use nothing
+here, just ``{\tt val name:String}''.  The member could then only be used by
+classes in exactly the same package (which normally would mean {\em from the
+same directory}). 
+
+There are two other access keywords available: {\tt protected} and
+{\tt private}.  A {\em protected} member is usable by any  class in the same package,
+and by any class that {\em extends} the class in which the member is declared.
+See section \ref{sec:inh}, page \pageref{sec:inh}. A {\em private member} is
+just that: usable only in the class it is declared.  Thus, from most widely
+available to least:
+\begin{quote}{\tt public}, {\tt protected}, {\em no spec at all}, {\tt private}\end{quote}
+
+\item{\bf lines \xlref{ship-c}{4}-\xlref{ship-d}{5}:} {\tt var} instance members.\\
+Here are two instance fields that are variables.  Both
+are private for good reason: {\tt onBoard} is the number of valid entries in
+the {\tt passengers} array, and the last thing we want to do is to allow the
+general public complete, direct access to either the array or its vital
+statistics. {\tt onBoard} will be updated
+every time we add a passenger, or throw one overboard. {\tt passengers} will be
+reset when we are at capacity and want to add another passenger.  We 
+have guaranteed that code responsible is part of {\em this} class.
+
+\item{\bf lines \xlref{ship-ctor}{7}-\xlref{ship-endctor}{13}:}  Constructors.
+We show a couple of constructors here.  We chose to
+make both public, but we need not have done so: like any other method, we can
+restrict the availability of a constructor.  We could have made one private and
+one protected if that is really what we needed, unusual though that would be.
+
+Notice the way that the first constructor invokes the second via {\tt this}.
+{\em It is important that this call be the first executable line in the constructor's body.}
+
+\item{\bf line \xlref{ship-resize}{15}:} {\tt static def resize}\\
+Static methods are ``class methods'', in the sense that they are properties
+of the class, not properties of an instance of the class.
+Static methods have access to all of the static fields and methods
+of the class, but only an instance of the class may refer to instance fields and
+methods.  
+
+This method has the default access: no access keyword ({\tt public}, {\tt
+  protected}, or {\tt private}) is specified. Default access means that only
+things in the exact same package have access. Now we didn't specify a package
+for {\tt Ship}, so it is in the default package. If {\tt DieselShip} is
+another class and is also in the default package, it can invoke {\tt resize}.
+The syntax it would have to use is {\tt Ship.resize(\ldots)}. Inside {\tt
+  Ship} itself, you don't need the ``{\tt Ship.}'' part. {\tt resize(\ldots)}
+by itself will do. The moral: static methods {\em really belong to the class
+  in which they are defined.}
+
+\item{\bf lines \xlref{ship-defs}{17}-\xlref{ship-enddefs}{19}:} instance
+  method declarations with varying access\\ Here we have three instance
+  methods with varying degrees of protection. We'll allow anyone to add a
+  passenger, because if the boat threatens to sink under the weight, we can
+  always say no. We're a little more careful about who can throw a passenger
+  overboard: this is pretty drastic, and different kinds of ships may have
+  different policies. Finally, respecting its customers' privacy, {\tt Ship}
+  reserves to its package and its subclasses the right to prescribe how
+  instances show who is on board.
+
+\item{\bf line \xlref{ship-main}{21}:} {\tt main} again\\ You've seen {\tt
+  main} enough times that all we feel we have to say here is that you don't
+  need one except in a class that will begin a program's execution.
+
+\item{\bf line \xlref{ship-farecls}{23}:} A static class field is a value
+  associated with the class, like any other, except that it names a class.
+  Within the body of {\tt Ship}, you write ``{\tt new FareClasses()}'' in
+  order to construct an instance. From a class {\em not} declared within {\tt
+    Ship}, you would need to write ``{\tt new Ship.FareClasses()}''. In this
+  example, we opted to give the class the default accessibility: same package
+  can use, others not. We could have chosen any of the other three.
+
+\item{\bf line \xlref{ship-galley}{24}:} A class that is an instance
+  member.\\ 
+\begin{finepoint} {\tt Galley} is an example of what is often called an
+    ``inner class''. If you are not familiar with the notion, we'll give a
+    brief discussion of it here. To be honest, though, it is something you are
+    not likely to need very often, at least as an \Xten{} programmer, so you
+    might wish to skip over this.
+
+%%INNER%% {\tt Galley} is an inner class. That means first and foremost that only an
+%%INNER%% instance of {\tt Ship} can refer directly to it. In line
+%%INNER%% \xlREMOVED{ship-mkgalley}{32}, for example, a private instance field is created by
+%%INNER%% calling {\tt Galley}'s constructor. If {\tt myBoat} is a {\tt Ship}, it can
+%%INNER%% create other {\tt Galleys} by executing ``{\tt myBoat.new Galley();}''. This
+%%INNER%% is a pretty reasonable locution if you think about it: it says: ``use the {\tt
+%%INNER%%   new} that knows about {\tt Ship} to create this {\tt Galley}''.
+%%INNER%% 
+%%INNER%% Every instance of {\tt Galley} is associated, then, with an instance of
+%%INNER%% {\tt Ship}---its guardian angel.  The {\tt Galley} can refer to the 
+%%INNER%% instance members of its guardian angel.  Line 26 shows how this is done.
+%%INNER%% The expression ``{\tt Ship.this}'' that you see there is \Xten's syntax
+%%INNER%% for this {\tt Galley}'s guardian angel.
+%%INNER%% The total number of plates the {\tt Galley} needs is computed by
+%%INNER%% multiplying the {\tt Galley}'s instance field {\tt plates\-Per\-Person} 
+%%INNER%% by the field {\tt onboard} of its guardian angel. 
+%%INNER%% 
+%%INNER%% The tight linkage to guardian angels aside, inner classes are classes
+%%INNER%% like any other.   
+%%INNER%% 
+
+An instance of an inner class, like \xcd`Galley`, depends on an instance of
+its outer class, here \xcd`Ship`, for its very existence.  It doesn't make
+sense to have a galley without a boat, since a galley is defined as ``a
+kitchen in a boat''.\footnote{Or an airplane or a camper, as is known to
+pedants, pilots, vacationers, and other such people of uncertain character.}   
+So, on line \xlref{ship-newgalley}{34}, when we construct a \xcd`Galley`, we
+have to give it a \xcd`Ship` to build the galley in. That's why we write the
+constructor as \xcd`this.new Galley()` rather than simply 
+\xcd`new Galley()`.\footnote{Honestly, \xcd`new Galley()` would work too; X10
+will use 
+\xcd`this` automatically, just like it does for method calls.}
+
+
+Every instance of {\tt Galley} is associated, then, with an instance of
+{\tt Ship}.  
+The {\tt Galley} can refer to its \xcd`Ship`, and to the 
+instance members of its \xcd`Ship`.  Line \xlref{ship-galleyplate}{27} shows how
+this is done. 
+The expression ``{\tt Ship.this}'' is \Xten's syntax
+for this {\tt Galley}'s \xcd`Ship`. 
+The total number of plates the {\tt Galley} needs is computed by
+multiplying the {\tt Galley}'s instance field {\tt plates\-Per\-Person} 
+by the field {\tt onboard} of its ship. 
+
+The tight linkage to ships (or whatever the required container is) aside,
+inner classes are classes like any other.   
+
+
+In our discussion of inheritance hierarchies (see ``extra credit:''
+on page \pageref{ssec:pinc}), we'll say some more
+about how instances of inner classes can be used.
+For very subtle reasons, we can't initialize \xcd`galley` when the \xcd`Ship`
+is being constructed.  We'll explain this more in \Sref{NoThisEscapes}.  
+
+\end{finepoint}
+\end{description}
+
+We wish we could tell you that this is all there is to a class declaration.  It isn't, but it
+is more than enough to get you going.
+
+\subsection{Inheritance And More}\label{sec:inh}
+
+\Xten{} supports simple (single) inheritance: all \Xten{} classes constitute a
+tree, in which the root is the class {\tt x10.lang.Object}, and a class {\tt
+  Parent} is the parent of a class {\tt Child} when {\tt Child}'s declaration
+says that it extends {\tt Parent}:
+\begin{quote}{\tt class Child extends Parent \{ ... \}}\end{quote}
+For example:
+
+%%START X10: DieselShip.x10 diesel
+\fromfile{DieselShip.x10}
+\begin{xtennum}[]
+ public class DieselShip extends Ship {
+   public val fuelTankCapacity: Double; 
+   public var gallonsRemaining: Double;
+   
+   public def this(name:String, maxPsgrs:Int, tankSize:Double) {
+      super(name, maxPsgrs);
+      fuelTankCapacity = gallonsRemaining = tankSize;
+   }
+   public def throwOverboard(name: String, why: String) {
+     super.throwOverboard(name, why);
+     /* more stuff here */
+   }
+   /* ... more methods can go here */
+}
+\end{xtennum}
+%%END X10: DieselShip.x10 diesel
+
+A {\tt DieselShip} is a {\tt Ship} whose method of propulsion we know.  It is
+in that sense that {\tt DieselShip} is an extension of {\tt Ship}: it is a
+{\tt Ship} and more.  ``{\tt DieselShip} {\em is a direct
+subclass of} {\tt Ship}'' is another common way of saying the same thing,
+and we'll use both.
+ \begin{quote}
+More generally, a class {\tt S} is a {\em subclass} of another class {\tt C} if
+there is a chain of classes {\tt S}, {\tt S$_{1}$}, ..., {\tt S$_{n}$}, {\tt C}
+each of which is a {\em direct} subclass of the next.
+\end{quote}
+In declarations in which no {\tt extends}
+clause appears, like those for the classes {\tt MontePi} or {\tt HelloWorld}, 
+the class extends {\tt x10.lang.Object} by default.
+
+Because it extends {\tt Ship}, an instance of {\tt DieselShip} will have
+instance fields {\tt name}, {\tt passengers}, and {\tt on\-Board}, and methods
+{\tt resize}, {\tt add\-Pas\-sen\-ger}, and so on.  They are said to be {\em
+inherited from {\tt Ship}}.  The call to {\tt super} in line 6 invokes the
+super-class {\tt Ship}'s constructor to make sure that the instance of that
+class on which the {\tt DieselShip} instance is built has these fields correctly
+initialized. 
+
+The call to {\tt super} must be the first executable statement in the
+constructor, just as shown here.  If your code does not call {\tt super}
+explicitly like this, the compiler will insert a call to {\tt super()}---notice:
+the call is made with no arguments---so in this situation the compiler must be able to
+find a constructor for the super-class with no arguments. The good news is that
+if you provide no constructor at all in your class declaration, the compiler will
+create this default constructor (needs no arguments, does nothing) for you.
+
+Notice that {\tt DieselShip} provides its own
+version of the method {\tt throw\-Over\-board}, so rather than inheriting that
+method, it {\em overrides it}.  The expression {\tt super(name,why)} in the
+body of the override invokes the parent's version of {\tt throw\-Over\-board}.
+\begin{quote}
+Be careful! While every instance of {\tt DieselShip} inherits the private members
+of {\tt Ship}, {\em only the methods already in {\tt Ship} have access
+to them.} Thus, {\tt DieselShip} can affect the array {\tt passengers} only by
+invoking methods like {\tt addPassenger} that it inherits from {\tt Ship}
+and has permission to call.
+\end{quote}
+Subclasses are free to override any of the methods they inherit.  The only
+limitation is that the subclass cannot make a method more narrowly available
+(\eg{} {\tt protected} rather than {\tt public}) than it is in its parent.
+
+If a method {\tt m} expects an argument that is an instance of a class {\tt Ship},
+then it is okay to call {\tt m} with an
+instance of {\tt DieselShip}.
+Suppose, for example, we have a class {\tt CruiseLine} whose instances have
+fleets of ships that sail the world with lots of passengers.  A {\tt CruiseLine}
+instance might want to add a {\tt Ship} to its fleet, so it has a method
+\begin{xten}
+public def addShip(ship: Ship) { ... }
+\end{xten}
+Because a {\tt DieselShip} {\em is} a {\tt Ship}, we can call {\tt addShip}
+with a {\tt DieselShip} as the argument.
+
+A similar rule holds for return values.  If a method is supposed to return a 
+{\tt Ship}, it can return one that just happens also to be a {\tt
+DieselShip}.
+
+\finepoint{\label{ssec:pinc}
+This gets us to the point where we can give an example of how an instance
+of an inner class might find itself being used outside the class in which it
+was declared.  
+Subclassing gives us a way to make an otherwise invisible class visible:   
+\begin{itemize}
+\item Suppose
+there is a public class {\tt Kitchen}, and suppose that in our declaration of
+{\tt Ship} we had written ``{\tt protected class Galley extends Kitchen \{ ... \}}'' .
+\item Let's add to {\tt Ship}   a public method {\tt getGalley()} that returns 
+the private field {\tt galley}.
+\item If a  class has a method whose signature is ``{\tt isWellEquipped(k: Kitchen)}'',
+and if {\tt anArk} is a {\tt Ship}, then the call
+\begin{xten}
+isWellEquipped(anArk.getGalley())
+\end{xten}
+is perfectly okay, because a {\tt Galley}, wherever it came from, is a {\tt Kitchen}.
+In effect, {\tt galley} has ``leaked out'' to stand on its own in whatever class the
+method {\tt isWellEquipped} is declared.
+\end{itemize}
+
+ Bottom line: you need to be 
+a {\tt Ship} to construct a {\tt Galley}, {\em but not necessarily just to
+use one.} 
+
+}
+
+\subsection{Concrete classes versus wishful thinking}
+Our declaration of {\tt Ship} is an example of wishful thinking, because
+if you are the least bit realistic about it, a ship without any means of
+propulsion isn't going to get you very far.  On the other hand, there
+are a large number of very different propulsion systems:  we've got {\tt DieselShip}
+already, and {\tt SteamArk}, {\tt SailArk}, and {\tt RowedArk} are also good possibilities.
+
+So, {\tt Ship}, lacking, as it does, any means of getting anywhere, is, in a
+very clear sense, not a {\em concrete} class: you will never see an instance
+that is not actually an instance of some subclass. Folks just don't build
+boats that go nowhere, excepting of course for certain tourist-trap seafood
+restaurants and the occasional glorified liferaft.
+
+But that is not to say that {\tt Ship} can't capture a lot of concrete 
+information--passenger lists, fare schedules, itinerary, and so on--that
+all ships share, no matter their means of propulsion.  That makes {\tt Ship} a
+good example of what is  
+called an {\em abstract} class: a class that one does not intend to
+instantiate, but 
+which is the ultimate parent of a set of classes that one does.
+
+To convert {\tt Ship} to being an abstract class, one just adds the keyword
+``{\tt abstract}'' to its declaration.  We'll call this version
+\xcd`AbstractShip`.
+
+
+%%START X10: AbstractShip.x10 absship
+\fromfile{AbstractShip.x10}
+\begin{xtennum}[]
+abstract public class AbstractShip {
+    public static DEFAULT_SIZE = 500;
+    public  val name: String;
+    // and all the other code as from Ship.x10
+\end{xtennum}
+%%END X10: AbstractShip.x10 absship
+
+
+An abstract class is permitted to declare method signatures that it itself
+does not 
+implement, but that any of its subclasses that
+are not themselves abstract {\em must} implement.  Here is an example. 
+Notice that there is no function body: there is just a trailing semicolon.
+%%START X10: AbstractShip.x10 absshipabs
+\fromfile{AbstractShip.x10}
+\begin{xtennum}[]
+public abstract def costPerPassengerMile(): Double;
+\end{xtennum}
+%%END X10: AbstractShip.x10 absshipabs
+
+It is clearly unreasonable to talk about cost per mile without knowing how
+your ship is  propelled, and it is equally reasonable to demand that if you
+want to really function as a ship, you must provide this information.
+
+
+A concrete class like {\tt DieselShip}
+will have to implement {\tt cost\-Per\-Passen\-ger\-Mile}.
+In {\tt DieselShip}, its declaration will
+look like:
+
+%%START X10: DieselShip2.x10 costPerPassengerMile
+\fromfile{DieselShip2.x10}
+\begin{xtennum}[]
+public def costPerPassengerMile(): Double = 0.018;
+\end{xtennum}
+%%END X10: DieselShip2.x10 costPerPassengerMile
+The keyword {\tt abstract} does {\em not} appear, because this version of
+\xcd`costPerPassengerMile` is not abstract. 
+The function body appears instead.
+
+\section{Interfaces: More Abstract Than Abstract}\label{sec:mata}
+
+While {\tt Ship} may not be as complete as a real ark should be, it can implement a
+lot of important functionality that all its progeny can use directly: a passenger list is a 
+passenger list, no matter what else is different!  There are situations though, where all
+that one wants to specify is functionality that has no common implementation, but
+that a variety of classes will implement, each in its own way.  This sort of specification
+is called an {\em interface}.  
+\begin{quote}
+Those of you who are coming from a background in C++ will want to work carefully through
+our discussion of interfaces, because they constitute the closest approximation
+to multiple inheritance that \Xten{} provides.
+\end{quote}
+
+A nice example of an interface is {\tt Arithmetic}:\footnote{For extra
+slickness, we could have programmed it so that the operations use the usual
+symbols: \xcd`a*b` instead of \xcd`a.multiply(b)`.  See \Sref{Operators} for
+how to do this.}
+%%START X10: Arithmetic.x10 arith
+\fromfile{Arithmetic.x10}
+\begin{xtennum}[]
+public interface Arithmetic[T] { 
+   def add(t: T): T; 
+   def subtract(t: T): T;
+   def multiply(t: T): T;
+   def divide(t: T): T;
+   public static VERSION = "1.1";   
+}
+\end{xtennum}
+%%END X10: Arithmetic.x10 arith
+
+In detail: 
+\begin{description}
+\item[line {\bf \xlref{arith-decl}{1}:}] 
+Like a class, a top-most interface is either public or accessible only in the
+package of which it is a part. An interface declared within the body of a
+class is {\em always} static (it is never per-instance and cannot refer to
+instance members or methods in the surrounding context), but it can have any
+access limit: public, protected, default, or private.
+
+The ``{\tt [T]}'' following {\tt Arithmetic} says that the interface is
+parameterized by a type {\tt T}. We've seen this before, in the argument {\tt
+  args} for {\tt main()}, whose type is {\tt Array[String]}. The lingo of the
+trade is that {\tt Arithmetic} is a {\em generic interface}, and {\tt Array}
+is a {\em generic class}. There is nothing sacred about a generic class or
+interface being parameterized by one type: one can use as many as needed:
+``{\tt class X[T1, T2, T3,...] \{...\}}''.
+
+
+\item{\bf lines \xlref{arith-startdefs}{2}-\xlref{arith-enddefs}{6}:} An interface may only declare abstract methods, so (unlike the story
+with abstract classes), you don't need the keyword {\tt abstract}.  What line 2 says is that
+\begin{quote}
+if a class {\tt A} implements the interface {\tt Arithmetic[B]},\\
+if {\tt a} is an {\tt A}, and {\tt b} is a {\tt B}, \\
+then the expression {\tt a.add(b)} produces a result that is a {\tt B}.
+\end{quote}
+In real life, we might have two classes {\tt Monomial} and {\tt Polynomial} to 
+implement polynomials with {\tt Double} coefficients.  It would be natural, then,
+for {\tt Monomial} to implement {\tt Arithmetic[Polynomial]}: when you add a monomial
+to a polynomial, and the result is a polynomial.
+
+When you add two or multiply \xcd`Polynomial`s, you get another
+\xcd`Polynomial`.  So, we want \xcd`Polynomial` to implement
+\xcd`Arithmetic[Polynomial]`.  This isn't a weird recursive thing, though it's
+got the imposing-sounding name of ``F-bounded quantification'' (which most
+programmers should remember purely for the sake of sounding erudite at job
+interviews).
+It just  says that polynomials can perform arithmetic with polynomials and the
+results will be polynomials -- which is just what you'd expect. 
+
+X10 has a few standard interfaces that are often used in this F-bounded way.  
+For example, there's \xcd`Comparable[T]`.  A class implementing
+\xcd`Comparable[T]` can be compared to a value of type \xcd`T`.  Most of the
+time, you want to compare things of the {\em same} type.  So, classes tend to
+implement \xcd`Comparable[`themselves\xcd`]`. 
+
+Another important point is that the methods declared by an interface are always
+{\tt public}.  So even though the keyword {\tt public} does not appear here, it
+is implied.  We'll say more about this when we discuss how you use interfaces.
+
+\item {\bf line \xlref{arith-enddefs}{6}:} Interfaces may also declare static
+      constants.  That's the only kind of constant they can declare --
+      \xcd`val` means \xcd`public static val` in an interface, just the way
+      that \xcd`def` means \xcd`public def`.  
+
+In fact, some interfaces do nothing but declare constants: 
+%%START X10: MathConst.x10 mathconst
+\fromfile{MathConst.x10}
+\begin{xtennum}[]
+public interface MathConst {
+  val PI = 3.1415926535897932384626433;
+  val E  = 2.7182818284590452353602874;
+  val GAMMA = 0.57721566490153286060651;
+  val SOFA = 2.219531668871; 
+  val DOUBLE_DIGITS = 15.95; 
+  val DOUBLE_E_MAX  = 307.95;
+} 
+\end{xtennum}
+%%END X10: MathConst.x10 mathconst
+
+Some of these, like \xcd`PI` and \xcd`E`, are useful mathematical constants
+that will be the same for all X10 programs.   
+Others, like \xcd`DOUBLE_DIGITS` and \xcd`DOUBLE_E_MAX`, might change from
+computer to computer: these are the right values for IEEE double-precision
+numbers, but they would be different on a machine that used quadruple
+precision for the \xcd`Double` type.
+
+
+Another common use is to give names to the legal values for
+the arguments of one or more of the methods.  Here are some names for some
+standard colors:
+%%START X10: Color.x10 color
+\fromfile{Color.x10}
+\begin{xtennum}[]
+interface Color {
+  val RED = 0xFF0000;
+  val BLUE = 0x0000FF;
+  val PEACOCK = 0x33A1C9;
+}
+\end{xtennum}
+%%END X10: Color.x10 color
+We can refer to these as \xcd`Color.RED` and so on: 
+
+%%START X10: Discoloration.x10 discoloration
+\fromfile{Discoloration.x10}
+\begin{xtennum}[]
+class Discoloration {
+  static def example() {
+    Console.OUT.println("RED = " + Color.RED);
+  }
+}
+\end{xtennum}
+%%END X10: Discoloration.x10 discoloration
+
+If we're inside of a class that implements \xcd`Color`, we can leave off the
+\xcd`Color.` and refer to \xcd`Color.RED` as just plain \xcd`RED`:
+
+%%START X10: Colorizer colorizer
+\fromfile{Colorizer.x10}
+\begin{xtennum}[]
+public class Colorizer implements Color {
+   static def example() {
+      Console.OUT.println("Red = " + RED); 
+   }
+}
+\end{xtennum}
+%%END X10: Colorizer colorizer
+
+A class implementing \xcd`Color` has to use \xcd`Color`'s value for \xcd`RED`.  
+Would you 
+want someone to implement the interface with its own value for {\tt RED}? That
+would ruin code reuse. 
+
+
+\end{description}
+
+Finally, one interface can extend another. They can do so better than classes
+can, even: one interface can extend several other interfaces, but a class can
+only extend a single other class. 
+
+%%START X10: ExtendingInterfaces.x10 extendinginterfaces
+\fromfile{ExtendingInterfaces.x10}
+\begin{xtennum}[]
+interface Colored {
+  def color(): Int;
+}
+interface Shape{}
+interface Shaped {
+  def shape():Shape;
+}
+interface ColorForm extends Colored, Shaped {}
+\end{xtennum}
+%%END X10: ExtendingInterfaces.x10 extendinginterfaces
+
+
+One could
+say ``{\tt ColorForm} is a sub-interface of {\tt Colored} and {\tt Shaped}'', though some
+people think that 
+``{\tt ColorForm} {\em refines} {\tt Colored} and {\tt Shaped}'' sounds better. 
+
+\subsection{How interfaces get used}
+
+Let's implement a class of fractions, \xcd`Frac`.  Fractions are useful
+because you can express some common values exactly.  {$\frac{1}{3}$} is a
+fraction that is exactly one-third.  The 
+closest that X10 can come to this value is 
+\xcd`0.3333333333333333`, which is pretty close, but off by more than
+{$3\times 10^-16$}.  If you're not careful, these little errors can really
+mess up your computation; the discipline of scientific computing teaches how
+to minimize the problem.  Using fractions, which have exactly the right value
+with no round-off error, is one way.
+
+The syntax 
+\begin{xten}
+class Frac implements Arithmetic[Frac] { ... }
+\end{xten}
+asserts that the class {\tt Frac} implements all of the methods 
+declared in the {\tt Arith\-me\-tic[Frac]} interface--with exactly the 
+argument types and return types shown there.
+In plain English, this is saying that you can add, subtract, multiple and divide one
+{\tt Frac} by another and get an {\tt Frac} result.
+
+
+While {\tt Frac} is one candidate for the class that
+appears as the {\tt T} in the {\tt Arithmetic[T]}, we'd probably also like to
+add {\tt Frac}s to other kinds of numbers -- at least \xcd`Double`s, and if we
+were doing a full-strength version we'd have \xcd`Long`s, \xcd`Int`s, and
+perhaps other types as well.  
+
+
+%%START X10: Frac.x10 fracdef
+\fromfile{Frac.x10}
+\begin{xtennum}[]
+class Frac implements Arithmetic[Frac], 
+                      Arithmetic[Double] 
+{
+\end{xtennum}
+%%END X10: Frac.x10 fracdef
+
+
+
+At first blush, this is a daunting declaration: think how many methods must be
+implemented, especially for the library version!
+But the truth is that none of these methods is all that involved, so it is just a matter of
+some (necessary!) drudgery.  Here the end more than justifies the means.
+
+The implementation is straightforward.  The constructor for
+\xcd`Frac`s always puts fractions in lowest terms, so that 
+\xcd`new Frac(10,20)` is the same as  \xcd`new Frac(1,2)`: 
+
+%%START X10: Frac.x10 fracctor
+\fromfile{Frac.x10}
+\begin{xtennum}[]
+public def this(var n:Int, var d:Int) {
+  if (d < 0) { n = -n; d = -d; }
+  if (d == 0) throw new Exception("Division by zero!");
+  var gcd : Int = gcd(n,d);
+  this.n = n / gcd;
+  this.d = d / gcd;
+}
+\end{xtennum}
+%%END X10: Frac.x10 fracctor
+
+Fraction arithmetic uses the familiar rules.  Since the constructor reduces
+everything to lowest terms, we don't need to do any extra work to do so: 
+
+%%START X10: Frac.x10 fraconfrac
+\fromfile{Frac.x10}
+\begin{xtennum}[]
+public def add(f:Frac) = new Frac(n * f.d + f.n * d, d * f.d);
+public def negate() = new Frac(-n, d);
+public def subtract(f:Frac) = this.add(f.negate());
+public def multiply(f:Frac) = new Frac(n * f.n, d * f.d);
+public def divide(f:Frac) = new Frac(n * f.d, d * f.n);  
+
+\end{xtennum}
+%%END X10: Frac.x10 fraconfrac
+
+The \xcd`Frac`-to-\xcd`Double` versions are easily implemented using 
+a method to convert a fraction to a \xcd`Double`: 
+
+%%START X10: Frac.x10 fracondouble
+\fromfile{Frac.x10}
+\begin{xtennum}[]
+public def asDouble():Double = (n as Double) /(d as Double);
+public def add(dbl: Double) = this.asDouble() + dbl;
+public def subtract(dbl: Double) = this.asDouble() - dbl;
+public def multiply(dbl: Double) = this.asDouble() * dbl;
+public def divide(  dbl: Double) = this.asDouble() / dbl;
+\end{xtennum}
+%%END X10: Frac.x10 fracondouble
+
+
+Notice that in this class, the method {\tt add} is explicitly declared to be
+{\tt public}.  While {\tt public} is all there is in an interface declaration,
+it is {\em not} all there is in a class declaration, so you must be specific
+here.  The compiler will complain if you do not.
+
+Now suppose that somewhere there is a class that has a method ``{\tt doIt(x:
+Arith\-me\-tic[Frac])}''. Since {\tt Frac} implements {\tt Arithmetic[Frac]},
+we can use a {\tt Frac} as the argument to {\tt doIt}, \eg:
+
+%%START X10: Frac.x10 fracdoit
+\fromfile{Frac.x10}
+\begin{xtennum}[]
+doIt(new Frac(1,3));
+\end{xtennum}
+%%END X10: Frac.x10 fracdoit
+
+
+
+We end this section with some ``side bars'' that somehow didn't quite fit in 
+the flow of the rest of this section, but are worth a moment's thought.
+
+\subsubsection{ Anything you can do\ldots}\label{subsub:type:anything}
+The 1946 Broadway musical {\em Annie Get Your
+Gun} has a wonderful song that begins ``Anything you can do, I can do better. 
+I can do anything better than you.''  \Xten{} has an operator that says the
+same thing much more briefly: if {\tt T} and {\tt U} are two types, then the
+expression {\tt T<:U} is a boolean that, if true, means that a value of type
+{\tt T} may be used anywhere a value of type {\tt U} may be, or in other words,
+that {\tt T} is either {\tt U} itself or a {\em subtype} of {\tt U}. 
+
+\bard{This isn't a good explanation of \xcd`<:`, and I think that the
+explanation goes elsewhere and should be used a lot more.}
+One use of the ``operator'' {\tt <:} is in {\tt val} declarations. 
+Saying ``{\tt val t <: T}'' declares {\tt t}'s type to be a subtype of {\tt T}. 
+That way, if {\tt t} is initialized in one of several arms of an {\tt if}
+statement, differing types may appear in the various assignments, so long as all
+are subtypes of {\tt T}.  Also users of {\tt t} should only count on getting a
+{\tt T}.
+
+For example, if we have an interface like \xcd`Caloried`, which tells how many
+calories something has: 
+%%START X10: NeedsNutrients.x10 needsnutrCaloried
+\fromfile{NeedsNutrients.x10}
+\begin{xtennum}[]
+interface Caloried {
+  def calories():Int;
+}
+\end{xtennum}
+%%END X10: NeedsNutrients.x10 needsnutrCaloried
+
+We can write a class which manages a list of ingredients, and can count their
+calories.  Note that this wouldn't even compile without the constraint 
+on \xcd`T`.  It is only that constraint that gives us permission to 
+call the \xcd`calories()` method in line
+\xlref{needsnutrRecipe-usecalories}{7}.  
+%%START X10: NeedsNutrients.x10 needsnutrRecipe
+\fromfile{NeedsNutrients.x10}
+\begin{xtennum}[]
+class Recipe[T]{T <: Caloried} {
+   val ingredients: List[T] = new ArrayList[T]();
+   public def add(t:T) { ingredients.add(t); }
+   public def totalCals() {
+      var s : Int = 0;
+      for(ingredient in ingredients) 
+          s += ingredient.calories(); 
+      return s;
+   }
+}
+\end{xtennum}
+%%END X10: NeedsNutrients.x10 needsnutrRecipe
+
+A class, like \xcd`Flour`, can implement \xcd`Caloried` in the ordinary way: 
+%%START X10: NeedsNutrients.x10 needsnutrFlour
+\fromfile{NeedsNutrients.x10}
+\begin{xtennum}[]
+class Flour implements Caloried {
+  private val name: String, cal:Int ;
+  public def this(name:String, cal:Int) 
+    { this.name = name; this.cal = cal; }
+  public def calories() = this.cal;
+}
+\end{xtennum}
+%%END X10: NeedsNutrients.x10 needsnutrFlour
+
+Then, we can use \xcd`Flour` in a \xcd`Recipe`: 
+
+%%START X10: NeedsNutrients.x10 needsnutrExample
+\fromfile{NeedsNutrients.x10}
+\begin{xtennum}[]
+static def example(): void = {
+  val flours <: Recipe[Flour] = new Recipe[Flour]();
+  flours.add(new Flour("1 cup bread flour", 495));
+  flours.add(new Flour("1 cup whole-wheat", 520));
+  flours.add(new Flour("1 cup rye", 360));
+  assert flours.totalCals() == 1375;
+}
+\end{xtennum}
+%%END X10: NeedsNutrients.x10 needsnutrExample
+
+
+
+(This is different from writing a class which simply manages a list of
+\xcd`Caloried` values.  The difference doesn't matter much in this example,
+but it would matter if the constraint were \xcd`T <: Arithmetic[T]` -- in
+which case we couldn't even talk about a \xcd`List[Arithmetic]`, since X10
+insists on knowing what type of thing the arithmetic is being done on.)
+
+
+\subsubsection{ Why interface methods are public:}  Suppose a class {\tt A} implements an
+interface {\tt I}, and suppose that {\tt B} is a subclass of {\tt A}.  Because
+an instance of {\tt B} might appear anywhere an instance of {\tt A} is 
+expected, we see that {\tt B} {\em must also implement} {\tt I}. This is one
+reason why the methods in an interface must be declared {\tt public}.
+
+There is another reason that is more pragmatic than principled.  The point of an
+interface is to tell the outside world what some object is capable of doing.
+A {\tt private} method, on the other hand, is just a {\em hidden} means to
+accomplish a class's goals.  Why should anyone care whether a class implements
+a method that can only be called from within that class?
+
+An interface itself may declared with any access limit that makes sense in the
+context: if the interface is being declared inside a class (and it definitely
+can be), then protected, default and even private access make sense.  For
+example, a private interface might describe the type of an argument of
+one or more of the class's private methods, and there might be several static
+or inner classes declared inside the class that implement that interface: not 
+a common situation, but not unreasonable.
+
+\subsubsection{ A matter of convention: }
+There is a sort of convention that interface names should begin with ``{\tt
+I}'',  Suppose for example, that we had used {\tt INumber}, instead of {\tt
+Arithmetic}, for our interface name.  We could then have declared  a class
+named {\tt Number} that implements it.  A matter of taste of course, but not an
+unreasonable convention, particularly in situations where there is a
+``standard'' or ``canonical'' implementation of the interface.  A variation on
+this theme is to append ``{\tt Impl}'' to the name of an interface to create
+the name of a concrete class that implements it: \eg{} interface {\tt
+XmlParser} is implemented by {\tt XmlParserImpl}.  You will see both
+conventions widely used.
+
+\subsubsection{ For C++ programmers: } 
+We said that interfaces provide a sort of
+``multiple inheritance.''  What we meant is that a class may declare that it
+implements any number of interfaces.  That is certainly reasonable: all you are
+saying is that the class provides several named sets of methods.  It is, of
+course, a weaker notion than multiple inheritance, because,  when a class
+implements an interface, no instance members or methods are actually inherited:
+all of the code is in the class, or is in one of its ancestors up the
+inheritance chain.
+
+\section{Giving Up Inheritance To Get Efficiency}\label{sec:guitge}
+\subsection{The Problem}
+
+Supporting inheritance does not come without costs when a program runs.
+Consider the class {\tt DblDbl}, a model of innocence:
+
+%%START X10: DblDbl_Class dbldblClass
+\fromfile{DblDbl\_Class.x10}
+\begin{xtennum}[]
+public  class DblDbl {
+   public val x: Double;
+   public val y: Double;
+   public def this(a: Double, b: Double) {
+      this.x = a; this.y = b;
+   }
+   public def normSq() = x*x + y*y;
+}
+\end{xtennum}
+%%END X10: DblDbl_Class dbldblClass
+
+Let ``{\tt public def doIt(p:DblDbl) \{...\}}'' be a method declared in some
+other class, and suppose that in the body of {\tt doIt}
+we find the call {\tt p.normSq()}.  What does this call really cost?
+The problem is that the value passed to {\tt doIt} for the argument {\tt p}
+might really be a reference to an instance of some proper subclass
+of {\tt DblDbl}. We only know the precise class of {\tt p} once we start
+executing the body of {\tt doIt}.  Because {\tt p}'s class can have its own
+implementation of {\tt normSq}, making sure we are calling the correct
+{\tt normSq} means looking up its address in {\tt p}'s class's 
+descriptor {\em each time the call is executed}.
+
+The moral is that an instance {\tt obj} of a class that may have subclasses
+must carry with it a reference to the actual class of the instance {\tt obj}.
+Applying this to instances of {\tt DblDbl}, we see that in addition to
+the 16 bytes required to store the two instance fields, we have to keep
+at least 4 bytes for the reference that allows us to find its class.
+If there are only a couple of hundred {\tt DblDbl} instances around, and
+if we only call {\tt normSq} a couple of thousand times in any
+given run of the code, who cares?  But what if we had an array a million
+{\tt DblDbls} and were traversing it repeatedly calling methods that
+some subclass might override?
+
+Think about it.  The million {\tt DblDbls} have
+16 megabytes of data that we're really interested in, but are costing us
+at least another 4 megabytes or more for type information.  A million
+calls to {\tt normSq}, moreover, require a million method lookups that
+we'd really love to avoid.  Now, if
+there really are subclasses of {\tt DblDbl}, and they really need their own
+implementation of {\tt normSq}, then fine: we'll gladly pay the cost in time
+and space, because we are getting something in return. But if not? 
+
+These considerations are one reason why a performance-oriented language avoids
+using the normal class hierarchy for primitive types like 32-bit integers: no language
+that expects high performance can allow a 4-byte integer to consume 8 bytes or
+more and to be accessed indirectly.  
+
+There are two different approaches one can
+take, as a language designer, to solving this problem.  One is to keep the
+primitive value types to a handful close to the physical reality of the CPU
+and treat them specially in the language itself.  This is what Java chose to do.
+The other approach is to keep the implementations of the primitive
+types as close to that of classes as possible, which is what \Xten's designers
+did.
+
+The question \Xten{} had to face is: how much of what classes give
+us can we keep without incurring any substantial overhead? 
+There are two sets of  issues here: serial issues like ``don't waste space'',
+and ``don't waste time looking stuff up'', and distribution issues like ``don't
+create the possibility of inconsistencies between what one processor thinks the
+value of the ``thing'' is and what another thinks, so that communication
+between the processors is required to maintain storage integrity''.
+
+\subsection{The Solution}\label{sec:ecs}
+To begin with, we have already seen that we need instances whose types are
+exactly what they are declared to be: no inheritance.  To achieve the storage
+integrity, all of the instance fields must be {\tt vals}, so that an
+instance once constructed is immutable and hence can be copied freely
+whereever its value is useful.  
+\Xten{} calls these things ``{\tt struct}s'', to distinguish them from
+classes.
+\footnote{
+They're not C++-style structs.  They're X10-style structs, which are pretty
+different from C++-style structs.
+}  
+\Xten{} made one other critical decision: when an instance of a
+struct appears as a field or is assigned to an identifier, it is the
+data in the instance fields that is stored, and not a reference to that data.
+For primitives like {\tt Int}, this is a critical efficiency consideration:
+what's stored for an {\tt Int} its value, not to the address of its value, so
+you don't have ``follow a pointer'' to get to the value.
+
+Struct declarations are essentially the same as {\tt class} declarations.
+For example, we can
+change the class {\tt DblDbl} to be a struct just by replacing the keyword
+``{\tt class}'' with ``{\tt struct}'' in its declaration:\footnote{You can't
+always turn a class to a struct this easily -- or at all.  
+For one difference, 
+structs don't support inheritance, so, 
+if your class uses
+inheritance, you've got some recoding to do.}
+
+%%START X10: DblDbl_Struct.x10 dbldblStruct
+\fromfile{DblDbl\_Struct.x10}
+\begin{xtennum}[]
+public  struct DblDbl {
+   public val x: Double;
+   public val y: Double;
+   public def this(a: Double, b: Double) { 
+      this.x = a; this.y = b;
+   }
+   public def normSq() = x*x + y*y;
+}
+\end{xtennum}
+%%END X10: DblDbl_Struct.x10 dbldblStruct
+
+
+
+A few comments:
+\begin{description}
+\item{\bf line \xlref{dbldblStruct-struct}{1}:} The accessibility rules for a struct are the same as for a
+class.  We chose ``{\tt public}'' for the example, but default, {\tt protected} 
+and {\tt private} access may be assigned as appropriate.
+
+Structs may be generic---that is, they may, like {\tt Array}, have type
+parameters---although this one does not.
+
+\item{\bf lines \xlref{dbldblStruct-x}{2} and \xlref{dbldblStruct-y}{3}:}  As we noted earlier, the instance members of a struct
+are always {\tt val}s. For that reason, you don't need to say ``{\tt
+val}'' as we did here.  It is okay if you do. If you are not sure whether in
+the long run you are going to want this type to be a struct or a class,
+throwing in the {\tt val} makes it easier to go back and forth.
+
+We've only shown instance members in this example, but
+structs can have static member fields as well.
+Indeed, one can also define classes, interfaces, and structs in the
+body of a struct, just as one can in a class.
+\item 
+ 
+\item{\bf line \xlref{dbldblStruct-def}{4}:} Unlike their C namesakes, \Xten{} structs can declare
+methods, both instance methods and static methods. We've shown a public
+method here, but both private and default access can be used. Structs
+{\em never} have subclasses, so ``protected,'' which just broadens the default
+access by allowing access to subclasses, is useless for structs.
+\end{description}
+
+The keyword {\tt new} is {\em not} required when creating
+ a new instance of a struct---in contrast to the case for a class.
+Here is an example that assigns a {\tt DblDbl} value:
+%%START X10: DblDbl_Struct.x10 dbldblstructCtorCall
+\fromfile{DblDbl\_Struct.x10}
+\begin{xtennum}[]
+var p: DblDbl = DblDbl(1.2, 3.4);
+\end{xtennum}
+%%END X10: DblDbl_Struct.x10 dbldblstructCtorCall
+The ``{\tt new}'' is gone from the right-hand side.
+If you put the ``{\tt new}'' in, though, the compiler will happily accept it.
+
+\subsection{Equality, Classes, and Structs}
+
+One important difference between struct and class
+implementation is the treatment of ``{\tt ==}''.   If {\tt s1} and {\tt s2} are
+two instances of the same struct, then ``{\tt s1 == s2}'' is true exactly when
+when their instance fields have identical values.  If, for example, 
+{\tt s1} and {\tt s2} are {\tt DblDbls}, then {\tt s1==s2}
+is equivalent to {\tt (s1.x==s2.x) \& (s1.y==s2.y)}.  Remember that for
+instances of a class, ``{\tt ==}'' tests for references to same instance,
+not equality of values. But: there are {\em no} references to instances of a
+struct, just the instance data itself.  Since the data is all there is, that's
+all you operate on---with ``{\tt ==}'' or anything else.
+
+
+Here's an example: \xcd`Class` and \xcd`Struct` are identical except that
+\xcd`Class` is a class and \xcd`Struct` is a struct.  Two \xcd`Class`es with
+the same data are not \xcd`==` to each other, but two \xcd`Struct`s with the
+same data are \xcd`==`.
+%%START X10: ClassVsStruct.x10 classvsstruct
+\fromfile{ClassVsStruct.x10}
+\begin{xtennum}[]
+public class ClassVsStruct {
+  static class  Class(a:Int)  {}
+  static struct Struct(a:Int) {}
+  public static def main(argv:Array[String](1)) {
+    val c <: Class  = new Class(1);
+    val d <: Class  = new Class(1);
+    val s <: Struct = Struct(1);
+    val t <: Struct = Struct(1);
+    assert c != d;
+    assert s == t;
+  }
+}
+\end{xtennum}
+%%END X10: ClassVsStruct.x10 classvsstruct
+
+\subsection{Fine Points}
+
+We close this section with some fine points about structs that are interesting
+and certainly part of the expert's toolkit, but are not critical for a first
+reading.
+
+\finepoint {\bf  what all structs and classes share.}\label{ssec:wasacs}
+Both structs and classes can implement an interface, and there is one interface,
+called {\tt x10.lang.Any} that is the minimal interface that all structs and
+classes must implement.  As you would guess, it is not particularly rich:
+\begin{xten}
+public interface Any {
+   def toString():String;
+   def typeName():String;
+   def equals(that:Any):Boolean;
+   def hashCode():Int;
+}
+\end{xten}
+The first three are the ones that most programmers care about.  The purpose of
+the fourth method, the hash code, is to give a compact way of identifying an
+object.
+
+The method {\tt toString} returns
+a representation of an instance as a {\tt String}.  Because {\tt toString} is
+always available, conversion to {\tt String} is possible in any context where a
+{\tt String} is known by the compiler to be required. 
+
+The method {\tt typeName} returns the precise name of the type as it is
+understood by the \Xten{} compiler.  It is most useful as a learning aid and
+debugging tool.  If ever you are in doubt about what the compiler thinks the
+type of some object ``{\tt e}'' is, the call
+
+{\tt  \ \ \ Console.OUT.println(e.typeName());}
+
+will tell you.  Try a few, for instance: {\tt 3.typeName()}.
+
+The method {\tt equals} tests whether its invoker and its argument ``have the
+same value.''  It should be thought of as a user-overridable version of the
+comparison operator ``{\tt ==}".  Therefore, {\tt a.equals(b)} is the same as
+{\tt a==b} by default.  Remember, though, that, as we just remarked above,
+``{\tt ==}'' has a different meaning for class instances than for
+struct instances.
+ 
+Many classes override {\tt equals}.  A familiar example is the {\tt
+String} class: if {\tt a} and {\tt b} are {\tt Strings}, then {\tt a.equals(b)}
+is {\tt true} when the contents of their underlying byte arrays are the same.
+
+{\tt hashCode} is related to \xcd`equals`.  If two values are \xcd`equals`,
+then their \xcd`hashCode`s ought to be equal, too.  Some standard data
+structures rely on this fact, especially \xcd`HashMap`s -- the hash codes that
+the \xcd`HashMap`s use are \xcd`hashCode` values.
+
+If you aren't careful about this, you can write a program that looks like it
+puts a value in a \xcd`HashMap`, but it can't be found once it's there.
+\bard{Give this example, and describe the right way to do it}
+
+\finepoint{\bf structs really are values.}
+The rules for what can be part of a struct are designed so that the compiler
+can determine the size of an instance from the declaration.  The reason is
+storage efficiency:  once the size is known, no more space need be allocated
+than is needed to store the value in memory, and at runtime, we don't have to
+carry around size information for every instance.
+
+One consequence of the storage rules is that you cannot define the member
+fields of a struct in terms of the same struct or collections of that
+struct.  If, for instance we try to declare a struct {\tt DblDblList\-Item} 
+\begin{xten}
+public struct DblDblListItem {
+   public p: DblDbl;            // the point
+   public next: DblDblListItem; // !!! no: illegal
+}
+\end{xten}
+so that we can form lists of {\tt DblDbl}s, the compiler will complain.
+To understand why, ask yourself, ``How big is a {\tt DblDbl\-List\-Item}?''
+Suppose that it were {$n$} bytes.
+
+A {\tt DblDbl}
+itself is (say) {$16$} bytes. So adding the sizes of {\tt p} and {\tt
+next}, we get a total of $n+16$ bytes.
+But that has to be the same as the size of the whole {\tt DblDblList\-Item} in
+which these are the instance fields. That whole value is only {$n$} bytes, 
+because it's a \xcd`DblDblListItem` and that's how big a \xcd`DblDblListItem`
+is.  So, {$n+16=n$}.   Something is wrong with this.
+
+The point is that we really wanted {\tt next} to be a reference to the next
+item: an address, and not the item itself---and if {\tt DblDbl\-List\-Item}
+were a class rather than a struct, that is exactly what {\tt next} would be: a
+reference. C++ programmers would use a pointer in this sort of situation, a
+physical address: {\tt DblDbl\-List\-Item *next}. Its size, like the size of
+any object reference, is some small number of bytes that is independent of
+what its target is. But in \Xten, there is no such thing as reference to a
+struct, nor can you take its ``address.'' A struct is a value. Period!
+
+The short answer, then, to ``How {\em does} one design an \Xten{} struct that
+is a linked list?'' is that {\em one doesn't}. Linked lists need pointers, and
+structs don't have pointers.  Linked lists are done using objects in X10, not
+structs. 
+
+
+\footnote{
+We wrote out some code for you to show that if you are really desperate, you 
+{\em can} do it, but be warned, this is very, very bad \Xten.  Do not use this
+as a model for {\em anything}  The use of the {\tt Any} interface there is
+particularly ill-advised. See 
+\href{http://dist.codehaus.org/x10/documentation/guide/src/list/DblDblList.x10}{list/DblDblList.x10}.
+}
+
+\subsection{Performance of Structs}
+
+Since X10's primitive types, \xcd`Int` and \xcd`Double` and so forth, are
+largely defined by standard mechanisms of the language, you can define your
+own types that are nearly as efficient ... sometimes.  At the very least, you
+can avoid the biggest inefficiencies of objects by using structs.  But structs
+have a few slow spots of their own, and if you're not careful, you can lose
+everything you gained.
+
+Consider the assignment: 
+\begin{xten}
+   var x: T;
+   var y: T;
+   ...
+   x = y;
+\end{xten}
+When {\tt T} is a class, the assignment copies a reference that is {\tt y}'s
+current value, to {\tt x}.  This takes a fixed amount of time, independent of
+how big the class \xcd`T` is.  
+
+When {\tt T} is a struct, however, what gets copied
+is the entire current value of {\tt y}, not a pointer to the value.  To the
+extent that the  size of the value is greater than the size of a reference,
+copying the value is more expensive than the copying the reference.
+Our {\tt DblDbl} is a good example: its size is 16 bytes, and a reference
+could use as few as 4 bytes.
+
+The same thing comes up when passing parameters:
+\begin{xten}
+   public def doIt(t: T) { ... }
+   var x: T;
+   doIt(x);
+\end{xten}
+When {\tt T} is a class, the value passed to {\tt doIt} is the reference.  If
+{\tt T} is a struct, the whole value of {\tt x} has to be copied.
+ 
+To summarize: the benefits of structs are:
+\begin{itemize}
+\item  no cost for memory allocation,
+\item  no cost for garbage collection,
+\item  faster method invocation, and
+\item  better storage utilization for large aggregates.
+\end{itemize}
+and the costs are:
+
+\begin{itemize} 
+\item  assignments and argument passing may be more expensive, and
+\item  you lose the benefits of the class hierarchy for organizing common
+functionality.
+\end{itemize}
+
+The situation is further complicated by the tricks code optimization can use to
+minimize the assignment costs, so even knowing that there might be a problem, it
+may be difficult to tease out the cost, if any, short of running the code to
+see. In addition, when you are working with classes, you can avoid some of the
+cost of method invocation by declaring a class to be ``{\tt final}''---\eg{}
+``{\tt public final class DblDblListItem}''.  Final classes cannot be
+subclassed, which implies that their methods cannot be overridden, and this, in
+turn, allows the compiler to reduce the cost of method invocation.

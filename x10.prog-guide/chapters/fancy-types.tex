@@ -1,0 +1,1790 @@
+\chapter{Fancy Types}
+
+X10's types are a lot more powerful than we've seen so far.  They can do a lot
+for you that types in Java and C++ can't do, if you want.   
+
+Now, most of what types do for you is to prevent mistakes.  Here's a mistake: 
+\begin{xten}
+var total : Int = 0; 
+total += "3";
+\end{xten}
+\xcd`total` is an integer.  You can't add a \xcd`String` value into it. 
+This is a bit tricky, because you can add a \xcd`String` {\em to} it: 
+\xcd`0 + "3"` evaluates to the string \xcd`"03"`.  In some languages, you {\em
+can} add a string into an integer if the string contains a number, so adding
+\xcd`"3"` into \xcd`total` would behave just like adding \xcd`3` into
+\xcd`total`.  
+
+A good type system will catch this mistake as early as possible, and tell you
+about it in as useful a way as possible.  For X10, this means that it'll catch
+the mistake when you try to compile your program -- or even sooner, if you're
+using the programming environment X10DT -- and it'll print out a message
+telling you that the code doesn't fit together right.   
+
+The other thing that well-designed types do is try not to bother you too much.
+This is a bit triczy. The ultimate purpose of types {\em is} to bother you --
+to get in your face when you're about to goof up. At the very least, you have
+to do some work in order to get any value of them. You have to write down some
+types in your program, enough to tell X10 what you mean, so it can catch when
+you don't do what you meant.  But X10 often lets you leave types off, so
+they're not {\em too} much in your face.
+
+
+
+
+\section{Constrained Types}
+
+Here's a perfectly innocuous bit of code that looks just fine: 
+%%START X10: ArrayRef.x10 arrayrefRank
+\fromfile{ArrayRef.x10}
+\begin{xtennum}[]
+val a : Array[Int] = [1,2,3];
+Console.OUT.println("a(1)=" + a(1));
+\end{xtennum}
+%%END X10: ArrayRef.x10 arrayrefRank
+But when you go to compile it, you get a warning message: 
+\begin{verbatim}
+Generated a dynamic check for the method call.
+\end{verbatim}
+(Or, if you are using \xcd`STATIC_CHECKS`, it won't compile at all.)  
+
+What's wrong here is that \xcd`Array[Int]` covers arrays of many different
+ranks -- one-dimensional ones like \xcd`[1,2,3]`, two-dimensional,
+ten-dimensional, or whatever you like.  When \xcd`a` was declared to have
+type \xcd`Array[Int]`, we told X10 to forget what rank \xcd`a`
+had.\footnote{This is why you should use \xcd`val a <: Array[Int]...` 
+whenever you can -- \xcd`<:` in a \xcd`val` doesn't lose track of this kind of
+thing.}
+
+So, when X10 goes to use \xcd`a`, it doesn't know how many subscripts it
+takes.   Giving it one subscript, in \xcd`a(1)`, might be right, or it might
+be wrong. X10 doesn't know.  So, with dynamic checks on, it sticks in a test
+to find out.  
+
+And, since X10 doesn't know, it will do the same thing for \xcd`a(1,2)`.
+That will fail at runtime, since \xcd`a` is one-dimensional.  
+
+It would be nice if X10 could handle this sensibly -- if X10 could know that
+\xcd`a` was one-dimensional, that one subscript was right, and two were wrong.  
+
+Well, it can do that --- that, and a whole lot more.  The mechanism it uses is
+called {\em constrained types}.  Constrained types track things that the
+compiler knows about your data, like the ranks of arrays, or that particular
+variables aren't \xcd`null`.  
+
+
+\subsubsection{Tracking Nulls}
+
+
+
+
+One common problem in programs (in most object-oriented languages) is that
+some parts of code assume that some objects aren't \xcd`null`, but other parts
+of code don't know about this assumption and set them to \xcd`null`.  This can
+cause \xcd`NullPointerException`s and considerable premature gray hair.  
+For example, 
+
+%%START X10: NeedsNullCheck.x10 needsnullcheck
+\fromfile{NeedsNullCheck.x10}
+\begin{xtennum}[]
+val x : Person = lookUp("Kim Geep");
+Console.OUT.println("Kim's phone number is " + x.phoneNumber());
+\end{xtennum}
+%%END X10: NeedsNullCheck.x10 needsnullcheck
+
+If Kim isn't in the database, \xcd`x.phoneNumber()` will throw an exception.  
+
+If you want to protect yourself against this in X10, you can.  Declare \xcd`x`
+with a type that says ``\xcd`x` is a \xcd`Person`, but not \xcd`null`''.  
+Using this type obligates you to convince X10 that whatever value you give
+\xcd`x` is not null.  Three good ways to convince X10 are: (1) use a
+constructor call, since constructors never return \xcd`null`. 
+(2) use a method declared to return a non-null value, though you will have to
+convince X10 that method is defined properly. (3) Check the value at runtime,
+with a type-cast (``\xcd`as`'') operation, 
+and make sure it's not \xcd`null` there.\footnote{Method 3, checking values at
+runtime, is pretty familiar from defensive programming in Java or C++.  X10's
+types, if used this way, have the advantage that you can't {\em forget} to do
+the check -- if you forget, your program won't compile.}
+
+For our sample program, we choose a version of database lookup that is
+guaranteed never to return \xcd`null`.  If \xcd`lookUpOrCreate(name)` doesn't
+find \xcd`name` in the database, it creates a new record for that name.  This
+approach doesn't make sense for all applications\footnote{Not even for this
+one -- how do we really know the phone number of a newly-created
+\xcd`Person`?}.  (In many cases, if some crucial datum really is missing,
+there's no way to figure it out, and the best thing that can be done is  to
+report the error and ask a human for help.  Throwing a
+\xcd`NullPointerException` is a greatly inferior choice.)
+
+The code that uses non-null \xcd`Person`s is very much like the code that used
+possibly-\xcd`null` ones: 
+%%START X10: HasNullCheck.x10 hasnullcheck
+\fromfile{HasNullCheck.x10}
+\begin{xtennum}[]
+val x : Person{self!=null} = lookUpOrCreate("Kim Geep");
+Console.OUT.println("Kim's phone number is " + x.phoneNumber());
+\end{xtennum}
+%%END X10: HasNullCheck.x10 hasnullcheck
+
+The code of \xcd`lookUpOrCreate` keeps track of the fact that its values are
+never \xcd`null`.  The database \xcd`db` is a hash-table of
+non-\xcd`null`\xcd`Person`s.  \xcd`lookUpOrCreate` itself returns a non-null
+\xcd`Person`.  The constructor call at line \xlref{hasnullcheckDB-ctor}{6}
+always produces a non-\xcd`null` value, and X10 knows that, so it works out
+fine too.
+%%START X10: HasNullCheck.x10 hasnullcheckDB
+\fromfile{HasNullCheck.x10}
+\begin{xtennum}[]
+static val db = new HashMap[String, Person{self!=null}]();
+static def lookUpOrCreate(name:String) : Person{self!=null} = {
+  if( db.containsKey(name)) {
+     return db.getOrThrow(name) ;
+  }
+  val p = new Person(); 
+  db.put(name, p);
+  return p;
+}
+\end{xtennum}
+%%END X10: HasNullCheck.x10 hasnullcheckDB
+
+
+
+
+\subsection{{\tt self}, {\tt this}, and all that}
+
+Now, it's time to learn what that \xcd`self!=null` means.  You already know
+\xcd`!=` and \xcd`null`, but \xcd`self` is new.  
+
+When we're using a type, we can think of it as a test, asking if some thing
+under consideration is a member of the type or not.  So, for the type
+\xcd`Int`, imagine asking if \xcd`true` is a member (no), or \xcd`18` is
+(yes).  With types that come from classes and such, like \xcd`Int`, we don't
+need to have a name for the thing under consideration.
+When we write a constraint, we do need a name for it -- and that name is
+a special X10 keyword, \xcd`self`.  
+
+So, we can write some other constraints.  Like this one, which says that the
+variable \xcd`three` is an \xcd`Int` which is equal to \xcd`3`.  
+%%START X10: ConstraintExamples.x10 constraintex1
+\fromfile{ConstraintExamples.x10}
+\begin{xtennum}[]
+val three : Int{self==3} = 3;
+\end{xtennum}
+%%END X10: ConstraintExamples.x10 constraintex1
+Of course, if you try to set it to something that {\em isn't} three, it won't
+work.  This doesn't compile:
+%%START X10: ConstraintExamples.x10 constraintex2
+\fromfile{ConstraintExamples.x10}
+\begin{xtennum}[]
+val four : Int{self==3} = 4; 
+\end{xtennum}
+%%END X10: ConstraintExamples.x10 constraintex2
+
+Not-equals constraints are sometimes useful for excluding a few problem
+values.    For example, if you're defining a reciprocal function, you might
+want to constrain the input to avoid dividing by zero:
+%%START X10: ConstraintExamples.x10 constraintexrecip
+\fromfile{ConstraintExamples.x10}
+\begin{xtennum}[]
+static def recip(n:Int{self!=0}) = 1.0/n; 
+\end{xtennum}
+%%END X10: ConstraintExamples.x10 constraintexrecip
+
+This isn't a terrible idea, though it does require you to prove to X10 that
+numbers are non-zero when you take their reciprocals.  Here are a few ways
+that you can do it: 
+%%START X10: ConstraintExamples.x10 constraintexUseRecip
+\fromfile{ConstraintExamples.x10}
+\begin{xtennum}[]
+static def useRecip(m:Int, n:Int{self!=0}) {
+  val a = recip(n); 
+  val three : Int{self==3} = 3; 
+  val b = recip(three);
+  val c = recip(m as Int{self!=0});
+}
+\end{xtennum}
+%%END X10: ConstraintExamples.x10 constraintexUseRecip
+
+
+\begin{description}
+\item [Line \xlref{constraintexUseRecip-a}{2}:] Use an argument which has been
+      declared to be the right type.  That's an ordinary way to call methods
+      anyhow.  Here, the right type is \xcd`Int{self!=0}`.  Since \xcd`n` has
+      that type, it's fine.
+\item [Line \xlref{constraintexUseRecip-b}{4}:] Use an argument which has a
+      {\em more specific} type.  You're used to doing this too, when you have
+      a method that takes a \xcd`Person` as an argument and you give it a
+      subclass, like \xcd`Dentist`.  
+
+      Here we're doing the same thing, in a
+      slightly different way. 
+      The type of \xcd`three` is \xcd`Int{self==3}`.  That's a subtype of 
+      \xcd`Int{self!=0}`, because every number that {\em is} three {\em isn't}
+      zero.    The official word for this is {\em subtyping by strengthening}.  
+      \xcd`self==3` is logically {\em stronger} than \xcd`self!=0` --- also
+      pronounced ``\xcd`self==3` implies \xcd`self!=0`''.  
+      A constrained type with a stronger constraint is always a subtype of a
+      type with the same base and a weaker one.  
+
+      (As usual, we didn't have to write the type on line
+      \xlref{constraintexUseRecip-decl}{3}.  We  just wrote it to make the
+      example clearer.)
+      
+\item [Line \xlref{constraintexUseRecip-c}{5}:] 
+      Use a {\em cast}.  
+      At some point, you're going to
+      have a value like \xcd`m`, which you don't know in advance is not zero,
+      and you're going to have to tell X10 that it's not zero.  The way you
+      say ``it's not zero'', here, is to use a type cast  
+      \xcd`m as Int{self!=0}`.  This is just the same as any other time you
+      have a value of one type and need it to be another type.
+
+      Of course, \xcd`m` might be zero.  If \xcd`m` is zero, this cast fails
+      -- \xcd`m as Int{self!=0}` first makes sure that \xcd`m` is an integer
+      (which it can do at compile-time), and then that it's not zero (which
+      has to be done at runtime).    If \xcd`m` is zero, this throws an
+      exception, the same as any other attempt to cast a value to some type it
+      isn't.   
+
+      This isn't much of an improvement over getting a division-by-zero error.
+      It might even be worse: the division by zero error is obviously about
+      division by zero, but the cast error is a bit further removed from the
+      problem.  
+
+      The improvement comes earlier, when you try to write this: 
+\begin{xten}
+    val c = recip(m); 
+\end{xten}
+      This is wrong, because \xcd`m` could be zero.  
+      X10 will give you a warning or an error here (depending on the 
+      \xcd`STATIC_CHECKS` compiler flag -- see \Sref{sect:StaticChecks}).  
+
+      At this point, you have been alerted to the problem. It's your
+      responsibility as an intelligent programmer to figure out the right
+      thing and do it.  Testing \xcd`m` and printing a comprehensible error
+      message if it's zero, while untraditional in some circles, would not be
+      out of the question.
+
+\end{description}
+
+\subsubsection{{\tt self} in nested types}
+\label{sect:NullTestsNested}
+
+If you have a constrained type that looks like \xcd`T{c}`, where \xcd`T` is
+some type and \xcd`c` some constraint, then \xcd`self` inside \xcd`c` means
+{\em ``the value of type T that we're wondering whether it might be a member
+of \xcd`T{c}` or not''}.  So, in \xcd`Int{self!=0}`, \xcd`self` is the
+\xcd`Int` that we're saying had better not be zero.
+
+That's a simple rule.  But it has some implications that might be brainhurty.
+If you have a complicated type, there might be two \xcd`self`s inside it that
+mean different things -- and are even of different types.
+
+For example, \xcd`Array[U]{self!=null}` means ``A non-\xcd`null` array of
+\xcd`U`'s''. The array itself isn't \xcd`null`. The \xcd`U`'s inside of it
+might be \xcd`null`, depending on what \xcd`U` is.
+\xcd`a:Array[String]{self!=null}` makes \xcd`a` be a non-\xcd`null` array of
+strings, but \xcd`a` might have a \xcd`null` inside of it.
+
+Similarly, \xcd`String{self!=null}` is the type of strings that aren't
+\xcd`null`.  
+
+So, we can use \xcd`String{self!=null}` for \xcd`U`.  
+\xcd`Array[String{self!=null}]{self!=null}` is a non-\xcd`null` array of
+non-\xcd`null` strings.  The first \xcd`self` refers to the \xcd`String` that
+isn't null. The second one refers to the \xcd`Array` that isn't \xcd`null`.
+
+It's easy to write an utterly incomprehensible type expression using this.  If
+you find yourself tempted to do so, look at the \xcd`type` declaration
+(\Sref{sect:TypeDecl}).  A couple of definitions and you can write
+this: 
+%%START X10: ConstraintExamples.x10 constraintexNotNull
+\fromfile{ConstraintExamples.x10}
+\begin{xtennum}[]
+var a : ArrayNotNull[StringNotNull]; 
+\end{xtennum}
+%%END X10: ConstraintExamples.x10 constraintexNotNull
+which is much easier to read.
+
+
+\subsection{{\tt val} variables instead of {\tt self}}
+
+Another way of making constrained types in \xcd`val` declarations easier to
+read is to use the name of the variable being declared instead of \xcd`self`.  
+So, you can write 
+%%START X10: ConstraintExamples.x10 constraintexVal
+\fromfile{ConstraintExamples.x10}
+\begin{xtennum}[]
+val n : Int{n != 0} = 3;
+\end{xtennum}
+%%END X10: ConstraintExamples.x10 constraintexVal
+instead of
+%%START X10: ConstraintExamples.x10 constraintexNoval
+\fromfile{ConstraintExamples.x10}
+\begin{xtennum}[]
+val n : Int{self != 0} = 3;
+\end{xtennum}
+%%END X10: ConstraintExamples.x10 constraintexNoval
+This isn't quite a circular definition.  It's saying that \xcd`n` is an
+\xcd`Int` and \xcd`n!=0`.  
+
+There are a few restrictions on this.  
+\begin{itemize}
+
+\item It only works on \xcd`val`s.  \xcd`var`s can never appear in
+      constraints, as we see in \Sref{sect:LegalConstraints}.
+
+\item It only works for the variable being declared.  For example, 
+you can declare that the whole array of strings is non-\xcd`null`: 
+\begin{xten}
+val a : Array[String]{a!=null};
+\end{xten}
+which you might prefer to using \xcd`self` to say the same thing.
+\begin{xten}
+val a : Array[String]{self!=null};
+\end{xten}
+
+But the entries in the array don't have names, so, to make them be
+non-\xcd`null`,  you have to write
+\begin{xten}
+val b : Array[String{self!=null}];
+\end{xten}
+
+If you want both the array and each entry to be non-\xcd`null` (which you
+often do), you can write: 
+\begin{xten}
+val c : Array[String{self!=null}]{a!=null};
+\end{xten}
+which at least uses \xcd`self` for only one thing, unlike the equivalent 
+\begin{xten}
+val c : Array[String{self!=null}]{self!=null};
+\end{xten}
+
+\end{itemize}
+
+\subsection{Guards}
+\label{sect:Guards}
+
+Guards are constraint-like expressions that control what can be done with a
+class or method.  We've seen them in \Sref{subsub:type:anything}.  
+
+A guard on a class can be specific about the generic parameters.   For
+example, if we've got an interface \xcd`Flavored`: 
+%%START X10: ConstraintExamples.x10 constraintGuardFlavored
+\fromfile{ConstraintExamples.x10}
+\begin{xtennum}[]
+interface Flavored {
+  def flavor():Int;
+}
+\end{xtennum}
+%%END X10: ConstraintExamples.x10 constraintGuardFlavored
+We can demand that a generic type variable implement \xcd`Flavored`: 
+%%START X10: ConstraintExamples.x10 constraintexGuardOnClass
+\fromfile{ConstraintExamples.x10}
+\begin{xtennum}[]
+class Tasting[X] {X <: Flavored} {
+   def taste(x:X) = x.flavor();
+}
+\end{xtennum}
+%%END X10: ConstraintExamples.x10 constraintexGuardOnClass
+The clause \xcd`{X <: Flavored}` is a guard.
+
+A method can have a guard too. For example, consider a method to find the
+biggest element in an array of \xcd`Int`s.  What's it supposed to do if the
+array is empty and has no biggest element?  One way to deal with the problem
+is to forbid it entirely, and to require that the array not be empty.  It
+could be done with a guard, like this: 
+%%START X10: ConstraintExamples.x10 constraintexMethodGuard
+\fromfile{ConstraintExamples.x10}
+\begin{xtennum}[]
+def max(a:Array[Int]){a.size != 0} { 
+\end{xtennum}
+%%END X10: ConstraintExamples.x10 constraintexMethodGuard
+The guard \xcd`{a.size != 0}` insists that the array not be empty.
+It could just as well be phrased as a constrained type: 
+%%START X10: ConstraintExamples.x10 constraintexMethodGuard2
+\fromfile{ConstraintExamples.x10}
+\begin{xtennum}[]
+def min(a:Array[Int]{a.size!=0}) { 
+\end{xtennum}
+%%END X10: ConstraintExamples.x10 constraintexMethodGuard2
+Use whichever way you like more.
+
+
+\subsection{Legal Constraints}
+\label{sect:LegalConstraints}
+
+It would be very nice if you could write any sort of Boolean expression in
+your constraints.  In fact, it would be way, way {\em too} nice.  You could
+write constraints which no computer program could understand. 
+
+\begin{finepoint}
+Basic theory of computability says that there is no computer program that (1)
+always halts, and (2) can accept any nullary Boolean function \xcd`f` as
+input, and tell whether \xcd`f()==true`.  (Remember that \xcd`f()` might run
+forever, but the tester would have to halt in finite time, so it can't just
+run \xcd`f()` and see what happens.  It has to look at the code of \xcd`f`,
+and any computability theory textbook will explain why that cannot work.)
+
+So, if we allowed expressions liike \xcd`f()` in constraints, X10 would have
+some trouble.  Does this compile?
+\begin{xten}
+val a : Int{f()} = 1;
+\end{xten}
+Well, if \xcd`f()==true`, it does compile, and otherwise it doesn't.  So the
+X10 compiler would have to solve that unsolvable problem in order to do basic
+type checking. 
+\end{finepoint}
+
+So, to keep type-checking deciable --- and fast --- only a scant handful of
+things are allowed in constraints.  
+
+\subsection{Constraints can be...}
+
+\begin{description}
+\item [Equalities:] As we've seen, we can have equalities in constraints, like
+      \xcd`Int{self==3}`.
+\item [Non-Equalities:] As we've seen, we can say that two things have to be
+      different, like \xcd`String{self!=null}`.  (We can't use other kinds of
+      inequalities, like \xcd`Int{self > 0}`.)
+\item [Type Equalities and Non-Equalities:] We can require that two types
+      either be the asme (\xcd`T==U`) or be different (\xcd`T!=U`), too.
+      These aren't used very often.
+\item [Subtyping:] We can require that one type \xcd`T` be a subtype of
+      another type \xcd`U`.  This {\em is} useful, especially 
+      for the guard of a class. We've seen it used already, back in
+      \Sref{subsub:type:anything} and \Sref{sect:Guards}. 
+\item [Property Method Invocations:] ``Property methods''
+      (\Sref{sect:PropertyMethods}) are very limited sorts of methods -- they
+      can say just the sorts of things that belong in constraints.
+\item [Conjuctions:]  You can put several constraints together, but only with
+      \xcd`&&`.  See \Sref{sect:conjunction} for details.
+\item [Zero Test:] You can test to see if a type has a default value, with 
+      \xcd`T haszero`.  See \Sref{sect:DefaultValue} for some examples.
+\item [{\tt true} and {\tt false}:] A true constraint is always true; a false
+      constraint never is.  
+\end{description}
+
+\subsubsection{Expressions Allowed In Constraints} 
+
+When you compare expressions for equality, or invoke property methods, you re
+restricted to only a few sorts of expressions.  You can write \xcd`n==0`, but
+not \xcd`n == m+1`.
+
+\begin{description}
+\item [Constants:] \xcd`3` and \xcd`"fish"` and \xcd`null` and so on.
+\item [{\tt val}s:] You can use \xcd`val` variables.   Not \xcd`var`s, which
+      change too much for X10's constraints to understand.
+\item [{\tt this}:] If the constraint is at a point in the program where
+      \xcd`this` makes sense, like in a method, you can use \xcd`this` in a
+      constraint.
+\item [{\tt here}:] The same goes for \xcd`here`.
+\item [{\tt self}:] If you are constraining a {\em type}, you can use
+      \xcd`self`.  If you are writing a guard, there's no \xcd`self` to be
+      found. 
+\item [Properties of {\tt self}:] If \xcd`p` is a property field of
+      \xcd`self`, then you can write \xcd`self.p` in a constraint.  
+      Just \xcd`p` alone can mean \xcd`self.p`, if that is the only choice.
+\item [{\tt val} fields of anything else:] You can extract \xcd`val` fields of anything
+      else. 
+\item [Property Method Invocations:] You can use a property method in a
+      constraint expression, if the property method's actual expansion works
+      there too.
+\end{description}
+
+\subsubsection{Having your cake and eating it too}
+\label{sect:conjunction}
+
+If you want \xcd`n` to be neither zero nor one, you can write it in one of three
+ways. 
+\begin{itemize}
+\item \xcd`val n : Int{ n!=0,  n!=1 }`, using a comma to separate multiple
+      constraints.  Commas don't mean ``and'' anywhere but constraints.  
+
+\item \xcd`val n : Int{ n!=0 && n!=1 }`, using the regular \xcd`&&` operator
+      to mean ``and''.
+
+\item \xcd`val n : Int{ n!= 0} {n!=1}`, putting one constraint on top of
+      another.  
+\end{itemize}
+We usually use commas, but it doesn't matter.
+
+(You can't say ``or'' or ``not'' in constraints at all. \xcd`x||y` and \xcd`!x`
+are perfectly good anywhere else, but they're not allowed in constraints.)
+
+\subsubsection{Unrelated Constraints}
+
+There's no requirement that the constraint involves \xcd`self`, or that a
+constraint on a variable  \xcd`v` has anything to do with \xcd`v`.  
+%%START X10: ConstraintExamples.x10 constraintexEnv
+\fromfile{ConstraintExamples.x10}
+\begin{xtennum}[]
+val a = 1;
+val b = 2;
+val v : Int{a!=b} = 3;
+//ERROR: val d : Int{a==b} = 4; 
+\end{xtennum}
+%%END X10: ConstraintExamples.x10 constraintexEnv
+
+The constraint on line \xlref{constraintexEnv-cright}{3} says that \xcd`v` is
+an integer such that the \xcd`val`s \xcd`a` and \xcd`b` are different.  Well,
+looking at the code, \xcd`a` and \xcd`b` are indeed different.  So the
+constraint \xcd`a!=b` is always true, no matter what \xcd`Int` value \xcd`v`
+has.  In other words, \xcd`v` can be any \xcd`Int` value.
+
+On the other claw, if the constraint {\em isn't} true, then {\em no} value
+works.  You can't even use the type \xcd`Int{a==b}` on line
+\xlref{constraintexEnv-dwrong}{4} --- or the type \xcd`Int{false}` anywhere.
+No matter what value you assign to \xcd`d`, it won't make \xcd`a==b`, and
+won't make \xcd`false` be true.  
+
+These unrelated constraints are a way of enforcing that certain facts are true
+at {\em compile time}.  \xcd`assert` statements, like
+\begin{xten}
+assert a != b;
+\end{xten}
+can check that \xcd`a` and \xcd`b` are different at {\em runtime}.  But if you
+need to know that they're different at {\em compile time}, you'll need to put
+the fact into a constraint.  
+
+(Why might you need to know that?  Some other constraint might use it.  
+If you have a method \xcd`recipDiff(x,y) = 1.0/(x-y)`, 
+and you're calling \xcd`recipDiff(a,b)`, 
+you might need to persuade X10 that \xcd`a!=b`.)
+
+\subsection{Using Properties}
+
+The {\em properties} of a class or struct are the values that X10 keeps the
+closest track of at compile time.  They can be used in constraints on a class.
+Let's do a concrete example: points and triangles in plane geometry.
+We'll call the points \xcd`Pt` to keep them from getting confused with
+\xcd`x10.array.Point`.  Here it is:
+%%START X10: Geometry.x10 geompoint
+\fromfile{Geometry.x10}
+\begin{xtennum}[]
+struct Pt(x:Double, y:Double) { 
+  public operator this - (that:Pt) = Pt(this.x-that.x, this.y-that.y); 
+  public def len() = Math.sqrt(x*x-y*y); 
+}
+\end{xtennum}
+%%END X10: Geometry.x10 geompoint
+
+\begin{description}
+\item [line \xlref{geompoint-props}{1}:] \xcd`x` and \xcd`y` are properties of
+      \xcd`Pt`.  \bard{Do we discuss this elsewhere?}
+      Making them properties like this, and not giving any other constructor,
+      means that X10 will automatically give us the obvious constructor
+      \xcd`Pt(xx,yy)`. 
+\item [line \xlref{geompoint-op}{2}:] This line defines a binary operator of
+      subtraction on \xcd`Pt`s.  We're treating them as two-dimensional
+      vectors.   This isn't essential, but it does make using them very slick. 
+
+\item [line \xlref{geompoint-len}{3}:] This is a perfectly ordinary method,
+      giving the length of a vector.
+\end{description}
+
+The code for triangles will use a constraint to ensure that all triangles are
+non-degenerate --- that they all have three distinct points. 
+%%START X10: Geometry.x10 geomtriangle
+\fromfile{Geometry.x10}
+\begin{xtennum}[]
+struct Triangle(p:Pt, q:Pt, r:Pt) {p != q, p != r, q != r} {
+  public def area() {
+     val a = (p-q).len();
+     val b = (q-r).len();
+     val c = (r-p).len();
+     val s = (a + b + c)/2;
+     val area = Math.sqrt(s * (s-a) * (s-b) * (s-c) );
+     return area;
+  }
+}
+\end{xtennum}
+%%END X10: Geometry.x10 geomtriangle
+
+Triangles have three \xcd`Pt`s, which we're phrasing as properties. The
+\xcd`Triangle` class has a guard on line \xlref{geomtriangle-struct}{1}, saying
+that \xcd`p`, \xcd`q`, and \xcd`r` are all different. (Obviously this approach
+is going to get pretty troublesome by the time we get to heptagons, where we'd
+have to write 7 variables and 28 non-equalities, and won't work at all if
+we're trying to use arbitrary {$n$}-gons.  But it's a very slick approach when
+it does work.)
+
+
+
+\begin{finepoint}
+We rather sneakily made \xcd`Pt` a struct rather than a class.   This matters
+because \xcd`==` means different things for structs and objects.  For structs,
+\xcd`p==q` is true if \xcd`p.x==q.x` and \xcd`p.y==q.y`.  For classes,
+\xcd`p==q` is true if \xcd`p` and \xcd`q` are the same object.  
+If \xcd`Pt` had been an object, we could have a \xcd`Triangle` with three
+corners each made by a call to \xcd`new Pt(0,0)` -- three \xcd`Pt`s in the
+same place, but different objects.
+\end{finepoint}
+
+
+\subsection{Nulls and Constraints}
+
+Sometimes you want to forbid \xcd`null` values in your object types.  You can
+do this with the constraint \xcd`{self != null}`.
+
+If you don't have that constraint on an object type, though, \xcd`null` is
+allowed. And that goes even if you do have other constraints -- {\em any}
+other constraints. The point of this is that it's useful to have \xcd`null` as
+a default value for object types, so you get to have it unless you
+specifically say you don't. 
+
+So, the following program is fine: 
+%%START X10: ConstraintsAndNulls.x10 constraintsandnulls
+\fromfile{ConstraintsAndNulls.x10}
+\begin{xtennum}[]
+ class Trunk(length:int){}
+ class Elephant(trunk:Trunk){}
+ def example() {
+  val dumbo: Elephant{self.trunk.length == 3} = null;
+  assert dumbo == null;
+  val jumbo: Elephant{self.trunk.length ==11} = null;
+}
+\end{xtennum}
+%%END X10: ConstraintsAndNulls.x10 constraintsandnulls
+
+This makes for some surprises about constraints. At least, they're surprising
+if you are under the mistaken impression that \xcd`==`'s in constraints mean
+the same thing they mean everywhere else --- they don't! The difference is
+that, in a constraint, \xcd`a.f==b` and \xcd`a.f!=b` both mean \xcd`true` if
+\xcd`a==null`. Outside of a constraint, it means ``null pointer exception'',
+neither true nor false.
+
+One way you could get confused, if you don't keep this special meaning in
+mind, is that \xcd`dumbo : Elephant{self.trunk.length == 3}` does {\bf not}
+mean that \xcd`dumbo.trunk.length` is three!  It means, ``{\bf If}
+\xcd`dumbo!=null` and \xcd`dumbo.trunk!=null`, {\bf then}
+\xcd`dumbo.trunk.length` is three.''  Or, to phrase it another way, ``If
+\xcd`dumbo.trunk.length` means anything at all, what it means is three.''
+
+Another way to get confused is to notice that that \xcd`dumbo` and \xcd`jumbo`
+have types that look like they couldn't possibly have any values in common.
+One is for short-trunked elephants, the other for long-trunked ones, and
+there's no way that the same elephant's trunk could be both three and eleven
+feet long.  
+
+Well, of course there's no such elephant.  \xcd`null` isn't an \xcd`Elephant`.
+It's a non-value that can be used in place of an \xcd`Elephant`.  And
+\xcd`null.trunk.length` isn't three, or eleven, or any other number -- it's an
+error.
+
+All you need to remember about this is three things: 
+\begin{itemize}
+\item \xcd`null` is allowed in constrained object types, unless you
+      specifically say it's not.
+\item Constraints on fields get fudged so that they're true for \xcd`null`,
+      and don't throw null pointer exceptions.
+\item You need to check for \xcd`null`s when you use constrained object types --
+      the same way you need to when you use ordinary object types.  (Unless
+      you constrained them to never be \xcd`null`.)
+\end{itemize}
+
+\subsection{Constraints and Subtyping}
+
+Constrained types are types. So, sometimes, they are subtypes and supertypes
+of other types. 
+
+As always, \xcd`T <: U` if every element of \xcd`T` is also an element of
+\xcd`U`.    That's all you need to remember to figure out subtypes for
+constrained types.
+
+Is \xcd`Int{self==3} <: Int`?  Well, if {$n$} is an \xcd`Int{self==3}`, then
+{$n$} is an \xcd`Int` which is equal to three. (\xcd`null` isn't an \xcd`Int`,
+so we don't need to worry about that special case.)  An \xcd`Int` which is
+equal to three is an \xcd`Int`: being three doesn't stop it from being one. 
+So, yes, \xcd`Int{self==3} <: Int`.
+
+How about \xcd`Int{self!=3} <: Int`?  The elements of 
+\xcd`Int{self!=3}` are all the \xcd`Int`s except for three -- which means
+they're all \xcd`Int`s.  So, yes, \xcd`Int{self!=3} <: Int`.
+
+In fact, \xcd`Int{c} <: Int`  for {\em any} constraint \xcd`c`.
+The elements of \xcd`Int{c}` are \xcd`Int`s which satisfy \xcd`c`, so they're
+\xcd`Int`s, so they're elements of \xcd`Int`.  
+
+Some other examples: 
+
+\begin{itemize}
+
+\item \xcd`Int{self!=1, self!=2} <: Int{self!=1}`. 
+
+\item \xcd`Int{self==3} <: Int{self!=4}`.  Three is one of the numbers which
+      isn't four.
+
+\item \xcd`Int{self==3}` is {\em not} a subtype of \xcd`Long{self!=3}` -- nor
+      of \xcd`Long` for that matter.  \xcd`Int`s and \xcd`Long`s are different
+      kinds of numbers.  Sure, \xcd`Int`s represent the same numbers as some 
+      \xcd`Long`s --- but they're not the same X10 values!  
+
+\item Adding more constraints makes a subtype.  \xcd`T{c,d} <: T{c}`.  In
+      fact, if \xcd`T <: U`, then \xcd`T{c} <: U` too. 
+
+\end{itemize}
+
+\subsection{STATIC\_CHECKS}
+
+X10 can seem a bit fussy about type checking at times.  For example, when you
+subscript an \xcd`Array[Int]`, X10 will complain if it doesn't know that the
+number of subscripts is right.  That's a perfectly sensible thing for a
+compiler to complain about --- you'd be pretty unhappy if your program quietly
+did something insane because an array was subscripted wrong.  Still, X10's
+complaints can get annoying, especially if you know you're
+right.\footnote{How often are you actually right when you know you're right?
+How often do you {\em stay} right when someone else who doesn't understand
+comes in two years later and changes the program around?}
+
+So, code like this is vulnerable: 
+%%START X10: ArrayInc1.x10 arrayinc
+\fromfile{ArrayInc1.x10}
+\begin{xtennum}[]
+def fiddle(a:Array[Int]) {
+  a(2) += 1;
+}
+\end{xtennum}
+%%END X10: ArrayInc1.x10 arrayinc
+The array \xcd`a` might have one subscript (and the code will work right -- if
+\xcd`2` is a legitimate subscript for it, anyhow), or it might have several
+(and the code will be wrong).  
+
+You've got a choice of what to do. The \xcd`-STATIC_CHECKS` compiler flag
+controls them -- so you get to decide how you want each file compiled.
+
+What X10 and good software engineering practice want you to do is to explain
+that \xcd`a` has to be a one-dimensional array, like this:
+%%START X10: ArrayInc1.x10 arrayincA
+\fromfile{ArrayInc1.x10}
+\begin{xtennum}[]
+def fiddle_A(a:Array[Int]{a.rank==1}) {
+  a(2) += 1;
+}
+\end{xtennum}
+%%END X10: ArrayInc1.x10 arrayincA
+This is a bit wordy, so you can abbreviate it like this.  See
+\Sref{sect:Typedef} for how to arrange this kind of abbreviation in general. 
+%%START X10: ArrayInc1.x10 arrayincB
+\fromfile{ArrayInc1.x10}
+\begin{xtennum}[]
+def fiddle_B(a:Array[Int](1)) {
+  a(2) += 1;
+}
+\end{xtennum}
+%%END X10: ArrayInc1.x10 arrayincB
+If you want to be sure you're following good practices, use the
+\xcd`-STATIC_CHECKS` compiler flag.  It will mark the original \xcd`fiddle`
+method as a compiler error.
+
+The error message looks like this:
+\begin{verbatim}
+fancy-types/ArrayInc1.x10:4: Cannot assign expression to array element of given type.    
+     	 Expression: 1    
+     	 Type: x10.lang.Int{self==1}    
+     	 Array element: a(2)    
+     	 Type: x10.lang.Int    
+     	 Cause: Call invalid; calling environment does not entail the method guard.    
+     	 arg types:[x10.lang.Int{self==2}]    
+     	 query residue: {a.rank==1}
+
+\end{verbatim}
+The \xcd`Cause:` line is your best clue.  It says that the ambient information
+(the ``calling environment'') isn't enough to tell (``entail'') that the guard
+on the method call \xcd`a(2)` is true.  
+(Array subscripting {\em is} a method call; see
+\Sref{sect:OperatorOverloading} for why.)  
+
+The \xcd`arg types:` line says what X10 knows about the arguments.  The
+argument \xcd`2` is a thing of type \xcd`Int{self==2}`.  Hopefully this does
+not come as a surprise.  This information isn't directly helpful, but it will
+keep you oriented.
+
+The \xcd`query residue` line explains what X10 needs to know that it doesn't
+know.  In this case, it needs \xcd`a.rank==1`.  
+
+So, somewhere around there, you need to add the constraint that
+\xcd`a.rank==1`.\footnote{Or at least, you need to add a constraint strong
+enough to prove it.  You could add {\em more} information.}
+This will lead you to write \xcd`fiddle_A` or \xcd`fiddle_B`.
+
+
+
+\subsubsection{Dynamic Checks}
+
+
+But if you don't want to do that, for some reason, you can still write the
+original \xcd`fiddle`.  
+
+By default, \xcd`-STATIC_CHECKS=false`.  X10 will create {\em dynamic checks}
+whenever it realiaes that some constraints are missing but
+satisfiable.\footnote{``satisfiable'' means that it's {\em possible} that the
+constraints are right.  If X10 knows that constraints are unsatisfiable --
+that they couldn't possibly be right -- X10 will mercilessly refuse to compile
+your program.  But if the constraints {\em might} be right, you have more
+leeway.} 
+It will cast things to the types they need to be.  
+In this case, \xcd`a` needs to be rank-1.  So the code behaves like this:
+%%START X10: ArrayInc1.x10 arrayincdyn
+\fromfile{ArrayInc1.x10}
+\begin{xtennum}[]
+def fiddle_dynamic(a:Array[Int]) {
+  val aa : Array[Int]{self.rank==1} 
+         = a as Array[Int]{self.rank==1};
+  aa(2) += 1;
+}
+\end{xtennum}
+%%END X10: ArrayInc1.x10 arrayincdyn
+
+There are two upsides:
+\begin{enumerate}
+\item This compiles, and, if \xcd`fiddle` is always called
+with a one-dimensional array, it always runs right.  
+\item It's quicker to write if you don't bother with the details of the types.
+      This can be important if you're tossing together a program in a hurry,
+      especially one that will only be used once or twice. 
+\end{enumerate}
+
+There are two downsides: 
+\begin{enumerate}
+\item You're paying the performance cost for the dynamic checks.  Every time
+      \xcd`fiddle` is called, X10 has to make sure at runtime that
+      \xcd`a` is the right size.  It wouldn't have to do this if the check
+      were done at compile time.
+\item If, say, some other programmer doesn't read the requirements on
+      \xcd`fiddle` carefully, and stupidly passes a
+      fourteen-dimensional array to it, it will fail at runtime with an error
+      message, like this: 
+\begin{verbatim}
+x10.lang.FailedDynamicCheckException: x10.array.Array[x10.lang.Int]{self.rank==1}
+	at ArrayInc1.$closure_apply820_0_$_x10$lang$Int_$(ArrayInc1.java:239)
+	at ArrayInc1.fiddle_dynamic_0_$_x10$lang$Int_$(ArrayInc1.java:37)
+	at ArrayInc1.main(ArrayInc1.java:94)
+	at ArrayInc1$$Main.runtimeCallback(ArrayInc1.java:82)
+	at x10.runtime.impl.java.Runtime$$Closure$Main.$apply(Runtime.java:118)
+	at x10.lang.Runtime$$Closure$141.$apply(Runtime.java:3676)
+	at x10.lang.Activity.run(Activity.java:410)
+	at x10.lang.Runtime$Worker.loop$O(Runtime.java:1767)
+	at x10.lang.Runtime$Worker.$apply(Runtime.java:1714)
+	at x10.lang.Runtime$Pool.$apply(Runtime.java:2068)
+	at x10.lang.Runtime.start(Runtime.java:2519)
+	at x10.runtime.impl.java.Runtime.$apply(Runtime.java:162)
+	at x10.runtime.impl.java.Thread.run(Thread.java:64)
+\end{verbatim}
+Sometimes, this sort of error message is a bit hard to figure out.  
+If you look around in your program, you won't find the dynamic check that
+X10 claims is failing.  There's a good reason -- X10 generated the dynamic
+check itself, so it's not actually visible in your code.  
+\end{enumerate}
+
+These disadvantages are serious enough so that X10 won't just silently insert
+those dynamic checks.  It will {\em noisily} insert them.  It prints
+compile-time warnings, like this:
+\begin{verbatim}
+x10c: 3 dynamically checked calls or field accesses, 
+  run with -VERBOSE_CHECKS for more details.
+\end{verbatim}
+And, if you do so, you see messages like: 
+\begin{verbatim}
+% fancy-types/ArrayInc1.x10:4: Generated a dynamic check for the method call.
+\end{verbatim}
+So you can be as aware of just what X10 is doing on your behalf as you want to
+be.  
+
+
+
+\subsection{Incompleteness}
+
+X10 knows a lot when it works with constraints, but there are a few things it
+doesn't know.  If you run into one of these, you'll get a situation where (in
+a perfect world) your program ought to type-check correctly, but (in X10's
+approximation of perfect)  it doesn't.  These limitations won't make your
+program run wrong -- they won't let it run at all.
+
+The constraints are pretty obscure.  You probably won't run into them, and, if
+you do, there's generally something simple to do about it.
+
+The first limitation is that X10 doesn't understand very much about any
+particular type.  For example, there are only two \xcd`Boolean` values,
+\xcd`true` and \xcd`false`.  X10 doesn't know that.  So, if you write a
+constraint like \xcd`{a!=b, b!=c, a!=c}`, where \xcd`a`, \xcd`b`, and \xcd`c`
+are \xcd`Boolean`s, {\em you} know that the constraint is false.  There aren't
+three different \xcd`Booleans`, so two of \xcd`a`, \xcd`b`, and \xcd`c` have
+to be the same.  X10's constraint solver, unaware of this point about
+\xcd`Boolean`s, can't tell that this constraint is false. 
+If, somehow, you arrange for this to be a problem for you, use \xcd`false`
+instead of 
+\xcd`{a!=b, b!=c, a!=c}`.
+
+The second limitation is that X10's constraint solver doesn't know that
+\xcd`{x.a==1, x.a==2}` (or \xcd`{x.a==1, x.a!=1}`) implies \xcd`x==null`.
+If you ever have written something like one of the first two forms, write
+\xcd`x==null` instead.  It's much easier to understand, for you and for X10.
+
+
+\subsection{Generics Lose Constraints At Runtime}
+\label{sect:GenericsLose}
+
+X10's type system is usually robust and safe -- usually.  There are a few
+unsafe classes and methods.  And there's one systematic hole which, if you
+abuse it, can lead to certain type errors -- namely, constraints being false
+even though the typechecker says that they are true.
+
+The problem is that X10 doesn't keep constraints at runtime.  
+At {\em compile time}, \xcd`Int{self==0}` and \xcd`Int{self!=0}` are utterly
+different types, and X10 is very fussy about using them properly.  At {\em
+runtime}, the constraints are obliterated, and they both look like just plain
+\xcd`Int`.  
+%%START X10: ErasedGenerics.x10 eragen
+\fromfile{ErasedGenerics.x10}
+\begin{xtennum}[]
+type Three = Int{self==3};
+val a = new Array[Three](0..10, 3);
+a(0) = 3; 
+val aa = a as Any; 
+val b = aa as Array[Int](1) 
+b(0) = 1; 
+val x : Three = a(0); 
+assert x == 3; 
+\end{xtennum}
+%%END X10: ErasedGenerics.x10 eragen
+
+\begin{description}
+
+\item [line \xlref{eragen-a}{2}:] The array \xcd`a` has been declared to be
+      an array of \xcd`Three`s --- that is, copies of the integer \xcd`3`.
+      \xcd`a`'s compile-time type is \xcd`Array[Three](1)`.  But at {\em
+      runtime} the constraint is thrown away, so \xcd`a`'s {\em runtime} type
+      is \xcd`Array[Int](1)`. 
+
+\item [line \xlref{eragen-ass2a}{3}:] 
+      Here, we store a \xcd`3` into it, just to prove we can.  If we had used
+      any number but \xcd`3` here, X10 would refuse to compile the program.
+
+\item [line \xlref{eragen-aa}{4}:] \xcd`aa` is \xcd`a`, but without any
+      static type information.  It still has the {\em runtime} type
+      information of \xcd`a`, though.
+
+\item [line \xlref{eragen-b}{5}:] Now we cast the array to \xcd`Array[Int](1)`.
+      Since this is exactly the runtime type of \xcd`a`, the cast succeeds.
+      But now we're in trouble...
+
+\item [line \xlref{eragen-ass2b}{6}:] Since \xcd`b` is an \xcd`Array[Int](1)`,
+      we can store any \xcd`Int` into it -- here, we store \xcd`1`.  This is a
+      disaster in the making. \xcd`b` is the same object as \xcd`a`, and
+      \xcd`a` is declared to be \xcd`Array[Three](1)`. All that belongs in
+      \xcd`a` is \xcd`e`'s. 
+
+\item [line \xlref{eragen-x}{7}:] Since \xcd`a` is a
+      one-dimensional array of \xcd`Three`s, we should be able to get its
+      elements and have them be \xcd`Three`s, right...?  
+
+\item [line \xlref{eragen-fail}{8}:] Well, no.  \xcd`b(0)` was assigned
+      \xcd`1`, and \xcd`a(0)` is the same element, so \xcd`x` is \xcd`1`.
+      Which is pretty disappointing (or catastrophic) for a value of type
+      \xcd`Three`. 
+\end{description}
+
+The way to protect yourself from this flaw is the \xcd`-VERBOSE` compiler
+flag, which will warn you that the cast on line \xlref{eragen-b}{5} is unsound.  
+
+
+
+
+\section{Type Declarations}
+\label{sect:TypeDecl}
+
+X10 types can carry a great deal of information around with them, like the
+non-null array of non-null strings we saw in \Sref{sect:NullTestsNested}.
+This means that X10 types can get ridiculously long -- a type carrying a lot
+of information has to write a lot of information down.  
+
+Long type expressions are hard to write, and hard to read.  This isn't just a
+matter of convenience -- though your convenience {\em does} matter.  It's hard
+to get a program right if the types it uses take several lines to write down.
+Here's a scrap of a program which manipulates one-dimensional non-null arrays
+of two-dimensional non-null arrays of non-null strings.  We don't even know
+who to format that type readably: 
+%%START X10: TypeDefless.x10 typedefless
+\fromfile{TypeDefless.x10}
+\begin{xtennum}[]
+static def first(a : Array[Array[
+       String{self!=null}]{rank==2,self!=null}]
+       {self!=null,rank==1})
+ : String{self!=null} = a(0)(0,0); 
+\end{xtennum}
+%%END X10: TypeDefless.x10 typedefless
+
+So, X10 allows you to abbreviate types, with the \xcd`type` statement.
+A local \xcd`val` declaration lets you write down a long {\em computation} and
+give its value a name.  A \xcd`type` declaration does the same thing, only
+with a type rather than a value.  Here's one way to write the same code 
+with one typedef: 
+%%START X10: TypeDef1.x10 typedef1
+\fromfile{TypeDef1.x10}
+\begin{xtennum}[]
+public static type Firstable = Array[Array[
+   String{self!=null}]{rank==2,self!=null}]
+   {self!=null,rank==1};
+static def first(a : Firstable) = a(0)(0,0);
+\end{xtennum}
+%%END X10: TypeDef1.x10 typedef1
+
+That helps a little.  The method call is down to something short, which is
+good.  If there were a dozen other methods in the program working with
+\xcd`Firstable`s, they all would be down to something short.  And if you were
+trying to read this program, you could tell at a glance that all the
+\xcd`Firstable`s were the same type, which wouldn't have been at all clear if
+the types were written out in full.
+
+But we can make matters clearer. \xcd`type` definitions can have generic
+arguments and value parameters, much the same way that methods can.  So we can
+do this:
+%%START X10: TypeDeffed.x10 typedeffedDefs
+\fromfile{TypeDeffed.x10}
+\begin{xtennum}[]
+static def first(a : Firstable) : StringNN = a(0)(0,0);
+
+static type Nonnull[T]{T <: Object} = T{self!=null};
+static type StringNN = Nonnull[String];
+static type ArrayNN[T](n:Int) = Array[T]{self!=null, rank==n};
+static type ArrayNN1[T] = ArrayNN[T](1);
+static type ArrayNN2[T] = ArrayNN[T](2);
+static type Firstable = ArrayNN1[ArrayNN2[StringNN]];
+\end{xtennum}
+%%END X10: TypeDeffed.x10 typedeffedDefs
+
+\begin{description}
+
+\item [line \xlref{typedeffedDefs-nonnull}{3}:]  \xcd`Nonnull[T]` is a variant
+      of \xcd`T`, restricted to be not \xcd`null`.  The \xcd`[T]` part is a
+      generic parameter, just like on a class or method. The 
+      \xcd`{T <: Object}` is a guard, just like on a method.  Only objects can
+      possibly 
+      be \xcd`null`, so we should only be applying \xcd`Nonnull` to object ---
+      that is, to types \xcd`T` which are subtypes of \xcd`Object`.  
+
+\item [line \xlref{typedeffedDefs-stringnn}{4}:] This defines \xcd`StringNN` as
+      a non-null string.  This is probably a useful type for this program,
+      which seems to want to work a lot with non-null strings.  We used it on
+      line \xlref{typedeffedDefs-first}{1}, as the return type of \xcd`first`,
+      as well as in the definition of \xcd`Firstable` on line
+      \xlref{typedeffedDefs-firstable}{8}. 
+
+\item [line \xlref{typedeffedDefs-arraynn}{5}:] \xcd`ArrayNN[T](n)` is an
+      \xcd`n`-dimensional, non-\xcd`null` array of \xcd`T`'s.  The \xcd`[T]`
+      is a generic parameter, as usual. The \xcd`(n:Int)` is an {\em integer}
+      parameter. On the right-hand side, we use \xcd`n` in the constraint on
+      the rank of the array.
+
+\item [line \xlref{typedeffedDefs-array1}{6}:] Using \xcd`ArrayNN[T](n)`, we'll
+      define the kinds of array we actually use.  We could have skipped this
+      step, writing \xcd`ArrayNN[ArrayNN[StringNN](2)](1)` for line 
+      \xlref{typedeffedDefs-firstable}{8}.  Providing the extra abstraction
+      seemed a bit nicer, albeit wordier. It doesn't take too many nested
+      brackets and parentheses to make it hard to tell which \xcd`(2)` goes
+      with which \xcd`ArrayNN`.  
+
+\item [line \xlref{typedeffedDefs-firstable}{8}:] The definition of
+      \xcd`Firstable`, using the constructs we've introduced, is about as
+      clear as it could be.   
+\end{description}
+
+While \xcd`Nonnull` isn't part of the stardard X10 library, there is a
+standard \xcd`type` for \xcd`Array`: 
+\begin{xten}
+public type Array[T](r:Int) = Array[T]{self.rank==r};
+\end{xten}
+So, \xcd`Array[Int](3)` is a three-dimensional array of \xcd`Int`s, and so on.  
+Some related types do the same thing: 
+\begin{xten}
+public type Point(r: Int) = Point{self.rank==r};
+\end{xten}
+For example, here's a method which swaps two elements of an array.  It works
+for arrays of any size and element type --- but the \xcd`Point`s telling which
+elements to swap have to have the same dimension as the array.  
+%%START X10: ArraySwap.x10 arrayswap
+\fromfile{ArraySwap.x10}
+\begin{xtennum}[]
+static def swap[T](a:Array[T], p:Point(a.rank), q:Point(a.rank)) {
+   val tmp = a(p);
+   a(p) = a(q);
+   a(q) = tmp;
+}
+\end{xtennum}
+%%END X10: ArraySwap.x10 arrayswap
+
+
+
+{\bf True Confession:} If you're working with a complicated structure like the
+\xcd`Firstable` in this section, you might be better off encapsulating it as a
+class or a struct, and defining a clear interface for it, rather than keeping
+it as one devastating type expression.  Even breaking the type into a series
+of clean abstractions with \xcd`type` definitions is often an inferior choice.
+Elaborate types are likely to need to be changed as the program evolves, and
+all the code using them is going to have to change as well.  A class or struct
+can encapsulate the changeable bits inside a stable and readable inteface.
+
+
+\section{Type Inference}
+\label{sect:TypeInference}
+
+As part of its ongoing program to make types less obnoxious to use, X10 lets
+you skip writing types in some common places, and does its best to figure out
+what you meant.  
+
+\subsection{Type Inference in {\tt val}}
+
+We've used type inference in \xcd`val`s in nearly every program.   
+X10 can figure out the type of any expression.  So, when 
+you want to have a typical \xcd`val` statement\footnote{The atypical \xcd`val`
+is one with delayed initialization; see
+\Sref{sect:DelayedInitialization}\bard{write this section}.}
+that evaluates an expression and gives it a name, you don't have to explain
+what type you want.
+X10 will use the type of the expression.
+
+The type of \xcd`1` is \xcd`Int{self==1}`.  So, the statement
+\begin{xten}
+val x = 1;
+\end{xten}
+is the same as 
+\begin{xten}
+val x : Int{self==1} = 1;
+\end{xten}
+
+It is {\em not} the same as 
+\begin{xten}
+val x : Int = 1;
+\end{xten}
+which leaves out the constraint on the type.
+
+Generally you'll want to keep all the constraints on types.  If we try to
+write this: 
+\begin{xten}
+// This doesn't work 
+val a : Array[Int] = [1,2,3];
+a(0) = 0;
+\end{xten}
+we'll get a compiler warning or error message.  The initial value
+\xcd`[1,2,3]` is a one-dimensional array.  But the type \xcd`Array[Int]` has
+lost track of the dimensionality.  So, the attempt to subscript it with one
+index, \xcd`a(0)`, is a problem.
+
+We could be more precise with the type, like this: 
+%%START X10: InferredSubscript.x10 inferredsubscript
+\fromfile{InferredSubscript.x10}
+\begin{xtennum}[]
+val a : Array[Int](1) = [1,2,3];
+a(0) = 0;
+\end{xtennum}
+%%END X10: InferredSubscript.x10 inferredsubscript
+
+This actually loses some other information about the array that X10's type
+keeps track of -- that it is rectangular, and indices start at 0.  In most
+cases it's a bad idea to specify exact types with \xcd`val`.  
+
+It's often a kindness for people and compilers reading your program to give
+{\em some} type information.  Explaining that you wanted \xcd`a` to be some
+kind of \xcd`Array[Int]` can be quite helpful.  It can catch some errors -- if
+we had somehow typed \xcd`"[1,2,3]"`, X10 would say that we've got a string
+rather than any sort of \xcd`Array[Int]`.  
+
+So X10 allows you to give {\em partial} type information in a \xcd`val`
+declaration: 
+%%START X10: InferredSubscript.x10 inferredowl
+\fromfile{InferredSubscript.x10}
+\begin{xtennum}[]
+val a <: Array[Int] = [1,2,3]; 
+a(0) = 0;
+\end{xtennum}
+%%END X10: InferredSubscript.x10 inferredowl
+X10 will make sure that whatever you have told it is right.  In
+\xlref{inferredowl-owl}{1}, it will confirm that \xcd`a` is indeed an
+\xcd`Array[Int]`.  But, unlike the previous example with \xcd`:`, it won't
+forget everything else it knows.  It will keep the full inferred type for
+\xcd`a`.  
+
+If you want to specify types for \xcd`val`s, it's usually best to use \xcd`<:`
+rather than \xcd`:`.
+
+\subsection{Type Inference in {\tt def}}
+
+You can specify the type of a method if you want, like this: 
+%%START X10: InferredMethod.x10  inferredmethoda
+\fromfile{InferredMethod.x10}
+\begin{xtennum}[]
+def specify():Int = 1;
+\end{xtennum}
+%%END X10: InferredMethod.x10 inferredmethoda
+But you usually don't bother, like this:
+%%START X10: InferredMethod.x10  inferredmethodb
+\fromfile{InferredMethod.x10}
+\begin{xtennum}[]
+def infer() = 2; 
+\end{xtennum}
+%%END X10: InferredMethod.x10 inferredmethodb
+
+
+\subsection{Type Inference in Arrays and Conditionals}
+
+We've mostly seen array and conditional expressions like \xcd`[1,2,3]`
+and \xcd`x>y ? 0 : 1`, where the results have similar types.  (Even in these
+cases, the results don't have the {\em same} types.)  But X10 allows 
+arrays with mixed-up element types, like this: 
+%%START X10: InferredCUB.x10 inferredcuba
+\fromfile{InferredCUB.x10}
+\begin{xtennum}[]
+val a = [1, true, "yes"];
+\end{xtennum}
+%%END X10: InferredCUB.x10 inferredcuba
+In fact, there's nothing unusual for X10 going on here.  Every type in X10,
+including the  \xcd`Int`, \xcd`Boolean`, and \xcd`String` represented here, is
+a subtype of \xcd`Any`.  This array simply has type
+\xcd`Array[Any]`.\footnote{Or, more precisely, \xcd`Array[Any]` with some
+constraints.}  
+
+In fact, there is {\em nothing} special going on here.  Whenever X10 tries to
+infer one type out of several, it computes a type that's broad enough to cover
+each of the types.  This happens in several places: 
+\begin{itemize}
+\item Array expressions, like \xcd`[1,2,3]` and \xcd`[1, true, "yes"`;
+\item Conditional expressions, like \xcd`x>y ? 0 : 1`
+\item Multiple returns from a method, like 
+\begin{xten}
+def choice(x:Int) { 
+  if (x>0) return 1; else return "hello?"; 
+}
+\end{xten}
+\end{itemize}
+
+In all these situations, X10 finds a type, called the {\em computed upper
+bound}, which is general enough to include all of the types in question, and,
+hopefully, not too much more general.  If it can't do any better than picking
+\xcd`Any`, that's what it will do -- and \xcd`Any` is always a possibility.
+But, if all the elements are integers, it'll use \xcd`Int` or some constrained
+version of it.  
+
+For \xcd`["string", ["array"]]`, X10 infers that the type \xcd`Array[Object]`.
+Both \xcd`"string"` and \xcd`["array"]` are \xcd`Object`s.  X10 could actually
+find a more precise type -- both of them are \xcd`Object{self!=null}`s. X10
+picks the simpler type, hoping that it is more likely to be what was intended.
+
+Similarly, for \xcd`[1,2,3]`, X10 picks \xcd`Int`.  There are more accurate
+choices available.  All three numbers are \xcd`Int{self!=4}`, for example.
+They're also \xcd`Int{self!=4,self!=5}`, and so on.  In fact, there is no {\em
+best} choice in the X10 type system\footnote{Unless one is willing to write
+all {$2^{32}-3$} values that these three numbers are not, which will probably
+crash the compiler.}  X10's choice of \xcd`Int` is about as sensible as
+anything could be. 
+
+
+
+
+
+\subsection{Type Inference in Calls to Generic Methods}
+
+X10 can infer type parameters, too.  This can save a lot of typing and
+clutter.  Start with a \xcd`Pair` class, like this: 
+%%START X10: GenericInference.x10 geninfdef
+\fromfile{GenericInference.x10}
+\begin{xtennum}[]
+static struct Pair[X,Y]{
+  public val x:X;
+  public val y:Y;
+  public def this(x:X, y:Y) {
+    this.x = x; this.y = y;
+  }
+}
+static def useIntStr(p:Pair[Int, String]){}
+\end{xtennum}
+%%END X10: GenericInference.x10 geninfdef
+
+It can get tiresome to write the types whenever we make a new \xcd`Pair`: 
+%%START X10: GenericInference.x10 geninflong
+\fromfile{GenericInference.x10}
+\begin{xtennum}[]
+val p = Pair[Int, String](2, "long");
+useIntStr(p);
+\end{xtennum}
+%%END X10: GenericInference.x10 geninflong
+
+X10 can perfectly well figure out the types by itself, like this: 
+%%START X10: GenericInference.x10 geninfok
+\fromfile{GenericInference.x10}
+\begin{xtennum}[]
+static def useItOK(i:Int, s:String) {
+  val p = Pair(i+1, s + "!");
+  useIntStr(p);
+}
+\end{xtennum}
+%%END X10: GenericInference.x10 geninfok
+
+In this example, the generic types \xcd`X` and \xcd`Y` were the types of the
+arguments, and X10 could just use the argument types.  The situation doesn't
+need to be that simple.  The actual type could be buried several levels down;
+X10 will happily excavate to find it.
+In the following example, the \xcd`rip` method has to strip off the
+\xcd`Array` type and break apart the \xcd`=>` type to find out what \xcd`X`
+and \xcd`Y` ought to be: 
+%%START X10: GenericInference.x10 geninfRip
+\fromfile{GenericInference.x10}
+\begin{xtennum}[]
+static def rip[X,Y](a: Array[(Y)=>X]) = "deep";
+static def useRip(i:Int){
+   type myX = Byte;
+   type myY = Long;
+   val a : Array[(myY)=>myX] = null;
+   val r = rip(a);
+}
+
+\end{xtennum}
+%%END X10: GenericInference.x10 geninfRip
+
+This kind of type inference works pretty well for methods.  It doesn't work
+nearly as well for structs and classes.  It's quite easy to trip up and give
+\xcd`Pair` arguments whose types aren't just \xcd`Int` and \xcd`String`, like
+this: 
+%%START X10: GenericInference.x10 geninfail
+\fromfile{GenericInference.x10}
+\begin{xtennum}[]
+static def useItFail(){
+  val p = Pair(2, "short");
+  // ERROR --  useIntStr(p);
+}
+\end{xtennum}
+%%END X10: GenericInference.x10 geninfail
+\xcd`2`'s type is \xcd`Int{self==2}`, and similarly for \xcd`"short"`, so 
+\xcd`p` gets type \xcd`Pair[Int{self==2},String{self=="short"}]`.  This can't
+be passed to \xcd`useIntStr`.  As usual when this happens, you need to use
+explicit types: 
+%%START X10: GenericInference.x10 geninunfail
+\fromfile{GenericInference.x10}
+\begin{xtennum}[]
+static def useItFail(){
+  val p = Pair[Int, String](2, "short");
+  useIntStr(p);
+}
+\end{xtennum}
+%%END X10: GenericInference.x10 geninunfail
+
+
+\subsection{When Inference Fails}
+X10's type inference is not perfect.  Once in a while, it will infer the wrong
+type for something.  When it does, there's a simple solution: write down the
+correct type.
+
+The most common case where type inference is allowed and does the wrong thing
+is defining a method to override.  You might be tempted to write this: 
+\begin{xten}
+class Super {
+  def superstitious() = true;
+}
+class Sub extends Super {
+  def superstitious() = false;
+}
+\end{xten}
+\xcd`Super`'s definition of \xcd`superstitious` gives it the best type it can.
+That's the type of the expression \xcd`false`, which is
+\xcd`Boolean{self==false}`.  \xcd`Sub`'s definition of \xcd`superstitious`
+doesn't match this type, since \xcd`true` isn't a member of 
+\xcd`Boolean{self==false}`.
+
+So you need to write it like this, with \xcd`:Boolean` in line
+\xlref{superstitious-super}{2}: 
+%%START X10: InferredMethod.x10 superstitious
+\fromfile{InferredMethod.x10}
+\begin{xtennum}[]
+ class Super {
+  def superstitious() : Boolean = true;
+}
+ class Sub extends Super {
+  def superstitious() = false;
+}
+\end{xtennum}
+%%END X10: InferredMethod.x10 superstitious
+
+Another occasional failure of inference is array expressions, like 
+\xcd`[1]`.  The type of \xcd`1` is \xcd`Int{self==1}`, 
+so the type of \xcd`[1]` is approximately 
+\xcd`Array[Int{self==1}](1)` --- a one-dimensional array of 1's.  
+Which makes this program fail to compile: 
+\begin{xten}
+static def use(a:Array[Int](1)) = a(0);
+public static def main(argv:Array[String](1)) {
+  use([1]);
+}
+\end{xten}
+(See \Sref{sect:ArrayNonvariance} for an explanation of why 
+this must not work.)
+
+Fortunately, the type of \xcd`[1,2]` is \xcd`Array[Int](1)`, instead of
+something crazy -- but correct! -- like
+\xcd`Array[Int{self!=43}](1)`.\footnote{This type is even more accurate than
+the correct type.  If you know that it's an array of \xcd`Int`s that aren't
+43, you know it's an array of \xcd`Int`s.  Of course, they aren't 781 either,
+nor are they 3313. This process can go on for far too long.  X10 stops with
+the simpler \xcd`Int`.}
+
+Still, if you really want just \xcd`[1]`, or \xcd`[1,1,1]`, or some such
+thing, to be an array of \xcd`Int`s rather than an array of ones, you can
+put an explicit type cast on one of the \xcd`1`'s, to make X10 forget that it
+is anything but just some \xcd`Int`.  
+%%START X10: InferredArray.x10 inferredarray
+\fromfile{InferredArray.x10}
+\begin{xtennum}[]
+static def use(a:Array[Int](1)) = a(0);
+public static def main(argv:Array[String](1)) {
+  use([1 as Int, 1, 1, 1]);
+}
+\end{xtennum}
+%%END X10: InferredArray.x10 inferredarray
+Notice that we only needed to cast {\em one} element of the array to the type
+we wanted.  
+
+
+
+\subsection{Nonvariance}
+\label{sect:ArrayNonvariance}
+
+What's the relationship between \xcd`Array[Int]` and \xcd`Array[Any]`?  Or,
+more broadly, if \xcd`T <: U`, what's the relationship between \xcd`Array[T]`
+and \xcd`Array[U]`?
+
+At first glance, it might seem that \xcd`Array[Int]` should be a subtype of
+\xcd`Array[Any]`.  After all, if you have an array of integers, you've
+certainly got an array of anythings. 
+
+Unfortunately, that doesn't work.  Here's why. 
+
+First of all, the basic property of an \xcd`Array[Int]` is that anything
+stored in it had better be an \xcd`Int`, and anything we get out of it had
+better be an \xcd`Int`.  If we ever store anything but an
+\xcd`Int` in it, something is seriously wrong.  
+
+Suppose that \xcd`Array[Int]` were a subtype of \xcd`Array[Any]`.  Then the
+following code would typecheck:
+\begin{xten}
+// This will not compile!
+val ai : Array[Int](1) = [1, 2, 3];
+val aa : Array[Any](1) = ai as Array[Any](1);
+aa(1) = "I am not a number";
+assert aa(1) == ai(1);
+\end{xten}
+\xcd`ai` is an array of integers.  \xcd`aa` is the same object as \xcd`ai`,
+except that it's got the type \xcd`Array[Any]` --- which is legitimate in the
+hypothetical alternate world where \xcd`Array[Int]<:Array[Any]`.  
+It's perfectly fine to set \xcd`aa(1)` to a string -- \xcd`aa`, being
+\xcd`Array[Any]`, can hold anything at all.  But, since \xcd`aa` is the same
+as \xcd`ai`, we've set \xcd`ai(1)` to a string, which is not allowed for an
+\xcd`Array[Int]`. 
+
+So, we can't have \xcd`Array[Int] <: Array[Any]`.
+
+How about the other way around.  Could we have \xcd`Array[Any] <: Array[Int]`?  
+
+That doesn't work either, for a similar reason.   If 
+\xcd`Array[Any]` were a subtype of \xcd`Array[Int]`
+\begin{xten}
+// This will not compile!
+val aa : Array[Any](1) = [true, "fish"];
+val ai : Array[Int](1) = aa as Array[Int](1);
+val i  : Int = ai(0);
+\end{xten}
+\xcd`aa` is an array of anythings, in this case containing a Boolean and a
+string. In this hypothetical alternate world, every \xcd`Array[Any]` is an
+\xcd`Array[Int]` too, so we can coerce \xcd`aa` to \xcd`ai`. Again, the two
+are the same array, just under different names.  But then, when
+we go to get an element out of \xcd`ai`, we get a Boolean value out, which is
+repugnant to the nature of an \xcd`Array[Int]`.  
+
+So, there's no subtyping in either direction between \xcd`Array[Int]` and
+\xcd`Array[Any]`. The same sort of examples show that, even if \xcd`S <: T`,
+there should never be any subtyping between \xcd`Array[S]` and \xcd`Array[T]`.  
+The technical term for this is that \xcd`Array` is {\em nonvariant}.  
+
+In fact, the same problem happens for nearly all generic types.  So, in X10,
+there's {\em never}  any subtyping relationship between \xcd`Fiddle[A]` and 
+\xcd`Fiddle[B]`, for {\em any} generic type \xcd`Fiddle` and {\em any}
+pair of different classes \xcd`A` and \xcd`B`.
+
+
+
+\section{Default Values}
+\label{sect:DefaultValues}
+
+Some X10 types have {\em default values}.  The default value for an \xcd`Int`
+is zero; the default value for an unconstrained object type is \xcd`null`.  
+
+
+The default value of a constrained type is the default value of the
+unconstrained type if that satisfies the constraint; the constrained type
+doesn't have a default otherwise. 
+For example, the default value of \xcd`Int{self != 3}` is zero, just like
+\xcd`Int`.  \xcd`Int{self != 0}` doesn't have a default value, since the
+default value of \xcd`Int`, zero, is constrained away. 
+
+\xcd`Int{self==4}` also doesn't have a default value.  The default value for
+any constrained \xcd`Int` type is zero if that works, and \xcd`0!=4`, so it
+doesn't have one.  You might want its default value to be \xcd`4`, since
+that's the only value that an \xcd`Int{self==4}` could have. But no, the
+only choice for a default value of any sort of \xcd`Int` is zero.
+
+
+Default values show up once in a while.  Not as often as you might think --
+local variables need to be initialized before you can use them, so X10 never
+uses their default values.  \xcd`val` fields of objects and struct also need
+to get initialized before they are used.  But \xcd`var` fields of objects
+don't necessarily need to get initialized before they are used, and, if they
+aren't initialized, they get the default value of their type.
+
+
+%%START X10: Default.x10 defaultex
+\fromfile{Default.x10}
+\begin{xtennum}[]
+ class Fault {
+  public var d : Int;
+  static def example() {
+    val f = new Fault();
+    assert f.d == 0; 
+  }
+}
+\end{xtennum}
+%%END X10: Default.x10 defaultex
+
+
+You can test to see if a type \xcd`T` has a default value, by the expression 
+\xcd`T haszero`.   This is especially useful with generic types -- you don't
+need X10 to tell you that \xcd`Int` has a zero value and \xcd`Int{self!=0}`
+doesn't.  It is also especially useful in constraints.  Here's a program which
+makes an \xcd`n`-element one-dimensional array of \xcd`T`'s, with all the
+elements having their default value:
+%%START X10: ZeroArray.x10 zeroarray
+\fromfile{ZeroArray.x10}
+\begin{xtennum}[]
+public static def zeroarray[T](n:Int){T haszero} 
+  = new Array[T](1..n);
+\end{xtennum}
+%%END X10: ZeroArray.x10 zeroarray
+The constraint \xcd`{T haszero}` makes sure that we only try to use this
+method on \xcd`T`'s which have a zero value.  (In fact, one of the
+constructors for arrays in \xcd`x10/array/Array.x10` does just
+this:\footnote{The actual constructor has an \xcd`@Inline` annotation too,
+saying that it ought to be done without a method call for a bit of extra
+efficiency on this common operation.}
+\begin{xten}
+public final class Array[T] {
+    // [lots of stuff omitted] 
+    public def this(size:int) {T haszero}
+\end{xten}
+
+Default values are defined, or undefined, like this:
+\begin{itemize}
+\item The fundamental numeric types (\xcd`Int`, \xcd`UInt`,
+      \xcd`Long`, \xcd`ULong`, 
+  \xcd`Short`, \xcd`UShort`, \xcd`Byte`,
+   \xcd`UByte`, 
+      \xcd`Float`, \xcd`Double`) all have default value 0.
+\item \xcd`Boolean` has default value \xcd`false`.
+\item \xcd`Char` has default value \xcd`'\0'`, the character numbered zero
+      (and not the character \xcd`'0'`, which is number 48). 
+\item If every field of a struct type \xcd`T` has a default value, then
+      \xcd`T` has a default value.  If any field of \xcd`T` has no default
+      value, then \xcd`T` does not. 
+\item A function type has a default value of \xcd`null`.
+\item A class type has a default value of \xcd`null`.
+\item The constrained type \xcd`T{c}` has the same default value as \xcd`T` if
+      that default value satisfies \xcd`c`.  If the default value of \xcd`T`
+      doesn't satisfy \xcd`c`, then \xcd`T{c}` has no default value.
+\end{itemize}
+
+Here's a struct with a default value.  The library class \xcd`Zero` gives you
+a method to get the default value of any type \xcd`T` that has one, alarmingly
+called \xcd`Zero.get[T]()`.  Here's how to use it: 
+%%START X10: Zerish.x10 zerish
+\fromfile{Zerish.x10}
+\begin{xtennum}[]
+public struct Zerish {
+  val cypher : Int;
+  val nihil : String;
+  public def this(c:Int, n:String) {
+    this.cypher=c; this.nihil = n;
+  }
+  public static def main(argv:Array[String](1)) {
+     val z = Zero.get[Zerish]();
+     assert z.cypher==0 && z.nihil==null;
+  }
+}
+\end{xtennum}
+%%END X10: Zerish.x10 zerish
+
+\subsection{How Default Values Can Make Your Brain Explode}
+
+Sometimes, a field of an object can get its default value, even though your
+code emphatically says that it gets some other value.  (Fortunately, this only
+happens with \xcd`transient` fields.  Regular non-\xcd`transient` fields are
+safe.)
+
+The way this happens is, suppose you have a class with a \xcd`transient`
+field.  Remember, from  \Sref{sect:transient}, that transient fields don't get
+copied when values are copied from place to place -- instead they get set to
+their default values.  (Transient fields need to have types that have default
+values.)
+
+So here's a program with some transient fields and copying: 
+%%START X10: TwoTrue.x10 twotrue
+\fromfile{TwoTrue.x10}
+\begin{xtennum}[]
+public class TwoTrue {
+  transient val a : Boolean = true; 
+  transient val b : Boolean; 
+  val c : Boolean = true;
+  val d : Boolean; 
+  public def this() { b = true; d = true; }
+  
+  public static def main(argv:Array[String](1)) {
+     val tt = new TwoTrue(); 
+     assert tt.a && tt.b && tt.c && tt.d;
+     at(here) { 
+       
+       assert tt.a == false && tt.b == false && tt.c && tt.d;
+     }
+  }
+}
+\end{xtennum}
+%%END X10: TwoTrue.x10 twotrue
+
+\begin{description}
+\item [lines \xlref{twotrue-a}{2}, \xlref{twotrue-c}{4}:] 
+      Since \xcd`a` and \xcd`c` have initializers of \xcd`true`, it looks as
+      if \xcd`tt.a` and \xcd`tt.c` ought to be \xcd`true` for every
+      \xcd`TwoTrue` value.  
+\item [lines \xlref{twotrue-b}{3}, \xlref{twotrue-d}{5}, \xlref{twotrue-ctor}{6}:]
+      Since there's only one constructor, and it makes the fields \xcd`b` and
+      \xcd`d` both be \xcd`true`, it looks as if \xcd`tt.b` and \xcd`tt.d`
+      ought to be \xcd`true for every \xcd`TwoTrue` value too.
+
+\item [line \xlref{twotrue-tt}{9}-\xlref{twotrue-testhere}{10}:] Here we make a \xcd`TwoTrue` value
+      \xcd`tt`, and check that its \xcd`a`, \xcd`b`, \xcd`c`, and \xcd`d`
+      fields are all \xcd`true`. They are.
+
+\item [line \xlref{twotrue-copy}{11}:] Now, we copy it with an \xcd`at`
+      statement.  (Remember that \xcd`at` copies {\em everything} mentioned in
+      its body, even if you're just going from \xcd`here` to \xcd`here`, like
+      this one.)
+
+\item [line \xlref{twotrue-testthere}{13}:] And now we look at the copy, which
+      is also called \xcd`tt` because that's how \xcd`at` names the things it
+      copies.  The normal fields \xcd`c` and \xcd`d` are \xcd`true`.  The
+      transient fields are \xcd`false` -- they have been set to their default
+      values.  
+\end{description}
+
+So, despite our best efforts to make \xcd`a` and \xcd`b` always be \xcd`true`,
+those transient fields can get set to \xcd`false` when an object is copied.  
+
+The right way to think about this is, \xcd`transient` is a keyword which means
+``sometimes this field gets initialized to its default value, even if some
+other bits of the program seem to say it shouldn't.''
+
+The wrong way to think about this is that an initializer setting a field to
+\xcd`true` is always going to make that field be \xcd`true`.  Sure, it always
+makes the field be \xcd`true` {\em if the initializer runs}.  But initializers
+don't run when values are copied.  The original value tells what the fields
+should be -- or, for transient fields, the field is just set to the default
+value.
+
+\subsection{How To Use This Oddity}
+
+For the most part, you shouldn't take advantage of this behavior of transient
+fields.  The real point of transient fields is to hold a chunk of information
+that shouldn't get copied --- often a big data structure that won't be needed
+everywhere that the object is needed. So, if you've got a \xcd`Car` object,
+and a \xcd`Washer` object that has a pointer back to the \xcd`Car` that uses
+it,  you might make that back pointer be transient, to avoid copying the whole
+\xcd`Car` whenever you need to talk about just the \xcd`Washer`. 
+
+But, you {\em can} use transient fields to detect which objects are originals
+and which are copies. 
+Give them a field like \xcd`original` on line \xlref{copydetection-orig}{2}.  
+The original's field is initialized to \xcd`true`.    Since the field is
+transient, if the object is ever copied, the copy's \xcd`original` field is
+set to \xcd`false` -- the copy isn't an original.
+%%START X10: CopyDetection.x10 copydetection
+\fromfile{CopyDetection.x10}
+\begin{xtennum}[]
+public struct CopyDetection {
+  public transient original : Boolean = true; 
+  public static def main(argv:Array[String](1)) {
+     val x = new CopyDetection();
+     assert x.original;  
+     at (here) {
+       assert ! x.original; 
+     }
+     val y = x;
+     assert y.original; 
+  }
+}
+\end{xtennum}
+%%END X10: CopyDetection.x10 copydetection
+
+This only detects copying by \xcd`at` statements.  Other kinds of copying,
+like the assignment on line \xlref{copydetection-y}{10} (remember, assignment of
+structs copies all the fields -- {\em including} transient ones) isn't marked
+this way.  
+
+
+
+
+\section{When Types Don't Work}
+
+X10's types are pretty strong.  Most of the time, when a program passes X10's
+type checker, it won't have any runtime type errors.  But in a few places X10
+has had to make compromises with practicality. There are way to make a program
+pass the type checker and still have a type error.
+
+Just to be clear -- these are places where X10 won't protect you.  They are
+not loopholes intended for clever programmers to exploit.  
+Intentionally sleazing around the type system is almost always a bad idea,
+and, nearly all of the time, you can get the effect you really need in other,
+less felonious ways.
+
+Even if you find yourself in a situation where you have to break X10's type
+system, we recommend that you encapsulate the violation in a method or
+function, so that the actual danger is kept under control.  Document your code
+very carefully, too ... of course, you always do that, but when you're
+breaking the language's laws, you need to be extra-clear about what you're
+doing and why you're doing it.
+
+\begin{enumerate}
+
+\item As we have seen in \Sref{sect:GenericsLose}, generic type variables lose
+      constraint information at runtime.  You can use this to ignore or
+      violate constraints -- making an \xcd`Array[Fish{self!=null}]` look like
+      an \xcd`Array[Fish]`, say.  This will let you store \xcd`null` into it,
+      and get a null-pointer exception from code that looks as if it cannot
+      possibly get a null-pointer exception.  This will rarely if ever help you.
+
+      You can't use this loophole to store anything but kinds of \xcd`Fish` in
+      that array. The loophole erases constraints, but no other type
+      information.
+
+\item Custom serialization lets you program your own ways that objects are
+      turned into bytes to send from one place to another, and how the bytes
+      are reassembled back into objects.  Since you are turning bytes into
+      objects, you can do nearly any sort of wicked deed in custom
+      serialization.  
+
+\item The library type \xcd`x10.util.IndexedMemoryChunk` gives a low-level
+      interface to blocks of memory.  A few methods on the class are not
+      type-safe. The API explains what's going on with this class.  It's very
+      helpful for implementing abstractions like arrays, but it has to be used
+      very carefully.
+
+\item Code written that uses underlying Java or C++ can do anything that
+      arbitrary Java or C++ are capable of doing.  In particular they can
+      break all of the X10 compiler's careful ways of doing things.  
+
+\end{enumerate}
+
