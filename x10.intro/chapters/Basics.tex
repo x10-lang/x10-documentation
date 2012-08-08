@@ -1,0 +1,157 @@
+\chapter{Basic Multi-Place Idioms}
+\section{HelloWholeWorld}
+
+{\footnotesize
+\begin{xten}
+public class HelloWholeWorld {
+  public static def main(args:Rail[String]):void {
+     finish
+        for (p in Place.places())
+          async
+            at (p)
+              Console.OUT.println("(At " + p + ") : " + args(0));
+  }
+}
+\end{xten}}
+The program may be read quite simply as': ``At each place
+asynchronously print the given string, and wait until they are all
+done.''   In more detail, when this program is executed, a single
+activity at place $0$ starts executing the body of the {\tt main}
+method, in an environment in which {\tt args} is bound to the rail of
+strings read in from the command line. This activity sets up a {\tt
+  finish} scope, and for each place {\tt p} launches an activity at
+that place. The body of this activity prints out a string formed from
+{\tt p} and the first argument passed in to the method. 
+
+Note that {\tt args} is defined at place $0$ but accessed from all
+places. The compiler and run-time determined that {\tt args} is a
+value at place $0$ that is referenced within the body of an {\tt at};
+hence the {\tt at} is translated into a message with a payload that
+carries the value of {\tt args}. 
+
+One can improve this program by noticing that it is not necessary to
+transmit the entire rail {\tt args} to other places; only its zero'th
+value is needed. Hence it is better to extract this value into a local
+variable and reference this variable from the body of the {\tt at}:
+{\footnotesize
+\begin{xten}
+public class HelloWholeWorld {
+  public static def main(args:Rail[String]):void {
+     finish
+        for (p in Place.places()) {
+          val arg=args(0);
+          async
+            at (p)
+              Console.OUT.println("(At " + p + ") : " + arg);
+      }
+  }
+}
+\end{xten}}
+
+
+
+\section{Streams}
+\subsection{Problem}
+\subsection{Solution design} 
+    So what do we need? We need to be able to allocate arrays of
+    doubles, zeroed. Use huge pages to reduce size of look-aside
+    buffer? 
+
+    IndexedMemoryChunk
+    GlobalRef
+
+    Team -- broadcast flat. 
+    Discuss how this is implemented as just
+
+{\footnotesize
+\begin{verbatim}
+    public def broadcastFlat(cl:()=>void) {
+      @Pragma(Pragma.FINISH_SPMD) finish for (p in this) {
+       at (p) async cl();
+     }
+   }
+\end{verbatim}}
+\subsection{Code} 
+
+\begin{table}
+{\footnotesize
+\begin{xten}
+import x10.util.IndexedMemoryChunk;
+import x10.util.Team;
+
+public class Stream {
+    static MEG = 1024*1024;
+    static alpha = 3.0D;
+    static NUM_TIMES = 10;
+    static DEFAULT_SIZE = 16 * MEG;
+    static NUM_PLACES = Place.MAX_PLACES;
+    static def allocateZeroed(size:Int) =
+	IndexedMemoryChunk.allocateZeroed[Double](size, 8, IndexedMemoryChunk.hugePages());
+    static def now():Double = System.nanoTime() * 1e-9;
+    static def printStats(N:long, time:Double, verified:boolean) {
+        val size = (3*8*N/MEG);
+        val rate = (3*8*N) / (1.0E9*time);
+        Console.OUT.println("Number of places=" + NUM_PLACES);
+        Console.OUT.println("Size of arrays: " + size +" MB (total)" 
+                                         + size/NUM_PLACES + " MB (per place)");
+        Console.OUT.println("Min time: " + time + " rate=" + rate + " GB/s");
+        Console.OUT.println("Result is " + (verified ? "verified." : "NOT verified."));
+    }                                
+// continued
+\end{xten}}
+\caption{Stream.x10 -- I/II}\label{table:streams.x10-1}
+\end{table}
+\begin{table}
+{\footnotesize
+\begin{xten}
+    public static def main(args:Array[String](1)){here == Place.FIRST_PLACE} {
+        val verified = new Cell[Boolean](true);
+        val times = GlobalRef[Rail[Double]](new Rail[Double](NUM_TIMES));
+        val N0 = args.size>0? int.parse(args(0)) : DEFAULT_SIZE;
+        val N = (N0 as long) * NUM_PLACES;
+        val localSize =  N0;
+
+        Console.OUT.println("localSize=" + localSize);
+
+        PlaceGroup.WORLD.broadcastFlat(()=>{
+                val p = here.id;
+                val a = new Rail[Double](allocateZeroed(localSize));
+                val b = new Rail[Double](allocateZeroed(localSize));
+                val c = new Rail[Double](allocateZeroed(localSize));
+                for (var i:int=0; i<localSize; i++) {
+                    b(i) = 1.5 * (p*localSize+i);
+                    c(i) = 2.5 * (p*localSize+i);
+                }
+                val beta = alpha;
+                for (var j:int=0; j<NUM_TIMES; j++) {
+                    if (p==0) {
+                        val t = times as GlobalRef[Rail[Double]]{self.home==here};
+                        t()(j) = -now();
+                    }
+
+                    for (var i:int=0; i<localSize; i++)  a(i) = b(i) + beta*c(i);
+
+                    Team.WORLD.barrier(here.id);
+                    if (p==0) {
+                        val t = times as GlobalRef[Rail[Double]]{self.home==here};
+                        t()(j) += now();
+                    }
+                }
+                // verification
+                for (var i:int=0; i<localSize; i++)
+                    if (a(i) != b(i) + alpha*c(i)) 
+                        verified.set(false);
+            });
+        var min:Double = 1000000;
+        for (var j:int=1; j<NUM_TIMES; j++)
+            if (times()(j) < min) min = times()(j);
+        printStats(N, min, verified());
+    }
+}
+\end{xten}}
+\caption{Stream.x10 -- II/II}\label{table:streams.x10-2}
+\end{table}
+\subsection{Performance}
+
+
+

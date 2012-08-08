@@ -1,0 +1,59 @@
+\chapter{Building X10}
+The X10 runtime has several build-time configuration options, which enable
+specific communications protocols, and reduce error checking within the X10
+libraries at runtime for better performance.  There is a similar set of options
+available when compiling your own program with the x10c++ compiler.  When and
+how to use these is detailed here.
+
+\section{Network transport implementations}
+For communications, the X10 runtime has the following transport
+implementations:
+\begin{itemize}
+\item Sockets: Uses TCP/IP sockets to support multiple places on one or more
+hosts.  This is the default implementation, and is the only option when using
+managed X10.  The sockets transport uses SSH to launch the binaries across the
+network.  If you have a simple cluster of machines that support Ethernet and
+SSH, the sockets transport is a good choice.
+\item Standalone: Supports multiple places on a single host, using shared
+memory between places. Standalone has high bandwidth, but limited message sizes
+and only supports places running on a single machine.
+\item MPI: An implementation of X10RT on top of MPI-2. This supports all the
+hardware that your MPI implementation supports, such as Infiniband and
+Ethernet, and should be used for systems where MPI is preferred.  It does not
+(currently) use MPI's collective implementations, but instead uses our own
+collective implementations.
+\item PAMI: An IBM communications API that comes with the IBM Parallel
+Environment: http://www-03.ibm.com/systems/software/parallel/index.html.  PAMI
+supports high-end networks such HFI (Host Fabric Interface), BlueGene,
+Infiniband, shared memory, and also Ethernet.  The PAMI implementation uses
+PAMI's collectives, and is X10's best-performing transport.  If your system has
+the IBM Parallel Environment installed, you'll want to use PAMI.
+\end{itemize}
+
+The X10 runtime will always be built with Sockets and Standalone
+transports, as no special libraries need to be available on the system to
+compile them.  But if you wish to make use of MPI or PAMI in your program, you
+must build the X10 runtime from source, specifying that you want to build in
+support for one or both of these transports.  Similarly, when building your own
+program, you can choose which transport to use and other options via arguments
+to x10c++.
+
+\section{Building the X10 runtime}
+The X10 runtime is built using ant (http://ant.apache.org/).  When you
+are satisfied that your program is operating correctly, for best performance in
+your programs, build the X10 runtime with the {\tt optimize} and
+{\tt NO\_CHECKS} options turned on.  These will reduce the error checking
+within the X10 library classes at runtime.  If you want to enable support for
+PAMI or MPI transports, turn on the {\tt X10RT\_PAMI} and/or {\tt X10RT\_MPI}
+options.  For example: ``{\tt ant -DX10RT\_PAMI=true -Doptimize=true
+-DNO\_CHECKS=true dist}''
+
+\section{Building your program}
+You use the x10c++ compiler for building your own programs.  The X10 compiler
+takes arguments to enable runtime optimizations, reduced error checking, and
+transport selection of your program source, at build-time.  Use the {\tt -O},
+{\tt -NO\_CHECKS}, and {\tt -STATIC\_CHECKS} flags for the fastest performance,
+after you are satisfied with the correctness of your program.  To choose a
+network transport other than sockets, specify {\tt pami}, {\tt mpi}, or {\tt
+standalone} as the value of the {\tt -x10rt} flag.  For example: 
+``{\tt x10c++ -O -NO\_CHECKS -STATIC\_CHECKS -x10rt pami YourProgram.x10}''.

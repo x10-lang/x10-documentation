@@ -1,0 +1,157 @@
+\chapter{Why X10?}\label{chap:whyx10}
+
+\todo{The following is very rough text, notes for what will get in
+  there. Supposed to set the stage for the X10 project, what problems
+  did we set out to address. What problems we decided not to
+  address. What have we accomplished so far.} 
+
+X10 is a new high-performance, high productivity programming language
+developed during the PERCS project. X10 is a class-based, strongly
+typed, explicitly concurrent, garbage-collected, multi-place
+object-oriented programming language.  
+
+The X10 language was designed to address the central productivity
+challenge of high performance computing (HPC). We recognized the
+reality that there was no overlap between the models, tools, and
+techniques that underlie mainstream computing practice and those that
+underlie HPC. Main stream computing has developed eco-systems capable
+of supporting tens of millions of programmers (with a wide variety of
+talent and expertise), on a wide variety of hardware platforms,
+organized around object-oriented programming concepts (modularity,
+separation of concerns, use of libraries, ...) and powerful tools
+built on frameworks such as Eclipse that successfully leverage
+research in the theory and practice of programming languages
+(development of advanced static analysis tools, type systems, program
+understanding and refactoring systems, etc).  
+
+The HPC eco-system, on the other hand, is highly specialized and
+extremely small (perhaps thousands of programmers), of use on a
+handful of advanced architectures, and focused on programming models
+such as MPI (based on C/C++/Fortran) that speak to the narrow needs of
+regular computations at extreme scale, and remains virtually
+disconnected from advances in programming languages. Consequently, the
+national labs have to take in programmers from academia and industry
+who have virtually no background in HPC and train them afresh. The
+loss in productivity for the HPC field is manifold: narrow focus
+implies limited talent pool implies  small pool of trained
+programmers, lack of advanced tools and programming  environments
+
+In January 2004, we set out to bridge this gap with the creation of
+the X10 project. We recognized the impending multi-core crisis, and
+that both the commercial and HPC models would need to change to
+accommodate concurrency. We made two critical decisions.  
+
+First, drawing on our past work in theoretical computer science, we
+designed a core programming model that fundamentally accounts for
+concurrency (asyncs) and distribution (places), with just four basic,
+orthogonal primitives -- async, finish, atomics and at. This model we
+later dubbed the Asynchronous Partitioned Global Address Space (APGAS)
+model. We showed that many well-known patterns of communication,
+computation and concurrency arise through combinations of these four
+operations. At the same time these constructs are simple and elegant
+enough that we could formulate foundational models and establish
+important semantic properties -- such as deadlock-freedom for a very
+large fragment of the language (e.g. Concur 2005 paper).  
+
+This simplicity and elegance is also the fundamental reason why the
+research and education community has come to recognize the importance
+of X10. X10 and the APGAS framework are the foundations for the
+spin-off Habanero project at Rice. After an independent evaluation, a
+group at UCLA decided to base their new compiler project on
+X10. Various academics have adopted X10 as the language for teaching
+concurrency and parallelism. This Fall will mark the fourth edition of
+an X10-based course on "Principles and Practice of Parallel
+Programming" being taught at Columbia University. This course is now
+part of the regular curriculum for undergraduates at Columbia
+University.  
+
+Second, we decided to build X10 around the Java object oriented
+programming model -- even though Java has long been regarded with
+aversion by HPC programmers because of its perceived shortcomings for
+high performance computing. We analyzed Java in depth and recognized
+that we could build a programming language (based on APGAS) that was
+different from Java in its treatment of concurrency, distribution and
+some core sequential programming constructs (such as functions,
+arrays, structs and constrained types), while remaining within the
+broad tradition and hence being quite familiar to Java
+programmers. Furthermore, we realized that we could build two
+different back-ends for the same language --- a native back-end that
+compiled X10 to C++ and used static ahead of time compilation
+techniques, and a managed back-end that compiled X10 to byte-codes for
+the JVM and executes X10 on a cluster of JVMs. Even though this
+substantially complicated our implementation task, we realized that
+this was critical to the eventual success of X10 -- not just as an
+"HPC" language used by a handful of HPC programmers, but as a
+commercially viable language used to address a diversity of
+programming problems that are best tackled with JVM-based programs.  
+
+In these two major design decisions we explicitly and consciously went
+against the prevalent HPC dogma which holds that the way to design HPC
+languages is to start with a very narrowly focused system that is
+known to execute efficiently (e.g. SPMD computation) and expand it out
+slowly to meet certain desirable criteria, e.g. overlap of computation
+with communication. Arguably, this was the philosophy that led to
+UPC. Indeed in the first major review of X10 (Dec 2004, conducted by a
+blue ribbon panel put together by DARPA, including Rusty Lusk, Bill
+Carlson, Marc Snir and Kathy Yelick), these two design decisions were
+challenged. But we stayed firm. 
+
+We demonstrated the first implementation of X10 on a single JVM in February 2005, leveraging the Polyglot (Java-based) compiler framework. In 2007, we demonstrated X10 running on multiple places, on the native back-end, and successfully met an internal milestone (the CEO milestone). We showed that the Berkeley UPC team's state-of-the-art performance on 3-d FFT (achieved by overlapping computation and communication) could be replicated in X10. (See PPoPP 2008 paper, HPC Challenge submission award.)
+We are now reaping the rewards of those foundational decisions. First,
+to our knowledge, X10 is the first post-MPI programming language that
+has demonstrated performance at scale (40K cores and above), on a
+variety of benchmarks of interest to the HPC community. Our PPoPP
+paper on lifeline-based global load balancing showed that X10
+constructs (async, at, finish) provide the expressiveness for a new,
+scalable approach to globally load balancing irregular workloads (such
+as Unbalanced Tree Search), surpassing results obtained in prior
+research work (using, e.g. languages such as UPC). The productivity
+impact of X10 for developing HPC applications has been recognized by
+the study performed by the PERCS productivity team.  
+
+Second, the attractiveness of X10 for commercial workloads was
+recognized in 2009 by IBM Research leadership, leading to increased
+funding for the managed back-end. This funding (independent of DARPA
+PERCS funding)  paved the way for the development of a large set of
+libraries in X10 (ported from Apache Harmony) and Java
+inter-operability research. (Indeed the mere possibility that Java
+class files can be executed on high-performance, multi-node execution
+engines written in X10 speaks to the advantage of having developed X10
+as a language in the Java tradition.) 
+
+This funding has been instrumental in X10 being usable as a foundation
+for parallel application frameworks for the commercial world. The
+commercial world itself had seen the rise of application frameworks
+such as Hadoop which rely on a simple but powerful programming
+framework (completely divorced from MPI, and hence not rooted in the
+HPC tradition) to bring the aggregate compute and memory power of
+thousands of nodes to solve commercially important problems in machine
+learning, data mining, descriptive and predictive analytics etc. With
+the Main Memory Map Reduce (M3R) project, we demonstrated that
+programs written in Java against the Hadoop APIs could in fact be
+executed by an X10 map reduce engine that leverages HPC techniques to
+keep application data in memory, perform in-memory shuffles, and
+reduce the amount of communication between nodes. We showed that this
+resulted in performance improvements of upto 40x on iterative, map
+reduce applications, such as the page rank computations. We showed
+that programs written in higher-level languages such as Pig and DML
+(and that compile down to Hadoop Map Reduce programs) can be executed
+unchanged on M3R.  
+
+M3R is now recognized as having enabled a whole new class of
+applications -- interactive big data analysis applications. An IBM
+business division -- not one known to exploit HPC advances -- is now
+seriously evaluating M3R for inclusion in its product line in the near
+future.  
+
+We believe these results speak amply to the success of our basic
+approach to address the productivity challenges of High Performance
+Computing systems. We believe X10 is the first HPC language to
+demonstrate both performance at scale for traditional HPC benchmarks,
+and advance the state of the art in handling certain kinds of
+commercial work-loads. The simplicity of core X10 constructs, and its
+proximity to well-established commercial programming languages has
+meant that X10 has already found acceptance in academia. X10 is
+available on a wide variety of platforms, including the PERCS
+hardware, as well as x86 and Blue Gene systems, on Linux, Mac OSX, and
+Windows.  

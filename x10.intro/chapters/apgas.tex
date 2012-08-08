@@ -1,0 +1,478 @@
+\chapter{The APGAS model}\label{chap:apgas}
+
+%% Covers the constructs in depth.
+
+\section{Async}\label{sec:async}
+The fundamental concurrency construct in \Xten{} is {\tt async}:
+
+{\footnotesize
+\begin{verbatim}
+Stmt ::= async Stmt  
+\end{verbatim}}
+
+The execution of {\tt async S} may be thought of as creating a new
+{\em activity} to execute {\tt S} and returning immediately. The newly
+created activity runs in parallel with the current activity and has
+access to the same heap of objects as the current activity. Thus an
+\Xten{} computation may have many concurrent activities ``in flight``
+at the same time. Activities communicate with each other by reading
+and writing shared variables, e.g.{} fields of objects that both have
+access to.
+
+An activity may be thought of as a very light-weight thread of
+execution. This means that the statement {\tt S} may in fact contain
+just a few instructions, e.g.{} reading the value of a variable,
+performing some computation and then writing the value of a
+variable. There is no restriction on the statement {\tt S} -- it may
+contain any other construct (including other {\tt async}s). In
+particular, activities may be long-running -- indeed they may run for
+ever. In particular they make invoke recursive methods. Hence an
+activity is associated with its own control stack.
+
+Activities (unlike threads in Java) are not named. There is no runtime
+object corresponding to an activity that is visible to user
+programs. This permits the implementation the freedom to actually {\em
+  not} create a separate activity for each {\tt async} at runtime as
+long as the semantics of the language are not violated. For instance,
+the compiler may decide to translate the program fragment: 
+
+{\footnotesize
+\begin{verbatim}
+  async { f.x=1;}
+  f.y=2;
+\end{verbatim}}
+
+\noindent to
+
+{\footnotesize
+\begin{verbatim}
+  f.x=1;
+  f.y=2;
+\end{verbatim}}
+
+\noindent This is called ``inlining'' an activity. It becomes much
+harder for a compiler to inline if activities can have names -- for,
+to inline the activity the compiler will need to figure out that the
+name is not used later.  
+
+Activities cannot be interrupted or aborted once they are in
+flight. They must proceed to completion.  
+
+In {\tt async S}, the code in {\tt S} is permitted to refer to
+immutable variables defined in the lexically enclosing scope. This is
+extremely convenient when writing code. 
+
+\paragraph{Local vs Global termination}
+Because an activity may spawn further activities, we distinguish
+between {\em local termination} and {\em global termination}. We say
+that an activity {\tt async S} has locally terminated if {\tt S} has
+terminated. We say that it has {\em globally terminated} if it has
+locally terminated and further any activities spawned during its
+execution have themselves (recursively) globally terminated. 
+
+\section{Finish}\label{sec:finish}
+{\tt finish} is a construct that converts global termination to local termination.
+
+Using {\tt async} we can specify that the elements of a rail should be doubled in parallel by:
+
+{\footnotesize
+\begin{verbatim}
+  // Initialize the i'th element to i.
+  val a:Rail[Int] = Rail.makeVar[int](0..N-1, (i:int)=>i);
+  for((i) in 0..a.length-1) async
+    a(i) *= 2;
+\end{verbatim}}
+
+Consider now what happens if we attempt to read the value of a location:
+
+{\footnotesize
+\begin{verbatim}
+  // Initialize the i'th element to i.
+  val a:Rail[Int] = Rail.makeVar[int](0..N-1, (i:int)=>i);
+  for((i) in 0..a.length-1) async
+    a(i) *= 2;
+  Console.OUT.println("a(1)=" + a(1));
+\end{verbatim}}
+
+Will it print out {\tt 1} or {\tt 2}? We cant say! The activity executing {\tt a(1) *= 2} may not have terminated by the time the current activity starts executing the print statement!
+
+This is a fundamental problem. The programmer needs a mechanism for specifying {\em ordering} of computations. To this end we introduce the {\tt finish} statement:
+
+{\footnotesize
+\begin{verbatim}
+Stmt ::= finish Stmt  
+\end{verbatim}}
+
+An activity  executes {\tt finish S} by executing {\tt S} and then waiting until all activities spawned during the execution of {\tt S} (transitively) terminate. Simple, but powerful!
+
+To ensure proper termination of an \Xten{} program, the {\tt main} method is executed within a {\tt finish}. Thus the program terminates only when the {\tt main} method globally terminates. This property ensures that for every activity created during program execution there is a corresponding {\tt finish} statement that will be notified of its termination.  We say the activity tree is {\em rooted}.
+
+We can now write our program as follows:
+
+{\footnotesize
+\begin{verbatim}
+  // Initialize the i'th element to i.
+  val a:Rail[Int] = Rail.makeVar[int](0..N-1, (i:int)=>i);
+  finish for((i) in 0..a.length-1) async 
+     a(i) *= 2;
+  Console.OUT.println("a(0)=" + a(0));
+\end{verbatim}}
+\noindent and be guaranteed that the output will be {\tt 2}.  Notice
+that little needs to change in the program -- we just add {\tt finish}
+and {\tt async} at the right place!
+
+Table~\ref{table:fib} shows how the Fibonacci program can be written
+in parallel. It uses an idiom that is of interest in many other
+settings. The natural functional way to write {\tt fib} is through a recursive function call:
+{\footnotesize
+\begin{verbatim}
+   def fib(n:int):int = (n <=2)? 1: fib(n-1)+fib(n-2);
+\end{verbatim}}
+
+\noindent The value is returned on the activity's stack. However, we
+are interested in running {\tt fib} in parallel, and hence we will
+want a way by which multiple activities can invoke multiple {\tt fib}
+calls, each in their own stack. \Xten{} does not permit the call stack
+of one activity to be shared by another, or the code running during
+the execution of an activity to read/write the local variables in a
+stack frame of another activity.\footnote{Why? Because in general this is not a safe operation. The stack frame being referred to may not exist any more!}
+
+Table~\ref{table:fib} presents a slightly more verbose Fibonacci
+program that makes explicit the interaction of activities through
+objects on the heap. A heap object is created for each recursive
+invocation of {\tt fib}. The object has a single field which initially
+contains the input argument to the call, and on return contains the
+result of the call.\footnote{In \Xten{} v 2.0, we are considering
+permitting the programmer to specify {\tt async} method arguments,
+with an implicit {\tt finish} on method invocations. That will permit
+the programmer to write {\tt def fib(n:int):int = n <=2 ? 1 :
+fib(async {fib(n-1)} + fib(n-2));}. The compiler can now implement
+this program by treating it like the program in
+Table~\ref{table:fib}.}
+
+\begin{table}
+{\footnotesize
+\begin{verbatim}
+public class Fib {
+  var n:int=0;
+  def this(n:int) {this.n = n;}
+  def fib() {
+     if (n <= 2) {
+    	 n=1;
+    	 return;
+     }
+     val f1=new Fib(n-1);
+     val f2=new Fib(n-2);
+     finish {
+    	 async f1.fib();
+         f2.fib(); 
+     }
+     n=f1.n+f2.n;
+  }
+  public static def main(args:Rail[String]) {
+    if (args.length < 1) {
+       Console.OUT.println("Usage: Fib <n>");
+       return;
+    }
+    val n = Int.parseInt(args(0));
+    val  f = new Fib(n);
+    f.fib();
+    Console.OUT.println("fib(" + n + ")= " + f.n);
+    }
+}
+\end{verbatim}}
+\caption{Fib}\label{table:fib}
+\end{table}
+
+Note that the program illustrates that during execution {\tt finish}
+and {\tt async} may be scoped arbitrarily: the body of an {\tt async}
+can contain {\tt finish} statements, and the body of a {\tt finish}
+can contain {\tt async} statements. This interplay is at the heart of
+the expressiveness of the {\tt async}/{\tt finish} model.
+
+\subsection{The rooted exception model}
+
+\Xten{} supports a {\em rooted exception model}. Any exception thrown
+inside an activity can be caught and handled within the activity by
+executing a {\tt try/catch} statement. What happens if there is no
+{\tt try/catch}? 
+
+The rooted model offers an answer. Since every activity has a
+governing {\tt finish}, we let the exception propagate up from the
+activity to the governing {\tt finish}.  When executing a {\tt finish
+S} statement, all exceptions thrown by activities spawned during the
+execution of {\tt S} are accumulated at the {\tt finish} statement. If
+at least one exception has been received at the {\tt finish}
+statement, then it throws a {\tt MultipleExceptions} exception with
+the set of exceptions as an argument. This ensures that no exception
+gets dropped on the floor (unlike Java).
+
+\section{Atomic}\label{sec:atomic}
+
+
+Consider a parallel version of the Histogram program:
+
+{\footnotesize
+\begin{verbatim}
+def hist(a:Rail[int], b: Rail[int]) {
+    finish for(var i:int=0; i < a.length; i++) async {
+       val bin = a(i)% b.length;
+       b(bin)++;
+    }
+}
+\end{verbatim}}
+
+However, this program is {\em incorrect}! Why? Multiple activities executing {\tt b(bin)++} may interfere with each other! The operation {\tt d++} is not an {\em atomic} operation.
+
+An atomic operation is an operation that is performed in a single step with respect to all other activities in the system (even though the operation itself might involve the execution of multiple statements). \Xten{} provides the {\em conditional atomic statement} as a basic statement:
+ 
+{\footnotesize
+\begin{verbatim}
+Stmt ::= when (c) Stmt  
+\end{verbatim}}
+
+Here {\tt c} is a condition, called the {\em guard} of the statement. An activity executes {\tt when (c) S} atomically -- in a single step -- provided that the condition {\tt c} is satisfied. Otherwise it blocks (waiting for the condition to be true).
+
+The conditional atomic statement is an extremely powerful construct. It was introduced in the 1970s by Per Brinch Hansen and Tony Hoare under the name ``conditional critical region''. This is the only construct in \Xten{} that permits one activity to block waiting for some other set of activities to establish some condition on shared variables. 
+
+This construct has two important special cases. The statement {\tt atomic S} is just shorthand for {\tt when (true) S}. The statement {\tt await c} is just shorthand for {\tt when (c) ; }. (That is, it just waits for the condition to be true, and then proceeds.)
+
+Since the construct is so powerful, it is subject to several conditions for ease of implementation.
+\begin{itemize}
+  \item The condition {\tt c} must be very simple In \Xten{} v1.7.6 it is restricted to checking a field for equality or disequality
+  \item {\tt S} itself must be {\em sequential}, {\tt non-blocking}, {\tt local}. That is, it must not spawn new activities, it must not itself call a {\tt when}, and it must not access remote locations.
+\end{itemize}
+
+The Histogram problem can now be solved correctly:
+{\footnotesize
+\begin{verbatim}
+def hist(a:Rail[int], b: Rail[int]) {
+    finish for(var i:int=0; i < a.length; i++) async {
+       val bin = a(i)% b.length;
+       atomic b(bin)++;
+    }
+}
+\end{verbatim}}
+
+A parallel N-Queens program is given in Table~\ref{table:nqueens}
+\begin{table}
+{\footnotesize
+\begin{verbatim}
+import x10.io.Console;
+
+public class NQueensPar {
+    var nSolutions:int = 0;
+    public static val expectedSolutions =
+        [0, 1, 0, 0, 2, 10, 4, 40, 92, 352, 724, 2680, 14200, 73712, 365596, 2279184, 14772512];
+    val N:Int;
+    def this(N:Int) { this.N=N;}
+    def nQueens():int {
+        finish new Board().search();
+        return nSolutions;
+    }
+    class Board {
+        val q: Rail[Int];
+        def this() {
+            q = Rail.makeVar[Int](0, (Nat)=>0);
+        }
+        def this(old: Rail[Int], newItem:Int) {
+            val n = old.length;
+            q = Rail.makeVar[Int](n+1, (i:Nat)=> (i < n? old(i) : newItem));
+        }
+        def safe(j: int) {
+            val n = q.length;
+            for ((k) in 0..n-1) {
+                if (j == q(k) || Math.abs(n-k) == Math.abs(j-q(k)))
+                    return false;
+            }
+            return true;
+        }
+        def search(R: Region(1)) {
+            for ((k) in R) async
+                if (safe(k))
+                    new Board(q, k).search();
+        }
+
+        def search()  {
+            if (q.length == N) {
+                atomic nSolutions++;
+                return;
+            }
+            search(0..N-1);
+        }
+    }
+
+    public static def main(args: Rail[String])  {
+        val n = args.length > 0 ? Int.parseInt(args(0)) : 8;
+        println("N=" + n);
+        
+        val nq = new NQueensPar(n);
+        var start:Long = -System.nanoTime();
+        val r = nq.nQueens();
+        val result = r==expectedSolutions(nq.N);
+        start += System.nanoTime();
+        start /= 1000000;
+        println("NQueens " + nq.N + " has " + r + " solutions" +
+                        (result? " (ok)." : " (wrong).") + "time=" + start + "ms");
+    }
+
+    static def println(s:String) = Console.OUT.println(s);
+}
+\end{verbatim}}
+\caption{NQueens}\label{table:nqueens}
+\end{table}
+
+\section{Places}\label{sec:places}
+We come now to a central innovation of \Xten, the notion of {\em
+places}. Places permit the programmer to explicitly deal with notions
+of {\em locality}.
+
+\subsection{Motivation}
+Locality issues arise in three primary ways. 
+
+First, consider you are writing a program to deal with enormous
+amounts of data -- say terabytes of data, i.e. thousands of
+gigabytes. Now you may not have enough main memory on a single node to
+store all this data -- a single node will typically have tens of
+gigabytes of main storage. So therefore you will need to run your
+computation on a {\em cluster} of nodes: a collection of nodes
+connected to each other through some (possibly high-speed)
+interconnect.  That is, your single computation will actually involve
+the execution of several operating system level processes, one on each
+node. Unfortunately, acccessing a memory location across a network is
+typically orders of magnitude slower (i.e. has higher {\em latency})
+than accessing it from a register on the local core. Further, the rate
+at which data can be transferred to local memory ({\em bandwidth}) is
+orders of magnitude higher than the rate at which it can be
+transferred to memory across the cluster.
+
+As with implicit parallelism, one could try to write extremely clever
+compilers and runtimes that try to deal with this memory wall
+implicitly. Indeed, this is the idea behind {\em distributed shared
+memory} (DSM). The entire memory of a collection of processes is
+presented to the programmer as a single shared heap. Any activity can
+read and write any location in shared memory. However, there are no
+efficient implementations of DSM available today. The primary
+conceptual issue is that the programmer has lost control over
+decisions that can have orders of magnitude impact on performance of
+their code. When looking at a single assignment statement {\tt a.f=e},
+the programmer has no way of knowing whether this is going to take
+dozens of cycles or millions of cycles.
+
+A second primary motivation arises from heterogeneity. Computer
+architects are looking to boost computational power by designing
+different kinds of specialized cores, each very good at particular
+kinds of computations. In general, these {\em accelerators} interact
+with the main processor at arm's length.
+
+Two primary cases in point are the Toshiba-Sony-IBM Cell Broadband
+Engine (``Cell processor'' for short), and general-purpose graphical
+processing engines (GPGPUs for short), from vendors such as NVidia and
+AMD. These provide an enormous boost in computational power for
+particular kinds of regular loops at the cost of introducing
+specialized
+
+For instance, the Cell provides eight specialized processors (SPEs) on
+a single chip, connected to each other through a high-speed (on-chip)
+bus. These processors may execute many instructions in parallel (they
+have ``single instruction multiple data'', SIMD,
+instructions). However, data needs to be explicitly transfered from
+main memory to a local cache on each SPE, operated upon, and then
+transfered back.
+
+The third motivation is similar to the second, but involves only
+homogeneous cores. Multiple cores may share precious resources, such
+as L1 and L2 cache. To improve performance, it may make sense to {\em
+bind} activities to particular cores, in particular to force certain
+groups of activities to work on the same cores so that they can
+amortize the cost of cache misses (because they are operating on the
+same data). Or it may make sense to bind them to {\em different} cores
+that do not share an L2 cache so that the execution of one does not
+pollute the cache lines of the other.
+
+\subsection{The {\tt at} construct}
+
+A {\em place} in \Xten{} is a collection of data and activities that
+operate on that data. A program is run on a fixed number of
+places. The binding of places to hardware resources (e.g. nodes in a
+cluster, accelerators) is provided externally by a configuration file,
+independent of the program. 
+
+Programs are typically written to operate on any number of places. The
+number of places in a particular run of the program can be queried
+through {\tt Place.MAX\_PLACES}. 
+
+In \XtenCurrVer{}  all places are uniform. In future versions of the
+language we will support heterogeneity by permitting different kinds
+of places, with the ability to check the attributes of a place
+statically, and hence write code that depends on the {\em kind} of
+place it is running on.
+
+
+\subsection{The {\tt at} operation}
+The construct for exposing places to the programmer is:
+{\footnotesize
+\begin{verbatim}
+Stmt ::= at (p) Stmt
+\end{verbatim}}
+
+An activity executing {\tt at (p) S} suspends execution in the current
+place, and executes {\tt S} at place {\tt p}. On local termination of
+{\tt S}, computation resumes after {\tt at (p) S} in the original
+location. Because of this ability to shift the current place, {\tt at}
+is said to be a {\em place-shifting} operation. It is the only
+control construct related to places in \Xten.
+
+The indexical constant {\tt here} can be used to determine the current
+place.
+
+Objects are created in \Xten{} through invocations of constructors
+(via {\tt new C(...)}, just as in Java). Any object with a mutable
+field must subclass {\tt x10.lang.Object}. The class {\tt x10.lang.Object}
+has an immutable field {\tt home:Place} that is initialized to the
+place at which this object was constructed. Thus every object of type
+{\tt Object} carries within it information about its ``home'' place. This
+does not change for the lifetime of the object -- that is, objects
+once created, stay at the place at which they were created.
+
+In {\tt at (p) S}, the code in {\tt p} and {\tt S} is permitted to
+refer to immutable variables defined in the lexically enclosing
+scope. This is extremely convenient when writing code. It leads to the
+notion of {\em remote references}. A reference to an object {\tt o} at
+place {\tt Q} is said to be a remote reference if {\tt o} was created
+at some other place {\tt P}. In \Xten{} any attempt to invoke a method
+or read/write a field of a remote reference generates a {\tt
+x10.lang.BadPlaceException}. Thus it is the programmer's
+responsibility to use {\tt at} statements to ensure that data is read
+and written only at the place at which it was created. The {\tt at}
+statement is a reminder to the programmer that at this point
+communication may potentially happen across the network.
+
+
+The body of an {\tt when} statement is not permitted to use {\tt at}:
+this is the restriction referred to above as ``the body of a {\tt
+when} must be local''.  
+
+Other than the stated restrictions {\tt async}, {\tt finish}, {\tt
+when}, {\tt at} can be nested freely.
+
+\subsection{GlobalRef}
+\subsection{PlaceLocalHandle}
+
+
+\section{Clocks} 
+\todo{Determine if this is needed. If the examples we discuss dont use
+  clocks, remove it.}
+
+\section{A model for the runtime} 
+
+\subsection{An overview of the runtime}
+
+\todo{Contains the material in the Performance Model paper.}
+\subsection{Async}
+
+\subsection{Finish pragmas}
+\todo{SPMD Finish}
+
+\todo{Async and back}
+\subsection{Atomic}
