@@ -1,0 +1,1578 @@
+\chapter{Grammar}\label{Grammar}
+
+
+In this grammar, $X^?$ denotes an optional $X$ element.
+
+
+\begin{bbgrammarappendix}{3.9in}
+
+(\arabic{equation}) & AdditiveExp \refstepcounter{equation}\label{prod:AdditiveExp}  \: MultiplicativeExp  \\
+
+ &    \| AdditiveExp \xcd"+" MultiplicativeExp \\
+ &    \| AdditiveExp \xcd"-" MultiplicativeExp \\
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{4.4in}
+
+(\arabic{equation}) & AndExp \refstepcounter{equation}\label{prod:AndExp}  \: EqualityExp  \\
+
+ &    \| AndExp \xcd"&" EqualityExp \\
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{3.7in}
+
+(\arabic{equation}) & AnnotatedType \refstepcounter{equation}\label{prod:AnnotatedType}  \: Type Annotations  \\
+
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{4.0in}
+
+(\arabic{equation}) & Annotation \refstepcounter{equation}\label{prod:Annotation}  \: \xcd"@" NamedTypeNoConstraints  \\
+
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{3.6in}
+
+(\arabic{equation}) & AnnotationStmt \refstepcounter{equation}\label{prod:AnnotationStmt}  \: Annotations\opt NonExpStmt  \\
+
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{3.9in}
+
+(\arabic{equation}) & Annotations \refstepcounter{equation}\label{prod:Annotations}  \: Annotation  \\
+
+ &    \| Annotations Annotation \\
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{3.8in}
+
+(\arabic{equation}) & ApplyOpDecln \refstepcounter{equation}\label{prod:ApplyOpDecln}  \: MethMods \xcd"operator" \xcd"this" TypeParams\opt Formals Guard\opt HasResultType\opt MethodBody  \\
+
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{3.8in}
+
+(\arabic{equation}) & ArgumentList \refstepcounter{equation}\label{prod:ArgumentList}  \: Exp  \\
+
+ &    \| ArgumentList \xcd"," Exp \\
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{4.1in}
+
+(\arabic{equation}) & Arguments \refstepcounter{equation}\label{prod:Arguments}  \: \xcd"(" ArgumentList \xcd")"  \\
+
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{4.0in}
+
+(\arabic{equation}) & AssertStmt \refstepcounter{equation}\label{prod:AssertStmt}  \: \xcd"assert" Exp \xcd";"  \\
+
+ &    \| \xcd"assert" Exp  \xcd":" Exp  \xcd";" \\
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{3.6in}
+
+(\arabic{equation}) & AssignPropCall \refstepcounter{equation}\label{prod:AssignPropCall}  \: \xcd"property" TypeArgs\opt \xcd"(" ArgumentList\opt \xcd")" \xcd";"  \\
+
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{4.0in}
+
+(\arabic{equation}) & Assignment \refstepcounter{equation}\label{prod:Assignment}  \: LeftHandSide AsstOp AsstExp  \\
+
+ &    \| ExpName  \xcd"(" ArgumentList\opt \xcd")" AsstOp AsstExp \\
+ &    \| Primary  \xcd"(" ArgumentList\opt \xcd")" AsstOp AsstExp \\
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{4.3in}
+
+(\arabic{equation}) & AsstExp \refstepcounter{equation}\label{prod:AsstExp}  \: Assignment  \\
+
+ &    \| ConditionalExp \\
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{4.4in}
+
+(\arabic{equation}) & AsstOp \refstepcounter{equation}\label{prod:AsstOp}  \: \xcd"="  \\
+
+ &    \| \xcd"*=" \\
+ &    \| \xcd"/=" \\
+ &    \| \xcd"%=" \\
+ &    \| \xcd"+=" \\
+ &    \| \xcd"-=" \\
+ &    \| \xcd"<<=" \\
+ &    \| \xcd">>=" \\
+ &    \| \xcd">>>=" \\
+ &    \| \xcd"&=" \\
+ &    \| \xcd"^=" \\
+ &    \| \xcd"|=" \\
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{4.1in}
+
+(\arabic{equation}) & AsyncStmt \refstepcounter{equation}\label{prod:AsyncStmt}  \: \xcd"async" ClockedClause\opt Stmt  \\
+
+ &    \| \xcd"clocked" \xcd"async" Stmt \\
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{3.6in}
+
+(\arabic{equation}) & AtCaptureDeclr \refstepcounter{equation}\label{prod:AtCaptureDeclr}  \: Mods\opt VarKeyword\opt VariableDeclr  \\
+
+ &    \| Id \\
+ &    \| \xcd"this" \\
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{3.5in}
+
+(\arabic{equation}) & AtCaptureDeclrs \refstepcounter{equation}\label{prod:AtCaptureDeclrs}  \: AtCaptureDeclr  \\
+
+ &    \| AtCaptureDeclrs \xcd"," AtCaptureDeclr \\
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{4.0in}
+
+(\arabic{equation}) & AtEachStmt \refstepcounter{equation}\label{prod:AtEachStmt}  \: \xcd"ateach" \xcd"(" LoopIndex \xcd"in" Exp \xcd")" ClockedClause\opt Stmt  \\
+
+ &    \| \xcd"ateach" \xcd"(" Exp \xcd")" Stmt \\
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{4.5in}
+
+(\arabic{equation}) & AtExp \refstepcounter{equation}\label{prod:AtExp}  \: \xcd"at" \xcd"(" Exp \xcd")" ClosureBody  \\
+
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{4.4in}
+
+(\arabic{equation}) & AtStmt \refstepcounter{equation}\label{prod:AtStmt}  \: \xcd"at" \xcd"(" Exp \xcd")" Stmt  \\
+
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{4.0in}
+
+(\arabic{equation}) & AtomicStmt \refstepcounter{equation}\label{prod:AtomicStmt}  \: \xcd"atomic" Stmt  \\
+
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{3.8in}
+
+(\arabic{equation}) & BasicForStmt \refstepcounter{equation}\label{prod:BasicForStmt}  \: \xcd"for" \xcd"(" ForInit\opt \xcd";" Exp\opt \xcd";" ForUpdate\opt \xcd")" Stmt  \\
+
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{4.5in}
+
+(\arabic{equation}) & BinOp \refstepcounter{equation}\label{prod:BinOp}  \: \xcd"+"  \\
+
+ &    \| \xcd"-" \\
+ &    \| \xcd"*" \\
+ &    \| \xcd"/" \\
+ &    \| \xcd"%" \\
+ &    \| \xcd"&" \\
+ &    \| \xcd"|" \\
+ &    \| \xcd"^" \\
+ &    \| \xcd"&&" \\
+ &    \| \xcd"||" \\
+ &    \| \xcd"<<" \\
+ &    \| \xcd">>" \\
+ &    \| \xcd">>>" \\
+ &    \| \xcd">=" \\
+ &    \| \xcd"<=" \\
+ &    \| \xcd">" \\
+ &    \| \xcd"<" \\
+ &    \| \xcd"==" \\
+ &    \| \xcd"!=" \\
+ &    \| \xcd".." \\
+ &    \| \xcd"->" \\
+ &    \| \xcd"<-" \\
+ &    \| \xcd"-<" \\
+ &    \| \xcd">-" \\
+ &    \| \xcd"**" \\
+ &    \| \xcd"~" \\
+ &    \| \xcd"!~" \\
+ &    \| \xcd"!" \\
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{4.0in}
+
+(\arabic{equation}) & BinOpDecln \refstepcounter{equation}\label{prod:BinOpDecln}  \: MethMods \xcd"operator" TypeParams\opt \xcd"(" Formal  \xcd")" BinOp \xcd"(" Formal  \xcd")" Guard\opt HasResultType\opt MethodBody  \\
+
+ &    \| MethMods \xcd"operator" TypeParams\opt \xcd"this" BinOp \xcd"(" Formal  \xcd")" Guard\opt HasResultType\opt MethodBody \\
+ &    \| MethMods \xcd"operator" TypeParams\opt \xcd"(" Formal  \xcd")" BinOp \xcd"this" Guard\opt HasResultType\opt MethodBody \\
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{4.5in}
+
+(\arabic{equation}) & Block \refstepcounter{equation}\label{prod:Block}  \: \xcd"{" BlockStmts\opt \xcd"}"  \\
+
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{3.3in}
+
+(\arabic{equation}) & BlockInteriorStmt \refstepcounter{equation}\label{prod:BlockInteriorStmt}  \: LocVarDeclnStmt  \\
+
+ &    \| ClassDecln \\
+ &    \| StructDecln \\
+ &    \| TypeDefDecln \\
+ &    \| Stmt \\
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{4.0in}
+
+(\arabic{equation}) & BlockStmts \refstepcounter{equation}\label{prod:BlockStmts}  \: BlockInteriorStmt  \\
+
+ &    \| BlockStmts BlockInteriorStmt \\
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{3.6in}
+
+(\arabic{equation}) & BooleanLiteral \refstepcounter{equation}\label{prod:BooleanLiteral}  \: \xcd"true"   \\
+
+ &    \| \xcd"false"  \\
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{4.1in}
+
+(\arabic{equation}) & BreakStmt \refstepcounter{equation}\label{prod:BreakStmt}  \: \xcd"break" Id\opt \xcd";"  \\
+
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{4.3in}
+
+(\arabic{equation}) & CastExp \refstepcounter{equation}\label{prod:CastExp}  \: Primary  \\
+
+ &    \| ExpName \\
+ &    \| CastExp \xcd"as" Type \\
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{3.9in}
+
+(\arabic{equation}) & CatchClause \refstepcounter{equation}\label{prod:CatchClause}  \: \xcd"catch" \xcd"(" Formal \xcd")" Block  \\
+
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{4.3in}
+
+(\arabic{equation}) & Catches \refstepcounter{equation}\label{prod:Catches}  \: CatchClause  \\
+
+ &    \| Catches CatchClause \\
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{4.1in}
+
+(\arabic{equation}) & ClassBody \refstepcounter{equation}\label{prod:ClassBody}  \: \xcd"{" ClassMemberDeclns\opt \xcd"}"  \\
+
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{4.0in}
+
+(\arabic{equation}) & ClassDecln \refstepcounter{equation}\label{prod:ClassDecln}  \: Mods\opt \xcd"class" Id TypeParamsI\opt Properties\opt Guard\opt Super\opt Interfaces\opt ClassBody  \\
+
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{3.4in}
+
+(\arabic{equation}) & ClassMemberDecln \refstepcounter{equation}\label{prod:ClassMemberDecln}  \: InterfaceMemberDecln  \\
+
+ &    \| CtorDecln \\
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{3.3in}
+
+(\arabic{equation}) & ClassMemberDeclns \refstepcounter{equation}\label{prod:ClassMemberDeclns}  \: ClassMemberDecln  \\
+
+ &    \| ClassMemberDeclns ClassMemberDecln \\
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{4.1in}
+
+(\arabic{equation}) & ClassName \refstepcounter{equation}\label{prod:ClassName}  \: TypeName  \\
+
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{4.1in}
+
+(\arabic{equation}) & ClassType \refstepcounter{equation}\label{prod:ClassType}  \: NamedType  \\
+
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{3.7in}
+
+(\arabic{equation}) & ClockedClause \refstepcounter{equation}\label{prod:ClockedClause}  \: \xcd"clocked" Arguments  \\
+
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{3.9in}
+
+(\arabic{equation}) & ClosureBody \refstepcounter{equation}\label{prod:ClosureBody}  \: Exp  \\
+
+ &    \| Annotations\opt \xcd"{" BlockStmts\opt LastExp \xcd"}" \\
+ &    \| Annotations\opt Block \\
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{4.0in}
+
+(\arabic{equation}) & ClosureExp \refstepcounter{equation}\label{prod:ClosureExp}  \: Formals Guard\opt HasResultType\opt \xcd"=>" ClosureBody  \\
+
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{3.5in}
+
+(\arabic{equation}) & CompilationUnit \refstepcounter{equation}\label{prod:CompilationUnit}  \: PackageDecln\opt TypeDeclns\opt  \\
+
+ &    \| PackageDecln\opt ImportDeclns TypeDeclns\opt \\
+ &    \| ImportDeclns PackageDecln  ImportDeclns\opt  TypeDeclns\opt \\
+ &    \| PackageDecln ImportDeclns PackageDecln  ImportDeclns\opt  TypeDeclns\opt \\
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{3.3in}
+
+(\arabic{equation}) & ConditionalAndExp \refstepcounter{equation}\label{prod:ConditionalAndExp}  \: InclusiveOrExp  \\
+
+ &    \| ConditionalAndExp \xcd"&&" InclusiveOrExp \\
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{3.6in}
+
+(\arabic{equation}) & ConditionalExp \refstepcounter{equation}\label{prod:ConditionalExp}  \: ConditionalOrExp  \\
+
+ &    \| ClosureExp \\
+ &    \| AtExp \\
+ &    \| ConditionalOrExp \xcd"?" Exp \xcd":" ConditionalExp \\
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{3.4in}
+
+(\arabic{equation}) & ConditionalOrExp \refstepcounter{equation}\label{prod:ConditionalOrExp}  \: ConditionalAndExp  \\
+
+ &    \| ConditionalOrExp \xcd"||" ConditionalAndExp \\
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{3.9in}
+
+(\arabic{equation}) & ConstantExp \refstepcounter{equation}\label{prod:ConstantExp}  \: Exp  \\
+
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{3.5in}
+
+(\arabic{equation}) & ConstrainedType \refstepcounter{equation}\label{prod:ConstrainedType}  \: NamedType  \\
+
+ &    \| AnnotatedType \\
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{2.9in}
+
+(\arabic{equation}) & ConstraintConjunction \refstepcounter{equation}\label{prod:ConstraintConjunction}  \: Exp  \\
+
+ &    \| ConstraintConjunction \xcd"," Exp \\
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{3.8in}
+
+(\arabic{equation}) & ContinueStmt \refstepcounter{equation}\label{prod:ContinueStmt}  \: \xcd"continue" Id\opt \xcd";"  \\
+
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{3.3in}
+
+(\arabic{equation}) & ConversionOpDecln \refstepcounter{equation}\label{prod:ConversionOpDecln}  \: ExplConvOpDecln  \\
+
+ &    \| ImplConvOpDecln \\
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{4.1in}
+
+(\arabic{equation}) & CtorBlock \refstepcounter{equation}\label{prod:CtorBlock}  \: \xcd"{" ExplicitCtorInvo\opt BlockStmts\opt \xcd"}"  \\
+
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{4.2in}
+
+(\arabic{equation}) & CtorBody \refstepcounter{equation}\label{prod:CtorBody}  \: \xcd"=" CtorBlock  \\
+
+ &    \| CtorBlock \\
+ &    \| \xcd"=" ExplicitCtorInvo \\
+ &    \| \xcd"=" AssignPropCall \\
+ &    \| \xcd";" \\
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{4.1in}
+
+(\arabic{equation}) & CtorDecln \refstepcounter{equation}\label{prod:CtorDecln}  \: Mods\opt \xcd"def" \xcd"this" TypeParams\opt Formals Guard\opt HasResultType\opt CtorBody  \\
+
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{3.8in}
+
+(\arabic{equation}) & DepNamedType \refstepcounter{equation}\label{prod:DepNamedType}  \: SimpleNamedType DepParams  \\
+
+ &    \| ParamizedNamedType DepParams \\
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{4.4in}
+
+(\arabic{equation}) & DoStmt \refstepcounter{equation}\label{prod:DoStmt}  \: \xcd"do" Stmt \xcd"while" \xcd"(" Exp \xcd")" \xcd";"  \\
+
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{4.1in}
+
+(\arabic{equation}) & EmptyStmt \refstepcounter{equation}\label{prod:EmptyStmt}  \: \xcd";"  \\
+
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{3.5in}
+
+(\arabic{equation}) & EnhancedForStmt \refstepcounter{equation}\label{prod:EnhancedForStmt}  \: \xcd"for" \xcd"(" LoopIndex \xcd"in" Exp \xcd")" Stmt  \\
+
+ &    \| \xcd"for" \xcd"(" Exp \xcd")" Stmt \\
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{3.9in}
+
+(\arabic{equation}) & EqualityExp \refstepcounter{equation}\label{prod:EqualityExp}  \: RelationalExp  \\
+
+ &    \| EqualityExp \xcd"==" RelationalExp \\
+ &    \| EqualityExp \xcd"!=" RelationalExp \\
+ &    \| Type  \xcd"==" Type  \\
+ &    \| EqualityExp \xcd"~" RelationalExp \\
+ &    \| EqualityExp \xcd"!~" RelationalExp \\
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{3.6in}
+
+(\arabic{equation}) & ExclusiveOrExp \refstepcounter{equation}\label{prod:ExclusiveOrExp}  \: AndExp  \\
+
+ &    \| ExclusiveOrExp \xcd"^" AndExp \\
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{4.7in}
+
+(\arabic{equation}) & Exp \refstepcounter{equation}\label{prod:Exp}  \: AsstExp  \\
+
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{4.3in}
+
+(\arabic{equation}) & ExpName \refstepcounter{equation}\label{prod:ExpName}  \: Id  \\
+
+ &    \| FullyQualifiedName \xcd"." Id \\
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{4.3in}
+
+(\arabic{equation}) & ExpStmt \refstepcounter{equation}\label{prod:ExpStmt}  \: StmtExp \xcd";"  \\
+
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{3.5in}
+
+(\arabic{equation}) & ExplConvOpDecln \refstepcounter{equation}\label{prod:ExplConvOpDecln}  \: MethMods \xcd"operator" TypeParams\opt \xcd"(" Formal  \xcd")" \xcd"as" Type Guard\opt MethodBody  \\
+
+ &    \| MethMods \xcd"operator" TypeParams\opt \xcd"(" Formal  \xcd")" \xcd"as" \xcd"?" Guard\opt HasResultType\opt MethodBody \\
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{3.4in}
+
+(\arabic{equation}) & ExplicitCtorInvo \refstepcounter{equation}\label{prod:ExplicitCtorInvo}  \: \xcd"this" TypeArgs\opt \xcd"(" ArgumentList\opt \xcd")" \xcd";"  \\
+
+ &    \| \xcd"super" TypeArgs\opt \xcd"(" ArgumentList\opt \xcd")" \xcd";" \\
+ &    \| Primary \xcd"." \xcd"this" TypeArgs\opt \xcd"(" ArgumentList\opt \xcd")" \xcd";" \\
+ &    \| Primary \xcd"." \xcd"super" TypeArgs\opt \xcd"(" ArgumentList\opt \xcd")" \xcd";" \\
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{3.3in}
+
+(\arabic{equation}) & ExtendsInterfaces \refstepcounter{equation}\label{prod:ExtendsInterfaces}  \: \xcd"extends" Type  \\
+
+ &    \| ExtendsInterfaces \xcd"," Type \\
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{3.9in}
+
+(\arabic{equation}) & FieldAccess \refstepcounter{equation}\label{prod:FieldAccess}  \: Primary \xcd"." Id  \\
+
+ &    \| \xcd"super" \xcd"." Id \\
+ &    \| ClassName \xcd"." \xcd"super"  \xcd"." Id \\
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{4.0in}
+
+(\arabic{equation}) & FieldDecln \refstepcounter{equation}\label{prod:FieldDecln}  \: Mods\opt VarKeyword FieldDeclrs \xcd";"  \\
+
+ &    \| Mods\opt FieldDeclrs \xcd";" \\
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{4.0in}
+
+(\arabic{equation}) & FieldDeclr \refstepcounter{equation}\label{prod:FieldDeclr}  \: Id HasResultType  \\
+
+ &    \| Id HasResultType\opt \xcd"=" VariableInitializer \\
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{3.9in}
+
+(\arabic{equation}) & FieldDeclrs \refstepcounter{equation}\label{prod:FieldDeclrs}  \: FieldDeclr  \\
+
+ &    \| FieldDeclrs \xcd"," FieldDeclr \\
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{4.3in}
+
+(\arabic{equation}) & Finally \refstepcounter{equation}\label{prod:Finally}  \: \xcd"finally" Block  \\
+
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{4.0in}
+
+(\arabic{equation}) & FinishStmt \refstepcounter{equation}\label{prod:FinishStmt}  \: \xcd"finish" Stmt  \\
+
+ &    \| \xcd"clocked" \xcd"finish" Stmt \\
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{4.3in}
+
+(\arabic{equation}) & ForInit \refstepcounter{equation}\label{prod:ForInit}  \: StmtExpList  \\
+
+ &    \| LocVarDecln \\
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{4.3in}
+
+(\arabic{equation}) & ForStmt \refstepcounter{equation}\label{prod:ForStmt}  \: BasicForStmt  \\
+
+ &    \| EnhancedForStmt \\
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{4.1in}
+
+(\arabic{equation}) & ForUpdate \refstepcounter{equation}\label{prod:ForUpdate}  \: StmtExpList  \\
+
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{4.4in}
+
+(\arabic{equation}) & Formal \refstepcounter{equation}\label{prod:Formal}  \: Mods\opt FormalDeclr  \\
+
+ &    \| Mods\opt VarKeyword FormalDeclr \\
+ &    \| Type \\
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{3.9in}
+
+(\arabic{equation}) & FormalDeclr \refstepcounter{equation}\label{prod:FormalDeclr}  \: Id ResultType  \\
+
+ &    \| \xcd"[" IdList \xcd"]" ResultType \\
+ &    \| Id \xcd"[" IdList \xcd"]" ResultType \\
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{3.8in}
+
+(\arabic{equation}) & FormalDeclrs \refstepcounter{equation}\label{prod:FormalDeclrs}  \: FormalDeclr  \\
+
+ &    \| FormalDeclrs \xcd"," FormalDeclr \\
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{4.0in}
+
+(\arabic{equation}) & FormalList \refstepcounter{equation}\label{prod:FormalList}  \: Formal  \\
+
+ &    \| FormalList \xcd"," Formal \\
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{4.3in}
+
+(\arabic{equation}) & Formals \refstepcounter{equation}\label{prod:Formals}  \: \xcd"(" FormalList\opt \xcd")"  \\
+
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{3.2in}
+
+(\arabic{equation}) & FullyQualifiedName \refstepcounter{equation}\label{prod:FullyQualifiedName}  \: Id  \\
+
+ &    \| FullyQualifiedName \xcd"." Id \\
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{3.8in}
+
+(\arabic{equation}) & FunctionType \refstepcounter{equation}\label{prod:FunctionType}  \: TypeParams\opt \xcd"(" FormalList\opt \xcd")" Guard\opt \xcd"=>" Type  \\
+
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{4.5in}
+
+(\arabic{equation}) & Guard \refstepcounter{equation}\label{prod:Guard}  \: DepParams  \\
+
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{3.7in}
+
+(\arabic{equation}) & HasResultType \refstepcounter{equation}\label{prod:HasResultType}  \: ResultType  \\
+
+ &    \| \xcd"<:" Type \\
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{3.3in}
+
+(\arabic{equation}) & HasZeroConstraint \refstepcounter{equation}\label{prod:HasZeroConstraint}  \: Type  \xcd"haszero"  \\
+
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{3.8in}
+
+(\arabic{equation}) & HomeVariable \refstepcounter{equation}\label{prod:HomeVariable}  \: Id  \\
+
+ &    \| \xcd"this" \\
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{3.4in}
+
+(\arabic{equation}) & HomeVariableList \refstepcounter{equation}\label{prod:HomeVariableList}  \: HomeVariable  \\
+
+ &    \| HomeVariableList \xcd"," HomeVariable \\
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{4.8in}
+
+(\arabic{equation}) & Id \refstepcounter{equation}\label{prod:Id}  \: \xcd"IDENTIFIER"   \\
+
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{4.4in}
+
+(\arabic{equation}) & IdList \refstepcounter{equation}\label{prod:IdList}  \: Id  \\
+
+ &    \| IdList \xcd"," Id \\
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{3.6in}
+
+(\arabic{equation}) & IfThenElseStmt \refstepcounter{equation}\label{prod:IfThenElseStmt}  \: \xcd"if" \xcd"(" Exp \xcd")" Stmt  \xcd"else" Stmt   \\
+
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{4.0in}
+
+(\arabic{equation}) & IfThenStmt \refstepcounter{equation}\label{prod:IfThenStmt}  \: \xcd"if" \xcd"(" Exp \xcd")" Stmt  \\
+
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{3.5in}
+
+(\arabic{equation}) & ImplConvOpDecln \refstepcounter{equation}\label{prod:ImplConvOpDecln}  \: MethMods \xcd"operator" TypeParams\opt \xcd"(" Formal  \xcd")" Guard\opt HasResultType\opt MethodBody  \\
+
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{3.9in}
+
+(\arabic{equation}) & ImportDecln \refstepcounter{equation}\label{prod:ImportDecln}  \: SingleTypeImportDecln  \\
+
+ &    \| TypeImportOnDemandDecln \\
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{3.8in}
+
+(\arabic{equation}) & ImportDeclns \refstepcounter{equation}\label{prod:ImportDeclns}  \: ImportDecln  \\
+
+ &    \| ImportDeclns ImportDecln \\
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{3.6in}
+
+(\arabic{equation}) & InclusiveOrExp \refstepcounter{equation}\label{prod:InclusiveOrExp}  \: ExclusiveOrExp  \\
+
+ &    \| InclusiveOrExp \xcd"|" ExclusiveOrExp \\
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{3.7in}
+
+(\arabic{equation}) & InterfaceBody \refstepcounter{equation}\label{prod:InterfaceBody}  \: \xcd"{" InterfaceMemberDeclns\opt \xcd"}"  \\
+
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{3.6in}
+
+(\arabic{equation}) & InterfaceDecln \refstepcounter{equation}\label{prod:InterfaceDecln}  \: Mods\opt \xcd"interface" Id TypeParamsI\opt Properties\opt Guard\opt ExtendsInterfaces\opt InterfaceBody  \\
+
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{3.0in}
+
+(\arabic{equation}) & InterfaceMemberDecln \refstepcounter{equation}\label{prod:InterfaceMemberDecln}  \: MethodDecln  \\
+
+ &    \| PropMethodDecln \\
+ &    \| FieldDecln \\
+ &    \| TypeDecln \\
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{2.9in}
+
+(\arabic{equation}) & InterfaceMemberDeclns \refstepcounter{equation}\label{prod:InterfaceMemberDeclns}  \: InterfaceMemberDecln  \\
+
+ &    \| InterfaceMemberDeclns InterfaceMemberDecln \\
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{3.3in}
+
+(\arabic{equation}) & InterfaceTypeList \refstepcounter{equation}\label{prod:InterfaceTypeList}  \: Type  \\
+
+ &    \| InterfaceTypeList \xcd"," Type \\
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{4.0in}
+
+(\arabic{equation}) & Interfaces \refstepcounter{equation}\label{prod:Interfaces}  \: \xcd"implements" InterfaceTypeList  \\
+
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{3.9in}
+
+(\arabic{equation}) & LabeledStmt \refstepcounter{equation}\label{prod:LabeledStmt}  \: Id \xcd":" LoopStmt  \\
+
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{4.3in}
+
+(\arabic{equation}) & LastExp \refstepcounter{equation}\label{prod:LastExp}  \: Exp  \\
+
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{3.8in}
+
+(\arabic{equation}) & LeftHandSide \refstepcounter{equation}\label{prod:LeftHandSide}  \: ExpName  \\
+
+ &    \| FieldAccess \\
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{4.3in}
+
+(\arabic{equation}) & Literal \refstepcounter{equation}\label{prod:Literal}  \: \xcd"IntegerLiteral"   \\
+
+ &    \| \xcd"LongLiteral"  \\
+ &    \| \xcd"ByteLiteral" \\
+ &    \| \xcd"UnsignedByteLiteral" \\
+ &    \| \xcd"ShortLiteral" \\
+ &    \| \xcd"UnsignedShortLiteral" \\
+ &    \| \xcd"UnsignedIntegerLiteral"  \\
+ &    \| \xcd"UnsignedLongLiteral"  \\
+ &    \| \xcd"FloatingPointLiteral"  \\
+ &    \| \xcd"DoubleLiteral"  \\
+ &    \| BooleanLiteral \\
+ &    \| \xcd"CharacterLiteral"  \\
+ &    \| \xcd"StringLiteral"  \\
+ &    \| \xcd"null" \\
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{3.9in}
+
+(\arabic{equation}) & LocVarDecln \refstepcounter{equation}\label{prod:LocVarDecln}  \: Mods\opt VarKeyword VariableDeclrs  \\
+
+ &    \| Mods\opt VarDeclsWType \\
+ &    \| Mods\opt VarKeyword FormalDeclrs \\
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{3.5in}
+
+(\arabic{equation}) & LocVarDeclnStmt \refstepcounter{equation}\label{prod:LocVarDeclnStmt}  \: LocVarDecln \xcd";"  \\
+
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{4.1in}
+
+(\arabic{equation}) & LoopIndex \refstepcounter{equation}\label{prod:LoopIndex}  \: Mods\opt LoopIndexDeclr  \\
+
+ &    \| Mods\opt VarKeyword LoopIndexDeclr \\
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{3.6in}
+
+(\arabic{equation}) & LoopIndexDeclr \refstepcounter{equation}\label{prod:LoopIndexDeclr}  \: Id HasResultType\opt  \\
+
+ &    \| \xcd"[" IdList \xcd"]" HasResultType\opt \\
+ &    \| Id \xcd"[" IdList \xcd"]" HasResultType\opt \\
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{4.2in}
+
+(\arabic{equation}) & LoopStmt \refstepcounter{equation}\label{prod:LoopStmt}  \: ForStmt  \\
+
+ &    \| WhileStmt \\
+ &    \| DoStmt \\
+ &    \| AtEachStmt \\
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{4.2in}
+
+(\arabic{equation}) & MethMods \refstepcounter{equation}\label{prod:MethMods}  \: Mods\opt  \\
+
+ &    \| MethMods \xcd"property"  \\
+ &    \| MethMods Mod \\
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{4.0in}
+
+(\arabic{equation}) & MethodBody \refstepcounter{equation}\label{prod:MethodBody}  \: \xcd"=" LastExp \xcd";"  \\
+
+ &    \| \xcd"=" Annotations\opt \xcd"{" BlockStmts\opt LastExp \xcd"}" \\
+ &    \| \xcd"=" Annotations\opt Block \\
+ &    \| Annotations\opt Block \\
+ &    \| \xcd";" \\
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{3.9in}
+
+(\arabic{equation}) & MethodDecln \refstepcounter{equation}\label{prod:MethodDecln}  \: MethMods \xcd"def" Id TypeParams\opt Formals Guard\opt HasResultType\opt MethodBody  \\
+
+ &    \| BinOpDecln \\
+ &    \| PrefixOpDecln \\
+ &    \| ApplyOpDecln \\
+ &    \| SetOpDecln \\
+ &    \| ConversionOpDecln \\
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{4.0in}
+
+(\arabic{equation}) & MethodInvo \refstepcounter{equation}\label{prod:MethodInvo}  \: MethodName TypeArgs\opt \xcd"(" ArgumentList\opt \xcd")"  \\
+
+ &    \| Primary \xcd"." Id TypeArgs\opt \xcd"(" ArgumentList\opt \xcd")" \\
+ &    \| \xcd"super" \xcd"." Id TypeArgs\opt \xcd"(" ArgumentList\opt \xcd")" \\
+ &    \| ClassName \xcd"." \xcd"super"  \xcd"." Id TypeArgs\opt \xcd"(" ArgumentList\opt \xcd")" \\
+ &    \| Primary TypeArgs\opt \xcd"(" ArgumentList\opt \xcd")" \\
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{4.0in}
+
+(\arabic{equation}) & MethodName \refstepcounter{equation}\label{prod:MethodName}  \: Id  \\
+
+ &    \| FullyQualifiedName \xcd"." Id \\
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{4.7in}
+
+(\arabic{equation}) & Mod \refstepcounter{equation}\label{prod:Mod}  \: \xcd"abstract"  \\
+
+ &    \| Annotation \\
+ &    \| \xcd"atomic" \\
+ &    \| \xcd"final" \\
+ &    \| \xcd"native" \\
+ &    \| \xcd"private" \\
+ &    \| \xcd"protected" \\
+ &    \| \xcd"public" \\
+ &    \| \xcd"static" \\
+ &    \| \xcd"transient" \\
+ &    \| \xcd"clocked" \\
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{3.3in}
+
+(\arabic{equation}) & MultiplicativeExp \refstepcounter{equation}\label{prod:MultiplicativeExp}  \: RangeExp  \\
+
+ &    \| MultiplicativeExp \xcd"*" RangeExp \\
+ &    \| MultiplicativeExp \xcd"/" RangeExp \\
+ &    \| MultiplicativeExp \xcd"%" RangeExp \\
+ &    \| MultiplicativeExp \xcd"**" RangeExp \\
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{4.1in}
+
+(\arabic{equation}) & NamedType \refstepcounter{equation}\label{prod:NamedType}  \: NamedTypeNoConstraints  \\
+
+ &    \| DepNamedType \\
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{2.8in}
+
+(\arabic{equation}) & NamedTypeNoConstraints \refstepcounter{equation}\label{prod:NamedTypeNoConstraints}  \: SimpleNamedType  \\
+
+ &    \| ParamizedNamedType \\
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{4.0in}
+
+(\arabic{equation}) & NonExpStmt \refstepcounter{equation}\label{prod:NonExpStmt}  \: Block  \\
+
+ &    \| EmptyStmt \\
+ &    \| AssertStmt \\
+ &    \| SwitchStmt \\
+ &    \| DoStmt \\
+ &    \| BreakStmt \\
+ &    \| ContinueStmt \\
+ &    \| ReturnStmt \\
+ &    \| ThrowStmt \\
+ &    \| TryStmt \\
+ &    \| LabeledStmt \\
+ &    \| IfThenStmt \\
+ &    \| IfThenElseStmt \\
+ &    \| WhileStmt \\
+ &    \| ForStmt \\
+ &    \| AsyncStmt \\
+ &    \| AtStmt \\
+ &    \| AtomicStmt \\
+ &    \| WhenStmt \\
+ &    \| AtEachStmt \\
+ &    \| FinishStmt \\
+ &    \| AssignPropCall \\
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{3.7in}
+
+(\arabic{equation}) & ObCreationExp \refstepcounter{equation}\label{prod:ObCreationExp}  \: \xcd"new" TypeName TypeArgs\opt \xcd"(" ArgumentList\opt \xcd")" ClassBody\opt  \\
+
+ &    \| Primary \xcd"." \xcd"new" Id TypeArgs\opt \xcd"(" ArgumentList\opt \xcd")" ClassBody\opt \\
+ &    \| FullyQualifiedName \xcd"." \xcd"new" Id TypeArgs\opt \xcd"(" ArgumentList\opt \xcd")" ClassBody\opt \\
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{3.8in}
+
+(\arabic{equation}) & PackageDecln \refstepcounter{equation}\label{prod:PackageDecln}  \: Annotations\opt \xcd"package" PackageName \xcd";"  \\
+
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{3.9in}
+
+(\arabic{equation}) & PackageName \refstepcounter{equation}\label{prod:PackageName}  \: Id  \\
+
+ &    \| PackageName \xcd"." Id \\
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{3.3in}
+
+(\arabic{equation}) & PackageOrTypeName \refstepcounter{equation}\label{prod:PackageOrTypeName}  \: Id  \\
+
+ &    \| PackageOrTypeName \xcd"." Id \\
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{3.2in}
+
+(\arabic{equation}) & ParamizedNamedType \refstepcounter{equation}\label{prod:ParamizedNamedType}  \: SimpleNamedType Arguments  \\
+
+ &    \| SimpleNamedType TypeArgs \\
+ &    \| SimpleNamedType TypeArgs Arguments \\
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{3.4in}
+
+(\arabic{equation}) & PostDecrementExp \refstepcounter{equation}\label{prod:PostDecrementExp}  \: PostfixExp \xcd"--"  \\
+
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{3.4in}
+
+(\arabic{equation}) & PostIncrementExp \refstepcounter{equation}\label{prod:PostIncrementExp}  \: PostfixExp \xcd"++"  \\
+
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{4.0in}
+
+(\arabic{equation}) & PostfixExp \refstepcounter{equation}\label{prod:PostfixExp}  \: CastExp  \\
+
+ &    \| PostIncrementExp \\
+ &    \| PostDecrementExp \\
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{3.5in}
+
+(\arabic{equation}) & PreDecrementExp \refstepcounter{equation}\label{prod:PreDecrementExp}  \: \xcd"--" UnaryExpNotPlusMinus  \\
+
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{3.5in}
+
+(\arabic{equation}) & PreIncrementExp \refstepcounter{equation}\label{prod:PreIncrementExp}  \: \xcd"++" UnaryExpNotPlusMinus  \\
+
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{4.2in}
+
+(\arabic{equation}) & PrefixOp \refstepcounter{equation}\label{prod:PrefixOp}  \: \xcd"+"  \\
+
+ &    \| \xcd"-" \\
+ &    \| \xcd"!" \\
+ &    \| \xcd"~" \\
+ &    \| \xcd"^" \\
+ &    \| \xcd"|" \\
+ &    \| \xcd"&" \\
+ &    \| \xcd"*" \\
+ &    \| \xcd"/" \\
+ &    \| \xcd"%" \\
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{3.7in}
+
+(\arabic{equation}) & PrefixOpDecln \refstepcounter{equation}\label{prod:PrefixOpDecln}  \: MethMods \xcd"operator" TypeParams\opt PrefixOp \xcd"(" Formal  \xcd")" Guard\opt HasResultType\opt MethodBody  \\
+
+ &    \| MethMods \xcd"operator" TypeParams\opt PrefixOp \xcd"this" Guard\opt HasResultType\opt MethodBody \\
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{4.3in}
+
+(\arabic{equation}) & Primary \refstepcounter{equation}\label{prod:Primary}  \: \xcd"here"  \\
+
+ &    \| \xcd"[" ArgumentList\opt \xcd"]" \\
+ &    \| Literal \\
+ &    \| \xcd"self" \\
+ &    \| \xcd"this" \\
+ &    \| ClassName \xcd"." \xcd"this" \\
+ &    \| \xcd"(" Exp \xcd")" \\
+ &    \| ObCreationExp \\
+ &    \| FieldAccess \\
+ &    \| MethodInvo \\
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{4.6in}
+
+(\arabic{equation}) & Prop \refstepcounter{equation}\label{prod:Prop}  \: Annotations\opt Id ResultType  \\
+
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{4.2in}
+
+(\arabic{equation}) & PropList \refstepcounter{equation}\label{prod:PropList}  \: Prop  \\
+
+ &    \| PropList \xcd"," Prop \\
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{3.5in}
+
+(\arabic{equation}) & PropMethodDecln \refstepcounter{equation}\label{prod:PropMethodDecln}  \: MethMods Id TypeParams\opt Formals Guard\opt HasResultType\opt MethodBody  \\
+
+ &    \| MethMods Id Guard\opt HasResultType\opt MethodBody \\
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{4.0in}
+
+(\arabic{equation}) & Properties \refstepcounter{equation}\label{prod:Properties}  \: \xcd"(" PropList \xcd")"  \\
+
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{4.2in}
+
+(\arabic{equation}) & RangeExp \refstepcounter{equation}\label{prod:RangeExp}  \: UnaryExp  \\
+
+ &    \| RangeExp  \xcd".." UnaryExp  \\
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{3.7in}
+
+(\arabic{equation}) & RelationalExp \refstepcounter{equation}\label{prod:RelationalExp}  \: ShiftExp  \\
+
+ &    \| HasZeroConstraint \\
+ &    \| SubtypeConstraint \\
+ &    \| RelationalExp \xcd"<" ShiftExp \\
+ &    \| RelationalExp \xcd">" ShiftExp \\
+ &    \| RelationalExp \xcd"<=" ShiftExp \\
+ &    \| RelationalExp \xcd">=" ShiftExp \\
+ &    \| RelationalExp \xcd"instanceof" Type \\
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{4.0in}
+
+(\arabic{equation}) & ResultType \refstepcounter{equation}\label{prod:ResultType}  \: \xcd":" Type  \\
+
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{4.0in}
+
+(\arabic{equation}) & ReturnStmt \refstepcounter{equation}\label{prod:ReturnStmt}  \: \xcd"return" Exp\opt \xcd";"  \\
+
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{4.0in}
+
+(\arabic{equation}) & SetOpDecln \refstepcounter{equation}\label{prod:SetOpDecln}  \: MethMods \xcd"operator" \xcd"this" TypeParams\opt Formals \xcd"=" \xcd"(" Formal  \xcd")" Guard\opt HasResultType\opt MethodBody  \\
+
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{4.2in}
+
+(\arabic{equation}) & ShiftExp \refstepcounter{equation}\label{prod:ShiftExp}  \: AdditiveExp  \\
+
+ &    \| ShiftExp \xcd"<<" AdditiveExp \\
+ &    \| ShiftExp \xcd">>" AdditiveExp \\
+ &    \| ShiftExp \xcd">>>" AdditiveExp \\
+ &    \| ShiftExp  \xcd"->" AdditiveExp  \\
+ &    \| ShiftExp  \xcd"<-" AdditiveExp  \\
+ &    \| ShiftExp  \xcd"-<" AdditiveExp  \\
+ &    \| ShiftExp  \xcd">-" AdditiveExp  \\
+ &    \| ShiftExp  \xcd"!" AdditiveExp  \\
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{3.5in}
+
+(\arabic{equation}) & SimpleNamedType \refstepcounter{equation}\label{prod:SimpleNamedType}  \: TypeName  \\
+
+ &    \| Primary \xcd"." Id \\
+ &    \| ParamizedNamedType \xcd"." Id \\
+ &    \| DepNamedType \xcd"." Id \\
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{2.9in}
+
+(\arabic{equation}) & SingleTypeImportDecln \refstepcounter{equation}\label{prod:SingleTypeImportDecln}  \: \xcd"import" TypeName \xcd";"  \\
+
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{4.6in}
+
+(\arabic{equation}) & Stmt \refstepcounter{equation}\label{prod:Stmt}  \: AnnotationStmt  \\
+
+ &    \| ExpStmt \\
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{4.3in}
+
+(\arabic{equation}) & StmtExp \refstepcounter{equation}\label{prod:StmtExp}  \: Assignment  \\
+
+ &    \| PreIncrementExp \\
+ &    \| PreDecrementExp \\
+ &    \| PostIncrementExp \\
+ &    \| PostDecrementExp \\
+ &    \| MethodInvo \\
+ &    \| ObCreationExp \\
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{3.9in}
+
+(\arabic{equation}) & StmtExpList \refstepcounter{equation}\label{prod:StmtExpList}  \: StmtExp  \\
+
+ &    \| StmtExpList \xcd"," StmtExp \\
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{3.9in}
+
+(\arabic{equation}) & StructDecln \refstepcounter{equation}\label{prod:StructDecln}  \: Mods\opt \xcd"struct" Id TypeParamsI\opt Properties\opt Guard\opt Interfaces\opt ClassBody  \\
+
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{3.3in}
+
+(\arabic{equation}) & SubtypeConstraint \refstepcounter{equation}\label{prod:SubtypeConstraint}  \: Type  \xcd"<:" Type   \\
+
+ &    \| Type  \xcd":>" Type  \\
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{4.5in}
+
+(\arabic{equation}) & Super \refstepcounter{equation}\label{prod:Super}  \: \xcd"extends" ClassType  \\
+
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{3.9in}
+
+(\arabic{equation}) & SwitchBlock \refstepcounter{equation}\label{prod:SwitchBlock}  \: \xcd"{" SwitchBlockGroups\opt SwitchLabels\opt \xcd"}"  \\
+
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{3.4in}
+
+(\arabic{equation}) & SwitchBlockGroup \refstepcounter{equation}\label{prod:SwitchBlockGroup}  \: SwitchLabels BlockStmts  \\
+
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{3.3in}
+
+(\arabic{equation}) & SwitchBlockGroups \refstepcounter{equation}\label{prod:SwitchBlockGroups}  \: SwitchBlockGroup  \\
+
+ &    \| SwitchBlockGroups SwitchBlockGroup \\
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{3.9in}
+
+(\arabic{equation}) & SwitchLabel \refstepcounter{equation}\label{prod:SwitchLabel}  \: \xcd"case" ConstantExp \xcd":"  \\
+
+ &    \| \xcd"default" \xcd":" \\
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{3.8in}
+
+(\arabic{equation}) & SwitchLabels \refstepcounter{equation}\label{prod:SwitchLabels}  \: SwitchLabel  \\
+
+ &    \| SwitchLabels SwitchLabel \\
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{4.0in}
+
+(\arabic{equation}) & SwitchStmt \refstepcounter{equation}\label{prod:SwitchStmt}  \: \xcd"switch" \xcd"(" Exp \xcd")" SwitchBlock  \\
+
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{4.1in}
+
+(\arabic{equation}) & ThrowStmt \refstepcounter{equation}\label{prod:ThrowStmt}  \: \xcd"throw" Exp \xcd";"  \\
+
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{4.3in}
+
+(\arabic{equation}) & TryStmt \refstepcounter{equation}\label{prod:TryStmt}  \: \xcd"try" Block Catches  \\
+
+ &    \| \xcd"try" Block Catches\opt Finally \\
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{4.6in}
+
+(\arabic{equation}) & Type \refstepcounter{equation}\label{prod:Type}  \: FunctionType  \\
+
+ &    \| ConstrainedType \\
+ &    \| Void \\
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{4.2in}
+
+(\arabic{equation}) & TypeArgs \refstepcounter{equation}\label{prod:TypeArgs}  \: \xcd"[" TypeArgumentList \xcd"]"  \\
+
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{3.4in}
+
+(\arabic{equation}) & TypeArgumentList \refstepcounter{equation}\label{prod:TypeArgumentList}  \: Type  \\
+
+ &    \| TypeArgumentList \xcd"," Type \\
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{4.1in}
+
+(\arabic{equation}) & TypeDecln \refstepcounter{equation}\label{prod:TypeDecln}  \: ClassDecln  \\
+
+ &    \| StructDecln \\
+ &    \| InterfaceDecln \\
+ &    \| TypeDefDecln \\
+ &    \| \xcd";" \\
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{4.0in}
+
+(\arabic{equation}) & TypeDeclns \refstepcounter{equation}\label{prod:TypeDeclns}  \: TypeDecln  \\
+
+ &    \| TypeDeclns TypeDecln \\
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{3.8in}
+
+(\arabic{equation}) & TypeDefDecln \refstepcounter{equation}\label{prod:TypeDefDecln}  \: Mods\opt \xcd"type" Id TypeParams\opt Guard\opt \xcd"=" Type \xcd";"  \\
+
+ &    \| Mods\opt \xcd"type" Id TypeParams\opt \xcd"(" FormalList \xcd")" Guard\opt \xcd"=" Type \xcd";" \\
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{2.7in}
+
+(\arabic{equation}) & TypeImportOnDemandDecln \refstepcounter{equation}\label{prod:TypeImportOnDemandDecln}  \: \xcd"import" PackageOrTypeName \xcd"." \xcd"*" \xcd";"  \\
+
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{4.2in}
+
+(\arabic{equation}) & TypeName \refstepcounter{equation}\label{prod:TypeName}  \: Id  \\
+
+ &    \| TypeName \xcd"." Id \\
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{4.1in}
+
+(\arabic{equation}) & TypeParam \refstepcounter{equation}\label{prod:TypeParam}  \: Id  \\
+
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{3.6in}
+
+(\arabic{equation}) & TypeParamIList \refstepcounter{equation}\label{prod:TypeParamIList}  \: TypeParam  \\
+
+ &    \| TypeParamIList \xcd"," TypeParam \\
+ &    \| TypeParamIList \xcd"," \\
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{3.7in}
+
+(\arabic{equation}) & TypeParamList \refstepcounter{equation}\label{prod:TypeParamList}  \: TypeParam  \\
+
+ &    \| TypeParamList \xcd"," TypeParam \\
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{4.0in}
+
+(\arabic{equation}) & TypeParams \refstepcounter{equation}\label{prod:TypeParams}  \: \xcd"[" TypeParamList \xcd"]"  \\
+
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{3.9in}
+
+(\arabic{equation}) & TypeParamsI \refstepcounter{equation}\label{prod:TypeParamsI}  \: \xcd"[" TypeParamIList \xcd"]"  \\
+
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{3.1in}
+
+(\arabic{equation}) & UnannotatedUnaryExp \refstepcounter{equation}\label{prod:UnannotatedUnaryExp}  \: PreIncrementExp  \\
+
+ &    \| PreDecrementExp \\
+ &    \| \xcd"+" UnaryExpNotPlusMinus \\
+ &    \| \xcd"-" UnaryExpNotPlusMinus \\
+ &    \| UnaryExpNotPlusMinus \\
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{4.2in}
+
+(\arabic{equation}) & UnaryExp \refstepcounter{equation}\label{prod:UnaryExp}  \: UnannotatedUnaryExp  \\
+
+ &    \| Annotations UnannotatedUnaryExp \\
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{3.0in}
+
+(\arabic{equation}) & UnaryExpNotPlusMinus \refstepcounter{equation}\label{prod:UnaryExpNotPlusMinus}  \: PostfixExp  \\
+
+ &    \| \xcd"~" UnaryExp \\
+ &    \| \xcd"!" UnaryExp \\
+ &    \| \xcd"^" UnaryExp \\
+ &    \| \xcd"|" UnaryExp \\
+ &    \| \xcd"&" UnaryExp \\
+ &    \| \xcd"*" UnaryExp \\
+ &    \| \xcd"/" UnaryExp \\
+ &    \| \xcd"%" UnaryExp \\
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{3.8in}
+
+(\arabic{equation}) & VarDeclWType \refstepcounter{equation}\label{prod:VarDeclWType}  \: Id HasResultType \xcd"=" VariableInitializer  \\
+
+ &    \| \xcd"[" IdList \xcd"]" HasResultType \xcd"=" VariableInitializer \\
+ &    \| Id \xcd"[" IdList \xcd"]" HasResultType \xcd"=" VariableInitializer \\
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{3.7in}
+
+(\arabic{equation}) & VarDeclsWType \refstepcounter{equation}\label{prod:VarDeclsWType}  \: VarDeclWType  \\
+
+ &    \| VarDeclsWType \xcd"," VarDeclWType \\
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{4.0in}
+
+(\arabic{equation}) & VarKeyword \refstepcounter{equation}\label{prod:VarKeyword}  \: \xcd"val"  \\
+
+ &    \| \xcd"var" \\
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{3.7in}
+
+(\arabic{equation}) & VariableDeclr \refstepcounter{equation}\label{prod:VariableDeclr}  \: Id HasResultType\opt \xcd"=" VariableInitializer  \\
+
+ &    \| \xcd"[" IdList \xcd"]" HasResultType\opt \xcd"=" VariableInitializer \\
+ &    \| Id \xcd"[" IdList \xcd"]" HasResultType\opt \xcd"=" VariableInitializer \\
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{3.6in}
+
+(\arabic{equation}) & VariableDeclrs \refstepcounter{equation}\label{prod:VariableDeclrs}  \: VariableDeclr  \\
+
+ &    \| VariableDeclrs \xcd"," VariableDeclr \\
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{3.1in}
+
+(\arabic{equation}) & VariableInitializer \refstepcounter{equation}\label{prod:VariableInitializer}  \: Exp  \\
+
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{4.6in}
+
+(\arabic{equation}) & Void \refstepcounter{equation}\label{prod:Void}  \: \xcd"void"  \\
+
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{4.2in}
+
+(\arabic{equation}) & WhenStmt \refstepcounter{equation}\label{prod:WhenStmt}  \: \xcd"when" \xcd"(" Exp \xcd")" Stmt  \\
+
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{4.1in}
+
+(\arabic{equation}) & WhileStmt \refstepcounter{equation}\label{prod:WhileStmt}  \: \xcd"while" \xcd"(" Exp \xcd")" Stmt  \\
+
+
+\end{bbgrammarappendix}

@@ -1,0 +1,153 @@
+\chapter{Options}
+
+\subsection{Compiler Options}
+
+The X10 compilers have many useful options. 
+
+% -CHECK_INVARIANTS seems to check some internal compiler invariants.
+
+\subsection{Optimization: {\tt -O} or {\tt -optimize}}
+
+This flag causes the compiler to generate optimized code.
+
+
+\subsection{Debugging: {\tt -DEBUG=boolean}}
+
+This flag, if true, causes the compiler to generate debugging information.  It
+is false by default.
+
+\subsection{Call Style: {\tt -STATIC\_CHECKS, -VERBOSE\_CHECKS}}
+\label{sect:Callstyle}
+\index{STATIC\_CHECKS}
+\index{VERBOSE\_CHECKS}
+\index{dynamic checks}
+
+By default, if a method call {\em could} be correct but is not {\em
+necessarily} correct, the X10 compiler generates a dynamic check to ensure
+that it is correct before it is performed.  For example, the following code: 
+\begin{xten}
+def use(n:Int{self == 0}) {}
+def test(x:Int) { 
+   use(x); // creates a dynamic cast
+}
+\end{xten}
+compiles with \xcd`-STATIC_CHECKS`, even though it is possible that 
+\xcd`x!=0` when \xcd`use(x)` is called.  In this case, the compiler inserts a
+cast, which has the effect of checking that the call is correct before it
+happens: 
+\begin{xten}
+def use(n:Int{self == 0}) {}
+def test(x:Int) { 
+   use(x as Int{self == 0}); 
+}
+\end{xten}
+The compiler produces a warning that it inserted some dynamic casts.
+If you then want to see what it did, use \xcd`-VERBOSE_CHECKS`.
+
+You may also turn on static checking, with the \xcd`-STATIC_CHECKS` flag.  With
+static checking, calls that cannot be proved correct statically will be
+marked as errors.  
+
+
+
+
+
+\subsection{Help: {\tt -help} and {\tt -- -help}}
+
+These options cause the compiler to print a list of all command-line options.
+
+
+\subsection{Source Path: {\tt -sourcepath {\em path}}}
+
+This option tells the compiler where to look for X10 source code.  
+
+
+\subsection{(Deprecated) Class Path: {\tt -classpath {\em path}}}
+
+This option is accepted for backward compatibility, but ignored.
+
+\subsection{Output Directory: {\tt -d {\em directory}}}
+
+This option tells the compiler to produce its output files in the specified directory.
+
+\subsection{Runtime {\tt -x10rt {\em impl}}}
+
+This option tells which runtime implementation to use.  The choices are
+\xcd`lapi`, \xcd`pgp`, \xcd`sockets`, \xcd`mpi`, and \xcd`standalone`.
+
+\subsection{Executable File {\tt -o {\em path}}}
+
+This option tells the compiler what path to use for the executable file. 
+
+\section{Execution Options: Java}
+
+The Java execution command \xcd`x10` has a number of options as well. 
+
+\subsection{Class Path: {\tt -classpath {\em path}}}
+
+This option specifies the search path for class files. 
+
+\subsection{Library Path: {\tt -libpath {\em path}}}
+
+This option specifies the search path for native libraries.
+
+\subsection{Heap Size: {\tt -mx {\em size}}}
+
+Sets the maximum size of the heap. 
+
+\subsection{Help: {\tt -h}}
+
+Prints a listing of all execution options.
+
+
+
+%\subsection{{\tt }}
+
+
+\section{Running X10}
+
+An X10 application is launched either by a direct invocation of the generated
+executable or using a launcher command. The specification of the number of
+places and the mapping from places to hosts is transport specific and
+discussed in \Sref{sect:RunningManaged} for Managed X10 (Java back end) and
+\Sref{sect:RunningNative} for Native X10 (C++ back end). For distributed runs,
+the x10 distribution (libraries) and the compiled application code (binary or
+bytecode) are expected to be available at the same paths on all the nodes.  
+
+Detailed, up-to-date documentation may be found at
+\url{http://x10-lang.org/documentation/practical-x10-programming/x10rt-implementations.html}
+
+
+\section{Managed X10}
+\label{sect:RunningManaged}
+
+
+Managed X10 applications are launched using the x10 script followed by the qualified name of the main class.
+
+\begin{xten}
+x10c HelloWholeWorld.x10
+x10 HelloWholeWorld
+\end{xten}
+
+The main purpose of the x10 script is to set the jvm classpath and the
+\xcd`java.library.path` system property to ensure the x10 libraries are on the
+path.  
+
+
+\section{Native X10}
+\label{sect:RunningNative}
+
+On most platforms and for most transports, X10 applications can be launched by invoking the generated executable.
+
+\begin{xten}
+x10c++ -o HelloWholeWorld HelloWholeWorld.x10
+./HelloWholeWorld
+\end{xten}
+
+On cygwin, X10 applications must be launched using the runx10 script followed by the name of the generated executable.
+
+\begin{xten}
+x10c++ -o HelloWholeWorld HelloWholeWorld.x10
+runx10 HelloWholeWorld
+\end{xten}
+The purpose of the runx10 script is to ensure the x10 libraries are on the path. 
