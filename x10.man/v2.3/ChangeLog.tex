@@ -7,9 +7,58 @@
 \item In previous versions of \Xten{} static fields were
   eagerly initialized in \xcd{Place 0} and the resulting values were
   serialized to all other places before execution of the user main
-  function was started. Starting with \Xten{} v2.3, static fields are
+  function was started. Starting with \Xten{} v2.2.3, static fields are
   lazily initialized on a per-Place basis when the field is first read
   by an activity executing in a given Place.
+
+\item The new syntax \xcd{T isref} for some type \xcd{T} will hold if
+  \xcd{T} is represented by a pointer at runtime.  This is similar to
+  the type constraint \xcd{T haszero}.  \xcd{T isref} is true for
+  \xcd{T} that are function types, classes, and all values that have
+  been cast to interfaces (including boxed structs).  \xcd{T isref} is used
+  in the standard library, e.g. for the \xcd{GlobalRef[T]} and
+  \xcd{PlaceLocalHandle[T]} APIs.
+
+\item \xcd{x10.lang.Object is gone}, there is now no single class that
+  is the root of the X10 class hierarchy.
+\begin{itemize}
+  \item If, for some reason, you were explicitly extending \xcd{Object}, don't do
+    that anymore.
+  \item If you were doing \xcd{new Object()} to get a fresh value, use
+    \xcd{new Empty()} instead.
+  \item If you were using \xcd{Object} as a supertype, use \xcd{Any}
+    (the one true supertype).  
+  \item If you were using the type constraint \xcd{T <: Object} to
+    disallow structs, use \xcd{T isref} instead.
+\end{itemize}
+
+\item The exception hierarchy has changed, and checked exceptions have
+  been reintroduced.  The 'throws' annotation is required on methods,
+  as in Java.  It is not supported on closures, so checked exceptions
+  cannot be thrown from a closure.  The exception hierarchy has been
+  chosen to exist in a 1:1 relationship with Java's.  However, unlike
+  Java, we prefer using unchecked exceptions wherever possible, and
+  this is reflected in the naming of the X10 classes.  The following
+  classes are all in the \xcd{x10.lang} package.
+  \begin{itemize}
+  \item \xcd{CheckedThrowable} (mapped to \xcd{java.lang.Throwable}) 
+  \item \xcd{CheckedException extends CheckedThrowable} (mapped to \xcd{java.lang.Exception}) 
+  \item \xcd{Exception extends CheckedException}  (mapped to \xcd{java.lang.RuntimeException}) 
+  \item \xcd{Error extends CheckedThrowable}  (mapped to \xcd{java.lang.Error}) 
+  \end{itemize}
+
+  Anything under \xcd{CheckedThrowable} can be thrown using the \xcd{throw}
+  statement. But anything that is not under \xcd{Exception} or \xcd{Error} can
+  only be thrown if it is caught by an enclosing \xcd{try/catch}, or it is
+  thrown from a method with an appropriate throws annotation, as in
+  Java.
+
+  \xcd{RuntimeException} is gone from \Xten{}.  Use \xcd{Exception} instead.
+
+  All the exceptions in the standard library are under \xcd{Exception},
+  except \xcd{AssertionError} and \xcd{OutOfMemoryException}, which are under
+  \xcd{Error} (as in Java).  This means all exceptions in the standard
+  library remain unchecked.
 
 \end{enumerate}
 
