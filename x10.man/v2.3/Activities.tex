@@ -510,8 +510,8 @@ The following class method implements a (generic) compare and swap (CAS) operati
 % class CASSizer{
 %~~vis
 \begin{xten}
-var target:Object = null;
-public atomic def CAS(old1: Object, y: Object):Boolean {
+var target:Any = null;
+public atomic def CAS(old1: Any, y: Any):Boolean {
    if (target.equals(old1)) {
      target = y;
      return true;

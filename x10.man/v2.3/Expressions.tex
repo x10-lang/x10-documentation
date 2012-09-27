@@ -790,7 +790,7 @@ is quite common when working with possibly-null objects.
 %~~gen ^^^ Expressions6o2b
 % package Expressions6o2b;
 % class Hook { 
-% static def example(ob:Object) = 
+% static def example(ob:Any) = 
 %~~vis
 \begin{xten}
 (ob == null) ? null : ob.toString();
@@ -1036,7 +1036,7 @@ compared for equality.
       \xcd`a:Person` and 
       \xcd`b:Theory`, \xcd`a==b` could be true if \xcd`a==null` and
       \xcd`b==null`. Despite this, \xcd`a==b` is a static error, because it is
-      generally a programming mistake.  \xcd`a as Object == b as Object` can
+      generally a programming mistake.  \xcd`a as Any == b as Any` can
       be used to express the equality, if it is necessary.
 
 \item Constraints are ignored in determining whether an equality is statically
@@ -1055,7 +1055,7 @@ def m(a:Int{self==1}, b:Int{self==2}) = (a==b);
 
 \item Explicit casts erase type information.  If you wanted
       to have a comparison \xcd`a==b` for \xcd`a:Person{self!=null}` and
-      \xcd`b:Theory`, you could write it as \xcd`a as Object == b as Object`.
+      \xcd`b:Theory`, you could write it as \xcd`a as Any == b as Any`.
       It would, of course, return \xcd`false`, but it would not be a compiler
       error.\footnote{Code generators often find this trick to be useful.}
       A struct and an object may both be cast to \xcd`Any` and compared for
@@ -1094,8 +1094,8 @@ type and value arguments to the constructor.
 The allocation expression may have an optional class body.
 In this case, an anonymous subclass of the given class is
 allocated.   An anonymous class allocation may also specify a
-single super-interface rather than a superclass; the superclass
-of the anonymous class is \xcd"x10.lang.Object".
+single super-interface rather than a superclass; such an anonymous
+class does not have a superclass.
 
 If the class is anonymous---that is, if a class body is
 provided---then the constructor is selected from the superclass.
@@ -1145,12 +1145,12 @@ The \xcd`e as T` operation comes in two forms.  Which form applies depends on
 both the source type (the type of \xcd`e`) and the target type \xcd`T`.
 \begin{itemize}
 \item {\bf Cast:} A cast makes a value have a different type, without changing
-      the value's identity.  For example, \xcd`"a String" as Object` simply
-      reconsiders the \xcd`String` object as an \xcd`Object`.  
+      the value's identity.  For example, \xcd`"a String" as Any` simply
+      reconsiders the \xcd`String` object as an \xcd`Any`.  
       This cast does not need to do any 
-      run-time computation, since every \xcd`String` is an \xcd`Object`; a
-      cast in the reverse direction, from \xcd`Object` to \xcd`String`, would
-      need a run-time check that the \xcd`Object`
+      run-time computation, since every \xcd`String` is an \xcd`Any`; a
+      cast in the reverse direction, from \xcd`Any` to \xcd`String`, would
+      need a run-time check that the \xcd`Any`
       was in fact a \xcd`String`.
       Casts are all system-defined, following from the
       X10 type system.
@@ -1177,11 +1177,13 @@ of these types.  See \Sref{sect:RuntimeConstraintErasure} for more details.
 
 There are two forms of casts.  {\em Upcasts} happen when \xcd`T1 <: T2`, that
 is, when a value is being cast to a more general type.  Upcasts often don't require
-any runtime computation at all, since, if \xcd`T1 <: T2 <: Object`, every value of type
+any runtime computation at all, since, if \xcd`T1 <: T2` and 
+\xcd`T2 isref`, every value of type
 \xcd`T1` is automatically one of type \xcd`T2`.   For example, 
-\xcd`"A String" as Object` is an upcast: every \xcd`String` is already an
-\xcd`Object`, and no work need be done to make it one.  Other upcasts may
-require auto-boxing, such as \xcd`1 as Any`.  
+\xcd`"A String" as Any` is a trivial upcast: every \xcd`String` can
+simply be used as a value of type \xcd`Any` because it is already
+represented as a heap-allocated object.  Upcasts from structs to
+interface types however do require auto-boxing, such as \xcd`1 as Any`.  
 
 {\em Downcasts} are casts which are not upcasts.  Often they are recasting
 something from a more general to a more specific type, 
@@ -1192,8 +1194,8 @@ downcasts.
 % class Example { static def example() { 
 %~~vis
 \begin{xten}
-   val ob : Object = "a String" as Object; // upcast
-   val st : String = ob as String;         // downcast
+   val ob : Any = "a String" as Any; // upcast
+   val st : String = ob as String;   // downcast
    assert st == ob;
 \end{xten}
 %~~siv

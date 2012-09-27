@@ -504,18 +504,16 @@ though there are important differences.
 \index{declaration!reference class declaration}
 
 \index{\Xcd{Object}}
-\index{\Xcd{x10.lang.Object}}
 
 A {\em class declaration}  declares a {\em class type} (\Sref{XtenClasses}),
-giving its name, behavior, and data.  It may inherit from one {\em parent}
-class, and, if no parent class is specified, it implicitly inherits from 
-\xcd`x10.lang.Object`.  It may also implement zero or more interfaces, each
+giving its name, behavior, and data.  It may inherit from zero or one {\em parent}
+class.  It may also implement zero or more interfaces, each
 one of which becomes a supertype of it.
 
 \begin{ex}
 The \xcd`Position` class below could describe the position of a slider
 control.  The \xcd`example` method uses \xcd`Position` as a type.
-\xcd`Position` is a subtype of the class \xcd`Object` and the type
+\xcd`Position` is a subtype of the type
 \xcd`Poser`. 
 %~~gen ^^^ Types100
 % package Types.By.Cripes.Classes;
@@ -992,7 +990,7 @@ Or, we could abstract it somewhat, defining a type constructor
 %~~vis
 \begin{xten}
 class Example {
-  static type Nonnull[T]{T <: Object}  = T{self!=null};
+  static type Nonnull[T]{T isref}  = T{self!=null};
   var example : Nonnull[Example] = new Example();
 }
 \end{xten}
@@ -2448,18 +2446,6 @@ string representation of \xcd`a`, and \xcd`a.typeName()` the string
 representation of its type; both are useful for debugging.  \xcd`a.equals(b)`
 is the programmer-overridable equality test, and \xcd`a.hashCode()` an integer
 useful for hashing.  
-
-
-\subsection{The class {\tt Object}}
-\label{Object}
-\index{\Xcd{Object}}
-\index{\Xcd{x10.lang.Object}}
-
-The class \xcd"x10.lang.Object" is the supertype of all classes.
-A variable of this type can hold a reference to any object.
-\xcd`Object` implements \xcd`Any`.
-
-
 
 \section{Type inference}
 \label{TypeInference}
