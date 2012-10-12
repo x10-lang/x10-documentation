@@ -522,7 +522,7 @@ rights.
                      \| MethMods \xcd"property"  \\
                      \| MethMods Mod \\
 %(FROM #(prod:MethodDecln)#)
-         MethodDecln \: MethMods \xcd"def" Id TypeParams\opt Formals Guard\opt HasResultType\opt MethodBody & (\ref{prod:MethodDecln}) \\
+         MethodDecln \: MethMods \xcd"def" Id TypeParams\opt Formals Guard\opt Throws\opt HasResultType\opt MethodBody & (\ref{prod:MethodDecln}) \\
                      \| BinOpDecln \\
                      \| PrefixOpDecln \\
                      \| ApplyOpDecln \\
@@ -535,6 +535,11 @@ rights.
 %(FROM #(prod:FormalList)#)
           FormalList \: Formal & (\ref{prod:FormalList}) \\
                      \| FormalList \xcd"," Formal \\
+%(FROM #(prod:Throws)#)
+             Throws \: \xcd"throws" ThrowList & (\ref{prod:Throws}) \\
+%(FROM #(prod:ThrowsList)#)
+          ThrowsList \: Type & (\ref{prod:ThrowsList}) \\
+                     \| ThrowsList \xcd"," Type \\
 %(FROM #(prod:HasResultType)#)
        HasResultType \: ResultType & (\ref{prod:HasResultType}) \\
                      \| \xcd"<:" Type \\
@@ -625,6 +630,21 @@ class Ret(n:Int) {
 
 \end{ex}
 
+
+\subsection{Throws Clause}
+The \xcd`throws` clause indicates what checked exceptions may be
+raised during the execution of the method and are not handled by
+\xcd'catch' blocks within the method.  If a checked exception may
+escape from the method, then it must be by a subtype of one of the
+types listed in the \xcd`throws` clause of the method.   Checked
+exceptions are defined to be any subclass of
+\xcd{x10.lang.CheckedThrowable} that are not also subclasses of
+either \xcd{x10.lang.Exception} or \xcd{x10.lang.Error}. 
+
+If a method is implementing an interface or overriding a superclass
+method the set of types represented by its \xcd'throws' clause must by
+a (potentially improper) subset of the types of the \xcd'throws'
+clause of the method it is overriding. 
 
 \subsection{Final Methods}
 \index{final}
@@ -781,7 +801,7 @@ Using a reference to an outer class, \xcd`Outer.this`, in a constraint, is not s
 %##(PropertyMethodDeclaration
 \begin{bbgrammar}
 %(FROM #(prod:PropMethodDecln)#)
-     PropMethodDecln \: MethMods Id TypeParams\opt Formals Guard\opt HasResultType\opt MethodBody & (\ref{prod:PropMethodDecln}) \\
+     PropMethodDecln \: MethMods Id TypeParams\opt Formals Guard\opt Throws\opt HasResultType\opt MethodBody & (\ref{prod:PropMethodDecln}) \\
                      \| MethMods Id Guard\opt HasResultType\opt MethodBody \\
 \end{bbgrammar}
 %##)
@@ -1421,7 +1441,7 @@ executing the rest of the program.
 %##(MethodDeclaration
 \begin{bbgrammar}
 %(FROM #(prod:MethodDecln)#)
-         MethodDecln \: MethMods \xcd"def" Id TypeParams\opt Formals Guard\opt HasResultType\opt MethodBody & (\ref{prod:MethodDecln}) \\
+         MethodDecln \: MethMods \xcd"def" Id TypeParams\opt Formals Guard\opt Throws\opt HasResultType\opt MethodBody & (\ref{prod:MethodDecln}) \\
                      \| BinOpDecln \\
                      \| PrefixOpDecln \\
                      \| ApplyOpDecln \\

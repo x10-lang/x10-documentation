@@ -852,9 +852,16 @@ calling methods in the activity. In the latter case, the activity will
 terminate abnormally, and the exception will propagate to the activity's root;
 see \Sref{ExceptionModel} for details.
 
-Unlike some statically-typed languages with exceptions, X10's exceptions are
-all {\em unchecked}. Methods do not declare which exceptions they might throw;
-any method can, potentially, throw any exception.
+\Xten{} supports both {\em checked} and {\em unchecked}
+exceptions. Methods are obligated to declare via a \xcd{throws} clause
+any checked exceptions that they might throw.  However, in 
+\Xten{}, the class library design favors unchecked exceptions:
+virtually all exceptions in the standard library are unchecked.  Checked
+exceptions are defined to be any subclass of
+\xcd{x10.lang.CheckedThrowable} that are not also subclasses of
+either \xcd{x10.lang.Exception} or \xcd{x10.lang.Error}. All of the
+concrete exception classes in the \Xten{} standard library are
+subclasses of either \xcd{Exception} or \xcd{Error}.
 
 
 \section{Throw statement}

@@ -689,6 +689,21 @@ In this grammar, $X^?$ denotes an optional $X$ element.
 
 \end{bbgrammarappendix}
 
+
+\begin{bbgrammarappendix}{4.5in}
+
+(\arabic{equation}) & Throws \refstepcounter{equation}\label{prod:Throws}  \: \xcd"throws" ThrowsList  \\
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{3.3in}
+
+(\arabic{equation}) & ThrowsList \refstepcounter{equation}\label{prod:ThrowsList}  \: Type  \\
+
+ &    \| ThrowsList \xcd"," Type \\
+
+\end{bbgrammarappendix}
+
 \begin{bbgrammarappendix}{3.7in}
 
 (\arabic{equation}) & HasResultType \refstepcounter{equation}\label{prod:HasResultType}  \: ResultType  \\
@@ -934,7 +949,8 @@ In this grammar, $X^?$ denotes an optional $X$ element.
 
 \begin{bbgrammarappendix}{3.9in}
 
-(\arabic{equation}) & MethodDecln \refstepcounter{equation}\label{prod:MethodDecln}  \: MethMods \xcd"def" Id TypeParams\opt Formals Guard\opt HasResultType\opt MethodBody  \\
+(\arabic{equation}) & MethodDecln
+  \refstepcounter{equation}\label{prod:MethodDecln}  \: MethMods \xcd"def" Id TypeParams\opt Formals Guard\opt Throws\opt HasResultType\opt MethodBody  \\
 
  &    \| BinOpDecln \\
  &    \| PrefixOpDecln \\
