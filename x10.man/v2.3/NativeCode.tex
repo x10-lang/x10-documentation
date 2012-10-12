@@ -1,22 +1,33 @@
-\chapter{Native Code Integration}
+\chapter{Interoperability with Other Languages}
 \label{NativeCode}
 \index{native code}
+\label{Interoperability}
+\index{interoperability}
 
-At times it becomes necessary to call non-X10 code from X10, perhaps to make
-use of specialized libraries in other languages or to write more precisely
-controlled code than X10 generally makes available. 
+The ability to interoperate with other programming languages is an
+essential feature of the \Xten{} implementation.  Cross-language
+interoperability enables both the incremental adoption of \Xten{} in
+existing large applications and the usage of existing libraries and
+frameworks by newly developed \Xten{} programs. 
+
+There are two primary interoperability scenarios that are supported by
+\XtenCurrVer{}: inline substitution of fragments of foreign code for
+\Xten program fragments (expressions, statements) and external linkage
+to foreign code.  
+
+\section{Embedded Native Code Fragments}
 
 The
-\xcd`@Native(lang,code) Phrase` annotation from \xcd`x10.compiler.Native` in
-X10 can be used to tell the X10 compiler to generate \xcd`code` for certain
-kinds of \xcd`Phrase`, instead of what it would normally compile to, when
-compiling to the \xcd`lang` back end.
+\xcd`@Native(lang,code) Construct` annotation from \xcd`x10.compiler.Native` in
+\Xten{} can be used to tell the \Xten{} compiler to substitute \xcd`code` for
+whatever it would have been generated when compiling \xcd`Construct`
+with the \xcd`lang` back end.
 
-The compiler cannot analyze native code the same way it analyzes X10 code.  In
+The compiler cannot analyze native code the same way it analyzes \Xten{} code.  In
 particular, \xcd`@Native` fields and methods must be explicitly typed; the
 compiler will not infer types.
 
-\section{Native {\tt static} Methods}
+\subsection{Native {\tt static} Methods}
 
 \xcd`static` methods can be given native implementations.  Note that these
 implementations are syntactically {\em expressions}, not statements, in C++ or
@@ -37,7 +48,7 @@ class Son {
 %
 %~~neg
 
-If only some back-end languages are given, the X10 code will be used for the
+If only some back-end languages are given, the \Xten{} code will be used for the
 remaining back ends: 
 %~~gen ^^^ extern20
 % package Extern.or.burn;
@@ -56,7 +67,7 @@ class Land {
 %~~neg
 
 The \xcd`native` modifier on methods indicates that the method must not have
-an X10 code body, and \xcd`@Native` implementations must be given for all back
+an \Xten{} code body, and \xcd`@Native` implementations must be given for all back
 ends:
 %~~gen ^^^ extern30
 % package Extern.or_maybe_getting_back_together;
@@ -74,8 +85,8 @@ class Plants {
 %~~neg
 
 
-Values may be returned from external code to X10.  Scalar types in Java and
-C++ correspond directly to the analogous types in X10.  
+Values may be returned from external code to \Xten{}.  Scalar types in Java and
+C++ correspond directly to the analogous types in \Xten{}.  
 %~~gen ^^^ extern40
 % package Extern.hardy;
 %~~vis
@@ -116,7 +127,7 @@ class Species {
 
 
 Static variables in the class are available in the external code.  For Java,
-the static variables are used with their X10 names.  For C++, the names
+the static variables are used with their \Xten{} names.  For C++, the names
 must be mangled, by use of the \xcd`FMGL` macro.  
 
 %~~gen ^^^ extern60
@@ -138,7 +149,7 @@ class Ability {
 
 
 
-\section{Native Blocks}
+\subsection{Native Blocks}
 
 Any block may be annotated with \xcd`@Native(lang,stmt)`, indicating that, in
 the given back end, it should be implemented as \xcd`stmt`. All 
@@ -168,12 +179,12 @@ Note that the code being replaced is a statement -- the block \xcd`{y = 3;}`
 in this case -- so the replacement should also be a statement. 
 
 
-Other X10 constructs may or may not be available in Java and/or C++ code.  For
+Other \Xten{} constructs may or may not be available in Java and/or C++ code.  For
 example, type variables do not correspond exactly to type variables in either
 language, and may not be available there.  The exact compilation scheme is
 {\em not} fully specified.  You may inspect the generated Java or C++ code and
 see how to do specific things, but there is no guarantee that fancy external
-coding will continue to work in later versions of X10.
+coding will continue to work in later versions of \Xten{}.
 
 
 
@@ -186,16 +197,382 @@ the  code should either be a very simple expression, or a method
 or function call to external code.
 
 
-\section{External Java Code}
+\section{Interoperability with External Java Code}
 
-When X10 is compiled to Java, mentioning a Java class name in native code will
-cause the Java compiler to find it in the sourcepath or classpath, in the
-usual way.  This requires no particular extra work from the programmer.
+With Managed X10, we can seamlessly call existing Java code from \Xten{},
+and call \Xten{} code from Java.  We call this the 
+\emph{Java interoperability} feature.
+
+By combining Java interoperability with X10's distributed
+execution features, we can even make existing Java applications, which
+are originally designed to run on a single Java VM, scale-out with
+minor modifications.
+
+\subsection{How Java program is seen in X10}
+
+Managed X10 does not pre-process the existing Java code to make it
+accessible from X10.  X10 programs compiled with Managed X10 will call
+existing Java code as is.
+
+\paragraph{Types}
+
+In X10, both at compile time and run time, there is no way to
+distinguish Java types from X10 types.  Java types can be referred to
+with regular \xcd{import} statement, or their qualified names.  The
+package \xcd{java.lang} is not auto-imported into \Xten.  In Managed
+x10, the resolver is enhanced to resolve types with X10 source files
+in the source path first, then resolve them with Java class files in
+the class path. Note that the resolver does not resolve types with
+Java source files, therefore Java source files must be compiled in
+advance.  To refer to Java types listed in
+Tables~\ref{tab:exceptiontypes}, \ref{tab:specialtypes}, and
+\ref{tab:otherspecialtypes}, which include all Java primitive types,
+use the corresponding X10 type (e.g. use \xcd{x10.lang.Int} (or in
+short, \xcd{Int}) instead of \xcd{int}).
+
+\paragraph{Fields}
+
+Fields of Java types are seen as fields of X10 types.
+
+Managed X10 does not change the static initialization semantics of
+Java types, which is per-class, at load time, and per-place (Java VM),
+therefore, it is subtly different than the per-field lazy
+initialization semantics of X10 static fields.
+
+\paragraph{Methods}
+
+Methods of Java types are seen as methods of X10 types.
+
+\paragraph{Generic types}
+
+Generic Java types are seen as their raw types 
+(\S 4.8 in~\cite{Gosling05JLS7}).  Raw type is a mechanism to handle generic
+Java types as non-generic types, where the type parameters are assumed
+as \verb|java.lang.Object| or their upperbound if they have it.  Java
+introduced generics and raw type at the same time to facilitate
+generic Java code interfacing with non-generic legacy Java code.
+Managed X10 uses this mechanism for a slightly different purpose.
+Java erases type parameters at compile time, whereas X10 preserves
+their values at run time.  To manifest this semantic gap in generics,
+Managed X10 represents Java generic types as raw types and eliminates
+type parameters at source code level.  For more detailed discussions,
+please refer to~\cite{TakeuchiX1011,TakeuchiX1012}.
+
+\paragraph{Arrays}
+
+X10 array type is a generic type and its representation is different
+from Java array types.
+
+Managed X10 provides a special X10 type
+\xcd{x10.interop.Java.array[T]} which represents Java array type
+\xcd{T[]}.  Note that for X10 types in Table~\ref{tab:specialtypes},
+this type means the Java array type of their primary type.  For
+example, \xcd{Java.array[Int]} and \xcd{Java.array[String]} mean
+\xcd{int[]} and \xcd{java.lang.String[]}, respectively.  Managed X10
+also provides conversion methods between X10 array of rank 1 and Java
+array (\xcd{Java.convert[T](a:Array[T](1)):Java.array[T]} and
+\xcd{Java.convert[T](a:Java.array[T]):Array[T](1)}), and creation
+methods for Java arrays (\xcd{Java.newArray[T](d0:Int):Java.array[T]}
+etc.).
+
+\paragraph{Exceptions}
+
+The \Xten{} 2.3 exception hierarchy has been designed so that there is a
+natural correspondence with the Java exception hierarchy. As shown in
+Table~\ref{tab:otherspecialtypes}, many commonly used Java
+exception types are directly mapped to X10 exception types. 
+Exception types that are thus aliased may be caught (and thrown) using
+either their Java or \Xten types.  In \Xten code, it is stylistically
+preferable to use the \Xten type to refer to the exception as shown in 
+Figure~\ref{fig:javaexceptions}.
+
+%----------------
+\begin{figure}
+\begin{xten}
+import x10.interop.Java;
+public class XClass {   
+  public static def main(args:Array[String](1)):void {
+    try {
+      val a = Java.newArray[Int](2);
+      a(0) = 0;
+      a(1) = 1;
+      a(2) = 2;
+    } catch (e:x10.lang.ArrayIndexOutOfBoundsException) {
+      Console.OUT.println(e);
+    }
+  }
+}
+\end{xten}
+%\vspace{-2mm}%@@ADJUST
+\begin{verbatim}
+> x10c -d bin src/XClass.x10
+> x10 -cp bin XClass
+x10.lang.ArrayIndexOutOfBoundsException: Array index out of range: 2
+\end{verbatim}
+\caption{Java exceptions in X10}
+%\vspace{-4mm}%@@ADJUST
+\label{fig:javaexceptions}
+\end{figure}
+%----------------
+
+\paragraph{Compiling and executing X10 programs}
+
+We can compile and run X10 programs that call existing Java code with
+the same \verb|x10c| and \verb|x10| command by specifying the location
+of Java class files or jar files that your X10 programs refer to, with
+\verb|-classpath| (or in short, \verb|-cp|) option.
+
+\subsection{How X10 program is translated to Java}
+
+Managed X10 translates X10 programs to Java class files. 
+
+X10 does not provide a Java reflection-like mechanism to resolve X10
+types, methods, and fields with their names at runtime, nor a code
+generation tool, such as \verb|javah|, to generate stub code to access
+them from other languages.  Java programmers, therefore, need to
+access X10 types, methods, and fields in the generated Java code
+directly as they access Java types, methods, and fields.  To make it
+possible, Java programmers need to understand how X10 programs are
+translated to Java.
+
+Some aspects of the X10 to Java translation scheme is still evolving,
+therefore in this document only a stable subset of translation scheme
+will be explained.  Although it is a subset, it has been extensively
+used by X10 core team and proved to be useful to develop Java Hadoop
+interop layer for a Main-memory Map Reduce (M3R)
+engine~\cite{Shinnar12M3R} in X10.
+
+In the following discussions, we deliberately ignore generic X10
+types. For those who are interested in the implementation of generics
+in Managed X10, please consult~\cite{TakeuchiX1012}.  We also don't
+cover function types, function values, and all non-static methods.
+Although slightly outdated, another paper~\cite{TakeuchiX1011}, which
+describes translation scheme in X10 2.1.2, is still useful to
+understand the overview of Java code generation in Managed X10.
 
 
-\section{External C++ Code}
+\paragraph{Types}
 
-C++ code can be linked to X10 code, either by writing auxiliary C++ files and
+X10 classes and structs are translated to Java classes with the same
+names.  X10 interfaces are translated to Java interfaces with the same
+names.
+
+Table~\ref{tab:specialtypes} shows the list of special types that are
+mapped to Java primitives.  Primitives are their primary
+representations that are useful for good performance.  Wrapper classes
+are used when the reference types are needed.  Each wrapper class has
+two static methods \verb|$box()| and \verb|$unbox()| to convert its
+value from primary representation to wrapper class, and vice versa,
+and Java backend inserts their calls as needed.  An you notice, every
+unsigned type uses the same Java primitive as its corresponding signed
+type for its representation.
+
+Table~\ref{tab:otherspecialtypes} shows a non-exhaustive list of
+another kind of special types that are mapped (not translated) to Java
+types.  As you notice, since an interface \verb|Any| is mapped to a
+class |java.lang.Object| and \verb|Object| is hidden from the
+language, there is no direct way to create an instance of
+\verb|Object|. As a workaround, \verb|Java.newObject()| is provided.
+
+As you also notice, \verb|x10.lang.Comparable[T]| is mapped to \verb|java.lang.Comparable|.
+This is needed to map \verb|x10.lang.String|, which implements \verb|x10.lang.Compatable[String]|, to \verb|java.lang.String| for performance, but as a trade off, this mapping results in the lost of runtime type information for \verb|Comparable[T]| in Managed X10.
+The runtime of Managed X10 has built-in knowledge for \verb|String|, but for other Java classes that implement \verb|java.lang.Comparable|, \verb|instanceof Comparable[Int]| etc. may return incorrect results.
+In principle, it is impossible to map X10 generic type to the existing Java generic type without losing runtime type information.
+
+%----------------
+\begin{table}
+%\scriptsize
+\small
+\centering
+\mbox{
+%\hspace{-4mm}%@@ADJUST
+\begin{tabular}{|lr|lr|l|}												   \hline
+\multicolumn{2}{|c|}{\textbf{X10}}	& \multicolumn{2}{|c|}{\textbf{Java (primary)}}	& \textbf{Java (wrapper class)}	\\ \hline
+															   \hline
+{\tt x10.lang.Byte}	& {\tt 1y}	& {\tt byte}		& {\tt (byte)1}		& {\tt x10.core.Byte}		\\ \hline
+{\tt x10.lang.UByte}	& {\tt 1uy}	& {\tt byte}		& {\tt (byte)1}		& {\tt x10.core.UByte}		\\ \hline
+{\tt x10.lang.Short}	& {\tt 1s}	& {\tt short}		& {\tt (short)1}	& {\tt x10.core.Short}		\\ \hline
+{\tt x10.lang.UShort}	& {\tt 1us}	& {\tt short}		& {\tt (short)1}	& {\tt x10.core.UShort} 	\\ \hline
+{\tt x10.lang.Int}	& {\tt 1}	& {\tt int}		& {\tt 1}		& {\tt x10.core.Int}		\\ \hline
+{\tt x10.lang.UInt}	& {\tt 1u}	& {\tt int}		& {\tt 1}		& {\tt x10.core.UInt}		\\ \hline
+{\tt x10.lang.Long}	& {\tt 1l}	& {\tt long}		& {\tt 1l}		& {\tt x10.core.Long}	 	\\ \hline
+{\tt x10.lang.ULong}	& {\tt 1ul}	& {\tt long}		& {\tt 1l}		& {\tt x10.core.ULong}	 	\\ \hline
+{\tt x10.lang.Float}	& {\tt 1.0f}	& {\tt float}		& {\tt 1.0f}		& {\tt x10.core.Float}	 	\\ \hline
+{\tt x10.lang.Double}	& {\tt 1.0}	& {\tt double}		& {\tt 1.0}		& {\tt x10.core.Double} 	\\ \hline
+{\tt x10.lang.Char}	& {\tt 'c'}	& {\tt char}		& {\tt 'c'}		& {\tt x10.core.Char}		\\ \hline
+{\tt x10.lang.Boolean}	& {\tt true}	& {\tt boolean}		& {\tt true}		& {\tt x10.core.Boolean}	\\ \hline
+%{\tt x10.lang.String} 	& {\tt "abc"}	& {\tt java.lang.String}& {\tt "abc"}		& {\tt x10.core.String}		\\ \hline
+\end{tabular}
+}
+\caption{X10 types that are mapped to Java primitives}
+%\vspace{-4mm}%@@ADJUST
+\label{tab:specialtypes}
+\end{table}
+%----------------
+
+
+%----------------
+\begin{table}
+%\scriptsize
+\small
+\centering
+\mbox{
+%\hspace{-4mm}%@@ADJUST
+\begin{tabular}{|l|l|}										   \hline
+\multicolumn{1}{|c|}{\textbf{X10}}		& \multicolumn{1}{|c|}{\textbf{Java}}		\\ \hline
+												   \hline
+{\tt x10.lang.Any} 				& {\tt java.lang.Object}			\\ \hline
+{\tt x10.lang.Comparable[T]} 			& {\tt java.lang.Comparable}			\\ \hline
+{\tt x10.lang.String}		 		& {\tt java.lang.String}			\\ \hline
+{\tt x10.lang.CheckedThrowable}		 	& {\tt java.lang.Throwable}			\\ \hline
+{\tt x10.lang.CheckedException}		 	& {\tt java.lang.Exception}			\\ \hline
+{\tt x10.lang.Exception} 			& {\tt java.lang.RuntimeException}		\\ \hline
+{\tt x10.lang.ArithmeticException} 		& {\tt java.lang.ArithmeticException}		\\ \hline
+{\tt x10.lang.ClassCastException} 		& {\tt java.lang.ClassCastException}		\\ \hline
+{\tt x10.lang.IllegalArgumentException} 	& {\tt java.lang.IllegalArgumentException}	\\ \hline
+{\tt x10.util.NoSuchElementException}	 	& {\tt java.util.NoSuchElementException}	\\ \hline
+{\tt x10.lang.NullPointerException} 		& {\tt java.lang.NullPointerException}		\\ \hline
+{\tt x10.lang.NumberFormatException} 		& {\tt java.lang.NumberFormatException}		\\ \hline
+{\tt x10.lang.UnsupportedOperationException} 	& {\tt java.lang.UnsupportedOperationException}	\\ \hline
+{\tt x10.lang.IndexOutOfBoundsException} 	& {\tt java.lang.IndexOutOfBoundsException}	\\ \hline
+{\tt x10.lang.ArrayIndexOutOfBoundsException} 	& {\tt java.lang.ArrayIndexOutOfBoundsException}\\ \hline
+{\tt x10.lang.StringIndexOutOfBoundsException} 	& {\tt java.lang.StringIndexOutOfBoundsException}\\ \hline
+{\tt x10.lang.Error} 				& {\tt java.lang.Error}				\\ \hline
+{\tt x10.lang.AssertionError} 			& {\tt java.lang.AssertionError}		\\ \hline
+{\tt x10.lang.OutOfMemoryError} 		& {\tt java.lang.OutOfMemoryError}		\\ \hline
+{\tt x10.lang.StackOverflowError} 		& {\tt java.lang.StackOverflowError}		\\ \hline
+{\tt void} 					& {\tt void}					\\ \hline
+\end{tabular}
+}
+\caption{X10 types that are mapped (not translated) to Java types}
+%\vspace{-4mm}%@@ADJUST
+\label{tab:otherspecialtypes}
+\end{table}
+%----------------
+
+
+\paragraph{Fields}
+
+As shown in Figure~\ref{fig:fields}, instance fields of X10 classes and structs are translated to the instance fields of the same names of the generated Java classes.
+Static fields of X10 classes and structs are translated to the static methods of the generated Java classes, whose name has \verb|get$| prefix.
+Static fields of X10 interfaces are translated to the static methods of the special nested class named \verb|$Shadow| of the generated Java interfaces.
+
+%----------------
+\begin{figure}
+\begin{xten}
+class C {
+  static val a:Int = ...;
+  var b:Int;
+}
+interface I {
+  val x:Int = ...;
+}
+\end{xten}
+%\vspace{-4mm}%@@ADJUST
+\begin{xten}
+class C {
+  static int get$a() { return ...; }
+  int b;
+}
+interface I {
+  abstract static class $Shadow {
+    static int get$x() { return ...; }
+  }
+}
+\end{xten}
+%\vspace{-2mm}%@@ADJUST
+\caption{X10 fields in Java}
+%\vspace{-4mm}%@@ADJUST
+\label{fig:fields}
+\end{figure}
+%----------------
+
+
+\paragraph{Methods}
+
+As shown in Figure~\ref{fig:methods}, methods of X10 classes or structs are translated to the methods of the same names of the generated Java classes.
+Methods of X10 interfaces are translated to the methods of the same names of the generated Java interfaces.
+
+Every method whose return type has two representations, such as the types in Table~\ref{tab:specialtypes}, will have \verb|$O| suffix with its name.
+For example, \verb|def f():Int| in X10 will be compiled as \verb|int f$O()| in Java.
+For those who are interested in the reason, please look at our paper~\cite{TakeuchiX1012}.
+
+%----------------
+\begin{figure}
+\begin{xten}
+interface I {
+  def f():Int;
+  def g():Any;
+}
+class C implements I {
+  static def s():Int = 0;
+  static def t():Any = null;
+  public def f():Int = 1;
+  public def g():Any = null;
+}
+\end{xten}
+%\vspace{-4mm}%@@ADJUST
+\begin{xten}
+interface I {
+  int f$O();
+  java.lang.Object g();
+}
+class C implements I {
+  static int s$O() { return 0; }
+  static java.lang.Object t() { return null; }
+  public int f$O() { return 1; }
+  public java.lang.Object g() { return null; }
+}
+\end{xten}
+%\vspace{-2mm}%@@ADJUST
+\caption{X10 methods in Java}
+%\vspace{-4mm}%@@ADJUST
+\label{fig:methods}
+\end{figure}
+%----------------
+
+
+\paragraph{Compiling Java programs}
+
+To compile Java program that calls X10 code, you should use
+\verb|x10cj| command instead of javac (or whatever your Java
+compiler). It invokes the post Java-compiler of \verb|x10c| with the
+appropriate options. You need to specify the location of X10-generated
+class files or jar files that your Java program refers to.
+
+\verb|x10cj -cp MyX10Lib.jar MyJavaProg.java|
+
+
+\paragraph{Executing Java programs}
+
+Before executing any X10-generated Java code, the runtime of Managed
+X10 needs to be set up properly at each place.  To set up the runtime,
+a special launcher named \verb|runjava| is used to run Java programs.
+All Java programs that call X10 code should be launched with it, and
+no other mechanisms, including direct execution with java command, are
+supported.
+
+In current implementation, the setup process includes preloading of all reachable classes in order to assign a globally unique id for each type.
+\verb|runjava| command invokes the main method of the specified Java class by using Java reflection, therefore, @@@TODOTODO
+
+%When launching Java programs that call X10 types, all the X10 types
+that are unreachable by other means must be specified as command-line
+arguments as follows.  To make preloading successfully preload all
+used types in a program run, users must use one of the following two
+techniques.  One technique is to specify X10 types that are
+unreachable by other means as command-line arguments as follows.
+
+\begin{verbatim}
+Usage: runjava [options] <Java-main-class> [arg0 arg1 ...]
+where [options] includes all x10 options, and:
+    -preload <class>         class to be preloaded
+\end{verbatim}
+
+The other technique is to insert dummy references in Java programs to the X10 types that are unreachable by other means, and make them reachable.
+
+\section{Interoperability with External C and C++ Code}
+
+C and C++ code can be linked to X10 code, either by writing auxiliary C++ files and
 adding them with suitable annotations, or by linking libraries.
 
 \subsection{Auxiliary C++ Files}
@@ -244,24 +621,20 @@ example, it is necessary to adjust the post-compilation directly.  The
 post-compilation is the compilation of the C++ which the X10-to-C++ compiler
 \xcd`x10c++` produces.  
 
-The mechanism used for this is the \xcd`-post` command line parameter to
-\xcd`x10c++`. The following example shows how to compile \xcd`blas` into the
-executable via post compiler parameters. The command must be issued on one line.
+The mechanism used for this is the \xcd`-cxx-prearg` and
+\xcd`-cxx-postarg` command line arguments to
+\xcd`x10c++`. The values of any \xcd`-cxx-prearg` commands are placed
+in the post compiler command before the list of .cc files to compile.
+The values of any \xcd`-cxx-postarg` commands are placed in the post
+compiler command after the list of .cc files to compile. Typically
+pre-args are arguments intended for the C++ compiler itself, while
+post-args are arguments intended for the linker. 
+
+The following example shows how to compile \xcd`blas` into the
+executable via these commands. The command must be issued on one line.
 
 \begin{xten}
-x10c++ Test.x10 -post '# # -I /usr/local/blas # 
-  -L /usr/local/blas -lblas'
+x10c++ Test.x10 -cxx-prearg -I/usr/local/blas 
+  -cxx-postarg -L/usr/local/blas -cxx-postarg -lblas'
 \end{xten}
 
-\begin{itemize}
-\item The first \xcd`#` means to use the default compiler for the architecture (from
-      x10rt properties file). 
-\item The second \xcd`#` is substituted for the .cc files and CXXFLAGS that would
-      ordinarily be used. 
-\item The third \xcd`#` is substituted for the libraries and LDFLAGS that would
-      ordinarily used.
-\item For the second and third, if a \xcd`%` is used instead of a \xcd`#` then the
-      the substitution does not occur in that position.  The \xcd`%` is
-      erased.  The desired parameter value should appear after the \xcd`%` on
-      the line. This allows a complete override of the postcompiler behaviour.
-\end{itemize}
