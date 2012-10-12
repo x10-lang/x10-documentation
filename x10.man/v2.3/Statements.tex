@@ -833,7 +833,7 @@ x10.lang.Error: Changed my mind about a.
 X10 programs can throw {\em Exceptions} to indicate unusual or problematic
 situations; this is {\em abrupt termination}.  Exceptions, as data values, are
 objects which which inherit from 
-\xcd`x10.lang.Throwable`.    Exceptions may be thrown intentionally with the
+\xcd`x10.lang.CheckedThrowable`.    Exceptions may be thrown intentionally with the
 \xcd`throw` statement. Many primitives and library functions throw exceptions
 if they encounter problems; \eg, dividing by zero throws an instance of
 \xcd`x10.lang.ArithmeticException`. 
@@ -869,7 +869,7 @@ any method can, potentially, throw any exception.
 
 \index{Exception}
 \xcd"throw E" throws an exception whose value is \xcd`E`, which must be an
-instance of a subtype of \xcd`x10.lang.Throwable`. 
+instance of a subtype of \xcd`x10.lang.CheckedThrowable`. 
 
 \begin{ex}
 The following code checks if an index is in range and
@@ -948,8 +948,8 @@ The \xcd`example()` method below executes without any assertion errors
 %~~vis
 \begin{xten}
 class Example {
-  class ThisExn extends Throwable {}
-  class ThatExn extends Throwable {}
+  class ThisExn extends Exception {}
+  class ThatExn extends Exception {}
   var didFinally : Boolean = false;
   def example(b:Boolean) {
     try {
