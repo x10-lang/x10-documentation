@@ -11,6 +11,7 @@
 \usepackage{tocloft}
 \usepackage{tex/bcprules}
 \usepackage{xspace}
+\usepackage{makeidx}
 
 \newif\ifdraft
 %\drafttrue
@@ -163,12 +164,12 @@ urlcolor=blue
 \input{Grammar}
 
 
+\clearpage
+\addcontentsline{toc}{chapter}{References}
 \renewcommand{\bibname}{References}
 \bibliographystyle{plain}
 \bibliography{master}
 
-
-\clearpage
 \input{x10.ind}
 
 \appendix

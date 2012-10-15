@@ -7,20 +7,20 @@
 The ability to interoperate with other programming languages is an
 essential feature of the \Xten{} implementation.  Cross-language
 interoperability enables both the incremental adoption of \Xten{} in
-existing large applications and the usage of existing libraries and
+existing applications and the usage of existing libraries and
 frameworks by newly developed \Xten{} programs. 
 
 There are two primary interoperability scenarios that are supported by
 \XtenCurrVer{}: inline substitution of fragments of foreign code for
 \Xten program fragments (expressions, statements) and external linkage
-to foreign code.  
+to foreign code.
 
 \section{Embedded Native Code Fragments}
 
 The
 \xcd`@Native(lang,code) Construct` annotation from \xcd`x10.compiler.Native` in
 \Xten{} can be used to tell the \Xten{} compiler to substitute \xcd`code` for
-whatever it would have been generated when compiling \xcd`Construct`
+whatever it would have generated when compiling \xcd`Construct`
 with the \xcd`lang` back end.
 
 The compiler cannot analyze native code the same way it analyzes \Xten{} code.  In
@@ -225,10 +225,10 @@ in the source path first, then resolve them with Java class files in
 the class path. Note that the resolver does not resolve types with
 Java source files, therefore Java source files must be compiled in
 advance.  To refer to Java types listed in
-Tables~\ref{tab:exceptiontypes}, \ref{tab:specialtypes}, and
-\ref{tab:otherspecialtypes}, which include all Java primitive types,
-use the corresponding X10 type (e.g. use \xcd{x10.lang.Int} (or in
-short, \xcd{Int}) instead of \xcd{int}).
+Tables~\ref{tab:specialtypes}, and \ref{tab:otherspecialtypes}, which
+include all Java primitive types, use the corresponding X10 type
+(e.g. use \xcd{x10.lang.Int} (or in short, \xcd{Int}) instead of
+\xcd{int}).
 
 \paragraph{Fields}
 
@@ -246,7 +246,7 @@ Methods of Java types are seen as methods of X10 types.
 \paragraph{Generic types}
 
 Generic Java types are seen as their raw types 
-(\S 4.8 in~\cite{Gosling05JLS7}).  Raw type is a mechanism to handle generic
+(\S 4.8 in~\cite{java-lang-spec2005}).  Raw type is a mechanism to handle generic
 Java types as non-generic types, where the type parameters are assumed
 as \verb|java.lang.Object| or their upperbound if they have it.  Java
 introduced generics and raw type at the same time to facilitate
@@ -335,15 +335,17 @@ directly as they access Java types, methods, and fields.  To make it
 possible, Java programmers need to understand how X10 programs are
 translated to Java.
 
-Some aspects of the X10 to Java translation scheme is still evolving,
-therefore in this document only a stable subset of translation scheme
-will be explained.  Although it is a subset, it has been extensively
-used by X10 core team and proved to be useful to develop Java Hadoop
-interop layer for a Main-memory Map Reduce (M3R)
-engine~\cite{Shinnar12M3R} in X10.
+Some aspects of the X10 to Java translation scheme may change in
+future version of \Xten{}; therefore in this document only a stable
+subset of translation scheme will be explained.  Although it is a
+subset, it has been extensively used by X10 core team and proved to be
+useful to develop Java Hadoop interop layer for a Main-memory Map
+Reduce (M3R) engine~\cite{Shinnar12M3R} in X10.
 
 In the following discussions, we deliberately ignore generic X10
-types. For those who are interested in the implementation of generics
+types because the translation of generics is an area of active
+development and will undergo some changes in future versions of \Xten{}.
+For those who are interested in the implementation of generics
 in Managed X10, please consult~\cite{TakeuchiX1012}.  We also don't
 cover function types, function values, and all non-static methods.
 Although slightly outdated, another paper~\cite{TakeuchiX1011}, which
@@ -552,15 +554,15 @@ All Java programs that call X10 code should be launched with it, and
 no other mechanisms, including direct execution with java command, are
 supported.
 
-In current implementation, the setup process includes preloading of all reachable classes in order to assign a globally unique id for each type.
-\verb|runjava| command invokes the main method of the specified Java class by using Java reflection, therefore, @@@TODOTODO
-
-%When launching Java programs that call X10 types, all the X10 types
-that are unreachable by other means must be specified as command-line
-arguments as follows.  To make preloading successfully preload all
-used types in a program run, users must use one of the following two
-techniques.  One technique is to specify X10 types that are
-unreachable by other means as command-line arguments as follows.
+In current implementation, the setup process includes preloading of
+all reachable classes in order to assign a globally unique id for each
+type.  The \verb|runjava| command ensures this for the X10 standard
+library. However all the X10 types that are not in the standard
+library must be specified as command-line arguments to \verb|runjava|
+as follows.  To make preloading successfully preload all used types in
+a program run, users must use one of the following two techniques.
+One technique is to specify X10 types that are unreachable by other
+means as command-line arguments as follows.
 
 \begin{verbatim}
 Usage: runjava [options] <Java-main-class> [arg0 arg1 ...]
@@ -568,7 +570,13 @@ where [options] includes all x10 options, and:
     -preload <class>         class to be preloaded
 \end{verbatim}
 
-The other technique is to insert dummy references in Java programs to the X10 types that are unreachable by other means, and make them reachable.
+The other technique is to insert dummy references in Java programs to
+the X10 types that are unreachable by other means, and make them
+reachable.
+
+We anticipate the future versions of \Xten{} will use a more dynamic
+id assignment algorithm and that therefore this preloading requirement
+will be eliminated.
 
 \section{Interoperability with External C and C++ Code}
 
@@ -621,7 +629,7 @@ example, it is necessary to adjust the post-compilation directly.  The
 post-compilation is the compilation of the C++ which the X10-to-C++ compiler
 \xcd`x10c++` produces.  
 
-The mechanism used for this is the \xcd`-cxx-prearg` and
+The primary mechanism used for this is the \xcd`-cxx-prearg` and
 \xcd`-cxx-postarg` command line arguments to
 \xcd`x10c++`. The values of any \xcd`-cxx-prearg` commands are placed
 in the post compiler command before the list of .cc files to compile.

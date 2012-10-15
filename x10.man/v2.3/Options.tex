@@ -31,7 +31,7 @@ def test(x:Int) {
    use(x); // creates a dynamic cast
 }
 \end{xten}
-compiles with \xcd`-STATIC_CHECKS`, even though it is possible that 
+compiles even though it is possible that 
 \xcd`x!=0` when \xcd`use(x)` is called.  In this case, the compiler inserts a
 cast, which has the effect of checking that the call is correct before it
 happens: 
@@ -44,12 +44,9 @@ def test(x:Int) {
 The compiler produces a warning that it inserted some dynamic casts.
 If you then want to see what it did, use \xcd`-VERBOSE_CHECKS`.
 
-You may also turn on static checking, with the \xcd`-STATIC_CHECKS` flag.  With
+You may also turn on strict static checking, with the \xcd`-STATIC_CHECKS` flag.  With
 static checking, calls that cannot be proved correct statically will be
 marked as errors.  
-
-
-
 
 
 \subsection{Help: {\tt -help} and {\tt -- -help}}
@@ -64,7 +61,9 @@ This option tells the compiler where to look for X10 source code.
 
 \subsection{(Deprecated) Class Path: {\tt -classpath {\em path}}}
 
-This option is accepted for backward compatibility, but ignored.
+This option is used in conjunction with the Java interoperability
+feature to tell the compiler where to look for Java .class files that
+may be used by the X10 code being compiled.
 
 \subsection{Output Directory: {\tt -d {\em directory}}}
 
@@ -73,7 +72,7 @@ This option tells the compiler to produce its output files in the specified dire
 \subsection{Runtime {\tt -x10rt {\em impl}}}
 
 This option tells which runtime implementation to use.  The choices are
-\xcd`lapi`, \xcd`pgp`, \xcd`sockets`, \xcd`mpi`, and \xcd`standalone`.
+\xcd`sockets`, \xcd`standalone`, \xcd`pami`, \xcd`mpi`, and \xcd`bgas_bgp`.
 
 \subsection{Executable File {\tt -o {\em path}}}
 
