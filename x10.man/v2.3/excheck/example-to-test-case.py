@@ -45,7 +45,7 @@ ERROR_END_PAT = ":"
 
 
 
-texsource = "/Users/bard/x10/manual/x10.man/v2.2" # os.path.abspath("..") #
+texsource = os.path.abspath("..")
 gennedFileDir = texsource + "/compileCheck"
 testCaseDir  = texsource + "/testcases"
 
@@ -96,7 +96,7 @@ currentLine = 0
 genTestCases = True
 
 
-texsource = "/Users/bard/x10/manual/x10.man/v2.2" # os.path.abspath("..") #
+texsource = os.path.abspath("..") 
 gennedFileDir = texsource + "/compileCheck"
 testCaseDir  = texsource + "/testcases"
 
@@ -171,7 +171,7 @@ def doStmt(cmd, args, f, line, basename, fileroot):
           "class " + classname + "TestStmt{",
           "  def check(" + formals + ")  {",
           "    " + stmt,
-          "  }}"])
+          "  }}\n"])
     writeX10File("stmtsome_" + classname, classname, code, fileroot)
 
 # IN:
@@ -198,7 +198,7 @@ def doExp(cmd, args, f, line, basename, fileroot):
           importses, 
           "class " + classname + "TestExp{",
           "  def check(" + formals + ")  = " + exp + ";"
-          "  }"])
+          "  }\n"])
     writeX10File("expsome_" + classname, classname, code, fileroot)
 
 # IN:
@@ -226,7 +226,7 @@ def doGenExp(cmd, args, f, line, basename, fileroot):
           importses, 
           "class " + classname + "GenexpTest{",
           "  def check[" + generics + "](" + formals + ")  = " + exp + ";"
-          "  }"])
+          "  }\n"])
     writeX10File("genexpsome_" + classname, classname, code, fileroot)
 
 # IN:
@@ -256,7 +256,7 @@ def doType(cmd, args, f, line, basename, fileroot):
           "class " + classname + "TypeTest{",
           "  def check(" + formals + ")  { ",
           "     var checkycheck : " + typer + ";"
-          "  }}"])
+          "  }}\n"])
     writeX10File("typesome_" + classname, classname, code, fileroot)
 
 
@@ -442,7 +442,7 @@ public class %s extends x10Test {
 
 '''
 
-testHarnessEnd = "}"
+testHarnessEnd = "}\n"
 
 findHookPat = ("class Hook")
 standardHookCode = '''
