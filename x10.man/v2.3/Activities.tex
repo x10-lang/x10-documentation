@@ -259,17 +259,7 @@ In \xcd`ateach(p in D) S`, \xcd`D` must be either of type \xcd"Dist"
 \xcd`ateach(p in D.dist)S`; the iteration is over the array's underlying
 distribution.   
 
-Instead of writing \xcd`ateach (p in D) S` the programmer should write 
-%%AT-COPY%% \xcd`for(p in D) at(D(p);F) async S` to get the same effect. 
-\xcd`for(p in D) at(D(p)) async S` to get the same effect. 
-For each point \xcd`p` in \xcd`D`, at place \xcd`D(p)`, transmitting
-information as specified by \xcd`F`, 
-\xcd`S` is
-executed simultaneously.
-
-However, this often results in excessive communication and parallelism. Instead the
-programmer may want to write: 
-
+Instead of writing \xcd`ateach (p in D) S` the programmer could write 
 %%AT-COPY%% %~~gen ^^^ Activities80
 %%AT-COPY%% % package Activities.Activities.Activities;
 %%AT-COPY%% % class EquivCode {
@@ -294,8 +284,8 @@ programmer may want to write:
 % static def example(D:Dist) {
 %~~vis
 \begin{xten}
-for (place in D.places()) async at (place) {
-    for (p in D|here) {
+for (place in D.places()) at (place) async {
+    for (p in D|here) async {
         S(p);
     }
 }
@@ -303,10 +293,8 @@ for (place in D.places()) async at (place) {
 %~~siv
 %}} 
 %~~neg
-
-If the programmer wishes to execute \xcd`S` in parallel at each place,
-\xcd`S(p)` may be replaced by 
-\xcd`async S(p)`.
+For each point \xcd`p` in \xcd`D`, statement \xcd`S` is executed concurrently 
+at place \xcd`D(p)`.
 
 \xcd`break` and \xcd`continue` statements may not be applied to \xcd`ateach`.
 
