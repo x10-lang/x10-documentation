@@ -129,7 +129,7 @@ It finds those references to things that are \Xcd{here}, and deals with them.
 \index{place!changing}
 
 An activity may change place synchronously using the \xcd"at" statement or
-\xcd"at" expression. Like any parallel operation, it is 
+\xcd"at" expression. Like any distributed operation, it is 
 potentially expensive, as it requires, at a minimum, two messages
 and the copying of all data used in the operation, and must be used with care
 -- but it provides the basis for multicore programming in X10.
@@ -143,7 +143,10 @@ and the copying of all data used in the operation, and must be used with care
 \end{bbgrammar}
 %##)
 
-The {\it PlaceExp} must be an expression of type \xcd`Place` or some subtype.
+The {\it PlaceExp} must be an expression of type \xcd`Place` or some
+subtype. For programming convenience, if {\it PlaceExp} is of type
+\xcd`GlobalRef[T]` then the \xcd'home' property of \xcd'GlobalRef' is
+used as the value of {\it PlaceExp}.
 
 %%AT-COPY%% The \xcd`at`-statment \xcd`at(p;F)S` first evaluates \xcd`p` to a place, then
 %%AT-COPY%% copies information to that place as determined by \xcd`F`, and then executes
