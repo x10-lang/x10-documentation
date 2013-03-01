@@ -436,7 +436,7 @@ import harness.x10Test;
 testHarnessBegin = '''
 public class %s extends x10Test {
    public def run() : boolean = (new Hook()).run();
-   public static def main(var args: Array[String](1)): void = {
+   public static def main(args:Rail[String]):void {
         new %s().execute();
     }
 
