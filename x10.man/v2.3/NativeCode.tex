@@ -291,7 +291,7 @@ Figure~\ref{fig:javaexceptions}.
 \begin{xten}
 import x10.interop.Java;
 public class XClass {   
-  public static def main(args:Array[String](1)):void {
+  public static def main(args:Rail[String]):void {
     try {
       val a = Java.newArray[Int](2);
       a(0) = 0;
@@ -616,7 +616,7 @@ import x10.compiler.NativeCPPCompilationUnit;
 @NativeCPPInclude("MyCPPCode.h")
 @NativeCPPCompilationUnit("MyCPPCode.cc")
 public class Test {
-    public static def main (args:Array[String](1)) {
+    public static def main (args:Rail[String]) {
         { @Native("c++","foo();") {} }
     }
 }

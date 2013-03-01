@@ -1423,7 +1423,7 @@ class Keyed {
   public def key():Int{self==this.k} = this.k;
 }
 class Snooper {
-  public static def main(argv:Array[String](1)) {
+  public static def main(argv:Rail[String]) {
     val keyed : Keyed = new Keyed(8);
     //ERROR: keyed.secret(keyed.k);
     //ERROR: keyed.secret(8);
@@ -2866,9 +2866,9 @@ will fail.   Consider the program:
 \begin{xten}
 public class Failsome {
   static def fail[X](a:Array[X], b:Array[X]):void {}
-  public static def main(argv:Array[String](1)) {
-    val aint  : Array[Int]     = [1,2,3];
-    val abool : Array[Boolean] = [true, false];
+  public static def main(argv:Rail[String]) {
+    val aint  : Rail[Int]     = [1,2,3];
+    val abool : Rail[Boolean] = [true, false];
     fail(aint, abool);    // THIS IS WRONG
   }
 }
@@ -3037,7 +3037,7 @@ class Extra(n:Int) {
   val f : Long;
   def this(n:Int, f:Long) { property(n); this.f = f; }
   static def typeIs[T](val x:T) {}
-  public static def main(argv:Array[String](1)) {
+  public static def main(argv:Rail[String]) {
      val x : Extra = new Extra(1,2L);
      typeIs[ Extra{self==x} ]   (x);    //(A)
      val nx: Extra = new Extra(1,2L);
