@@ -32,7 +32,7 @@ the \xcd`Point.make` factory methods:
 \begin{xten}
 val origin_1 : Point{rank==1} = Point.make(0);
 val origin_2 : Point{rank==2} = Point.make(0,0);
-val origin_5 : Point{rank==5} = Point.make(new Array[Int](5, [0,0,0,0,0]));
+val origin_5 : Point{rank==5} = Point.make([0,0,0,0,0]);
 \end{xten}
 %~~siv
 % } } 
@@ -292,7 +292,7 @@ static def addInto(src: Array[Int], dest:Array[Int])
 %}
 % class Hook{
 %   def run() { 
-%     val a = new Array[Int](3, [1,2,3]);
+%     val a = [1,2,3]; 
 %     val b = new Array[Int](a.region, (p:Point(1)) => 10*a(p) );
 %     Example.addInto(a, b);
 %     return b(0) == 11 && b(1) == 22 && b(2) == 33;
@@ -365,7 +365,7 @@ To construct a multiplication table, call
 \end{ex}
 
 Other constructors are available; see the API documentation and
-\Sref{sect:RailCtors}. 
+\Sref{sect:ArrayCtors}. 
 
 \subsection{Array Operations}
 \index{array!operations on}
@@ -414,7 +414,7 @@ for (p in a) a(p) = Math.log(a(p));
 \end{xten}
 %~~siv
 %}}
-% class Hook{ def run() { val a = new Array[Double](2, [1.0,2.0]); Example.example(a); return a(0)==Math.log(1.0) && a(1)==Math.log(2.0); }}
+% class Hook{ def run() { val a = [1.0,2.0]; Example.example(a); return a(0)==Math.log(1.0) && a(1)==Math.log(2.0); }}
 
 %~~neg
 
@@ -479,9 +479,9 @@ provides familiar operations -- \xcd`pg.size()` for the number of places,
 %~~exp~~`~~`~~ somePlace:Place ~~ ^^^Arrays1j6q
 \xcd`new SparsePlaceGroup(somePlace)` is a good \xcd`PlaceGroup` containing
 one place.  
-%~~exp~~`~~`~~ seqPlaces: Rail[Place] ~~ ^^^Arrays9g6f
+%~~exp~~`~~`~~ seqPlaces: Sequence[Place] ~~ ^^^Arrays9g6f
 \xcd`new SparsePlaceGroup(seqPlaces)`
-constructs a sparse place group from a Rail of places.
+constructs a sparse place group from a sorted sequence of places.
 
 \subsection{Operations returning distributions}
 \index{distribution!operations}
@@ -831,7 +831,7 @@ and \Xcd{unit} is zero.
 % static def example() {
 %~~vis
 \begin{xten}
-val a = new Array[Int](4, (i:int)=>i+1);
+val a = [1,2,3,4];
 val sum = a.reduce((a:Int,b:Int)=>a+b, 0); 
 assert(sum == 10); // 10 == 1+2+3+4
 \end{xten}

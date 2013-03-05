@@ -1423,7 +1423,7 @@ class Keyed {
   public def key():Int{self==this.k} = this.k;
 }
 class Snooper {
-  public static def main(argv:Rail[String]) {
+  public static def main(argv:Array[String](1)) {
     val keyed : Keyed = new Keyed(8);
     //ERROR: keyed.secret(keyed.k);
     //ERROR: keyed.secret(8);
@@ -2664,10 +2664,10 @@ The type parameter doesn't need to be the type of a variable. It can be found
 inside of the type of a variable; X10 can extract it.
 
 \begin{ex}
-The \xcd`first` method below returns the first element of a rail.  
-The type parameter \xcd`T` represents the type of the rail's
+The \xcd`first` method below returns the first element of a one-dimensional
+array.  The type parameter \xcd`T` represents the type of the array's
 elements. There is no parameter of type \xcd`T`. There is one of type
-\xcd`Rail[T]{c}`.  When doing type inference, 
+\xcd`Array[T]{c}`.  When doing type inference, 
 X10 strips off the constraint \xcd`{c}` and the
 \xcd`Array[...]` type to get at the \xcd`T` inside.
 %~~gen ^^^ Types3d5j
@@ -2675,9 +2675,9 @@ X10 strips off the constraint \xcd`{c}` and the
 % class Example {
 %~~vis
 \begin{xten}
-static def first[T](x:Rail[T]) = x(0);
+static def first[T](x:Array[T](1)) = x(0);
 static def example() {
-  val ss <: Rail[String] = ["X10", "Scala", "Thorn"];
+  val ss <: Array[String] = ["X10", "Scala", "Thorn"];
   val s1 = first(ss);
   assert s1.equals("X10");
 }
@@ -2866,9 +2866,9 @@ will fail.   Consider the program:
 \begin{xten}
 public class Failsome {
   static def fail[X](a:Array[X], b:Array[X]):void {}
-  public static def main(argv:Rail[String]) {
-    val aint  : Rail[Int]     = [1,2,3];
-    val abool : Rail[Boolean] = [true, false];
+  public static def main(argv:Array[String](1)) {
+    val aint  : Array[Int]     = [1,2,3];
+    val abool : Array[Boolean] = [true, false];
     fail(aint, abool);    // THIS IS WRONG
   }
 }
@@ -3037,7 +3037,7 @@ class Extra(n:Int) {
   val f : Long;
   def this(n:Int, f:Long) { property(n); this.f = f; }
   static def typeIs[T](val x:T) {}
-  public static def main(argv:Rail[String]) {
+  public static def main(argv:Array[String](1)) {
      val x : Extra = new Extra(1,2L);
      typeIs[ Extra{self==x} ]   (x);    //(A)
      val nx: Extra = new Extra(1,2L);
@@ -3058,20 +3058,20 @@ typechecking or type inference.  In this case, use \xcd`as`
 (\Sref{XtenConversions}) to erase it, using expressions like \xcd`x as A`.
 
 \begin{ex}
-The following code creates a one-element rail (\Sref{sect:RailCtors})
+The following code creates a one-element array (\Sref{sect:ArrayCtors})
 containing \xcd`x`.  
 
 If  the \xcd`ERROR` line were to be used, 
-X10 would infer that the type of this rail were \xcd`Rail[T]`,
+X10 would infer that the type of this array were \xcd`Array[T]`,
 where \xcd`T` is the type of \xcd`x` --- that is, 
-\xcd`Rail[Extra{self==x}]`.  \xcd`[x]` is a rail of \xcd`x`'s, not a rail
-of \xcd`Extra`s.  Since \xcd`Rail[Extra{self==x}]` is not a subtype of 
-\xcd`Rail[Extra]`, the rail \xcd`[x]` cannot be used in a place where an 
-\xcd`Rail[Extra]` is called for.
+\xcd`Array[Extra{self==x}]`.  \xcd`[x]` is an array of \xcd`x`'s, not an array
+of \xcd`Extra`s.  Since \xcd`Array[Extra{self==x}]` is not a subtype of 
+\xcd`Array[Extra]`, the array \xcd`[x]` cannot be used in a place where an 
+\xcd`Array[Extra]` is called for.
 
 The expression \xcd`[x as Extra]` uses a type cast to erase the
 automatically-added extra information about \xcd`x`.  \xcd`x as Extra` simply
-has type \xcd`Extra`, and thus \xcd`[x as Extra]` is an \xcd`Rail[Extra]` as
+has type \xcd`Extra`, and thus \xcd`[x as Extra]` is an \xcd`Array[Extra]` as
 desired. 
 
 
@@ -3080,8 +3080,8 @@ desired.
 %~~vis
 \begin{xten}
 class Extra {
-  static def useArray(Rail[Extra]) {} 
-  public static def main(argv:Rail[String]) {
+  static def useArray(Array[Extra]) {} 
+  public static def main(argv:Array[String](1)) {
      val x : Extra = new Extra();
      //ERROR: useArray([x]);
      useArray([x as Extra]);

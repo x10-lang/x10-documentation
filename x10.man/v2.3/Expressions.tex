@@ -1886,10 +1886,10 @@ class OrderedList[T]{T <: x10.util.Ordered[T]} {
 %%NOIN%% \end{ex}
 %%NOIN%% 
 
-\section{Rail Constructors}
-\label{sect:RailCtors}
-\index{rail!construction}
-\index{rail!literal}
+\section{Array Constructors}
+\label{sect:ArrayCtors}
+\index{array!construction}
+\index{array!literal}
 
 
 \begin{bbgrammar}
@@ -1898,31 +1898,31 @@ class OrderedList[T]{T <: x10.util.Ordered[T]} {
 \end{bbgrammar}
 %##)
 
-X10 includes short syntactic forms for constructing Rails.
-Enclose some expressions in brackets to put them in a Rail: 
+X10 includes short syntactic forms for constructing one-dimensional arrays.
+Enclose some expressions in brackets to put them in an array: 
 %~~gen ^^^ Expressions140
-% package Expressions.RailCtor.Primo;
+% package Expressions.ArrayCtor.Primo;
 % class Example {
 % def example() {
 %~~vis
 \begin{xten}
-val ints <: Rail[Int] = [1,3,7,21];
+val ints <: Array[Int](1) = [1,3,7,21];
 \end{xten}
 %~~siv
 %}}
 %~~neg
 
 The expression \xcdmath"[e$_1$, $\ldots$, e$_n$]" produces an \Xcd{n}-element
-\xcd`Rail[T]`, where \xcd`T` is the computed common supertype (\Sref{LCA})
+\xcd`Array[T](1)`, where \xcd`T` is the computed common supertype (\Sref{LCA})
 of the types of of the expressions  \xcdmath"e$_i$". 
 
 \begin{ex}
 The type of
-\xcd`[0,1,2]` is \Xcd{Rail[Int](1)}.    
+\xcd`[0,1,2]` is \Xcd{Array[Int](1)}.    
 The type of 
-\xcd`[0]` is  \xcd`Rail[Int{self==0}](1)`. 
+\xcd`[0]` is  \xcd`Array[Int{self==0}](1)`. 
 
-To make a \xcd`Rail[Int]` containing just a \xcd`0`, use
+To make an \xcd`Array[Int](1)` containing just a \xcd`0`, use
 \xcd`[0 as Int]`.  The \xcd`as Int` masks more detailed type information, such
 as the fact that \xcd`0` is zero.
 
@@ -1931,22 +1931,22 @@ as the fact that \xcd`0` is zero.
 
 
 \begin{ex}
-Occasionally one does actually need \xcd`Rail[Int{self==0}]`, 
-or, say, \xcd`Rail[Eel{self != null}]`, an array of non-null \xcd`Eel`s.  
+Occasionally one does actually need \xcd`Array[Int{self==0}](1)`, 
+or, say, \xcd`Array[Eel{self != null}](1)`, an array of non-null \xcd`Eel`s.  
 For these cases, cast one or more of the elements of the array to the desired type,
 and the array constructor will do the right thing.  
 %~~gen ^^^ Expressions170
-%package Expressions.RailCtor.Details;
+%package Expressions.ArrayCtor.Details;
 %class Eel{}
 %class Example{
 %def example(){
 %~~vis
 \begin{xten}
-val zero <: Rail[Int{self == 0}]
+val zero <: Array[Int{self == 0}](1) 
           = [0];
-val non1 <: Rail[Int{self != 1}]
+val non1 <: Array[Int{self != 1}](1) 
           = [0 as Int{self != 1}];
-val eels <: Rail[Eel{self != null}] 
+val eels <: Array[Eel{self != null}](1) 
           = [new Eel() as Eel{self != null}, 
              new Eel(), new Eel()];
 \end{xten}

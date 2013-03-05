@@ -1462,16 +1462,16 @@ argument \xcd`x`.  We would like to write code thus:
 % package Classes.In.Poly101;
 % // Integer-coefficient polynomials of one variable.
 % class Poly {
-%   public val coeff : Rail[Int];
-%   public def this(coeff: Rail[Int]) { this.coeff = coeff;}
-%   public def degree() = (coeff.size-1) as Int;
+%   public val coeff : Array[Int](1);
+%   public def this(coeff: Array[Int](1)) { this.coeff = coeff;}
+%   public def degree() = coeff.size-1;
 %   public def a(i:Int) = (i<0 || i>this.degree()) ? 0 : coeff(i);
 %
 %   public static operator (c : Int) as Poly = new Poly([c as Int]);
 %
-%   public operator this(x:Long) {
+%   public operator this(x:Int) {
 %     val d = this.degree();
-%     var s : Long = this.a(d);
+%     var s : Int = this.a(d);
 %     for( i in 1 .. this.degree() ) {
 %        s = x * s + a(d-i);
 %     }
@@ -1479,14 +1479,14 @@ argument \xcd`x`.  We would like to write code thus:
 %   }
 %
 %   public operator this + (p:Poly) =  new Poly(
-%      new Rail[Int](
-%         Math.max(this.coeff.size, p.coeff.size) as Int,
+%      new Array[Int](
+%         Math.max(this.coeff.size, p.coeff.size),
 %         (i:Int) => this.a(i) + p.a(i)
 %      ));
 %   public operator this - (p:Poly) = this + (-1)*p;
 %
 %   public operator this * (p:Poly) = new Poly(
-%      new Rail[Int](
+%      new Array[Int](
 %        this.degree() + p.degree() + 1,
 %        (k:Int) => sumDeg(k, this, p)
 %        )
@@ -1500,7 +1500,7 @@ argument \xcd`x`.  We would like to write code thus:
 %   public operator this - (n : Int) = ((-n) as Poly) + this;
 %
 %   public operator (n : Int) * this = new Poly(
-%      new Rail[Int](
+%      new Array[Int](
 %        this.degree()+1,
 %        (k:Int) => n * this.a(k)
 %      ));
@@ -1533,13 +1533,13 @@ argument \xcd`x`.  We would like to write code thus:
 %      return (ai == 1) ? xpow : "" + Math.abs(ai) + xpow;
 %   }
 %
-%   public static def Main(ss:Rail[String]):void {main(ss);};
+%   public static def Main(ss:Array[String](1)):void {main(ss);};
 %
 
 
 %~~vis
 \begin{xten}
-  public static def main(Rail[String]):void {
+  public static def main(Array[String](1)):void {
      val X = new Poly([0,1]);
      val t <: Poly = 7 * X + 6 * X * X * X; 
      val u <: Poly = 3 + 5*X - 7*X*X;
@@ -1563,9 +1563,9 @@ Writing the same code with method calls, while possible, is far less elegant:
 %package Classes.In.Remedial.Poly101;
 % // Integer-coefficient polynomials of one variable.
 % class UglyPoly {
-%   public val coeff : Rail[Int];
-%   public def this(coeff: Rail[Int]) { this.coeff = coeff;}
-%   public def degree() = (coeff.size-1) as Int;
+%   public val coeff : Array[Int](1);
+%   public def this(coeff: Array[Int](1)) { this.coeff = coeff;}
+%   public def degree() = coeff.size-1;
 %   public  def  a(i:Int) = (i<0 || i>this.degree()) ? 0 : coeff(i);
 %
 %   public static operator (c : Int) as UglyPoly = new UglyPoly([c as Int]);
@@ -1580,14 +1580,14 @@ Writing the same code with method calls, while possible, is far less elegant:
 %   }
 %
 %   public operator this + (p:UglyPoly) =  new UglyPoly(
-%      new Rail[Int](
-%         Math.max(this.coeff.size, p.coeff.size) as Int,
+%      new Array[Int](
+%         Math.max(this.coeff.size, p.coeff.size),
 %         (i:Int) => this.a(i) + p.a(i)
 %      ));
 %   public operator this - (p:UglyPoly) = this + (-1)*p;
 %
 %   public operator this * (p:UglyPoly) = new UglyPoly(
-%      new Rail[Int](
+%      new Array[Int](
 %        this.degree() + p.degree() + 1,
 %        (k:Int) => sumDeg(k, this, p)
 %        )
@@ -1601,7 +1601,7 @@ Writing the same code with method calls, while possible, is far less elegant:
 %   public operator this - (n : Int) = ((-n) as UglyPoly) + this;
 %
 %   public operator (n : Int) * this = new UglyPoly(
-%      new Rail[Int](
+%      new Array[Int](
 %        this.degree()+1,
 %        (k:Int) => n * this.a(k)
 %      ));
@@ -1798,15 +1798,15 @@ appear in a use of the operator.  So,
 %~~vis
 \begin{xten}
 class Poly {
-  public val coeff : Rail[Int];
-  public def this(coeff: Rail[Int]) { 
+  public val coeff : Array[Int](1);
+  public def this(coeff: Array[Int](1)) { 
     this.coeff = coeff;}
-  public def degree() = coeff.size-1 as Int;
+  public def degree() = coeff.size-1;
   public def  a(i:Int) 
     = (i<0 || i>this.degree()) ? 0 : coeff(i);
   public operator this + (p:Poly) =  new Poly(
-     new Rail[Int](
-        Math.max(this.coeff.size, p.coeff.size) as Int,
+     new Array[Int](
+        Math.max(this.coeff.size, p.coeff.size),
         (i:Int) => this.a(i) + p.a(i)
      )); 
   // ... 
@@ -1831,14 +1831,14 @@ an overloaded method definition.
 %~~gen ^^^ Classes190
 % package Classes.In.Poly103;
 % class Poly {
-%   public val coeff : Rail[Int];
-%   public def this(coeff: Rail[Int]) { this.coeff = coeff;}
-%   public def degree() = coeff.size-1 as Int;
+%   public val coeff : Array[Int](1);
+%   public def this(coeff: Array[Int](1)) { this.coeff = coeff;}
+%   public def degree() = coeff.size-1;
 %   public def  a(i:Int) = (i<0 || i>this.degree()) ? 0 : coeff(i);
 % 
 %   public operator this + (p:Poly) =  new Poly(
-%      new Rail[Int](
-%         Math.max(this.coeff.size, p.coeff.size) as Int,
+%      new Array[Int](
+%         Math.max(this.coeff.size, p.coeff.size),
 %         (i:Int) => this.a(i) + p.a(i)
 %      ));
 %    public operator (n : Int) + this = new Poly([n as Int]) + this;
@@ -1869,14 +1869,14 @@ allow it as a method on \xcd`Poly` as well.
 %~~gen ^^^ Classes200
 % package Classes.In.Poly104o;
 % class Poly {
-%   public val coeff : Rail[Int];
-%   public def this(coeff: Rail[Int]) { this.coeff = coeff;}
-%   public def degree() = coeff.size-1 as Int;
+%   public val coeff : Array[Int](1);
+%   public def this(coeff: Array[Int](1)) { this.coeff = coeff;}
+%   public def degree() = coeff.size-1;
 %   public def  a(i:Int) = (i<0 || i>this.degree()) ? 0 : coeff(i);
 % 
 %   public operator this + (p:Poly) =  new Poly(
-%      new Rail[Int](
-%         Math.max(this.coeff.size, p.coeff.size) as Int,
+%      new Array[Int](
+%         Math.max(this.coeff.size, p.coeff.size),
 %         (i:Int) => this.a(i) + p.a(i)
 %      ));
 %~~vis
@@ -1904,15 +1904,15 @@ The definition for the sum of two
 %~~gen ^^^ Classes210
 % package Classes.In.Poly105;
 % class Poly {
-%   public val coeff : Rail[Int];
-%   public def this(coeff: Rail[Int]) { this.coeff = coeff;}
-%   public def degree() = coeff.size-1 as Int;
+%   public val coeff : Array[Int](1);
+%   public def this(coeff: Array[Int](1)) { this.coeff = coeff;}
+%   public def degree() = coeff.size-1;
 %   public def  a(i:Int) = (i<0 || i>this.degree()) ? 0 : coeff(i);
 %~~vis
 \begin{xten}
   public static operator (p:Poly) + (q:Poly) =  new Poly(
-     new Rail[Int](
-        Math.max(q.coeff.size, p.coeff.size) as Int,
+     new Array[Int](
+        Math.max(q.coeff.size, p.coeff.size),
         (i:Int) => q.a(i) + p.a(i)
      ));
 \end{xten}
@@ -1972,14 +1972,14 @@ The operator to negate a polynomial is:
 %~~gen ^^^ Classes220
 % package Classes.In.Poly106;
 % class Poly {
-%   public val coeff : Rail[Int];
-%   public def this(coeff: Rail[Int]) { this.coeff = coeff;}
-%   public def degree() = coeff.size-1 as Int;
+%   public val coeff : Array[Int](1);
+%   public def this(coeff: Array[Int](1)) { this.coeff = coeff;}
+%   public def degree() = coeff.size-1;
 %   public def  a(i:Int) = (i<0 || i>this.degree()) ? 0 : coeff(i);
 %~~vis
 \begin{xten}
   public operator - this = new Poly(
-    new Rail[Int](coeff.size as Int, (i:Int) => -coeff(i))
+    new Array[Int](coeff.size, (i:Int) => -coeff(i))
     );
 \end{xten}
 %~~siv
@@ -2020,10 +2020,10 @@ The guard clause \xcd`{c}` may be omitted.
 %~~vis
 \begin{xten}
 class Poly {
-  public val coeff : Rail[Int];
-  public def this(coeff: Rail[Int]) { this.coeff = coeff;}
+  public val coeff : Array[Int](1);
+  public def this(coeff: Array[Int](1)) { this.coeff = coeff;}
   public static operator (a:Int) as ? = new Poly([a as Int]);
-  public static def main(Rail[String]):void {
+  public static def main(Array[String](1)):void {
      val three : Poly = 3 as Poly;
   }
 }
@@ -2088,9 +2088,9 @@ addition to add it to \xcd`x`.
 %~~gen ^^^ Classes240
 % package Classes.And.Implicit.Coercions;
 % class Poly {
-%   public val coeff : Rail[Int];
-%   public def this(coeff: Rail[Int]) { this.coeff = coeff;}
-%   public def degree() = (coeff.size-1) as Int;
+%   public val coeff : Array[Int](1);
+%   public def this(coeff: Array[Int](1)) { this.coeff = coeff;}
+%   public def degree() = coeff.size-1;
 %   public def  a(i:Int) = (i<0 || i>this.degree()) ? 0 : coeff(i);
 %   public final def toString() = {
 %      var allZeroSoFar : Boolean = true;
@@ -2121,12 +2121,12 @@ addition to add it to \xcd`x`.
      = new Poly([c as Int]);
 
   public static operator (p:Poly) + (q:Poly) = new Poly(
-      new Rail[Int](
-        Math.max(p.coeff.size, q.coeff.size) as Int,
+      new Array[Int](
+        Math.max(p.coeff.size, q.coeff.size),
         (i:Int) => p.a(i) + q.a(i)
      ));
 
-  public static def main(Rail[String]):void {
+  public static def main(Array[String](1)):void {
      val x = new Poly([0,1]);
      x10.io.Console.OUT.println("1+x=" + (1+x));
   }
@@ -2414,8 +2414,8 @@ class MyRegion(rank:Int) {
   }
   def mockUnion(r:MyRegion(rank)):MyRegion(rank) = this;
   def example() {
-    val R1 : MyRegion(3) = new MyRegion(new Array[Int](3, [4,4,4 as Int])); 
-    val R2 : MyRegion(3) = new MyRegion(new Array[Int](3, [5,4,1])); 
+    val R1 : MyRegion(3) = new MyRegion([4,4,4 as Int]); 
+    val R2 : MyRegion(3) = new MyRegion([5,4,1]); 
     val R3 = R1.mockUnion(R2); // inferred type MyRegion(3)
   }
 }
@@ -3336,7 +3336,7 @@ class Res {
   }
 \end{xten}
 %~~siv
-%  public static def main(argv:Rail[String]) {(new Res()).example(); Console.OUT.println("That's all!");}
+%  public static def main(argv:Array[String](1)) {(new Res()).example(); Console.OUT.println("That's all!");}
 % public def claim() { val ace : Ace = here; assert m(ace)==3; }
 % }
 % class Hook{ def run(){ (new Res()).example(); return true;} }
@@ -3878,7 +3878,7 @@ class Range(m:Int, n:Int) implements Iterable[Int]{
      public def hasNext() = n <= Range.this.n;
      public def next() = n++;
   }
-  public static def main(argv:Rail[String]) {
+  public static def main(argv:Array[String](1)) {
     val r = new Range(3,5);
     for(i in r) Console.OUT.println("i=" + i);
   }
@@ -4128,7 +4128,7 @@ abstract class Choice(name: String) {
 }
 
 class Example {
-  static def main(Rail[String]) {
+  static def main(Array[String]) {
     val n = new Cell[Int](0);
     val c = new Choice("Inc Or Dec") {
       def yes() { n() += 1; }

@@ -178,11 +178,11 @@ of the class are not boxed. They are implemented as if they were declared at
 type \Xcd{S}.
 
 \begin{ex}
-The rail \xcd`aa` in the following example is a \xcd`Rail[Any]`.  It
+The array \xcd`aa` in the following example is an \xcd`Array[Any]`.  It
 initially holds two objects.  Then, its elements are replaced by two structs,
 both of which are auto-boxed.  Note that no fussing is required to put an
-integer into an \xcd`Rail[Any]`.  
-However, a rail of structs, such as \xcd`ah`, holds {\em unboxed} structs
+integer into an \xcd`Array[Any]`.  
+However, an array of structs, such as \xcd`ah`, holds {\em unboxed} structs
 and does not incur boxing overhead.
 %~~gen ^^^ Structs3q6l
 % package Structs3q6l;
@@ -190,10 +190,10 @@ and does not incur boxing overhead.
 \begin{xten}
 struct Horse(x:Int){
   static def example(){
-    val aa : Rail[Any] = ["a String" as Any, "another one"];
+    val aa : Array[Any](1) = ["a String" as Any, "another one"];
     aa(0) = Horse(8);
     aa(1) = 13;
-    val ah : Rail[Horse] = [Horse(7), Horse(13)];
+    val ah : Array[Horse](1) = [Horse(7), Horse(13)];
   }
 }
 \end{xten}

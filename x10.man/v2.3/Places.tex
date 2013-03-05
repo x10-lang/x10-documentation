@@ -801,7 +801,7 @@ shows that {$c_2$} is a different cell from {$c_1$}, because changes to
 %%AT-COPY%% %~~vis
 %%AT-COPY%% \begin{xten}
 %%AT-COPY%% val c = new Cell[Int](5);
-%%AT-COPY%% val a : Rail[Cell[Int]] = [c,c as Cell[Int]];
+%%AT-COPY%% val a : Array[Cell[Int]](1) = [c,c as Cell[Int]];
 %%AT-COPY%% assert(a(0)() == 5 && a(1)() == 5);     // (A)
 %%AT-COPY%% c.set(6);                               // (B)
 %%AT-COPY%% assert(a(0)() == 6 && a(1)() == 6);     // (C)
@@ -825,7 +825,7 @@ shows that {$c_2$} is a different cell from {$c_1$}, because changes to
 %~~vis
 \begin{xten}
 val c = new Cell[Int](5);
-val a : Rail[Cell[Int]] = [c,c as Cell[Int]];
+val a : Array[Cell[Int]](1) = [c,c as Cell[Int]];
 assert(a(0)() == 5 && a(1)() == 5);     // (A)
 c.set(6);                               // (B)
 assert(a(0)() == 6 && a(1)() == 6);     // (C)
@@ -989,12 +989,12 @@ command-line argument array.
 %%AT-COPY%% % 
 %%AT-COPY%% %~~vis
 %%AT-COPY%% \begin{xten}
-%%AT-COPY%%   public static def main(argv:Rail[String]) {
-%%AT-COPY%%     val argref = GlobalRef[Rail[String]](argv);
+%%AT-COPY%%   public static def main(argv: Array[String](1)) {
+%%AT-COPY%%     val argref = GlobalRef[Array[String](1)](argv);
 %%AT-COPY%%     at(here.next(); argref) 
 %%AT-COPY%%         use(argref);
 %%AT-COPY%%   }
-%%AT-COPY%%   static def use(argref : GlobalRef[Rail[String]]) {
+%%AT-COPY%%   static def use(argref : GlobalRef[Array[String](1)]) {
 %%AT-COPY%%     at(argref.home; argref) {
 %%AT-COPY%%       val argv = argref();
 %%AT-COPY%%       argv(0) = "Hi!";
@@ -1013,12 +1013,12 @@ command-line argument array.
 % 
 %~~vis
 \begin{xten}
-  public static def main(argv:Rail[String]) {
-    val argref = GlobalRef[Rail[String]](argv);
+  public static def main(argv: Array[String](1)) {
+    val argref = GlobalRef[Array[String](1)](argv);
     at(here.next()) 
         use(argref);
   }
-  static def use(argref : GlobalRef[Rail[String]]) {
+  static def use(argref : GlobalRef[Array[String](1)]) {
     at(argref) {
       val argv = argref();
       argv(0) = "Hi!";
