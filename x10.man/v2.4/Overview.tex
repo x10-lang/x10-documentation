@@ -126,7 +126,7 @@ complicated way.
 
 
 Functions are used extensively in X10
-programs.  For example, a common way to construct and initialize an \xcd`Array[Int](1)` --
+programs.  For example, a common way to construct and initialize an \xcd`Rail[Int]` --
 that is, a fixed-length one-dimensional array of numbers, like an \xcd`int[]` in Java -- is to
 pass two arguments to a factory method: the first argument being the length of
 the array, and the second being a function which computes the initial value of
@@ -140,7 +140,7 @@ initialized to the squares of 0,1,...,9: \xcd`r(0) == 0`, \xcd`r(5)==25`, etc.
 %    val square = (i:Int) => i*i;
 %~~vis
 \begin{xten}
-  val r : Array[Int](1) = new Array[Int](10, square);
+  val r : Rail[Int] = new Rail[Int](10, square);
 \end{xten}
 %~~siv
 %}}

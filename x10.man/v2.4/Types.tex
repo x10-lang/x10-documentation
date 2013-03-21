@@ -288,7 +288,7 @@ A variable of class \xcd`Point`, unconstrained, can contain \xcd`null`:
 %~~vis
 \begin{xten}
 var gotNPE: Boolean = false;
-val p : Point = null; 
+val p : x10.array.Point = null; 
 try {
   val q = p * 2; // method invocation, NPE
 }
@@ -310,6 +310,7 @@ the value being constrained, so the constraint \xcd`self != null` means
 pointer exception.  
 %~~gen ^^^ ReTypes6w6h
 % package ReTypes6w6h;
+%//OPTIONS: -STATIC_CHECKS
 % class Example {
 % static public def example() {
 %~~vis
@@ -566,7 +567,7 @@ struct Position {
   def this(x:Double, y:Double, z:Double) {
      this.x = x; this.y = y; this.z = z;
   }
-  static def example(p: Position, q: Array[Position]) {  
+  static def example(p: Position, q: Rail[Position]) {  
      var r : Position = p;
   }
 }
@@ -694,7 +695,7 @@ For example, a generic stack class may be defined as
 %~~type~~`~~`~~ ~~class Stack[T]{} ^^^ Types160
 \xcd`Stack[Int]` is a stack of integers, and 
 %~~type~~`~~`~~ ~~class Stack[T]{} ^^^ Types170
-\xcd`Stack[Point {self!=null}]` is a stack of non-null \xcd`Point`s.
+\xcd`Stack[x10.array.Point {self!=null}]` is a stack of non-null \xcd`Point`s.
 Generics {\em must} be instantiated when they are used: \xcd`Stack`, by
 itself, is not a valid type.
 Type parameters may be constrained by a guard on the declaration
@@ -1001,7 +1002,7 @@ class Example {
 Type definitions can also refer to values, in particular, inside 
 constraints.  The type of \xcd`n`-element \xcd`Array[Int](1)`s  is 
 %~~type~~`~~`~~n:Int ~~ ^^^ Types250
-\xcd`Array[Int]{self.rank==1 && self.size == n}`
+\xcd`x10.array.Array[Int]{self.rank==1 && self.size == n}`
 but it is often convenient to give a shorter name: 
 %~~gen ^^^ Types260
 % package TypeDefs.glip.third;
@@ -1009,7 +1010,7 @@ but it is often convenient to give a shorter name:
 % def example() {
 %~~vis
 \begin{xten}
-type Vec(n:Int) = Array[Int]{self.rank==1, self.size == n}; 
+type Vec(n:Int) = x10.array.Array[Int]{self.rank==1, self.size == n}; 
 var example : Vec(78); 
 \end{xten}
 %~~siv
@@ -1164,7 +1165,7 @@ Constraints may refer to immutable values in the local environment:
 %~~vis
 \begin{xten}
      val n = 1;
-     var p : Point{rank == n};
+     var p : x10.array.Point{rank == n};
 \end{xten}
 %~~siv
 %}}
@@ -1412,6 +1413,7 @@ that \xcd`kk` is the same as \xcd`keyed.k`.  So, the call \xcd`keyed.secret(kk)`
 succeeds.
 %~~gen ^^^ Types6s1l
 % package Types6s1l;
+%//OPTIONS: -STATIC_CHECKS
 %~~vis
 \begin{xten}
 class Keyed {
@@ -2813,6 +2815,7 @@ complex if X10 had covariant and contravariant types.}
 Consider the program: 
 %~~gen ^^^ Types1s4y
 % package Types1s4y;
+% import x10.array.*;
 %~~vis
 \begin{xten}
 import x10.util.*;
@@ -3031,6 +3034,7 @@ the simplest data flows would be beyond the ability of the type system to detect
 
 %~~gen ^^^ Types6m9z
 % package Types6m9z;
+%//OPTIONS: -STATIC_CHECKS
 %~~vis
 \begin{xten}
 class Extra(n:Int) {

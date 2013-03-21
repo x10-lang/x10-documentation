@@ -20,9 +20,9 @@ there.
 % class EmptyStatementExample {
 %~~vis
 \begin{xten}
-static def search[T](a: Array[T](1), v: T):Int {
-  var i : Int;
-  for(i = a.region.min(0); a(i) != v; i++)
+static def search[T](a: Rail[T], v: T):Long {
+  var i : Long;
+  for(i = 0L; a(i) != v; i++)
      ;
   return i;
 }
@@ -381,17 +381,17 @@ method, constructor, initializer, or closure.
 \xcd`break` is only allowed in sequential code.
 
 \begin{ex}
-The following code searches for an element of a two-dimensional
+The following code searches for an element of a C-style two-dimensional
 array and breaks out of the loop when it is found:
 %~~gen ^^^ Statements60
 % package statements.come.from.banks.and.cranks;
 % class LabelledBreakeyBreakyHeart {
-% def findy(a:Array[Array[Int](1)](1), v:Int): Boolean {
+% def findy(a:Rail[Rail[Int]], v:Int): Boolean {
 %~~vis
 \begin{xten}
 var found: Boolean = false;
-outer: for (var i: Int = 0; i < a.size; i++)
-    for (var j: Int = 0; j < a(i).size; j++)
+outer: for (i in a.range)
+    for (j in a(i).range)
         if (a(i)(j) == v) {
             found = true;
             break outer;
@@ -702,17 +702,15 @@ static def sum(a:x10.util.List[Int]):Int {
 %}
 %~~neg
 
-The following code sums the elements of an integer array.  Note that the
-\xcd`for` loop iterates over the indices of the array, not the elements, as
-specified in the \xcd`Array` API.  
+The following code sums the elements of an integer array. 
 %~~gen ^^^ Statements2d4h
 % package Statements2d4h;
 % class Example { 
 %~~vis
 \begin{xten}
-static def sum(a: Array[Int]): Int {
+static def sum(a: Rail[Int]): Int {
   var s : Int = 0;
-  for(p in a) s += a(p);
+  for(v in a) s += v;
   return s;
 }
 \end{xten}
@@ -885,7 +883,7 @@ throws an exception if not.
 %~~gen ^^^ Statements110
 % package Statements_index_check;
 % class ThrowStatementExample {
-% def thingie(i:Int, x:Array[Boolean](1))  {
+% def thingie(i:Int, x:Rail[Boolean])  {
 %~~vis
 \begin{xten}
 if (i < 0 || i >= x.size)

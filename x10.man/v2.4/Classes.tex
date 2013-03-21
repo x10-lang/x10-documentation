@@ -444,12 +444,12 @@ initialized in the constructor, rather than by an initialization expression.)
 %~~vis
 \begin{xten}
 class Init(n:Int) {
-  val a = new Array[String](0..n, "");
+  val a = new Rail[String](n, "");
   def this(n:Int) { property(n); }
 }
 class Outit {
   val n : Int;
-  //ERROR: val a = new Array[String](0..n, "");
+  //ERROR: val a = new Rail[String](n, "");
   def this(m:Int) { this.n = m; }
 }
 \end{xten}
@@ -2174,7 +2174,7 @@ The \xcd`Oddvec` class of somewhat peculiar vectors illustrates this.
 
 \xcd`a()` returns a string representation of the oddvec, which ordinarily
 would 
-be done by \xcd`toString()` instead.  
+0be done by \xcd`toString()` instead.  
 \xcd`a(i)` sensibly picks out one of the three
 coordinates of \xcd`a`.
 \xcd`a()=b` sets all the coordinates of \xcd`a` to \xcd`b`.
@@ -2187,11 +2187,11 @@ coordinates.  \xcd`a(i,j)=b` assigns different values to \xcd`a(i)` and
 %~~vis
 \begin{xten}
 class Oddvec {
-  var v : Array[Int](1) = new Array[Int](3, (Int)=>0);
+  var v : Rail[Int] = new Rail[Int](3);
   public operator this () = 
       "(" + v(0) + "," + v(1) + "," + v(2) + ")";
   public operator this () = (newval: Int) { 
-    for(p in v) v(p) = newval;
+    for(p in v.range) v(p) = newval;
   }
   public operator this(i:Int) = v(i);
   public operator this(i:Int, j:Int) = [v(i),v(j)];
@@ -2409,13 +2409,13 @@ class MyRegion(rank:Int) {
   def this(r:Int):MyRegion(r) {
     property(r);
   }
-  def this(diag:Array[Int](1)):MyRegion(diag.size){ 
+  def this(diag:Rail[Int]):MyRegion(diag.size){ 
     property(diag.size);
   }
   def mockUnion(r:MyRegion(rank)):MyRegion(rank) = this;
   def example() {
-    val R1 : MyRegion(3) = new MyRegion(new Array[Int](3, [4,4,4 as Int])); 
-    val R2 : MyRegion(3) = new MyRegion(new Array[Int](3, [5,4,1])); 
+    val R1 : MyRegion(3) = new MyRegion([4,4,4 as Int]); 
+    val R2 : MyRegion(3) = new MyRegion([5,4,1]); 
     val R3 = R1.mockUnion(R2); // inferred type MyRegion(3)
   }
 }
