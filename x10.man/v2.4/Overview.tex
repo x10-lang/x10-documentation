@@ -129,15 +129,15 @@ Functions are used extensively in X10
 programs.  For example, a common way to construct and initialize an \xcd`Rail[Int]` --
 that is, a fixed-length one-dimensional array of numbers, like an \xcd`int[]` in Java -- is to
 pass two arguments to a factory method: the first argument being the length of
-the array, and the second being a function which computes the initial value of
+the rail, and the second being a function which computes the initial value of
 the \xcd`i`{$^{th}$} element.  The following code constructs a 1-dimensional
-array 
+rail 
 initialized to the squares of 0,1,...,9: \xcd`r(0) == 0`, \xcd`r(5)==25`, etc. 
 %~~gen ^^^ Overview30
 % package Overview.of.Functions.two;
 % class Whatevermore {
 %  def plzchk(){
-%    val square = (i:Int) => i*i;
+%    val square = (i:Long) => ((i*i) as Int);
 %~~vis
 \begin{xten}
   val r : Rail[Int] = new Rail[Int](10, square);

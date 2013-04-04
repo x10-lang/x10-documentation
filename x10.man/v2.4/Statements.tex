@@ -11,7 +11,7 @@ The empty statement \xcd";" does nothing.
 \begin{ex}
 Sometimes, the syntax of X10 requires a statement in some position, but you do
 not actually want to do any computation there.   
-The following code searches the array \xcd`a` for the value \xcd`v`, assumed
+The following code searches the rail \xcd`a` for the value \xcd`v`, assumed
 to appear somewhere in \xcd`a`, and returns the index at which it was found.  
 There is no computation to do in the loop body, so we use an empty statement
 there. 
@@ -675,9 +675,8 @@ while (iterator.hasNext()) {
 %~~neg
 
 A number of library classes implement \xcd`Iterable`, and thus can be iterated
-over.  For example, iterating over a \xcd`Region` iterates the \xcd`Point`s in
-the region, and iterating over an \xcd`Array` iterates over the
-\xcd`Point`s at which the  array is defined.
+over.  For example, iterating over a \xcd`Rail` iterates the elements 
+stored in the rail.
 
 The type of the loop variable may be supplied as \xcd`x <: T`.  In this case
 the iterable \xcd`c` must have type \xcd`Iterable[U}` for some \xcd`U <: T`,
@@ -702,7 +701,7 @@ static def sum(a:x10.util.List[Int]):Int {
 %}
 %~~neg
 
-The following code sums the elements of an integer array. 
+The following code sums the elements of an integer rail. 
 %~~gen ^^^ Statements2d4h
 % package Statements2d4h;
 % class Example { 

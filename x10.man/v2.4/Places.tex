@@ -160,7 +160,7 @@ used as the value of {\it PlaceExp}.
 %%AT-COPY%% 
 
 %%AT-COPY%% \begin{ex}
-%%AT-COPY%% The following example creates an array \xcd`a` located \xcd`here`, and copies
+%%AT-COPY%% The following example creates a rail \xcd`a` located \xcd`here`, and copies
 %%AT-COPY%% it to another place, giving the copy the name \xcd`a2` there.  The copy is
 %%AT-COPY%% modified and examined.  After the \xcd`at` finishes, the original is also
 %%AT-COPY%% examined, and (since only the copy, not the original, was modified) is observed
@@ -187,7 +187,7 @@ used as the value of {\it PlaceExp}.
 %%AT-COPY%% 
 
 \begin{ex}
-The following example creates an array \xcd`a` located \xcd`here`, and copies
+The following example creates a rail \xcd`a` located \xcd`here`, and copies
 it to another place.  \xcd`a` in the second place (\xcd`here.next()`) refers
 to the copy.  The copy is
 modified and examined.  After the \xcd`at` finishes, the original is also
@@ -320,7 +320,7 @@ assert  a(0)==1 && a(1)==2 && a(2)==3;
 %%AT-COPY%% %~~vis
 %%AT-COPY%% \begin{xten}
 %%AT-COPY%% var a : Int = 1;
-%%AT-COPY%% var b : Array[Int] = [2,3,4];
+%%AT-COPY%% var b : Rail[Int] = [2,3,4];
 %%AT-COPY%% at(there; f = a + b(0)) {
 %%AT-COPY%%    assert f == 3;
 %%AT-COPY%% }
@@ -352,7 +352,7 @@ assert  a(0)==1 && a(1)==2 && a(2)==3;
 %%AT-COPY%% %  val there = here.next();
 %%AT-COPY%% %~~vis
 %%AT-COPY%% \begin{xten}
-%%AT-COPY%% var b : Array[Int] = [2,3,4];
+%%AT-COPY%% var b : Rail[Int] = [2,3,4];
 %%AT-COPY%% assert b(0) == 2;
 %%AT-COPY%% at(there; b) {
 %%AT-COPY%%   b(0) = 200;  // Modify copy of b.
@@ -406,16 +406,16 @@ assert  a(0)==1 && a(1)==2 && a(2)==3;
 %%AT-COPY%% %
 %%AT-COPY%% \end{ex}
 %%AT-COPY%% 
-%%AT-COPY%% \item An array-element assignment 
+%%AT-COPY%% \item A rail-element assignment 
 %%AT-COPY%%       \xcdmath"a($E_1$, $\ldots$, $E_n$) = $E_+$".
-%%AT-COPY%%       This copies and transmits \xcd`a` as normal for an array.  In addition,
+%%AT-COPY%%       This copies and transmits \xcd`a` as normal for a rail.  In addition,
 %%AT-COPY%%       and 
 %%AT-COPY%%       much like a field assignment, it also evaluates all the expressions $E_i$
 %%AT-COPY%%       at the sending side to values $v_i$, and transmits them.  \xcd`a`'s value must
 %%AT-COPY%%       admit a suitably-typed $n$-ary subscripting operation.  That operation
 %%AT-COPY%%       is applied after the values are deserialized at \xcd`p`.  The compiler
 %%AT-COPY%%       may optimize this, \eg, by neglecting to deserialize one element of the
-%%AT-COPY%%       array $v_0$, and deserializing $v_+$ directly into that location.  
+%%AT-COPY%%       rail $v_0$, and deserializing $v_+$ directly into that location.  
 %%AT-COPY%% 
 %%AT-COPY%% 
 %%AT-COPY%% \begin{ex}
@@ -784,7 +784,7 @@ copy.
 
 \begin{ex}
 In the following variation of the preceding example,
-\xcd`a`'s original value {$a_1$} is an array with two references to the same
+\xcd`a`'s original value {$a_1$} is a rail with two references to the same
 \xcd`Cell[Int]` {$c_1$}.  The fact that {$a_1(0)$} and {$a_1(1)$} are both
 identical to {$c_1$} is demonstrated in \xcd`(A)`-\xcd`(C)`, as {$a_1(0)$} is modified
 and {$a_1(1)$} is observed to change.  In \xcd`(D)`-\xcd`(F)`, the copy

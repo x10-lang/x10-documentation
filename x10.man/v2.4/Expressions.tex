@@ -604,9 +604,9 @@ if the right operand is zero.
 When operands of the binary shift operations are of integral type, the
 expression performs bitwise shifts. 
 The type of the result is the type of the left operand.
-The right operand, describing a number of bits, must be unsigned: 
-%~~exp~~`~~`~~ x:Int ~~ ^^^Expressions1l4m
-\xcd`x << 1U`.  
+The right operand, describing a number of bits, must be an Int: 
+%~~exp~~`~~`~~ x:Int, y:Int ~~ ^^^Expressions1l4m
+\xcd`x << y`.
 
 
 If the promoted type of the left operand is \xcd"Int",
@@ -1661,16 +1661,16 @@ is more information available.
 
 
 \begin{ex}
-The code for \Xcd{x10.lang.Point} contains a conversion from 
-one-dimensional \xcd`Array`s of integers to \xcd`Point`s of the same length: 
+The code for \Xcd{x10.lang.Point} contains a conversion from a
+\xcd`Rail`s of integers to \xcd`Point`s of the same length: 
 \begin{xten}
-  public operator (r: Array[Int](1)): Point(r.size) 
+  public operator (r: Rail[Int]): Point(r.size) 
          = make(r);
 \end{xten}
-This conversion is used whenever an array of integers appears in a 
+This conversion is used whenever a \xcd`Rail` of integers appears in a 
 context that requires a \xcd`Point`, such as subscripting. Note 
 that \xcd`a` requires a \xcd`Point` of rank 2 as a subscript, and that 
-a two-element \xcd`Array` (like \xcd`[2,4]`) is converted to a 
+a two-element \xcd`Rail` (like \xcd`[2,4]`) is converted to a 
 \xcd`Point(2)`.
 %~~gen ^^^ Expressions4f4y
 % package Expressions4f4y;
@@ -1679,7 +1679,7 @@ a two-element \xcd`Array` (like \xcd`[2,4]`) is converted to a
 % 
 %~~vis
 \begin{xten}
-val a = new Array[String]((2..3) * (4..5), "hi!");
+val a = new Array[String](Region.make(2..3, 4..5), "hi!");
 a([2,4]) = "converted!";
 \end{xten}
 %~~siv
@@ -1933,9 +1933,9 @@ as the fact that \xcd`0` is zero.
 
 \begin{ex}
 Occasionally one does actually need \xcd`Rail[Int{self==0}]`, 
-or, say, \xcd`Rail[Eel{self != null}]`, an array of non-null \xcd`Eel`s.  
-For these cases, cast one or more of the elements of the array to the desired type,
-and the array constructor will do the right thing.  
+or, say, \xcd`Rail[Eel{self != null}]`, a rail of non-null \xcd`Eel`s.  
+For these cases, cast one or more of the elements of the rail to 
+the desired type, and the rail constructor will do the right thing.  
 %~~gen ^^^ Expressions170
 %package Expressions.RailCtor.Details;
 %class Eel{}

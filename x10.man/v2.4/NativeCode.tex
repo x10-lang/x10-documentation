@@ -260,7 +260,7 @@ please refer to~\cite{TakeuchiX1011,TakeuchiX1012}.
 
 \paragraph{Arrays}
 
-X10 array type is a generic type and its representation is different
+X10 rail and array types are generic types whose representation is different
 from Java array types.
 
 Managed X10 provides a special X10 type
@@ -269,10 +269,14 @@ Managed X10 provides a special X10 type
 this type means the Java array type of their primary type.  For
 example, \xcd{Java.array[Int]} and \xcd{Java.array[String]} mean
 \xcd{int[]} and \xcd{java.lang.String[]}, respectively.  Managed X10
-also provides conversion methods between X10 array of rank 1 and Java
-array (\xcd{Java.convert[T](a:Array[T](1)):Java.array[T]} and
-\xcd{Java.convert[T](a:Java.array[T]):Array[T](1)}), and creation
-methods for Java arrays (\xcd{Java.newArray[T](d0:Int):Java.array[T]}
+also provides conversion methods between X10 \xcd`Rail`s and Java
+arrays (\xcd{Java.convert[T](a:Rail[T]):Java.array[T]} and
+\xcd{Java.convert[T](a:Java.array[T]):Rail[T]}), between X10 \`Array`s 
+of rank 1 and Java arrays
+(\xcd{Java.convert[T](a:Array[T](1)):Java.array[T]} and
+\xcd{Java.convert[T](a:Java.array[T]):Array[T](1)}),
+and creation methods for Java arrays 
+(\xcd{Java.newArray[T](d0:Int):Java.array[T]}
 etc.).
 
 \paragraph{Exceptions}

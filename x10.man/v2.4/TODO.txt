@@ -1,0 +1,3 @@
+Array/Rail changes:
+  (1) Update discussion of destructuring in Vars.tex
+
