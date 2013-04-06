@@ -309,10 +309,11 @@ the value being constrained, so the constraint \xcd`self != null` means
 \xcd`Point` results in a compile-time error, rather than a runtime null
 pointer exception.  
 %~~gen ^^^ ReTypes6w6h
-% package ReTypes6w6h;
+%package ReTypes6w6h;
+%import x10.array.*;
 %//OPTIONS: -STATIC_CHECKS
-% class Example {
-% static public def example() {
+%class Example {
+%static public def example() {
 %~~vis
 \begin{xten}
 // ERROR: p : Point{self!=null} = null;
