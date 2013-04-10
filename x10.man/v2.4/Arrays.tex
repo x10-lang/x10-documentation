@@ -38,7 +38,7 @@ spreads the data across multiple \xcd`Place`s, {\em via} \Xcd{Dist}s.
 Both kinds of arrays are indexed by \xcd`Point`s, which are $n$-dimensional tuples of
 integers.  The \xcd`rank`
 property of a point gives its dimensionality.  Points can be constructed from
-integers, or \xcd`Array[Int](1) by the \xcd`Point.make` factory methods:
+integers, or \xcd`Rail[Int] by the \xcd`Point.make` factory methods:
 %~~gen ^^^ArraysPointsExample1
 % package Arrays.Points.Example1;
 % import x10.array.*;
@@ -48,7 +48,7 @@ integers, or \xcd`Array[Int](1) by the \xcd`Point.make` factory methods:
 \begin{xten}
 val origin_1 : Point{rank==1} = Point.make(0);
 val origin_2 : Point{rank==2} = Point.make(0,0);
-val origin_5 : Point{rank==5} = Point.make([0,0,0,0,0]);
+val origin_5 : Point = Point.make(new Rail[Int](5));
 \end{xten}
 %~~siv
 % } } 
@@ -141,15 +141,12 @@ methods on \xcd`Region`.
       returns the unbounded
       half-space of rank \xcd"normal.rank", consisting of all points \xcd"p"
       satisfying the vector inequality \xcdmath`p$\cdot$normal $\le$ k`.
-%~~exp~~"~~"~~ min:Array[Int](1), max:Array[Int](1)~~ import x10.array.*; ^^^Arrays3i3n
+%~~exp~~"~~"~~ min:Rail[Long], max:Rail[Long] ~~ import x10.array.*; ^^^Arrays3i3n
 \item \xcd"Region.makeRectangular(min, max)", 
       where \xcd"min" and \xcd"max"
       are rank-1 length-\xcd`n` integer arrays, returns a
       \xcd"Region(n)" equal to: 
       \xcdmath`[min(0) .. max(0), $\ldots$, min(n-1)..max(n-1)]`.
-%~~exp~~"~~"~~regions : Array[Region(1){self.rect}](1) ~~ import x10.array.*; ^^^Arrays7y6l
-\item \xcd"Region.make(regions)" constructs the Cartesian product of the
-      rectangular \xcd"Region(1)"s in \xcd"regions".
 %~~exp~~"~~"~~ size: int, a: int, b: int~~ import x10.array.*; ^^^Arrays2f2y
 \item \xcd"Region.makeBanded(size, a, b)" constructs the
       banded \xcd"Region(2)" of size \xcd"size", with \Xcd{a} bands above
@@ -349,10 +346,10 @@ region \Xcd{R}, with \Xcd{a(p)} initialized to \Xcd{f(p)} for each point
 \begin{ex}
 One way to construct the array \xcd`[11, 22, 33]` is with an array constructor
 %~~exp~~`~~`~~ ~~ import x10.array.*; ^^^ Arrays210
-\xcd`new Array[Int](3, (i:int)=>11*i)`. 
+\xcd`new Array[Int](3, (i:long)=>(11*i) as Int)`. 
 To construct a multiplication table, call
 %~~exp~~`~~`~~ ~~ import x10.array.*; ^^^ Arrays220
-\xcd`new Array[Int](Region.make(0..9, 0..9), (p:Point(2)) => p(0)*p(1))`.
+\xcd`new Array[Long](Region.make(0..9, 0..9), (p:Point(2)) => p(0)*p(1))`.
 \end{ex}
 
 Other constructors are available; see the API documentation and
@@ -601,11 +598,11 @@ For instance:
 %~~vis
 \begin{xten}
 val ident = ([i]:Point(1)) => i;
-val data : DistArray[Int]
-    = DistArray.make[Int](Dist.makeConstant(Region.make(1, 9)), ident);
+val data : DistArray[Long]
+    = DistArray.make[Long](Dist.makeConstant(Region.make(1, 9)), ident);
 val blk = Dist.makeBlock(Region.make(1..9, 1..9));
-val data2 : DistArray[Int]
-    = DistArray.make[Int](blk, ([i,j]:Point(2)) => i*j);
+val data2 : DistArray[Long]
+    = DistArray.make[Long](blk, ([i,j]:Point(2)) => i*j);
 \end{xten}
 %~~siv
 % }  }
@@ -715,7 +712,7 @@ The following produces an array of cubes:
 %static def example() {
 %~~vis
 \begin{xten}
-val A = new Array[Int](11, (i:int)=>i);
+val A = new Array[Int](11, (i:long)=>i as Int);
 assert A(3) == 3 && A(4) == 4 && A(10) == 10; 
 val cube = (i:Int) => i*i*i;
 val B = A.map(cube);
@@ -735,7 +732,7 @@ will be stored,
 %static def example() {
 %~~vis
 \begin{xten}
-val A = new Array[Int](11, (i:int)=>i);
+val A = new Array[Int](11, (i:long)=>i as Int);
 assert A(3) == 3 && A(4) == 4 && A(10) == 10; 
 val cube = (i:Int) => i*i*i;
 val B = new Array[Int](A.region); // B = 0,0,0,0,0,0,0,0,0,0,0
@@ -757,7 +754,7 @@ reuse its space:
 %static def example() {
 %~~vis
 \begin{xten}
-val A = new Array[Int](11, (i:int)=>i);
+val A = new Array[Int](11, (i:long)=>i as Int);
 assert A(3) == 3 && A(4) == 4 && A(10) == 10; 
 val cube = (i:Int) => i*i*i;
 A.map(A, cube);
@@ -833,7 +830,7 @@ and \Xcd{unit} is zero.
 % static def example() {
 %~~vis
 \begin{xten}
-val a = new Array[Int](4, (i:int)=>i+1);
+val a = new Array[Int](4, (i:long)=>(i+1) as Int);
 val sum = a.reduce((a:Int,b:Int)=>a+b, 0); 
 assert(sum == 10); // 10 == 1+2+3+4
 \end{xten}

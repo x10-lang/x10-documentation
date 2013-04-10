@@ -370,11 +370,11 @@ and \xcd`33` respectively.
 %~~vis
 \begin{xten}
 val [i] : Point = Point.make(11);
-assert i == 11;
+assert i == 11L;
 val p[j,k] = Point.make(22,33);
-assert j == 22 && k == 33;
+assert j == 22L && k == 33L;
 val q[l,m] = [44,55] as Point; 
-assert l == 44 && m == 55;
+assert l == 44L && m == 55L;
 //ERROR: val [n] = p;
 \end{xten}
 %~~siv
@@ -396,7 +396,7 @@ is bound to \xcd`x` in both cases, and its elements are bound to \xcd`a`,
 %~~vis
 \begin{xten}
 static def example1(x[a,b,c]:Point){}
-static def example2(x[a,b,c]:Array[String]{rank==1,size==3}){}
+static def example2(x[a,b,c]:Array[String]{rank==1,size==3L}){}
 \end{xten}
 %~~siv
 %}
