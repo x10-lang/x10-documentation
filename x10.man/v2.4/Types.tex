@@ -310,7 +310,7 @@ the value being constrained, so the constraint \xcd`self != null` means
 pointer exception.  
 %~~gen ^^^ ReTypes6w6h
 %package ReTypes6w6h;
-%import x10.array.*;
+%import x10.regionarray.*;
 %//OPTIONS: -STATIC_CHECKS
 %class Example {
 %static public def example() {
@@ -1003,7 +1003,7 @@ class Example {
 Type definitions can also refer to values, in particular, inside 
 constraints.  The type of \xcd`n`-element \xcd`Array[Int](1)`s  is 
 %~~type~~`~~`~~n:Long ~~ ^^^ Types250
-\xcd`x10.array.Array[Int]{self.rank==1 && self.size == n}`
+\xcd`x10.regionarray.Array[Int]{self.rank==1 && self.size == n}`
 but it is often convenient to give a shorter name: 
 %~~gen ^^^ Types260
 % package TypeDefs.glip.third;
@@ -1011,7 +1011,7 @@ but it is often convenient to give a shorter name:
 % def example() {
 %~~vis
 \begin{xten}
-type Vec(n:Long) = x10.array.Array[Int]{self.rank==1, self.size == n}; 
+type Vec(n:Long) = x10.regionarray.Array[Int]{self.rank==1, self.size == n}; 
 var example : Vec(78L); 
 \end{xten}
 %~~siv
@@ -1026,7 +1026,7 @@ The following examples are legal type definitions,
 %~~vis
 \begin{xten}
 import x10.util.*;
-import x10.array.*;
+import x10.regionarray.*;
 class TypeExamples {
   static type StringSet = Set[String];
   static type MapToList[K,V] = Map[K,List[V]];
@@ -2817,7 +2817,7 @@ complex if X10 had covariant and contravariant types.}
 Consider the program: 
 %~~gen ^^^ Types1s4y
 % package Types1s4y;
-% import x10.array.*;
+% import x10.regionarray.*;
 %~~vis
 \begin{xten}
 import x10.util.*;
