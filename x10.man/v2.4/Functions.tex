@@ -21,7 +21,7 @@ an immediately following call.
 
 A \emph{function literal} \xcd"(x1:T1,..,xn:Tn){c}:T=>e" creates a function of
 type\\ \xcd"(x1:T1,...,xn:Tn){c}=>T" (\Sref{FunctionType}).  For example, 
-\xcd`(x:Int):Int => x*x` is a function literal describing the squaring function on
+\xcd`(x:Long):Long => x*x` is a function literal describing the squaring function on
 integers.   
 \xcd`null` is also a function value.
 
@@ -40,9 +40,9 @@ addition (inefficiently), one may write:
 % static 
 %~~vis
 \begin{xten}
-val sq: (Int) => Int 
-      = (n:Int) => {
-           var s : Int = 0;
+val sq: (Long) => Long 
+      = (n:Long) => {
+           var s : Long = 0;
            val abs_n = n < 0 ? -n : n;
            for (i in 1..abs_n) s += abs_n;
            s
@@ -123,20 +123,20 @@ functions, since the class it is an instance of may implement any
 \begin{eg}
 Instances of the \xcd`Funny` class behave like two functions: 
 a constant function on Booleans, and a linear function on 
-pairs of \xcd`Int`s.  
+pairs of \xcd`Long`s.  
 %~~gen ^^^ Functions6w6w
 % package Functions6w6w;
 %~~vis
 \begin{xten}
-class Funny implements (Boolean) => Int, 
-                       (Int, Int) => Int
+class Funny implements (Boolean) => Long, 
+                       (Long, Long) => Long
 {
   public operator this(Boolean) = 1;
-  public operator this(x:Int, y:Int) = 10*x+y;
+  public operator this(x:Long, y:Long) = 10*x+y;
   static def example() {
     val f <: Funny  = new Funny();
-    assert f(true) == 1; // (Boolean)=>Int behavior
-    assert f(1,2) == 12; // (Int,Int)=>Int behavior
+    assert f(true) == 1; // (Boolean)=>Long behavior
+    assert f(1,2) == 12; // (Long,Long)=>Long behavior
   }
 }
 \end{xten}
@@ -180,7 +180,7 @@ Consider
 % var 
 %~~vis
 \begin{xten}
- f : (a:Int{a!=0}, b:Int{b!=a}){b!=0} => Int{self != a}
+ f : (a:Long{a!=0}, b:Long{b!=a}){b!=0} => Long{self != a}
 \end{xten}
 %~~siv
 % = null;
@@ -189,22 +189,22 @@ Consider
 
 Then the call \xcd`f(3,4)` is allowed, because: 
 \begin{itemize}
-\item \xcd`3` is of type \xcd`Int{a!=0}` with \xcd`a` replaced by \xcd`3`, 
-\viz{}  \xcd`Int{3 != 0}`; 
-\item \xcd`4` is of type \xcd`Int{b!=a}` 
+\item \xcd`3` is of type \xcd`Long{a!=0}` with \xcd`a` replaced by \xcd`3`, 
+\viz{}  \xcd`Long{3 != 0}`; 
+\item \xcd`4` is of type \xcd`Long{b!=a}` 
 with \xcd`a` replaced by \xcd`3` and 
 \xcd`b` replaced by \xcd`4`, 
-\viz{} \xcd`Int{3 != 4}`. 
+\viz{} \xcd`Long{3 != 4}`. 
 \item The guard \xcd`b!=0`, 
 with \xcd`a` replaced by \xcd`3` and 
 \xcd`b` replaced by \xcd`4`, 
 is \xcd`4!=0`, which is true.  
 \end{itemize}
 So, \xcd`f(3,4)` will return a value of type 
-\xcd`Int{self != a}` with 
+\xcd`Long{self != a}` with 
  \xcd`a` replaced by \xcd`3` and 
 \xcd`b` replaced by \xcd`4`, 
-which is to say, \xcd`Int{self!=3}`.
+which is to say, \xcd`Long{self!=3}`.
 \end{ex}
 
 %\section{Implementation Notes}
@@ -254,7 +254,7 @@ cases the
 return type \Xcd{T} is also optional and defaults to the type of the
 body. If a formal \Xcd{xi} does not occur in any
 \Xcd{Tj}, \Xcd{c}, \Xcd{T} or \Xcd{e}, the declaration \Xcd{xi:Ti} may
-be replaced by just \Xcd{Ti}. \Eg,  \xcd`(Int)=>7` is the integer function returning
+be replaced by just \Xcd{Ti}. \Eg,  \xcd`(Long)=>7` is the integer function returning
 7 for all inputs.
 
 \label{ClosureGuard}
@@ -273,8 +273,8 @@ and any \xcd`val`s in scope at the function expression.
 %~~vis
 \begin{xten}
     val n = 3;
-    val f : (x:Int){x != n} => Int  
-          = (x:Int){x != n} => (12/(n-x));
+    val f : (x:Long){x != n} => Long  
+          = (x:Long){x != n} => (12/(n-x));
     Console.OUT.println("f(5)=" + f(5));    
 \end{xten}
 %~~siv
@@ -292,10 +292,10 @@ have a terminating expression.
 If the return type is omitted, it is inferred, as described in
 \Sref{TypeInference}.
 It is a static error if the return type cannot be inferred.  \Eg,
-\xcd`(Int)=>null` is not well-specified; X10 does not know which type of
+\xcd`(Long)=>null` is not well-specified; X10 does not know which type of
 \xcd`null` is intended.  
 %~~exp~~`~~`~~ ~~ ^^^ Functions40
-But \xcd`(Int):Rail[Double] => null` is legal.
+But \xcd`(Long):Rail[Double] => null` is legal.
 
 
 \begin{ex}
@@ -334,8 +334,8 @@ return \xcd`0` if there is no positive element.
 % static def checkery() {
 %~~vis
 \begin{xten}
-xs: List[Int] = new ArrayList[Int]();
-x: Int = find((x: Int) => x>0, xs, 0);
+xs: List[Long] = new ArrayList[Long]();
+x: Long = find((x: Long) => x>0, xs, 0);
 \end{xten}
 %~~siv
 %}}
@@ -378,12 +378,12 @@ a use of a \xcd`val` variable (\xcd`this`).
 %~~vis
 \begin{xten}
 class Lambda {
-   var a : Int = 0;
+   var a : Long = 0;
    val b = 0;
-   def m(var c : Int, val d : Int) {
-      var e : Int = 0;
-      val f : Int = 0;
-      val closure = (var i: Int, val j: Int) => {
+   def m(var c : Long, val d : Long) {
+      var e : Long = 0;
+      val f : Long = 0;
+      val closure = (var i: Long, val j: Long) => {
     	  return a + b + d + f + i 
                + j + this.a + Lambda.this.a;
           // c and e are not usable here
@@ -400,12 +400,12 @@ class Lambda {
 %~~gen ^^^ Functions9u3u
 % // OK, we want to do the negative tests, but they don't work properly.
 % class Lambda {
-%    var a : Int = 0;
+%    var a : Long = 0;
 %    val b = 0;
-%    def m(var c : Int, val d : Int) {
-%       var e : Int = 0;
-%       val f : Int = 0;
-%       val closure = (var i: Int, val j: Int) => {
+%    def m(var c : Long, val d : Long) {
+%       var e : Long = 0;
+%       val f : Long = 0;
+%       val closure = (var i: Long, val j: Long) => {
 %     	  // return a + b + d + f + j + this.a + Lambda.this.a;
 %           // ERROR: return c;
 %           // ERROR: return e;
@@ -441,12 +441,12 @@ class Lambda {
 %%METHOD-SELECTION%% % package Functions2.Span;
 %%METHOD-SELECTION%% %~todo~vis
 %%METHOD-SELECTION%% \begin{xten}
-%%METHOD-SELECTION%% class Span(low:Int, high:Int) {
-%%METHOD-SELECTION%%   def this(low:Int, high:Int) {property(low,high);}
-%%METHOD-SELECTION%%   def between(n:Int) = low <= n && n <= high;
+%%METHOD-SELECTION%% class Span(low:Long, high:Long) {
+%%METHOD-SELECTION%%   def this(low:Long, high:Long) {property(low,high);}
+%%METHOD-SELECTION%%   def between(n:Long) = low <= n && n <= high;
 %%METHOD-SELECTION%%   static def example() {
 %%METHOD-SELECTION%%     val digit = new Span(0,9);
-%%METHOD-SELECTION%%     val isDigit : (Int) => Boolean = digit.between.(Int);
+%%METHOD-SELECTION%%     val isDigit : (Long) => Boolean = digit.between.(Long);
 %%METHOD-SELECTION%%     assert isDigit(8);
 %%METHOD-SELECTION%%   }
 %%METHOD-SELECTION%% }
@@ -458,12 +458,12 @@ class Lambda {
 %%METHOD-SELECTION%% 
 %%METHOD-SELECTION%% 
 %%METHOD-SELECTION%% In \xcd`example()`, 
-%%METHOD-SELECTION%% %~todo~exp~~`~~`~~ digit:Span~~class Span(low:Int, high:Int) {def this(low:Int, high:Int) {property(low,high);} def between(n:Int) = low <= n && n <= high;} ^^^ Functions90
-%%METHOD-SELECTION%% \xcd`digit.between.(Int)` 
+%%METHOD-SELECTION%% %~todo~exp~~`~~`~~ digit:Span~~class Span(low:Long, high:Long) {def this(low:Long, high:Long) {property(low,high);} def between(n:Long) = low <= n && n <= high;} ^^^ Functions90
+%%METHOD-SELECTION%% \xcd`digit.between.(Long)` 
 %%METHOD-SELECTION%% is a unary function testing whether its argument is between zero
 %%METHOD-SELECTION%% and nine.  It could also be written 
-%%METHOD-SELECTION%% %~todo~exp~~`~~`~~ digit:Span~~class Span(low:Int, high:Int) {def this(low:Int, high:Int) {property(low,high);} def between(n:Int) = low <= n && n <= high;} ^^^ Functions100
-%%METHOD-SELECTION%% \xcd`(n:Int) => digit.between(n)`.
+%%METHOD-SELECTION%% %~todo~exp~~`~~`~~ digit:Span~~class Span(low:Long, high:Long) {def this(low:Long, high:Long) {property(low,high);} def between(n:Long) = low <= n && n <= high;} ^^^ Functions100
+%%METHOD-SELECTION%% \xcd`(n:Long) => digit.between(n)`.
 %%METHOD-SELECTION%% \end{ex}
 %%METHOD-SELECTION%% 
 %%METHOD-SELECTION%% 
@@ -539,7 +539,7 @@ class Lambda {
 %%OP-FUN%% Long.-      $\equiv$ (x: Long, y: Long): Long => x - y
 %%OP-FUN%% Float.-     $\equiv$ (x: Float, y: Float): Float => x - y
 %%OP-FUN%% Boolean.&   $\equiv$ (x: Boolean, y: Boolean): Boolean => x & y
-%%OP-FUN%% Int.<       $\equiv$ (x: Int, y: Int): Boolean => x < y
+%%OP-FUN%% Long.<       $\equiv$ (x: Long, y: Long): Boolean => x < y
 %%OP-FUN%% \end{xtenmath}
 %%OP-FUN%% 
 %%OP-FUN%% %~x~gen ^^^ Functions110
@@ -549,7 +549,7 @@ class Lambda {
 %%OP-FUN%% %  Long.-,
 %%OP-FUN%% %  Float.-,
 %%OP-FUN%% %  Boolean.&,
-%%OP-FUN%% %  Int.<
+%%OP-FUN%% %  Long.<
 %%OP-FUN%% %  ];
 %%OP-FUN%% % }
 %%OP-FUN%% %~x~vis

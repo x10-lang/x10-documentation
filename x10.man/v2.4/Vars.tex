@@ -53,8 +53,8 @@ unnecessarily turgid for the sake of the example.  One would generally write
 %~~vis
 \begin{xten}
 class Counter {
-  private var n : Int = 0;
-  public def bump() : Int {
+  private var n : Long = 0;
+  public def bump() : Long {
     val nxt = n+1;
     n = nxt;
     return nxt;
@@ -72,7 +72,7 @@ class Counter {
 %   return true;
 % } }
 %~~neg
-Both variables have type \xcd`Int` (or
+Both variables have type \xcd`Long` (or
 perhaps something more specific).    The scope of \xcd`n` is the body of
 \xcd`Counter`; the scope of \xcd`nxt` is the body of \xcd`bump`.  The
 lifetime of \xcd`n` is the lifetime of the \xcd`Counter` object holding it;
@@ -106,13 +106,13 @@ declaration:
 %static def example() {
 %~~vis
 \begin{xten}
-val a : Int = 0;               // Full 'val' syntax
-b : Int = 0;                   // 'val' implied
+val a : Long = 0;               // Full 'val' syntax
+b : Long = 0;                   // 'val' implied
 val c = 0;                     // Type inferred
-var d : Int = 0;               // Full 'var' syntax
-var e : Int;                   // Not initialized
-var f : Int{self != 100} = 0;  // Constrained type
-val g : Int;                   // Init. deferred
+var d : Long = 0;               // Full 'var' syntax
+var e : Long;                   // Not initialized
+var f : Long{self != 100} = 0;  // Constrained type
+val g : Long;                   // Init. deferred
 if (a > b) g = 1; else g = 2;  // Init. done here.
 \end{xten}
 %~~siv
@@ -159,7 +159,7 @@ or even redeclared:
 % def example() {
 %~~vis
 \begin{xten}
-val a : Int = 10;
+val a : Long = 10;
 val b = (a+1)*(a-1);
 // ERROR: a = 11;  // vals cannot be assigned to.
 // ERROR: val a = 11; // no redeclaration.
@@ -173,7 +173,7 @@ val b = (a+1)*(a-1);
 In two special cases, the declaration and assignment are separate.  One 
 case is how constructors give values to \xcd`val` fields of objects.  In this
 case, production (\ref{prod:LocVarDecln}) is taken, with the {\it
-FormalDeclarators} option, such as  \Xcd{var n:Int;}.  
+FormalDeclarators} option, such as  \Xcd{var n:Long;}.  
 
 \begin{ex} The
 \xcd`Example` class has an immutable field \xcd`n`, which is given different
@@ -185,7 +185,7 @@ constructor is called at that point.
 %~~vis
 \begin{xten}
 class Example {
-  val n : Int; // not initialized here
+  val n : Long; // not initialized here
   def this() { n = 1; }
   def this(dummy:Boolean) { n = 2;}
 }
@@ -211,7 +211,7 @@ the code below, \xcd`x` is initialized to \xcd`3` in the first call and
 %static def whatever() {
 %~~vis
 \begin{xten}
-val sq = (x:Int) => x*x;
+val sq = (x:Long) => x*x;
 x10.io.Console.OUT.println("3 squared = " + sq(3));
 x10.io.Console.OUT.println("4 squared = " + sq(4));
 \end{xten}
@@ -258,8 +258,8 @@ These variables are all initialized:
 %def check() {
 %~~vis
 \begin{xten}
-  val immut : Int = 3;
-  var mutab : Int = immut;
+  val immut : Long = 3;
+  var mutab : Long = immut;
   val use = immut + mutab;
 \end{xten}
 %~~siv
@@ -283,11 +283,11 @@ nor could \xcd`immu` be assigned repeatedly.
 %def check() {
 %~~vis
 \begin{xten}
-  var muta : Int;
+  var muta : Long;
   // ERROR:  println(muta);
   muta = 4;
   val use2A = muta * 10;
-  val immu : Int;
+  val immu : Long;
   // ERROR: println(immu);
   if (cointoss())   {immu = 1;}
   else              {immu = use2A;}
@@ -323,7 +323,7 @@ using the rules for definite assignment (\Sref{sect:DefiniteAssignment}).
 \Xten{} permits a \emph{destructuring} syntax for local variable
 declarations with explicit initializers,  and for formal parameters, of type
 \xcd`Point`, \Sref{point-syntax} and \xcd`Array`, \Sref{XtenArrays}.
-A point is a sequence of zero or more \xcd`Int`-valued coordinates; an array
+A point is a sequence of zero or more \xcd`Long`-valued coordinates; an array
 is an indexed collection of data. 
 It is often useful to get at the coordinates or elements directly, in
 variables.
@@ -340,7 +340,7 @@ variables.
 The syntax \xcdmath"val [a$_1$, $\ldots$, a$_n$] = e;", 
 where \xcd`e` is a \xcd`Point`,
 declares {$n$}
-\xcd`Int` variables, bound to the precisely {$n$} components of the \xcd`Point` value of
+\xcd`Long` variables, bound to the precisely {$n$} components of the \xcd`Point` value of
 \xcd`e`; it is an error if \xcd`e` is not a \xcd`Point` with precisely {$n$} components.
 The syntax \xcdmath"val p[a$_1$, $\ldots$, a$_n$] = e;"  is similar, but also
 declares the variable \xcd`p` to be of type \xcdmath"Point(n)".  
@@ -432,9 +432,9 @@ variable \xcd`i` for the method call, initializes \xcd`i` with the value of
 % class Example {
 %~~vis
 \begin{xten}
-static def inc(var i:Int) { i += 1; }
+static def inc(var i:Long) { i += 1; }
 static def example() {
-   var j : Int = 0;
+   var j : Long = 0;
    assert j == 0;
    inc(j);
    assert j == 0;
@@ -454,7 +454,7 @@ Local variables are declared in a limited scope, and, dynamically, keep their
 values only for so long as the scope is being executed.  They may be \xcd`var`
 or \xcd`val`.  
 They may have 
-initializer expressions: \xcd`var i:Int = 1;` introduces 
+initializer expressions: \xcd`var i:Long = 1;` introduces 
 a variable \xcd`i` and initializes it to 1.
 If the variable is immutable
 (\xcd"val")
@@ -468,8 +468,8 @@ example, consider a class \xcd`Tub` with a property \xcd`p`.
 % package Vars.Local;
 %~~vis
 \begin{xten}
-class Tub(p:Int){
-  def this(pp:Int):Tub{self.p==pp} {property(pp);}
+class Tub(p:Long){
+  def this(pp:Long):Tub{self.p==pp} {property(pp);}
   def example() {
     val t : Tub = new Tub(3);
   }
@@ -504,8 +504,8 @@ desired.  However, a similar declaration with an inappropriate type will fail
 to compile.
 %~~gen ^^^ Vars_Var_Bounded
 % package Vars.Local.not.the.express.plz;
-% class Tub(p:Int){
-%   def this(pp:Int):Tub{self.p==pp} {property(pp);}
+% class Tub(p:Long){
+%   def this(pp:Long):Tub{self.p==pp} {property(pp);}
 %   def example() {
 %     val t : Tub = new Tub(3);
 %   }
@@ -515,7 +515,7 @@ to compile.
 %~~vis
 \begin{xten}
    val t <: Tub = new Tub(3);
-   // ERROR: val u <: Int = new Tub(3);
+   // ERROR: val u <: Long = new Tub(3);
 \end{xten}
 %~~siv
 %}}
@@ -643,8 +643,8 @@ omitted and inferred from the initializer type (\Sref{TypeInference}).
 %%ACC%%  %class Example{
 %%ACC%%  %~acc~vis
 %%ACC%%  \begin{xten}
-%%ACC%%  val summer = Reducer[Int](0, Int.+);
-%%ACC%%  val producter = Reducer[Int](1, Int.*);
+%%ACC%%  val summer = Reducer[Long](0, Long.+);
+%%ACC%%  val producter = Reducer[Long](1, Long.*);
 %%ACC%%  \end{xten}
 %%ACC%%  %~acc~siv
 %%ACC%%  %}
@@ -712,11 +712,11 @@ omitted and inferred from the initializer type (\Sref{TypeInference}).
 %%ACC%%  %package Vars.Accumulators.Are.For.Bisimulators;
 %%ACC%%  % import java.util.*;
 %%ACC%%  % class Example{
-%%ACC%%  % static def example(L: List[Int]) {
+%%ACC%%  % static def example(L: List[Long]) {
 %%ACC%%  %~accTODO~vis
 %%ACC%%  \begin{xten}
-%%ACC%%  val summer = Reducer[Int](0, Int.+);
-%%ACC%%  val producter = Reducer[Int](1, Int.*);
+%%ACC%%  val summer = Reducer[Long](0, Long.+);
+%%ACC%%  val producter = Reducer[Long](1, Long.*);
 %%ACC%%  acc(summer) sum;
 %%ACC%%  acc(producter) prod;
 %%ACC%%  for (x in L) {
@@ -782,8 +782,8 @@ omitted and inferred from the initializer type (\Sref{TypeInference}).
 %%ACC%%  %
 %%ACC%%  %~accTODO~vis
 %%ACC%%  \begin{xten}
-%%ACC%%  def triangle(n:Int) {
-%%ACC%%    val summer = Reducer[Int](0, Int.+);
+%%ACC%%  def triangle(n:Long) {
+%%ACC%%    val summer = Reducer[Long](0, Long.+);
 %%ACC%%    acc(summer) sum; 
 %%ACC%%    finish {
 %%ACC%%      for([i] in 1..n) async {
@@ -828,8 +828,8 @@ omitted and inferred from the initializer type (\Sref{TypeInference}).
 %%ACC%%  %class Example{
 %%ACC%%  %~accTODO~vis
 %%ACC%%  \begin{xten}
-%%ACC%%  def triangle(n:Int) {
-%%ACC%%    val summer = Reducer[Int](0, Int.+);
+%%ACC%%  def triangle(n:Long) {
+%%ACC%%    val summer = Reducer[Long](0, Long.+);
 %%ACC%%    acc(summer) sum; 
 %%ACC%%    finish {
 %%ACC%%      for([i] in 1..n) async 
@@ -862,15 +862,15 @@ omitted and inferred from the initializer type (\Sref{TypeInference}).
 %%ACC%%  %class Whatever {
 %%ACC%%  %~accTODO~vis
 %%ACC%%  \begin{xten}
-%%ACC%%  static def split23(L:List[Int], acc evens:Int, acc triples:Int) {
+%%ACC%%  static def split23(L:List[Long], acc evens:Long, acc triples:Long) {
 %%ACC%%    for(n in L) {
 %%ACC%%       if (n % 2 == 0) evens = n;
 %%ACC%%       if (n % 3 == 0) triples = n;
 %%ACC%%    }
 %%ACC%%  }
-%%ACC%%  static val summer = Reducer[Int](0, Int.+);
-%%ACC%%  static val producter = Reducer[Int](1, Int.*);
-%%ACC%%  static def sumEvenPlusProdTriple(L:List[Int]) {
+%%ACC%%  static val summer = Reducer[Long](0, Long.+);
+%%ACC%%  static val producter = Reducer[Long](1, Long.*);
+%%ACC%%  static def sumEvenPlusProdTriple(L:List[Long]) {
 %%ACC%%    acc(summer) sumEven;
 %%ACC%%    acc(producter) prodTriple;
 %%ACC%%    split23(L, sumEven, prodTriple);
@@ -892,12 +892,12 @@ omitted and inferred from the initializer type (\Sref{TypeInference}).
 %%ACC%%  % package Vars.Indexed.Accumulators;
 %%ACC%%  %~accTODO~vis
 %%ACC%%  \begin{xten}
-%%ACC%%  class BoolAccum implements SelfAccumulator[Boolean, Int] {
+%%ACC%%  class BoolAccum implements SelfAccumulator[Boolean, Long] {
 %%ACC%%    var sumTrue = 0, sumFalse = 0;
-%%ACC%%    def update(k:Boolean, v:Int) { 
+%%ACC%%    def update(k:Boolean, v:Long) { 
 %%ACC%%       if (k) sumTrue += k; else sumFalse += k;
 %%ACC%%    }
-%%ACC%%    def update(ks:Array[Boolean]{rail}, vs:Array[Int]{ks.size == vs.size}) {
+%%ACC%%    def update(ks:Array[Boolean]{rail}, vs:Array[Long]{ks.size == vs.size}) {
 %%ACC%%       for([i] in ks.region) update(ks(i), vs(i));  }
 %%ACC%%    
 %%ACC%%  }

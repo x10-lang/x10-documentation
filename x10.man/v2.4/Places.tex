@@ -69,9 +69,9 @@ place-shifting operations.
 
 
 This is not unusual for automatic variables:  \Xcd{self} denotes 
-two different values (one \xcd`List`, one \xcd`Int`) 
+two different values (one \xcd`List`, one \xcd`Long`) 
 when one describes a non-null list of non-zero numbers as
-\xcd`List[Int{self!=0}]{self!=null}`. In the following 
+\xcd`List[Long{self!=0}]{self!=null}`. In the following 
 code, \xcd`here` has one value at 
 \xcd`h0`, and a different one at \xcd`h1` (unless there is only one place).
 %~~gen ^^^ Placesoijo
@@ -245,7 +245,7 @@ assert  a(0)==1 && a(1)==2 && a(2)==3;
 %%AT-COPY%% %  val there = here.next();
 %%AT-COPY%% %~~vis
 %%AT-COPY%% \begin{xten}
-%%AT-COPY%% var a : Int = 1;
+%%AT-COPY%% var a : Long = 1;
 %%AT-COPY%% at(there; val d = a) {
 %%AT-COPY%%    assert d == 1;
 %%AT-COPY%%    // ERROR: assert a == 1;
@@ -282,7 +282,7 @@ assert  a(0)==1 && a(1)==2 && a(2)==3;
 %%AT-COPY%% %  val there = here.next();
 %%AT-COPY%% %~~vis
 %%AT-COPY%% \begin{xten}
-%%AT-COPY%% var a : Int = 1;
+%%AT-COPY%% var a : Long = 1;
 %%AT-COPY%% assert a == 1;
 %%AT-COPY%% at(there; var e = a) { 
 %%AT-COPY%%    assert e == 1;
@@ -318,8 +318,8 @@ assert  a(0)==1 && a(1)==2 && a(2)==3;
 %%AT-COPY%% %  val there = here.next();
 %%AT-COPY%% %~~vis
 %%AT-COPY%% \begin{xten}
-%%AT-COPY%% var a : Int = 1;
-%%AT-COPY%% var b : Rail[Int] = [2,3,4];
+%%AT-COPY%% var a : Long = 1;
+%%AT-COPY%% var b : Rail[Long] = [2,3,4];
 %%AT-COPY%% at(there; f = a + b(0)) {
 %%AT-COPY%%    assert f == 3;
 %%AT-COPY%% }
@@ -351,7 +351,7 @@ assert  a(0)==1 && a(1)==2 && a(2)==3;
 %%AT-COPY%% %  val there = here.next();
 %%AT-COPY%% %~~vis
 %%AT-COPY%% \begin{xten}
-%%AT-COPY%% var b : Rail[Int] = [2,3,4];
+%%AT-COPY%% var b : Rail[Long] = [2,3,4];
 %%AT-COPY%% assert b(0) == 2;
 %%AT-COPY%% at(there; b) {
 %%AT-COPY%%   b(0) = 200;  // Modify copy of b.
@@ -386,8 +386,8 @@ assert  a(0)==1 && a(1)==2 && a(2)==3;
 %%AT-COPY%% %~~vis
 %%AT-COPY%% \begin{xten}
 %%AT-COPY%% class Example{ 
-%%AT-COPY%%    var f : Int = 1;
-%%AT-COPY%%    var g : Int = 2;
+%%AT-COPY%%    var f : Long = 1;
+%%AT-COPY%%    var g : Long = 2;
 %%AT-COPY%%    static def example() { 
 %%AT-COPY%%       val there = here.next();
 %%AT-COPY%%       val e : Example = new Example();
@@ -464,7 +464,7 @@ assert  a(0)==1 && a(1)==2 && a(2)==3;
 %%AT-COPY%% %  val there = here.next();
 %%AT-COPY%% %~~vis
 %%AT-COPY%% \begin{xten}
-%%AT-COPY%% var a : Int = 1;
+%%AT-COPY%% var a : Long = 1;
 %%AT-COPY%% val b = [2,3,4];
 %%AT-COPY%% at(there; *) {
 %%AT-COPY%%   assert a + b(0) == b(1);
@@ -726,7 +726,7 @@ fields, and data omitted by custom serialization.
 %%AT-COPY%% % 
 %%AT-COPY%% %~~vis
 %%AT-COPY%% \begin{xten}
-%%AT-COPY%% val c = new Cell[Int](9); // (1)
+%%AT-COPY%% val c = new Cell[Long](9); // (1)
 %%AT-COPY%% at (here;c) {             // (2)
 %%AT-COPY%%    assert(c() == 9);      // (3)
 %%AT-COPY%%    c.set(8);              // (4)
@@ -747,7 +747,7 @@ fields, and data omitted by custom serialization.
 % 
 %~~vis
 \begin{xten}
-val c = new Cell[Int](9); // (1)
+val c = new Cell[Long](9); // (1)
 at (here) {               // (2) 
    assert(c() == 9);      // (3)
    c.set(8);              // (4)
@@ -784,11 +784,11 @@ copy.
 \begin{ex}
 In the following variation of the preceding example,
 \xcd`a`'s original value {$a_1$} is a rail with two references to the same
-\xcd`Cell[Int]` {$c_1$}.  The fact that {$a_1(0)$} and {$a_1(1)$} are both
+\xcd`Cell[Long]` {$c_1$}.  The fact that {$a_1(0)$} and {$a_1(1)$} are both
 identical to {$c_1$} is demonstrated in \xcd`(A)`-\xcd`(C)`, as {$a_1(0)$} is modified
 and {$a_1(1)$} is observed to change.  In \xcd`(D)`-\xcd`(F)`, the copy
 {$a_2$} is tested in the same way, showing that {$a_2(0)$} and {$a_2(1)$} both
-refer to the same \xcd`Cell[Int]` {$c_2$}.  However, the test at \xcd`(G)`
+refer to the same \xcd`Cell[Long]` {$c_2$}.  However, the test at \xcd`(G)`
 shows that {$c_2$} is a different cell from {$c_1$}, because changes to
 {$c_2$} did not propagate to {$c_1$}.  
 
@@ -799,8 +799,8 @@ shows that {$c_2$} is a different cell from {$c_1$}, because changes to
 %%AT-COPY%% %
 %%AT-COPY%% %~~vis
 %%AT-COPY%% \begin{xten}
-%%AT-COPY%% val c = new Cell[Int](5);
-%%AT-COPY%% val a : Rail[Cell[Int]] = [c,c as Cell[Int]];
+%%AT-COPY%% val c = new Cell[Long](5);
+%%AT-COPY%% val a : Rail[Cell[Long]] = [c,c as Cell[Long]];
 %%AT-COPY%% assert(a(0)() == 5 && a(1)() == 5);     // (A)
 %%AT-COPY%% c.set(6);                               // (B)
 %%AT-COPY%% assert(a(0)() == 6 && a(1)() == 6);     // (C)
@@ -823,8 +823,8 @@ shows that {$c_2$} is a different cell from {$c_1$}, because changes to
 %
 %~~vis
 \begin{xten}
-val c = new Cell[Int](5);
-val a : Rail[Cell[Int]] = [c,c as Cell[Int]];
+val c = new Cell[Long](5);
+val a : Rail[Cell[Long]] = [c,c as Cell[Long]];
 assert(a(0)() == 5 && a(1)() == 5);     // (A)
 c.set(6);                               // (B)
 assert(a(0)() == 6 && a(1)() == 6);     // (C)
@@ -859,8 +859,8 @@ to 1.  However, despite the initializer on the \xcd`b` field, it is not the
 case that every \xcd`Trans` has \xcd`b==2`.  Since \xcd`b` is \xcd`transient`,
 when the \xcd`Trans` value \xcd`this` is copied at \xcd`at(here){...}` in
 \xcd`example()`, its \xcd`b` field is not copied, and the default value for an
-\xcd`Int`, 0, is used instead.  
-Note that we could not make a transient field \xcd`c : Int{c != 0}`, since the
+\xcd`Long`, 0, is used instead.  
+Note that we could not make a transient field \xcd`c : Long{c != 0}`, since the
 type has no default value, and copying would in fact set it to zero.
 
 %%AT-COPY%% %~~gen ^^^ Places40
@@ -869,9 +869,9 @@ type has no default value, and copying would in fact set it to zero.
 %%AT-COPY%% %~~vis
 %%AT-COPY%% \begin{xten}
 %%AT-COPY%% class Trans {
-%%AT-COPY%%    val a : Int = 1;
-%%AT-COPY%%    transient val b : Int = 2;
-%%AT-COPY%%    //ERROR transient val c : Int{c != 0} = 3;
+%%AT-COPY%%    val a : Long = 1;
+%%AT-COPY%%    transient val b : Long = 2;
+%%AT-COPY%%    //ERROR transient val c : Long{c != 0} = 3;
 %%AT-COPY%%    def example() {
 %%AT-COPY%%      assert(a == 1 && b == 2);
 %%AT-COPY%%      at(here;a) {
@@ -890,9 +890,9 @@ type has no default value, and copying would in fact set it to zero.
 %~~vis
 \begin{xten}
 class Trans {
-   val a : Int = 1;
-   transient val b : Int = 2;
-   //ERROR: transient val c : Int{c != 0} = 3;
+   val a : Long = 1;
+   transient val b : Long = 2;
+   //ERROR: transient val c : Long{c != 0} = 3;
    def example() {
      assert(a == 1 && b == 2);
      at(here) {
@@ -1091,9 +1091,9 @@ specifiers to make explicit just what gets copied can ameliorate this issue.
 %%AT-COPY%% % class Example { 
 %%AT-COPY%% %~~vis
 %%AT-COPY%% \begin{xten}
-%%AT-COPY%% static def example(a: Int, mathProc: Place) { 
-%%AT-COPY%%   val square : Int;
-%%AT-COPY%%   var poly : Int = 1 + a; // will be 1+a+a*a
+%%AT-COPY%% static def example(a: Long, mathProc: Place) { 
+%%AT-COPY%%   val square : Long;
+%%AT-COPY%%   var poly : Long = 1 + a; // will be 1+a+a*a
 %%AT-COPY%%   at(mathProc; a) {
 %%AT-COPY%%     val sq = a*a; 
 %%AT-COPY%%     athome(square, poly; sq) {
@@ -1144,9 +1144,9 @@ specifiers to make explicit just what gets copied can ameliorate this issue.
 %%AT-COPY%% % KNOWNFAIL-at
 %%AT-COPY%% %~~vis
 %%AT-COPY%% \begin{xten}
-%%AT-COPY%% static def example(a: Int, mathProc: Place) { 
-%%AT-COPY%%   val square : Int;
-%%AT-COPY%%   var poly : Int = 1 + a; // will be 1+a+a*a
+%%AT-COPY%% static def example(a: Long, mathProc: Place) { 
+%%AT-COPY%%   val square : Long;
+%%AT-COPY%%   var poly : Long = 1 + a; // will be 1+a+a*a
 %%AT-COPY%%   at(mathProc) {
 %%AT-COPY%%     val sq = a*a; 
 %%AT-COPY%%     athome {

@@ -103,8 +103,8 @@ capitalization convention),
 % package Structs2w3o;
 %~~vis
 \begin{xten}
-struct Ambig(x:Int) {
-  static def Ambig(x:Int) = "ambiguity please";
+struct Ambig(x:Long) {
+  static def Ambig(x:Long) = "ambiguity please";
   static def example() { 
     val useMethod      = Ambig(1);
     val useConstructor = new Ambig(2);
@@ -126,7 +126,7 @@ types that classes do.
 % package Structs6i5t;
 %~~vis
 \begin{xten}
-struct Exam[T](nQuestions:Int){T <: Question} {
+struct Exam[T](nQuestions:Long){T <: Question} {
   public static interface Question {}
   // ... 
 }
@@ -188,7 +188,7 @@ and does not incur boxing overhead.
 % package Structs3q6l;
 %~~vis
 \begin{xten}
-struct Horse(x:Int){
+struct Horse(x:Long){
   static def example(){
     val aa : Rail[Any] = ["a String" as Any, "another one"];
     aa(0) = Horse(8);
@@ -334,13 +334,13 @@ struct Pair[T,U] {
 class Example {
   static def divmod(var a:UInt, b:UInt): Pair[UInt, UInt] {
      assert b > 0u;
-     var q : UInt = 0u;
-     while (a > b) {q += 1u; a -= b;}
+     var q : UInt = 0un;
+     while (a > b) {q += 1un; a -= b;}
      return Pair(q, a); 
   }
   static def example() {
-     val qr = divmod(22u, 7u);
-     assert qr.first == 3u && qr.second == 1u;
+     val qr = divmod(22un, 7un);
+     assert qr.first == 3un && qr.second == 1un;
   }
 }
 \end{xten}
@@ -385,7 +385,7 @@ does indeed have an \xcd`i` field of \xcd`0`.
 \begin{xten}
 class StructDefault {
   static struct Example {
-    val i : Int;
+    val i : Long;
     def this() { i = 1; }
   }
   var ex : Example; 
@@ -422,13 +422,13 @@ to a struct, and \xcd`Struct2Class` to a class.
 %~~vis
 \begin{xten}
 class Class2Struct {
-  val a : Int;
-  def this(a:Int) { this.a = a; }
+  val a : Long;
+  def this(a:Long) { this.a = a; }
   def m() = a;
 }
 struct Struct2Class { 
-  val a : Int;
-  def this(a:Int) { this.a = a; }
+  val a : Long;
+  def this(a:Long) { this.a = a; }
   def m() = a;
 }
 \end{xten}
@@ -451,13 +451,13 @@ struct Struct2Class {
 %~~gen ^^^ Structs50
 %package Structs.Converting.And.Conniving;
 % class Class2Struct {
-%   val a : Int;
-%   def this(a:Int) { this.a = a; }
+%   val a : Long;
+%   def this(a:Long) { this.a = a; }
 %   def m() = a;
 % }
 % struct Struct2Class { 
-%   val a : Int;
-%   def this(a:Int) { this.a = a; }
+%   val a : Long;
+%   def this(a:Long) { this.a = a; }
 %   def m() = a;
 % }
 %class Example {

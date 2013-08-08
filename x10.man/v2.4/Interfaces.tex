@@ -24,9 +24,9 @@ interface Pushable{prio() != 0} {
   abstract class Pushedness{}
   struct Pushy{}
   interface Pushing{}
-  static type Shove = Int;
+  static type Shove = Long;
   property text():String;
-  property prio():Int;
+  property prio():Long;
 }
 class MessageButton(text:String)
   implements Pushable{self.prio()==Pushable.MAX_PRIO} {
@@ -188,7 +188,7 @@ like \xcd`meth`, or a nullary constructor.
 \begin{xten}
 interface Stat {
   def ick():void; 
-  // ERROR: static def meth():Int;
+  // ERROR: static def meth():Long;
   // ERROR: static def this();
 }
 class Example implements Stat {
@@ -365,16 +365,16 @@ declared \xcd`abstract`.
 %   def name():String;
 % }
 % interface Mobile {
-%   def move(howFar:Int):void;
+%   def move(howFar:Long):void;
 % }
 % interface Person extends Named, Mobile {}
 % interface NamedPoint extends Named, Mobile{} 
 %~~vis
 \begin{xten}
 class Kim implements Person {
-   var pos : Int = 0;
+   var pos : Long = 0;
    public def name() = "Kim (" + pos + ")";
-   public def move(dPos:Int) { pos += dPos; }
+   public def move(dPos:Long) { pos += dPos; }
 }
 \end{xten}
 %~~siv

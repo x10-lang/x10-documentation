@@ -141,7 +141,7 @@ subtlety (\Sref{sect:disambiguations}).
 \index{initialization!of field}
 
 Fields may be given values via {\em field initialization expressions}:
-\xcd`val f1 = E;` and \xcd`var f2 : Int = F;`. Other fields of \xcd`this` may
+\xcd`val f1 = E;` and \xcd`var f2 : Long = F;`. Other fields of \xcd`this` may
 be referenced, but only those that {\em precede} the field being initialized.
 
 
@@ -191,7 +191,7 @@ class Super{
 }
 class Sub extends Super {
   val f = true;
-  def superf() : Int = super.f; // 1
+  def superf() : Long = super.f; // 1
 }
 \end{xten}
 %~~siv
@@ -341,8 +341,8 @@ given values by the \xcd`property` command in constructors.
 % package Classes.Toss.Freedom.Disk2;
 %~~vis
 \begin{xten}
-class Proper(t:Int) {
-  def this(t:Int) {property(t);}
+class Proper(t:Long) {
+  def this(t:Long) {property(t);}
 }
 \end{xten}
 %~~siv
@@ -398,11 +398,11 @@ properties \xcd`c` and \xcd`d` such that \xcd`a.c == b` and \xcd`b.d == a`.
 % package Classes7h2f;
 %~~vis
 \begin{xten}
-class Proper(a:Int, b:String) {
-  def this(a:Int, b:String) {
+class Proper(a:Long, b:String) {
+  def this(a:Long, b:String) {
       property(a, b);
   }
-  def this(z:Int) {
+  def this(z:Long) {
       val theA = z+5;
       val theB = "X"+z;
       property(theA, theB);
@@ -443,14 +443,14 @@ initialized in the constructor, rather than by an initialization expression.)
 % package Classes9c9r;
 %~~vis
 \begin{xten}
-class Init(n:Int) {
+class Init(n:Long) {
   val a = new Rail[String](n, "");
-  def this(n:Int) { property(n); }
+  def this(n:Long) { property(n); }
 }
 class Outit {
-  val n : Int;
+  val n : Long;
   //ERROR: val a = new Rail[String](n, "");
-  def this(m:Int) { this.n = m; }
+  def this(m:Long) { this.n = m; }
 }
 \end{xten}
 %~~siv
@@ -613,9 +613,9 @@ the formal argument \xcd`a` in the return type expression for the method
 % package Classes9q2w;
 %~~vis
 \begin{xten}
-class Ret(n:Int) {
-  static def met1(a:Int) : Ret{n==a} = new Ret(a);
-  static def met2(a:Int)             = new Ret(a);
+class Ret(n:Long) {
+  static def met1(a:Long) : Ret{n==a} = new Ret(a);
+  static def met2(a:Long)             = new Ret(a);
   static def use3(Ret{n==3}) {}
   static def example() {
      use3(met1(3));
@@ -825,10 +825,10 @@ The \xcd`eq` and \xcd`is` property methods are used in types in the
 %package Classes.PropertyMethods;
 %~~vis
 \begin{xten}
-class Example(x:Int, y:Int) {
-   def this(x:Int, y:Int) { property(x,y); }
+class Example(x:Long, y:Long) {
+   def this(x:Long, y:Long) { property(x,y); }
    property eq() = (x==y);
-   property is(z:Int) = x==z && y==z;
+   property is(z:Long) = x==z && y==z;
    def example( a : Example{eq()}, b : Example{is(3)} ) {}
 }
 \end{xten}
@@ -959,12 +959,12 @@ the equality expressions \xcd`A==B` in the other examples).    However,
 %~~vis
 \begin{xten}
 class Cls {
-  property concrete(a:Int) = 7;
+  property concrete(a:Long) = 7;
 }
 interface Inf {
-  property nullary(): Int;
-  property topLevel(z:Int):Boolean;
-  property allThree(z:Int):Int;
+  property nullary(): Long;
+  property topLevel(z:Long):Boolean;
+  property allThree(z:Long):Long;
 }
 class Example{
   def example1(Cls{self.concrete(3)==7}) = 1;
@@ -1007,8 +1007,8 @@ The following overloading of \xcd`m` is unproblematic.
 class Mful{
    def m() = 1;
    def m[T]() = 2;
-   def m(x:Int) = 3;
-   def m[T](x:Int) = 4;
+   def m(x:Long) = 3;
+   def m[T](x:Long) = 4;
 }
 \end{xten}
 %~~siv
@@ -1033,11 +1033,11 @@ calls are ambiguous, and hence not acceptable.
 \begin{xten}
 class Two[T,U]{
   def m(x:T)=1;
-  def m(x:Int)=2;
+  def m(x:Long)=2;
   def m[X](x:X)=3;
   def m(x:U)=4;
   static def example() {
-    val t12 = new Two[Int, Any]();
+    val t12 = new Two[Long, Any]();
     // ERROR: t12.m(2);
     val t13  = new Two[String, Any]();
     t13.m("ferret");
@@ -1066,8 +1066,8 @@ refers to \xcd`1`.
 following is {\em not} legal, although either method definition individually
 is legal:
 \begin{xten}
-   def n(x:Int){x==1} = "one";
-   def n(x:Int){x!=1} = "not";
+   def n(x:Long){x==1} = "one";
+   def n(x:Long){x!=1} = "not";
 \end{xten}
 
 
@@ -1129,15 +1129,15 @@ is not satisfied by \xcd`3`, so -- despite the call statically type-checking
 -- at runtime the call would violate its guard and (in this case) throw an exception.
 %~~gen ^^^ Classes5l3r
 % package Classes5l3r;
-% // FOR-ERR-CASE-DELETE: def recip(m:Int){true} = 1.0/m;
+% // FOR-ERR-CASE-DELETE: def recip(m:Long){true} = 1.0/m;
 %~~vis
 \begin{xten}
 class Super {
-  def recip(n:Int){n != 0} = 1.0/n;
+  def recip(n:Long){n != 0} = 1.0/n;
 }
 class Sub extends Super{
-  //ERROR: def recip(n:Int){n != 0, n != 3} = 1.0/(n * (n-3));
-  def recip(m:Int){true} = 1.0/m;
+  //ERROR: def recip(n:Long){n != 0, n != 3} = 1.0/(n * (n-3));
+  def recip(m:Long){true} = 1.0/m;
 }
 class Example{
   static def example() {
@@ -1196,7 +1196,7 @@ and certain restrictions (\eg, most methods cannot be called); see
 \begin{ex}
 
 The following class provides two constructors.  The unary constructor 
-\xcd`def this(b : Int)` allows initialization of the \xcd`a` field to an 
+\xcd`def this(b : Long)` allows initialization of the \xcd`a` field to an 
 arbitrary value.  The nullary constructor \xcd`def this()` gives it a default
 value of 10.  The \xcd`example` method illustrates both of these calls.
 
@@ -1206,8 +1206,8 @@ value of 10.  The \xcd`example` method illustrates both of these calls.
 %~~vis
 \begin{xten}
 class C {
-  public val a : Int;
-  def this(b : Int) { a = b; } 
+  public val a : Long;
+  def this(b : Long) { a = b; } 
   def this()        { a = 10; }
   static def example() {
      val two = new C(2);
@@ -1235,13 +1235,13 @@ constructor), the class has no constructor, which is a static error.
 \begin{ex}
 The following class has no explicit constructor.
 Its implicit constructor is 
-\xcd`def this(x:Int){property(x);}`
+\xcd`def this(x:Long){property(x);}`
 This implicit constructor is valid, and so is the class. 
 %~~gen ^^^ ClassesCtor20
 % package ClassesCtor20;
 %~~vis
 \begin{xten}
-class C(x:Int) {
+class C(x:Long) {
   static def example() {
     val c : C = new C(4);
     assert c.x == 4;
@@ -1262,8 +1262,8 @@ class does not compile; it needs an explicit constructor.
 %~~vis
 \begin{xten}
 // THIS CODE DOES NOT COMPILE
-class Cfail(x:Int) {
-  val d: Int;
+class Cfail(x:Long) {
+  val d: Long;
   static def example() {
     val wrong = new Cfail(40);
   }
@@ -1294,8 +1294,8 @@ whose parameter has a default value of 100:
 %~~vis
 \begin{xten}
 class Ctors {
-  public val a : Int;
-  def this(a:Int) { this.a = a; }
+  public val a : Long;
+  def this(a:Long) { this.a = a; }
   def this()      { this(100);  }
 }
 \end{xten}
@@ -1338,9 +1338,9 @@ The \xcd`example()` code shows both of these in action.
 % package Classes1v9a;
 %~~vis
 \begin{xten}
-class Ret(n:Int) {
+class Ret(n:Long) {
    def this()    { property(1); }     // (A)
-   def this(n:Int) : Ret{n==self.n} { // (B)
+   def this(n:Long) : Ret{n==self.n} { // (B)
       property(n);
    }
    static def typeIs[T](x:T){}
@@ -1726,13 +1726,13 @@ like static methods.
 % 
 %~~vis
 \begin{xten}
-static class Trace(n:Int){
+static class Trace(n:Long){
   public static operator !(f:Trace) 
       = new Trace(10 * f.n + 1);
   public operator -this = new Trace (10 * this.n + 2);
 }
 static class Brace extends Trace{
-  def this(n:Int) { super(n); }
+  def this(n:Long) { super(n); }
   public operator -this = new Brace (10 * this.n + 3);
   static def example() {
      val t = new Trace(1);
@@ -1922,8 +1922,10 @@ The definition for the sum of two
 %   def makeSureItWorks() {
 %      val x = new Poly([0L,1L]);
 %      val p <: Poly = x+x+x;
-%      val q <: Poly = 1+x;
-%      val r <: Poly = x+1;
+%      val q <: Poly = 1n+x;
+%      val r <: Poly = x+1n;
+%      val s <: Poly = 1+x;
+%      val t <: Poly = x+1;
 %   }
 %     
 % }
@@ -1938,7 +1940,7 @@ static error. If there is precisely one, that one will be used. If there are
 several, X10 looks for a {\em best-matching} operation, \viz{} one which does
 not require the operands to be converted to another type. For example,
 \xcd`operator this + (n:Long)` and \xcd`operator this + (n:Int)` both apply to
-\xcd`p+1`, because \xcd`1` can be converted from an \xcd`Int` to a \xcd`Long`.
+\xcd`p+1n`, because \xcd`1n` can be converted from an \xcd`Int` to a \xcd`Long`.
 However, the \xcd`Int` version will be chosen because it does not require a
 conversion. If even the best-matching operation is not uniquely determined,
 the compiler will report a static error.
@@ -1973,7 +1975,7 @@ The operator to negate a polynomial is:
 %   public val coeff : Rail[Long];
 %   public def this(coeff: Rail[Long]) { this.coeff = coeff;}
 %   public def degree() = coeff.size-1;
-%   public def  a(i:Int) = (i<0 || i>this.degree()) ? 0L : coeff(i);
+%   public def  a(i:Long) = (i<0 || i>this.degree()) ? 0L : coeff(i);
 %~~vis
 \begin{xten}
   public operator - this = new Poly(
@@ -2068,15 +2070,15 @@ Implicit coercions are used automatically by the compiler on method calls
 (\Sref{sect:MethodResolution}) and assignments (\Sref{AssignmentStatement}).
 Implicit coercions may be used when a value of type \xcd`T` appears in a
 context expecting a value of type \xcd`U`.  If \xcd`T <: U`, no implicit
-coercion is needed; \eg, a method \xcd`m` expecting an \xcd`Int` argument may 
-be called as \xcd`m(3)`, with an argument of type \xcd`Int{self==3}`, which is
-a subtype of \xcd`m`'s argument type \xcd`Int`. 
+coercion is needed; \eg, a method \xcd`m` expecting an \xcd`Long` argument may 
+be called as \xcd`m(3)`, with an argument of type \xcd`Long{self==3}`, which is
+a subtype of \xcd`m`'s argument type \xcd`Long`. 
 However, if it is not the case that \xcd`T <: U`, but there is an implicit
 coercion from \xcd`T` to \xcd`U` defined in container \xcd`U`, then this
 implicit coercion will be applied.
 
 \begin{ex}
-We can define an implicit coercion from \xcd`Int` to \xcd`Poly`,
+We can define an implicit coercion from \xcd`Long` to \xcd`Poly`,
 and avoid having to define the sum of an integer and a polynomial
 as many special cases.  In the following example, we only define \xcd`+` on
 two polynomials.  The
@@ -2151,7 +2153,7 @@ is an operator call, to an operator defined with
 \xcd`public operator this(b:B, c:C, d:D)`.  It may be overloaded.
 For
 example, an ordered dictionary structure could allow subscripting by numbers
-with \xcd`public operator this(i:Int)`, and by strings with 
+with \xcd`public operator this(i:Long)`, and by strings with 
 \xcd`public operator this(s:String)`.  
 
 
@@ -2185,17 +2187,17 @@ coordinates.  \xcd`a(i,j)=b` assigns different values to \xcd`a(i)` and
 %~~vis
 \begin{xten}
 class Oddvec {
-  var v : Rail[Int] = new Rail[Int](3);
+  var v : Rail[Long] = new Rail[Long](3);
   public operator this () = 
       "(" + v(0) + "," + v(1) + "," + v(2) + ")";
-  public operator this () = (newval: Int) { 
+  public operator this () = (newval: Long) { 
     for(p in v.range) v(p) = newval;
   }
-  public operator this(i:Int) = v(i);
-  public operator this(i:Int, j:Int) = [v(i),v(j)];
-  public operator this(i:Int) = (newval:Int) 
+  public operator this(i:Long) = v(i);
+  public operator this(i:Long, j:Long) = [v(i),v(j)];
+  public operator this(i:Long) = (newval:Long) 
       = {v(i) = newval;}
-  public operator this(i:Int, j:Int) = (newval:Int) 
+  public operator this(i:Long, j:Long) = (newval:Long) 
       = { v(i) = newval; v(j) = newval+1;} 
   public def example() {
     this(1) = 6;   assert this(1) == 6;
@@ -2236,7 +2238,7 @@ to avoid any possible confusion with the built-in class \xcd`Point`.}
 % package classes.guards.invariants.glurp;
 %~~vis
 \begin{xten}
-class Pt(x:Int, y:Int){}
+class Pt(x:Long, y:Long){}
 class Line(a:Pt, b:Pt){a != b} {}
 \end{xten}
 %~~siv
@@ -2249,7 +2251,7 @@ points being different is better expressed as a class guard, rather than
 asymmetrically as a constraint on one type: 
 %~~gen ^^^ Classes270
 % package classes.guards.invariants.glurp2;
-% class Pt(x:Int, y:Int){}
+% class Pt(x:Long, y:Long){}
 %~~vis
 \begin{xten}
 class Line(a:Pt, b:Pt{a != b}) {}
@@ -2408,12 +2410,12 @@ class MyRegion(rank:Long) {
   def this(r:Long):MyRegion(r) {
     property(r);
   }
-  def this(diag:Rail[Int]):MyRegion(diag.size){ 
+  def this(diag:Rail[Long]):MyRegion(diag.size){ 
     property(diag.size);
   }
   def mockUnion(r:MyRegion(rank)):MyRegion(rank) = this;
   def example() {
-    val R1 : MyRegion(3L) = new MyRegion([4,4,4 as Int]); 
+    val R1 : MyRegion(3L) = new MyRegion([4,4,4 as Long]); 
     val R2 : MyRegion(3L) = new MyRegion([5,4,1]); 
     val R3 = R1.mockUnion(R2); // inferred type MyRegion(3)
   }
@@ -2423,7 +2425,7 @@ class MyRegion(rank:Long) {
 %
 %~~neg
 The first constructor returns the empty region of rank \Xcd{r}.  The
-second constructor takes a \Xcd{Rail[Int]} of arbitrary length
+second constructor takes a \Xcd{Rail[Long]} of arbitrary length
 \Xcd{n} and returns a \Xcd{MyRegion(n)} (intended to represent the set
 of points in the rectangular parallelopiped between the origin and the
 \Xcd{diag}.)
@@ -2490,9 +2492,9 @@ of the generic class -- with a few exceptions.
 \begin{ex}
 A \xcd`Colorized[T]` holds a thing of type \xcd`T`, and a string which is intended to represent
 its color.  Any type can be used for \xcd`T`; the \xcd`example` method shows
-\xcd`Int` and \xcd`Boolean`.  The \xcd`thing()` method retrieves the thing;
+\xcd`Long` and \xcd`Boolean`.  The \xcd`thing()` method retrieves the thing;
 note that its return type is the generic type variable \xcd`T`.  X10 is aware 
-that \xcd`colInt.thing()` is an \xcd`Int` and \xcd`colTrue.thing()` is a
+that \xcd`colLong.thing()` is an \xcd`Long` and \xcd`colTrue.thing()` is a
 \xcd`Boolean`, and uses those typings in \xcd`example`. 
 %~~gen ^^^ Classes6d9u
 % package Classes6d9u;
@@ -2508,10 +2510,10 @@ class Colorized[T] {
   public def thing():T = thing;
   public def color():String = color;  
   public static def example() {
-    val colInt  : Colorized[Int] 
-                = new Colorized[Int](3, "green");
-    assert colInt.thing() == 3 
-                && colInt.color().equals("green");
+    val colLong  : Colorized[Long] 
+                = new Colorized[Long](3, "green");
+    assert colLong.thing() == 3 
+                && colLong.color().equals("green");
     val colTrue : Colorized[Boolean] 
                 = new Colorized[Boolean](true, "blue");
     assert colTrue.thing() 
@@ -2595,8 +2597,8 @@ initialized.
 \begin{xten}
 // Not correct X10
 class ThisIsWrong {
-  val x : Int;
-  val y : Int{y != 0};
+  val x : Long;
+  val y : Long{y != 0};
   def this() {
     x10.io.Console.OUT.println("x=" + x + "; y=" + y);
     x = 1; y = 2;
@@ -2610,7 +2612,7 @@ put \Xcd{this} into a data structure before initializing it, and another
 activity could read it from the data structure and look at its fields:
 \begin{xten}
 class Wrong {
-  val shouldBe8 : Int;
+  val shouldBe8 : Long;
   static Cell[Wrong] wrongCell = new Cell[Wrong]();
   static def doItWrong() {
      finish {
@@ -2656,7 +2658,7 @@ escape as well. The following class prints an uninitialized value:
 // This code violates this chapter's constraints
 // and thus will not compile in X10.
 class Example {
-  val a: Int;
+  val a: Long;
   def this() { 
     at(here.next()) {
       // Recall that 'this' is a copy of 'this' outside 'at'.
@@ -2796,8 +2798,8 @@ can read anything; its annotation, too, is not required.   \Xcd{SeeAlso} is able
 import x10.compiler.*;
 
 final class C2 {
-  protected val a:Int; protected val b:Int; protected val c:Int;
-  protected var x:Int; protected var y:Int; protected var z:Int;
+  protected val a:Long; protected val b:Long; protected val c:Long;
+  protected var x:Long; protected var y:Long; protected var z:Long;
   def this() {
     a = 1;
     this.aplomb();
@@ -2867,25 +2869,25 @@ directly, which, of course, is forbidden by \xcd`@NoThisAccess`.
 import x10.compiler.*;
 class UseNoThisAccess {
   static class IDed {
-    protected static val counts = [0 as Int,0];
-    protected var code : Int;
+    protected static val counts = [0 as Long,0];
+    protected var code : Long;
     val id: Float;
-    public def this(kind:Int) { 
+    public def this(kind:Long) { 
       code = kind;
       this.id = this.count(kind); 
     }
-    protected static def kind2count(kind:Int) = ++counts(kind % 2);
-    @NoThisAccess def count(kind:Int) : Float = kind2count(kind);
+    protected static def kind2count(kind:Long) = ++counts(kind % 2);
+    @NoThisAccess def count(kind:Long) : Float = kind2count(kind);
   }
   static class SubIDed extends IDed {
-    protected static val subcounts = [0 as Int, 0, 0];
+    protected static val subcounts = [0 as Long, 0, 0];
     public static val all = new x10.util.ArrayList[SubIDed]();
-    public def this(kind:Int) { 
+    public def this(kind:Long) { 
        super(kind); 
     }
     @NoThisAccess
-    def count(kind:Int) : Float {
-       val subcount <: Int = ++subcounts(kind % 3);
+    def count(kind:Long) : Float {
+       val subcount <: Long = ++subcounts(kind % 3);
        val supercount <: Float = kind2count(kind);
        //ERROR: val badSuperCount = super.count(kind); //(A)
        //ERROR: code = kind;                           //(B)
@@ -2938,13 +2940,13 @@ The segments in the following code are shown in the comments.
 % package ObjectInitialization.ShowingSegments;
 %~~vis
 \begin{xten}
-class Overlord(x:Int) {
-  def this(x:Int) { property(x); }
+class Overlord(x:Long) {
+  def this(x:Long) { property(x); }
 }//Overlord
-class Overdone(y:Int) extends Overlord  {
-  val a : Int;
+class Overdone(y:Long) extends Overlord  {
+  val a : Long;
   val b =  y * 9000;
-  def this(r:Int) {
+  def this(r:Long) {
     super(r);                      // (1)
     x10.io.Console.OUT.println(r); // (2)
     val rp1 = r+1;
@@ -3016,7 +3018,7 @@ to \xcd`this.a`.
 %~~vis
 \begin{xten}
 class C {
-  val a:Int;
+  val a:Long;
   def this() {
     this.a = 1;
     //ERROR: val bad1 = () => this; 
@@ -3041,7 +3043,7 @@ its \Xcd{currently} field initialized to zero, below:
 %~~vis
 \begin{xten}
 class Score {
-  public var currently : Int;
+  public var currently : Long;
 }
 \end{xten}
 %~~siv
@@ -3051,10 +3053,10 @@ class Score {
 All other sorts of instance fields do need to be initialized before they can
 be used.  \Xcd{val} fields must be initialized in the constructor, even if
 their type has a 
-default value.  It would be silly to have a field \Xcd{val z : Int} that was
+default value.  It would be silly to have a field \Xcd{val z : Long} that was
 always given default value of \Xcd{0} and, since it is \Xcd{val}, can never be
 changed.  \Xcd{var} fields whose type has no default value must be initialized
-as well, such as \xcd`var y : Int{y != 0}`, since it cannot be assigned a
+as well, such as \xcd`var y : Long{y != 0}`, since it cannot be assigned a
 sensible initial value.
 
 The fundamental principles are:
@@ -3067,7 +3069,7 @@ more than once.
 \item No variable may be read before it is guaranteed to have been
 assigned.
 \item Initialization may be by field initialization expressions (\Xcd{val x :
-      Int = y+z}), or by uninitialized fields \Xcd{val x : Int;} plus
+      Long = y+z}), or by uninitialized fields \Xcd{val x : Long;} plus
 an initializing assignment \Xcd{x = y+z}.  Recall that field initialization
 expressions are performed after the \Xcd{property} statement, in segment 3 in
 the terminology of \Sref{SFineStructCtors}.
@@ -3243,24 +3245,24 @@ The example indices refer to the following code:
 %~~vis
 \begin{xten}
 class Example (
-   prop : Int,
-   proq : Int{prop != proq},                    // (A)
-   pror : Int
+   prop : Long,
+   proq : Long{prop != proq},                    // (A)
+   pror : Long
    )
    {prop != 0}                                  // (B)
-   extends Supertype[Int{self != prop}]         // (C)
-   implements SuperInterface[Int{self != prop}] // (D)
+   extends Supertype[Long{self != prop}]         // (C)
+   implements SuperInterface[Long{self != prop}] // (D)
 {
    property def propmeth() = (prop == pror);    // (E)
    static staticField
-      : Cell[Int{self != 0}]                    // (F)
-      = new Cell[Int{self != 0}](1);            // (G)
+      : Cell[Long{self != 0}]                    // (F)
+      = new Cell[Long{self != 0}](1);            // (G)
    var instanceField
-      : Int {self != prop}                      // (H)
-      = (prop + 1) as Int{self != prop};        // (I)
+      : Long {self != prop}                      // (H)
+      = (prop + 1) as Long{self != prop};        // (I)
    def this(
-      a : Int{a != 0},
-      b : Int{b != a}                           // (J)
+      a : Long{a != 0},
+      b : Long{b != a}                           // (J)
       )
       {a != b}                                  // (K)
       : Example{self.prop == a && self.proq==b} // (L)
@@ -3268,7 +3270,7 @@ class Example (
       super();                                  // (M)
       property(a,b,a);                          // (N)
       // fields initialized here
-      instanceField = b as Int{self != prop};   // (O)
+      instanceField = b as Long{self != prop};   // (O)
    }
 
    def someMethod() =
@@ -3313,13 +3315,13 @@ class Res {
   public static class C extends B {}
 
   def m(x:A) = 0;
-  def m(x:Int) = 1;
+  def m(x:Long) = 1;
   def m(x:Boolean) = 2;
   def m(x:Surface) = 3;
   def m(x:Deface) = 4; 
 
   def example() {
-     assert m(100) == 1 : "Int"; 
+     assert m(100) == 1 : "Long"; 
      assert m(new C()) == 0 : "C";
      // An Ace is a Surface, unambiguous best choice
      assert m(new Ace()) == 3 : "Ace";
@@ -3341,8 +3343,8 @@ class Res {
 % class Hook{ def run(){ (new Res()).example(); return true;} }
 %~~neg
 
-In the \xcd`"Int"` line, there is a very close match.  \xcd`100` is an
-\xcd`Int`.  In fact, \xcd`100` is an \xcd`Int{self==100}`, so even in this
+In the \xcd`"Long"` line, there is a very close match.  \xcd`100` is an
+\xcd`Long`.  In fact, \xcd`100` is an \xcd`Long{self==100}`, so even in this
 case the type of the actual parameter is not {\em precisely} equal to the type
 of the method.
 
@@ -3582,7 +3584,7 @@ resolution, is:
       there are no formal parameters, {$f=0$}. In the case of an instance
       method, the receiver will be the first formal parameter.\footnote{The
       variable names are relevant because one formal can be mentioned in a
-      later type, or even a constraint: {\tt def f(a:Int, b:Point\{rank==a\})=...}.}
+      later type, or even a constraint: {\tt def f(a:Long, b:Point\{rank==a\})=...}.}
 \item A {\em unique identifier} \xcd`id`, sufficient to tell the compiler
       which method body is intended.  A file name and position in that file
       would suffice.  The details of the identifier are not relevant.
@@ -3722,7 +3724,7 @@ method of the same name to access it:
 %~~vis
 \begin{xten}
 class Xhaver {
-  private var x: Int = 0;
+  private var x: Long = 0;
   public def x() = x;
   public def bumpX() { x ++; }
 }
@@ -3746,7 +3748,7 @@ has a method also named
 %~~vis
 \begin{xten}
 class Ambig {
-  public val f : (Int)=>Int =  (x:Int) => x*x;
+  public val f : (Long)=>Long =  (x:Long) => x*x;
   public def f(y:int) = y+1;
   public def example() {
       val v = this.f(10);
@@ -3773,7 +3775,7 @@ parentheses:  \xcdmath"(E.m)(F$_1$, $\ldots$, F$_n$)".
 %~~vis
 \begin{xten}
 class Disambig {
-  public val f : (Int)=>Int =  (x:Int) => x*x;
+  public val f : (Long)=>Long =  (x:Long) => x*x;
   public def f(y:int) = y+1;
   public def example() {
       assert(  this.f(10)  == 11  );
@@ -3818,9 +3820,9 @@ Nested interfaces and static structs are permitted as well.
 \begin{xten}
 class Outer {
   private static val priv = 1;
-  private static def special(n:Int) = n*n;
+  private static def special(n:Long) = n*n;
   public static class StaticNested {
-     static def reveal(n:Int) = special(n) + priv;
+     static def reveal(n:Long) = special(n) + priv;
   }
 }
 \end{xten}
@@ -3871,10 +3873,10 @@ not shadowed and can be referred to directly, as \xcd`m`.
 % NOTEST
 %~~vis
 \begin{xten}
-class Range(m:Int, n:Int) implements Iterable[Int]{
+class Range(m:Long, n:Long) implements Iterable[Long]{
   public def iterator ()  = new RangeIter();
-  private class RangeIter implements Iterator[Int] {
-     private var n : Int = m;
+  private class RangeIter implements Iterator[Long] {
+     private var n : Long = m;
      public def hasNext() = n <= Range.this.n;
      public def next() = n++;
   }
@@ -4109,7 +4111,7 @@ The \xcd`main()` method creates a specific \xcd`Choice`.  \xcd`c` is not a
 immediate instance of \xcd`Choice` --- as an abstract class, \xcd`Choice` has
 no immediate instances. \xcd`c` is an instance of an anonymous class which
 inherits from \xcd`Choice`, but supplies \xcd`yes()` and \xcd`no()` methods.
-These methods modify the contents of the \xcd`Cell[Int]` \xcd`n`.  (Note that,
+These methods modify the contents of the \xcd`Cell[Long]` \xcd`n`.  (Note that,
 as \xcd`n` is a local variable, it would take a few lines more coding to
 extract \xcd`c`'s class, name it, and make it an inner class.)  The call to
 \xcd`c.choose(true)`  will call \xcd`c.yes()`, incrementing \xcd`n()`, in a
@@ -4129,7 +4131,7 @@ abstract class Choice(name: String) {
 
 class Example {
   static def main(Rail[String]) {
-    val n = new Cell[Int](0);
+    val n = new Cell[Long](0);
     val c = new Choice("Inc Or Dec") {
       def yes() { n() += 1; }
       def no()  { n() -= 1; }

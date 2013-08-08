@@ -138,7 +138,7 @@ arguments (\Sref{sect:MethodResolution}).
 In the following example, there are three static methods with 
 qualified name \xcd`DisambEx.Example.m`; they can be disambiguated by their
 different arguments.   Inside the body of the third, the simple name \xcd`i`
-refers to both the \xcd`Int` formal of \xcd`m`, and to the static method 
+refers to both the \xcd`Long` formal of \xcd`m`, and to the static method 
 \xcd`DisambEx.Example.i`.  
 %~~gen ^^^ Packages9e6r
 %~~vis
@@ -148,7 +148,7 @@ class Example {
   static def m() = 1;
   static def m(Boolean) = 2;
   static def i() = 3;
-  static def m(i:Int) {
+  static def m(i:Long) {
     if (i > 10) {
       return i() + 1;
     }
@@ -232,7 +232,7 @@ the access to \xcd`xhax.f` is not.
 %~~vis
 \begin{xten}
 class C {
-  protected var f : Int = 0;
+  protected var f : Long = 0;
 }
 class X extends C {}
 class D extends C {

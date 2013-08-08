@@ -15,7 +15,7 @@ Literals denote fixed values of built-in types.
 The syntax for literals is given in \Sref{Literals}. 
 
 The type that \Xten{} gives a literal often includes its value. \Eg, \xcd`1`
-is of type \xcd`Int{self==1}`, and \xcd`true` is of type
+is of type \xcd`Long{self==1}`, and \xcd`true` is of type
 \xcd`Boolean{self==true}`.
 
 \section{{\tt this}}
@@ -146,12 +146,12 @@ The use of an instance of it, \xcd`f.b`, has the same constraint involving
 %~~vis
 \begin{xten}
 class Fielded {
-  public val a : Int = 1;
-  public val b : Int{this.a == b} = this.a;
+  public val a : Long = 1;
+  public val b : Long{this.a == b} = this.a;
   static def example() {
     val f : Fielded = new Fielded();
     assert f.a == 1 && f.b == 1;
-    val fb : Int{fb == f.a} = f.b;
+    val fb : Long{fb == f.a} = f.b;
     assert fb == 1;
   }
 }
@@ -275,7 +275,7 @@ an alternate syntax which makes the intent clear to X10, such as
 %~~vis
 \begin{xten}
 class Callsome {
-  static val closure : () => Int = () => 1;
+  static val closure : () => Long = () => 1;
   static def method()            = 2;
   static def example() {
      assert Callsome.closure() == 1;
@@ -351,8 +351,8 @@ fail at runtime if it is zero.
 %//OPTIONS: -STATIC_CHECKS
 %~~vis
 \begin{xten}
-class DivideBy(denom:Int) {
-  def div(numer:Int){denom != 0} = numer / denom;
+class DivideBy(denom:Long) {
+  def div(numer:Long){denom != 0} = numer / denom;
   def example() {
      val thisCast = (this as DivideBy{self.denom != 0});
      thisCast.div(100);
@@ -432,8 +432,8 @@ initialized once.
 % static def exasmple() {
 %~~vis
 \begin{xten}
-  var x : Int;
-  val y : Int;
+  var x : Long;
+  val y : Long;
   x = 1;
   y = 2; // Correct; initializes y
   x = 3; 
@@ -482,7 +482,7 @@ following code, except for the unspecified order of evaluation of the expression
 %~~gen ^^^ Expressions80
 % package expressions.stupid.addab;
 % class Example {
-% def example(A:()=>Rail[Int], I: () => Int, B: () => Int ) {
+% def example(A:()=>Rail[Long], I: () => Long, B: () => Long ) {
 %~~vis
 \begin{xten}
 {
@@ -557,7 +557,7 @@ numeric type, perhaps with loss of accuracy.
 %~~vis
 \begin{xten}
 val n : Byte = 123 as Byte; // explicit 
-val f : (Int)=>Boolean = (Int) => true; 
+val f : (Long)=>Boolean = (Long) => true; 
 val ok = f(n); // implicit
 \end{xten}
 %~~siv
@@ -604,8 +604,8 @@ if the right operand is zero.
 When operands of the binary shift operations are of integral type, the
 expression performs bitwise shifts. 
 The type of the result is the type of the left operand.
-The right operand, describing a number of bits, must be an Int: 
-%~~exp~~`~~`~~ x:Int, y:Int ~~ ^^^Expressions1l4m
+The right operand, describing a number of bits, must be a Long: 
+%~~exp~~`~~`~~ x:Long, y:Long ~~ ^^^Expressions1l4m
 \xcd`x << y`.
 
 
@@ -753,14 +753,14 @@ ancestor (as constrained by \Sref{LCA}) of the types of the consequent and the
 alternative. 
 
 \begin{ex}
-%~~exp~~`~~`~~a:Int,b:Int ~~ ^^^ Expressions110
+%~~exp~~`~~`~~a:Long,b:Long ~~ ^^^ Expressions110
 \xcd`a == b ? 1 : 2`
 evaluates to \xcd`1` if \xcd`a` and \xcd`b` are the same, and \xcd`2` if they
-are different.   As the type of \xcd`1` is \xcd`Int{self==1}` and of \xcd`2`
-is \xcd`Int{self==2}`, the type of the conditional expression has the form
-\xcd`Int{c}`, where \xcd`self==1` and \xcd`self==2` both imply \xcd`c`.  For
-example, it might be \xcd`Int{true}` -- or perhaps it might be a more accurate
-type, like \xcd`Int{self != 8}`. Note that this term has no most accurate type
+are different.   As the type of \xcd`1` is \xcd`Long{self==1}` and of \xcd`2`
+is \xcd`Long{self==2}`, the type of the conditional expression has the form
+\xcd`Long{c}`, where \xcd`self==1` and \xcd`self==2` both imply \xcd`c`.  For
+example, it might be \xcd`Long{true}` -- or perhaps it might be a more accurate
+type, like \xcd`Long{self != 8}`. Note that this term has no most accurate type
 in the X10 type system.
 \end{ex}
 
@@ -772,7 +772,7 @@ The following use of the conditional expression prevents division by zero.  If
 %~~gen ^^^ Expressions4t3m
 % package Expressions4t3m;
 % class Hook {
-% static def example(num:Int, den:Int ) =
+% static def example(num:Long, den:Long ) =
 %~~vis
 \begin{xten}
 (den == 0) ? 0 : num/den
@@ -867,8 +867,8 @@ any code at all---not just a method call), the value of
 %~~gen ^^^ Expressions1i5k
 % package Expressions1i5k;
 % class Example{ 
-% def example( something: ()=>Int, something_else: ()=>Int,
-%   any_code_at_all: () => Int) {
+% def example( something: ()=>Long, something_else: ()=>Long,
+%   any_code_at_all: () => Long) {
 %~~vis
 \begin{xten}
 val a = something();
@@ -900,7 +900,7 @@ efficient as possible.  It never runs user-defined code, and the compiler can
 analyze and understand it in detail -- and guarantee that it is efficient.
 
 The disadvantage is that certain straightforward-looking idioms do not work.
-One may not test that a \xcd`Long` variable is \xcd`==` to an integer like
+One may not test that a \xcd`Int` variable is \xcd`==` to an long like
 \xcd`0`: 
 %~~gen ^^^ Expressions6q7k
 % package Expressions6q7k;
@@ -908,57 +908,44 @@ One may not test that a \xcd`Long` variable is \xcd`==` to an integer like
 % class Example{ static def example() { 
 %~~vis
 \begin{xten}
-//ERROR: for(var i : Long = 0; i != 100; i++)  {}
+//ERROR: for(var i : Int = 0n; i != 100; i++)  {}
 \end{xten}
 %~~siv
 %} } 
 %~~neg
 
+A \xcd`Int` like \xcd`i` can never \xcd`==` a \xcd`Long` like \xcd`100`.
 
-
-
-
-A \xcd`Long` like \xcd`i` can never \xcd`==` an \xcd`Int` like \xcd`100`.
-
-We can write \xcd`i = i + 1;`, adding an \xcd`Int` to \xcd`i`. This works 
-because the expression uses \xcd`+`,  an ordinary \xcd`operator`.
-There is an implicit coercion from \xcd`Int` to \xcd`Long`, so the
-\xcd`1` can be converted to \xcd`1L`, which can be added to \xcd`i`.  
-
-However, \xcd`==` does not permit implicit coercions, and so the \xcd`100`
-stays an \xcd`Int`.  The loop must be written with a comparison of two
-\xcd`Long`s: 
+Because \xcd`==` does not permit implicit coercions, \xcd`i`
+stays a \xcd`Int`.  The loop must be written with a comparison of two
+\xcd`Ints`s: 
 %~~gen ^^^ Expressions4u6l
 % package Expressions4u6l;
 % class Example{ def example() { 
 %~~vis
 \begin{xten}
-for(var i : Long = 0; i != 100L; i++) {}
+for(var i : Int = 0n; i != 100n; i++) {}
 \end{xten}
 %~~siv
 %} }
 %~~neg
 
+Because the operation \xcd`<=` is a regular operator, and thus uses coercions in its
+arguments, it is legal (although not recommended) to write the loop as  
 
-
-
-Incidentally, it could also be written 
 %~~gen ^^^ Expressions5l5l5
 % package Expressions5l5l5;
 % class Example{ def example() { 
 %~~vis
 \begin{xten}
-for(var i : Long = 0; i <= 100; i++) {}
+for(var i : Int = 0n; i <= 100; i++) {}
 \end{xten}
 %~~siv
 %} }
 %~~neg
 
-\begin{xten}
-
-\end{xten}
-The operation \xcd`<=` is a regular operator, and thus uses coercions in its
-arguments, so \xcd`100` gets coerced to \xcd`100L`.  
+In this formulation, \xcd`i` will be coerced to a \xcd`Long` on each
+loop iteration so it can be compared using \xcd`<=` against \xcd`100`.
 
 \begin{ex}
 If numbers are cast to \xcd`Any`, they are compared as values of type
@@ -1046,7 +1033,7 @@ compared for equality.
 % class Example {
 %~~vis
 \begin{xten}
-def m(a:Int{self==1}, b:Int{self==2}) = (a==b);
+def m(a:Long{self==1}, b:Long{self==2}) = (a==b);
 \end{xten}
 %~~siv
 %}
@@ -1266,18 +1253,18 @@ type \xcd`T` (which may fail), and then the constraint \xcd`{c}` is checked
 If the first half of the cast succeeds, the second half -- the constraint
 \xcd`{c}` -- must be checked.  In general this will be done at runtime, though
 in special cases it can be checked at compile time.   For example, 
-\xcd`n as Int{self != w}` succeeds if \xcd`n != w` --- even if \xcd`w` is a value
+\xcd`n as Long{self != w}` succeeds if \xcd`n != w` --- even if \xcd`w` is a value
 read from input, and thus not determined at compile time.
 
 The compiler may forbid casts that it knows cannot possibly work. If there is
 no way for the value of \xcd`E` to be of type \xcd`T{c}`, then 
 \xcd`E as T{c}` can result in a static error, rather than a runtime error.  
-For example, \xcd`1 as Int{self==2}` may fail to compile, because the compiler
-knows that \xcd`1`, which has type \xcd`Int{self==1}`, cannot possibly be of
-type \xcd`Int{self==2}`. 
+For example, \xcd`1 as Long{self==2}` may fail to compile, because the compiler
+knows that \xcd`1`, which has type \xcd`Long{self==1}`, cannot possibly be of
+type \xcd`Long{self==2}`. 
 
 If, for some reason, you need to write one of these forbidden casts, cast to
-\xcd`Any` first.  \xcd`(1 as Any) as Int{self==2}` always returns false, but
+\xcd`Any` first.  \xcd`(1 as Any) as Long{self==2}` always returns false, but
 compiles.
 
 \subsection{Explicit Conversions}
@@ -1297,7 +1284,7 @@ The numeric types in \xcd`x10.lang` have explicit conversions, as described in
 \xcd`1 as Float` and the like.  
 
 \begin{ex}
-The following class has an explicit conversion from \xcd`Int` to \xcd`Knot`, and
+The following class has an explicit conversion from \xcd`Long` to \xcd`Knot`, and
 an implicit one from \xcd`String` to \xcd`Knot`.  \xcd`a` uses the explicit
 conversion, \xcd`b` uses the implicit coercion, and \xcd`c` uses the implicit
 coercion explicitly. 
@@ -1308,7 +1295,7 @@ coercion explicitly.
 class Knot(s:String){
   public def is(t:String):Boolean = s.equals(t);
   // explicit conversion
-  public static operator (n:Int) as Knot = new Knot("knot-" + n);
+  public static operator (n:Long) as Knot = new Knot("knot-" + n);
   // implicit coercion
   public static operator (s:String):Knot = new Knot(s);
   // using them
@@ -1423,9 +1410,9 @@ class Example {
 %
 %~~neg
 
-Similarly, \xcd`2` (whose innate type is \xcd`Int{self==2}`)
+Similarly, \xcd`2` (whose innate type is \xcd`Long{self==2}`)
 is usable in a context requiring a non-zero integer
-(\xcd`Int{self != 0}`).  
+(\xcd`Long{self != 0}`).  
 \end{ex}
 
 \paragraph{Explicit Coercion (Casting with \xcd"as")}
@@ -1525,9 +1512,9 @@ approximation is good enough.
 \item Casting a floating-point value to an integer value truncates the digits
       after the decimal point, thereby rounding the number towards zero.  
 %~~exp~~`~~`~~ ^^^ Expressions200
-      \xcd`54.321 as Int` is \xcd`54`, and 
+      \xcd`54.321 as Int` is \xcd`54n`, and 
 %~~exp~~`~~`~~ ~~ ^^^ Expressions210
-      \xcd`-54.321 as Int` is \xcd`-54`.
+      \xcd`-54.321 as Int` is \xcd`-54n`.
       If the floating-point value is too large to represent as that kind of
       integer, the coercion returns the largest or smallest value of that type
       instead: \xcd`1e110 as Int` is 
@@ -1560,7 +1547,7 @@ approximation is good enough.
 \item Casting an unsigned integer type to a signed integer type of the same
       size (\eg, \xcd`UInt` to \xcd`Int`) preserves 2's-complement bit pattern
       (\eg,  \\
-      \xcd`UInt.MAX_VALUE as Int == -1`.   Casting an unsigned integer type to
+      \xcd`UInt.MAX_VALUE as Int == -1n`.   Casting an unsigned integer type to
       a signed integer type of a different size is equivalent to first casting
       to an unsigned integer type of the target size, and then casting to a
       signed integer type.
@@ -1585,11 +1572,11 @@ Users may define coercions from arbitrary types into the container type
 %~~vis
 \begin{xten}
 class Bee {
-  public static operator (x:Bee) as Int = 1;
-  public static operator (x:Int) as Bee = new Bee();
+  public static operator (x:Bee) as Long = 1;
+  public static operator (x:Long) as Bee = new Bee();
   def example() {
     val b:Bee = 2 as Bee; 
-    assert (b as Int) == 1;
+    assert (b as Long) == 1;
   }
 }
 \end{xten}
@@ -1662,9 +1649,9 @@ is more information available.
 
 \begin{ex}
 The code for \Xcd{x10.lang.Point} contains a conversion from a
-\xcd`Rail`s of integers to \xcd`Point`s of the same length: 
+\xcd`Rail`s of longs to \xcd`Point`s of the same length: 
 \begin{xten}
-  public operator (r: Rail[Int]): Point(r.size) 
+  public operator (r: Rail[Long]): Point(r.size) 
          = make(r);
 \end{xten}
 This conversion is used whenever a \xcd`Rail` of integers appears in a 
@@ -1721,15 +1708,15 @@ Otherwise the result is \xcd"false". This determination may involve checking
 that the constraint, if any, associated with the type is true for the given
 expression.
 
-%~~exp~~`~~`~~x:Int~~ ^^^ Expressions120
-For example, \xcd`3 instanceof Int{self==x}` is an overly-complicated way of
+%~~exp~~`~~`~~x:Long~~ ^^^ Expressions120
+For example, \xcd`3 instanceof Long{self==x}` is an overly-complicated way of
 saying \xcd`3==x`.
 
 
 
 However, it is a static error if \xcd`e` cannot possibly be an instance of
-\xcd`C{c}`; the compiler will reject \xcd`1 instanceof Int{self == 2}` because
-\xcd`1` can never satisfy \xcd`Int{self == 2}`. Similarly, \Xcd{1 instanceof
+\xcd`C{c}`; the compiler will reject \xcd`1 instanceof Long{self == 2}` because
+\xcd`1` can never satisfy \xcd`Long{self == 2}`. Similarly, \Xcd{1 instanceof
 String} is a static error, rather than an expression always returning false. 
 
 If \xcd`x instanceof T` returns \xcd`true` for some value \xcd`x` and type
@@ -1738,8 +1725,8 @@ If \xcd`x instanceof T` returns \xcd`true` for some value \xcd`x` and type
 
 \limitationx
 X10 does not currently handle \xcd`instanceof` of generics in the way you
-%~NO~exp~~`~~`~~r:Array[Int](1) ~~
-might expect.  For example, \xcd`r instanceof Array[Int{self != 0}]` does
+%~NO~exp~~`~~`~~r:Array[Long](1) ~~
+might expect.  For example, \xcd`r instanceof Array[Long{self != 0}]` does
 not test that every element of \xcd`r` is non-zero; instead, the compiler
 gives an unsound cast warning.
 
@@ -1870,7 +1857,7 @@ class OrderedList[T]{T <: x10.util.Ordered[T]} {
 %%NOIN%% %~x~vis
 %%NOIN%% \begin{xten}
 %%NOIN%% class Cont {
-%%NOIN%%    operator this in (Int) = true;
+%%NOIN%%    operator this in (Long) = true;
 %%NOIN%%    operator (String) in this = false;
 %%NOIN%%    static operator (Cont) in (b:Boolean) = b;
 %%NOIN%%    static def example() {
@@ -1907,7 +1894,7 @@ Enclose some expressions in brackets to put them in a Rail:
 % def example() {
 %~~vis
 \begin{xten}
-val ints <: Rail[Int] = [1,3,7,21];
+val ints <: Rail[Long] = [1,3,7,21];
 \end{xten}
 %~~siv
 %}}
@@ -1919,12 +1906,12 @@ of the types of of the expressions  \xcdmath"e$_i$".
 
 \begin{ex}
 The type of
-\xcd`[0,1,2]` is \Xcd{Rail[Int]}.    
+\xcd`[0,1,2]` is \Xcd{Rail[Long]}.    
 The type of 
-\xcd`[0]` is  \xcd`Rail[Int{self==0}]`. 
+\xcd`[0]` is  \xcd`Rail[Long{self==0}]`. 
 
-To make a \xcd`Rail[Int]` containing just a \xcd`0`, use
-\xcd`[0 as Int]`.  The \xcd`as Int` masks more detailed type information, such
+To make a \xcd`Rail[Long]` containing just a \xcd`0`, use
+\xcd`[0 as Long]`.  The \xcd`as Long` masks more detailed type information, such
 as the fact that \xcd`0` is zero.
 
 \end{ex}
@@ -1932,7 +1919,7 @@ as the fact that \xcd`0` is zero.
 
 
 \begin{ex}
-Occasionally one does actually need \xcd`Rail[Int{self==0}]`, 
+Occasionally one does actually need \xcd`Rail[Long{self==0}]`, 
 or, say, \xcd`Rail[Eel{self != null}]`, a rail of non-null \xcd`Eel`s.  
 For these cases, cast one or more of the elements of the rail to 
 the desired type, and the rail constructor will do the right thing.  
@@ -1943,10 +1930,10 @@ the desired type, and the rail constructor will do the right thing.
 %def example(){
 %~~vis
 \begin{xten}
-val zero <: Rail[Int{self == 0}]
+val zero <: Rail[Long{self == 0}]
           = [0];
-val non1 <: Rail[Int{self != 1}]
-          = [0 as Int{self != 1}];
+val non1 <: Rail[Long{self != 1}]
+          = [0 as Long{self != 1}];
 val eels <: Rail[Eel{self != null}] 
           = [new Eel() as Eel{self != null}, 
              new Eel(), new Eel()];
@@ -1995,7 +1982,7 @@ class Funny {
 
 Note that this does {\em
 not} mean that \xcd`E` and \xcd`(E)` are identical in all respects; for
-example, if \xcd`i` is an \xcd`Int` variable, \xcd`i++` increments \xcd`i`,
+example, if \xcd`i` is an \xcd`Long` variable, \xcd`i++` increments \xcd`i`,
 but \xcd`(i)++` is not allowed.    \xcd`++` is an assignment; it operates on
 variables, not merely values, and \xcd`(i)` is simply an expression whose {\em
 value} is the same as that of \xcd`i`. 

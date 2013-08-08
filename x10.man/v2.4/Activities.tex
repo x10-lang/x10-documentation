@@ -13,7 +13,7 @@ activity}
 
 Activities coordinate their execution by various control and data structures.
 For example, 
-%~~stmt~~`~~`~~x:Int, var y:Int ~~ ^^^ Activities10
+%~~stmt~~`~~`~~x:Long, var y:Long ~~ ^^^ Activities10
 \xcd`when(x==0);` blocks the current activity until some other activity
 sets \xcd`x` to zero.  However, activities determine the places at which they
 may be blocked and resumed, by \xcd`when` and similar constructs.  There are
@@ -310,7 +310,7 @@ the \xcd`finish` block:
 % class Example { static def example() { 
 %~~vis
 \begin{xten}
-var result : Int = 0;
+var result : Long = 0;
 finish { 
   async result = 1;
 }
@@ -385,7 +385,7 @@ were defined as:
 % import x10.util.*;
 % class Redund[T] {
 %   val list = new ArrayList[T]();
-%   var size : Int = 0;
+%   var size : Long = 0;
 %~~vis
 \begin{xten}
 def add(x:T) { // Incorrect
@@ -422,7 +422,7 @@ stopped partway.
 % import x10.util.*;
 % class Redund[T] {
 %   val list = new ArrayList[T]();
-%   var size : Int = 0;
+%   var size : Long = 0;
 %~~vis
 \begin{xten}
 def add(x:T) { 
@@ -525,7 +525,7 @@ nonempty, and then remove an element and update the length.
 % import x10.util.*;
 % class Redund[T] {
 % val list = new ArrayList[T]();
-% var size : Int = 0;
+% var size : Long = 0;
 %~~vis
 \begin{xten}
 def pop():T {
@@ -712,7 +712,7 @@ Atomic blocks are atomic with respect to {\em each other}.
 % def example() {
 %~~vis
 \begin{xten}
-var n : Int = 0;
+var n : Long = 0;
 finish {
   async atomic n = n + 1; //(a)
   async atomic n = n + 2; //(b)
@@ -734,7 +734,7 @@ remove the  \xcd`atomic`s on \xcd`(a)`, we get far messier semantics.
 % def example() {
 %~~vis
 \begin{xten}
-var n : Int = 0;
+var n : Long = 0;
 finish {
   // LEGAL BUT UNWISE 
   async n = n + 1;          //(a)

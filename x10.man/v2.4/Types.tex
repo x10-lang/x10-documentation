@@ -30,7 +30,7 @@ instances of {\em function types} (\Sref{Functions}).
 A function has zero or more {\em formal parameters} (or {\em arguments}) and a
 {\em body}, which is 
 an expression that can reference the formal parameters and also other
-variables in the surrounding block. For instance, \xcd`(x:Int)=>x*y`
+variables in the surrounding block. For instance, \xcd`(x:Long)=>x*y`
 is a unary integer function which multiplies its argument by the
 variable \xcd`y` from the surrounding block.  Functions may be freely
 copied from place to place and may be repeatedly applied. 
@@ -59,15 +59,15 @@ relation: \xcd`e` is a value in \xcd`T`.
 We also often say ``\xcd`e` has type \xcd`T`'' to
  or ``\xcd`e` is an element of type \xcd`T`''.  
 For example, \xcd`1` has type
-\xcd`Int` (the type of all integers representible in 32 bits). It 
+\xcd`Long` (the type of all integers representible in 64 bits). It 
 has the more general type \xcd`Any` (since all entitites have type \xcd`Any`).  
 Furthermore, it has such types as 
 ``Nonzero integer'' and ``Integer equal to one'', and many others.  
 These types are expressable in X10 using constrained types
-(\Sref{ConstrainedTypes}).  \xcd`Int{self!=0}` is the type of \xcd`Int`s
+(\Sref{ConstrainedTypes}).  \xcd`Long{self!=0}` is the type of \xcd`Long`s
 \xcd`self`\footnote{X10 automatically uses the identifier \xcd`self` for the
 element of the type being constrained.} which are not equal to zero, and 
-\xcd`Int{self==1}` is the type of the \xcd`Int`s which are equal to one.  
+\xcd`Long{self==1}` is the type of the \xcd`Long`s which are equal to one.  
 
 
 The basic relationship between types is {\em subtyping}: \xcd`T <: U`
@@ -86,9 +86,9 @@ subclass of \xcd`Animal`, or \xcd`Cat <: Animal` by subclassing. If
 \xcd`Thing`, and we say \xcd`Cat <: Thing` by subclassing.
 
 Strengthening is an equally familiar notion from logic.  The instances
-of \xcd`Int{self == 1}` are all elements of \xcd`Int{self != 0}` as well,
+of \xcd`Long{self == 1}` are all elements of \xcd`Long{self != 0}` as well,
 because \xcd`self == 1` logically implies \xcd`self != 0`; so 
-\xcd`Int{self  == 1} <: Int{self !=0}` by strengthening.  X10 uses both notions
+\xcd`Long{self  == 1} <: Long{self !=0}` by strengthening.  X10 uses both notions
 of subtyping.  See \Sref{DepType:Equivalence} for the full definition
 of subtyping in X10.
 
@@ -128,18 +128,18 @@ Type \: \xcd`T` \\
 \end{bbgrammar}
 
 
-A type given by $(1)$ is an identifier \xcd`M`, like \xcd`Point`, \xcd`Int`, or
-\xcd`int`.  It refer to a unit -- a class, struct type, or interface, 
+A type given by $(1)$ is an identifier \xcd`M`, like \xcd`Point`, \xcd`Long`, or
+\xcd`long`.  It refer to a unit -- a class, struct type, or interface, 
 (\Sref{ReferenceTypes}).  
 Or, it can refer to a name defined by a \xcd`type` statement
 (\Sref{TypeDefs}); 
 
 \begin{ex}
 \xcd`String` refers to the standard class
-of strings, \xcd`Int` to the standard struct type of integers, 
+of strings, \xcd`Long` to the standard struct type of integers, 
 and \xcd`Any` to the interface that describes
 all X10 values.  
-\xcd`int` is an alias for the type \xcd`Int`, for the
+\xcd`long` is an alias for the type \xcd`Long`, for the
 comfort of programmers used to other languages in the C family. 
 \end{ex}
 
@@ -150,7 +150,7 @@ of a generic (parameterized) type, as described in \Sref{TypeParameters}.
 \begin{ex}
 The class \xcd`Pair[X]` below provides a simplistic way to keep two things of
 the same type together.\footnote{In practice, most people would use an
-\xcd`Rail` rather than making a new \xcd`Pair` class.}  \xcd`Pair[Int]` holds
+\xcd`Rail` rather than making a new \xcd`Pair` class.}  \xcd`Pair[Long]` holds
 two integers; 
 \xcd`Pair[Pair[String]]` holds two pairs of strings.  Within the definition of
 \xcd`Pair`, the type variable \xcd`X` is the parameter type of \xcd`Pair` --
@@ -177,7 +177,7 @@ A type of form {$(3)$}, \xcd`M[T,U]`, is a use of a  generic type, also describe
 value parameters (\Sref{TypeDefs}). 
 The types inside the brackets are the actual parameters corresponding to the
 formal parameters of the parameterized type \xcd`M`.  
-\xcd`Pair[Int]`, above, is an example of a use of the generic type \xcd`Pair`. 
+\xcd`Pair[Long]`, above, is an example of a use of the generic type \xcd`Pair`. 
 
 A type of form {$(4)$}, \xcd`T.U`, is a qualified type: a unit \xcd`U` appearing inside of
 the unit \xcd`T`, as described in \Sref{InnerClasses}.
@@ -202,7 +202,7 @@ then
 
 \end{ex}
 
-A type of form {$(5)$}, \xcd`F`, such as \xcd`(x:Int)=>Int`, is a function type.
+A type of form {$(5)$}, \xcd`F`, such as \xcd`(x:Long)=>Long`, is a function type.
 Its values are functions, \eg, the squaring function taking integers to
 integers. Function types are
 described in \Sref{FunctionTypes}, 
@@ -217,8 +217,8 @@ and computing with functions is described in \Sref{Functions}.
 % static public def example() {
 %~~vis
 \begin{xten}
-val square : (x:Int)=>Int
-           = (x:Int)=>x*x;
+val square : (x:Long)=>Long
+           = (x:Long)=>x*x;
 assert square(5) == 25;
 \end{xten}
 %~~siv
@@ -235,9 +235,9 @@ and values.
 This is described in \Sref{TypeDefs}.
 
 \begin{ex}
-\xcd`Array[Int](1)` is the type of one-dimensional arrays of
+\xcd`Array[Long](1)` is the type of one-dimensional arrays of
 integers.  It has one type parameter giving the type of element, here
-\xcd`Int`.  It has one value parameter giving the number of dimensions, here
+\xcd`Long`.  It has one value parameter giving the number of dimensions, here
 \xcd`1`.  
 \xcd`Region(1)` is the type of one-dimensional regions of
 points (\Sref{XtenRegions}).  
@@ -245,7 +245,7 @@ points (\Sref{XtenRegions}).
 
 In the function types {$(6)$}, the variable names are bound.  As with all
 bound variables in X10, they can be renamed. So, for example,
-the types \xcd`(x:Int)=>Int{self!=x}` and \xcd`(y:Int)=>Int{self!=y}` are
+the types \xcd`(x:Long)=>Long{self!=x}` and \xcd`(y:Long)=>Long{self!=y}` are
 equivalent, as they differ by nothing but the names of bound variables. 
 This is more visible with types
 than with, say, methods or functions, because we can test equality of types.
@@ -253,9 +253,9 @@ than with, say, methods or functions, because we can test equality of types.
 Furthermore, if a variable \xcd`x` does not appear anywhere in a function type
 \xcd`F` save as an argument name, it (and its ``\xcd`:`'') can be omitted.
 \Eg, the types 
-\xcd`(x:Int)=>Int`
+\xcd`(x:Long)=>Long`
 and 
-\xcd`(Int)=>Int`
+\xcd`(Long)=>Long`
 are equivalent.
 
 \begin{ex}
@@ -264,10 +264,10 @@ are equivalent.
 % class Example{ static def example() {
 %~~vis
 \begin{xten}
-val f : (x:Int)=>Int{self!=x} = (x:Int) => (x+1) as Int{self!=x}; 
-val g : (y:Int)=>Int{self!=y} = f;
-val t : (x:Int)=>Int          = (x:Int) => x;
-val u : ( Int )=>Int          = t;
+val f : (x:Long)=>Long{self!=x} = (x:Long) => (x+1) as Long{self!=x}; 
+val g : (y:Long)=>Long{self!=y} = f;
+val t : (x:Long)=>Long          = (x:Long) => x;
+val u : ( Long )=>Long          = t;
 \end{xten}
 %~~siv
 %}}
@@ -333,9 +333,9 @@ pointer exception.
 %%NOW-GONE%% 
 %%NOW-GONE%% These are the {\em elementary} types. Other
 %%NOW-GONE%% syntactic forms for types exist, but they are simply abbreviations for types
-%%NOW-GONE%% in the following system.  For example, \xcd`Array[Int](1)` is the type of
+%%NOW-GONE%% in the following system.  For example, \xcd`Array[Long](1)` is the type of
 %%NOW-GONE%% one-dimensional integer-valued arrays; it is an abbreviation for
-%%NOW-GONE%% \xcd`Array[Int]{rank==1}`.\\
+%%NOW-GONE%% \xcd`Array[Long]{rank==1}`.\\
 %%NOW-GONE%% 
 %%NOW-GONE%% % remove \refstepcounter{equation}
 %%NOW-GONE%% % snag the argument of \label{X}
@@ -359,7 +359,7 @@ pointer exception.
 %%NOW-GONE%% Types may be given by name. 
 %%NOW-GONE%% For example, 
 %%NOW-GONE%% %~~type~~`~~`~~ ~~ ^^^ Types10
-%%NOW-GONE%% \xcd`Int`
+%%NOW-GONE%% \xcd`Long`
 %%NOW-GONE%% is the type of 32-bit integers.
 %%NOW-GONE%% Given a class declaration 
 %%NOW-GONE%% %~~gen ^^^ Types20
@@ -376,15 +376,15 @@ pointer exception.
 %%NOW-GONE%% The type {\em TypeName \xcd`[` Types{$^?$} \xcd`]`} is an instance of
 %%NOW-GONE%% a {\em generic} (or {\em parameterized}) type. 
 %%NOW-GONE%%  For example,
-%%NOW-GONE%% \xcd`Array[Int]` is the type of arrays of integers. 
-%%NOW-GONE%% \xcd`HashMap[String,Int]` is the type of hash maps from strings to
+%%NOW-GONE%% \xcd`Array[Long]` is the type of arrays of integers. 
+%%NOW-GONE%% \xcd`HashMap[String,Long]` is the type of hash maps from strings to
 %%NOW-GONE%% integers.
 %%NOW-GONE%% 
 %%NOW-GONE%% The type {\em Type \xcd`{` Constraint \xcd`}`} refers to a constrained type.
 %%NOW-GONE%% {\em Constraint} is a Boolean expression -- written in a limited
 %%NOW-GONE%% subset of X10 -- describing the acceptable values of the constrained type.
 %%NOW-GONE%% %~~stmt~~`~~`~~ ~~ ^^^ Types30
-%%NOW-GONE%% For example, \xcd`var n : Int{self != 0};` guarantees that \xcd`n` is always a
+%%NOW-GONE%% For example, \xcd`var n : Long{self != 0};` guarantees that \xcd`n` is always a
 %%NOW-GONE%% non-zero integer. 
 %%NOW-GONE%% %~~stmt~~`~~`~~ ~~class Triple{} ^^^ Types40
 %%NOW-GONE%% Similarly, \xcd`var x : Triple{x != null};` defines a \xcd`Triple`-valued
@@ -430,7 +430,7 @@ pointer exception.
 %%NOW-GONE%% %~~neg
 %%NOW-GONE%% It doesn't
 %%NOW-GONE%% matter what type the cell's element is, but it has to have {\em some} type.
-%%NOW-GONE%% \xcd`LinkedList[Int]` is a linked list of integers.
+%%NOW-GONE%% \xcd`LinkedList[Long]` is a linked list of integers.
 %%NOW-GONE%% \xcd`LinkedList[LinkedList[Byte]]` is a list of lists of bytes.
 %%NOW-GONE%% Note that \xcd`LinkedList` is {\em not} a usable type -- it is missing a type parameter.
 %%NOW-GONE%% 
@@ -447,11 +447,11 @@ pointer exception.
 %%NOW-GONE%% 
 %%NOW-GONE%% \begin{ex}
 %%NOW-GONE%% \begin{xtenmath}
-%%NOW-GONE%% \xcd`(x:Int) => Int{self != x}` 
+%%NOW-GONE%% \xcd`(x:Long) => Long{self != x}` 
 %%NOW-GONE%% \end{xtenmath}
 %%NOW-GONE%% is the type of integer-valued functions which have no fixed points -- that is,
 %%NOW-GONE%% for which the output is an integer different from the input.
-%%NOW-GONE%% An example of such a function is \xcd`(x:Int) => x+1`.
+%%NOW-GONE%% An example of such a function is \xcd`(x:Long) => x+1`.
 %%NOW-GONE%% \end{ex}
 %%NOW-GONE%% 
 %%NOW-GONE%% For fundamental reasons, X10 --- or any other computer program --- cannot
@@ -463,8 +463,8 @@ pointer exception.
 %%NOW-GONE%% % class Example {
 %%NOW-GONE%% %~~vis
 %%NOW-GONE%% \begin{xten}
-%%NOW-GONE%%   val plus1 : (x:Int) => Int{self != x} = 
-%%NOW-GONE%%      (x:Int) => (x+1) as Int{self != x}; 
+%%NOW-GONE%%   val plus1 : (x:Long) => Long{self != x} = 
+%%NOW-GONE%%      (x:Long) => (x+1) as Long{self != x}; 
 %%NOW-GONE%% \end{xten}
 %%NOW-GONE%% %~~siv
 %%NOW-GONE%% %}
@@ -476,14 +476,14 @@ pointer exception.
 %%NOW-GONE%% formal \xcdmath"x$i$" is its type \xcdmath"T$_i$", all \xcdmath"T$j$" with
 %%NOW-GONE%% $j>i$, the constraint \xcd`c`, and the result type \xcd`T`.  
 %%NOW-GONE%% For example, the type 
-%%NOW-GONE%% \xcd`(n:Int)=>Int{self!=n}`
+%%NOW-GONE%% \xcd`(n:Long)=>Long{self!=n}`
 %%NOW-GONE%% describes integer-valued functions that have no fixed point
 %%NOW-GONE%% 
 %%NOW-GONE%% 
 %%NOW-GONE%% For example, \\
-%%NOW-GONE%% \xcd`(a:Int, b:Int{self!=a})=>Int{self!=a, self!=b}` 
+%%NOW-GONE%% \xcd`(a:Long, b:Long{self!=a})=>Long{self!=a, self!=b}` 
 %%NOW-GONE%% and \\
-%%NOW-GONE%% \xcd`(c:Int, d:Int{self!=c})=>Int{self!=c, self!=d}` \\
+%%NOW-GONE%% \xcd`(c:Long, d:Long{self!=c})=>Long{self!=c, self!=d}` \\
 %%NOW-GONE%% are equivalent types.  
 %%NOW-GONE%% 
 
@@ -522,12 +522,12 @@ control.  The \xcd`example` method uses \xcd`Position` as a type.
 %~~vis
 \begin{xten}
 interface Poser {
-  def pos():Int;
+  def pos():Long;
   }
 class Position implements Poser {
-  private var x : Int = 0;
-  public def move(dx:Int) { x += dx; }
-  public def pos() : Int = x;
+  private var x : Long = 0;
+  public def move(dx:Long) { x += dx; }
+  public def pos() : Long = x;
   static def example() {
     var p : Position; 
   }
@@ -611,14 +611,14 @@ interface Named {
   def name():String;
 }
 interface Mobile {
-  def where():Int;
-  def move(howFar:Int):void;
+  def where():Long;
+  def move(howFar:Long):void;
 }
 interface NamedPoint extends Named, Mobile {} 
 class Person implements Named, Mobile {
-   var name:String; var pos: Int;
+   var name:String; var pos: Long;
    public def name() = this.name; 
-   public def move(howFar:Int) { pos += howFar; }
+   public def move(howFar:Long) { pos += howFar; }
    public def where() = this.pos;
    public def example(putAt:Mobile) {
       this.pos = putAt.where();
@@ -656,13 +656,13 @@ using the \xcd"property" statement in the constructor.
 %package not.x10.lang;
 %~~vis
 \begin{xten}
-class Coords(x: Int, y: Int) { 
-  def this(x: Int, y: Int) :
+class Coords(x: Long, y: Long) { 
+  def this(x: Long, y: Long) :
     Coords{self.x==x, self.y==y} = { 
     property(x, y); 
   } 
 
-  def move(dx: Int, dy: Int) = new Coords(x+dx, y+dy); 
+  def move(dx: Long, dy: Long) = new Coords(x+dx, y+dy); 
 }
 \end{xten}
 %~~siv
@@ -694,7 +694,7 @@ on instantiation.
 For example, a generic stack class may be defined as 
 \xcd`Stack[T]{...}`.  Stacks can hold values of any type; \eg, 
 %~~type~~`~~`~~ ~~class Stack[T]{} ^^^ Types160
-\xcd`Stack[Int]` is a stack of integers, and 
+\xcd`Stack[Long]` is a stack of integers, and 
 %~~type~~`~~`~~ ~~class Stack[T]{} ^^^ Types170
 \xcd`Stack[Point {self!=null}]` is a stack of non-null \xcd`Point`s.
 Generics {\em must} be instantiated when they are used: \xcd`Stack`, by
@@ -748,7 +748,7 @@ A class (whether generic or not) may have generic methods.
 \begin{ex}
 \xcd`NonGeneric` has a generic method 
 \xcd`first[T](x:List[T])`. An invocation of such a method may supply
-the type parameters explicitly (\eg, \xcd`first[Int](z)`).
+the type parameters explicitly (\eg, \xcd`first[Long](z)`).
  In certain cases (\eg, \xcd`first(z)`)
 type parameters may
 be omitted and are inferred by the compiler (\Sref{TypeInference}).
@@ -760,8 +760,8 @@ be omitted and are inferred by the compiler (\Sref{TypeInference}).
 \begin{xten}
 class NonGeneric {
   static def first[T](x:List[T]):T = x(0);
-  def m(z:List[Int]) {
-    val f = first[Int](z);
+  def m(z:List[Long]) {
+    val f = first[Long](z);
     val g = first(z);
     return f == g;
   }
@@ -922,8 +922,8 @@ legal and if the constructor return type is a subtype of
 
 \begin{ex}
 The names of the class \xcd`Cont[X]` and the interface \xcd`Inte[X]` can be 
-used to create an object \xcd`a` of type \xcd`Cont[Int]`, and an object
-\xcd`b` which implements \xcd`Inte[Int]`.  The two types may be given aliases
+used to create an object \xcd`a` of type \xcd`Cont[Long]`, and an object
+\xcd`b` which implements \xcd`Inte[Long]`.  The two types may be given aliases
 \xcd`A` and \xcd`B`, which may then be used in more compact expressions to
 construct objects \xcd`aa` and \xcd`bb` of the same types.
 %~~gen ^^^ Types3c3g
@@ -936,11 +936,11 @@ class ConstructorExample {
      def meth():X;
    }
   public static def example() {
-    val a = new Cont[Int]();
-    val b = new Inte[Int](){public def meth()=3;};
-    type A = Cont[Int];
+    val a = new Cont[Long]();
+    val b = new Inte[Long](){public def meth()=3;};
+    type A = Cont[Long];
     val aa = new A();
-    type B = Inte[Int];
+    type B = Inte[Long];
     val bb = new B(){public def meth()=4;};
   }
 }
@@ -1001,9 +1001,9 @@ class Example {
 %~~neg
 
 Type definitions can also refer to values, in particular, inside 
-constraints.  The type of \xcd`n`-element \xcd`Array[Int](1)`s  is 
+constraints.  The type of \xcd`n`-element \xcd`Array[Long](1)`s  is 
 %~~type~~`~~`~~n:Long ~~ ^^^ Types250
-\xcd`x10.regionarray.Array[Int]{self.rank==1 && self.size == n}`
+\xcd`x10.regionarray.Array[Long]{self.rank==1 && self.size == n}`
 but it is often convenient to give a shorter name: 
 %~~gen ^^^ Types260
 % package TypeDefs.glip.third;
@@ -1011,7 +1011,7 @@ but it is often convenient to give a shorter name:
 % def example() {
 %~~vis
 \begin{xten}
-type Vec(n:Long) = x10.regionarray.Array[Int]{self.rank==1, self.size == n}; 
+type Vec(n:Long) = x10.regionarray.Array[Long]{self.rank==1, self.size == n}; 
 var example : Vec(78L); 
 \end{xten}
 %~~siv
@@ -1030,10 +1030,10 @@ import x10.regionarray.*;
 class TypeExamples {
   static type StringSet = Set[String];
   static type MapToList[K,V] = Map[K,List[V]];
-  static type Int(x: Int) = Int{self==x};
-  static type Dist(r: Int) = Dist{self.rank==r};
+  static type Long(x: Long) = Long{self==x};
+  static type Dist(r: Long) = Dist{self.rank==r};
   static type Dist(r: Region) = Dist{self.region==r};
-  static type Redund(n:Int, r:Region){r.rank==n} 
+  static type Redund(n:Long, r:Region){r.rank==n} 
       = Dist{rank==n && region==r};
 }
 \end{xten}
@@ -1044,7 +1044,7 @@ class TypeExamples {
 The following code illustrates that type definitions are applicative rather
 than generative.  \xcd`B` and \xcd`C` are both aliases for \xcd`String`,
 rather than new types, and so are interchangeable with each other and with
-\xcd`String`. Similarly, \xcd`A` and \xcd`Int` are equivalent.
+\xcd`String`. Similarly, \xcd`A` and \xcd`Long` are equivalent.
 %~~gen ^^^ Types280
 % package Types.TypeDef.Example.NonGenerative;
 % import x10.util.*;
@@ -1052,7 +1052,7 @@ rather than new types, and so are interchangeable with each other and with
 %~~vis
 \begin{xten}
 def someTypeDefs () {
-  type A = Int;
+  type A = Long;
   type B = String;
   type C = String;
   a: A = 3;
@@ -1087,7 +1087,7 @@ def someTypeDefs () {
 \index{type!generic}
 
 
-Basic types, like \xcd`Int` and \xcd`List[String]`, provide useful
+Basic types, like \xcd`Long` and \xcd`List[String]`, provide useful
 descriptions of data.  
 
 However, one frequently wants to say more.  One might want to know
@@ -1115,8 +1115,8 @@ and functions (\Sref{FunctionLiteral}), and
 invariants on unit types (\Sref{DepType:ClassGuard}.
 
 \index{self}When constraining a value of type \xcd`T`, \xcd`self` refers to the object of
-type \xcd`T` which is being constrained.  For example, \xcd`Int{self == 4}` is
-the type of \xcd`Int`s which are equal to 4 -- the best possible description
+type \xcd`T` which is being constrained.  For example, \xcd`Long{self == 4}` is
+the type of \xcd`Long`s which are equal to 4 -- the best possible description
 of \xcd`4`, and a very difficult type to express without using \xcd`self`.  
 
 
@@ -1124,22 +1124,22 @@ of \xcd`4`, and a very difficult type to express without using \xcd`self`.
 
 \begin{itemize}
 %~~type~~`~~`~~ ~~ ^^^ Types290
-\item \xcd`Int{self != 0}` is the type of non-zero \xcd`Int`s. 
-\item \xcd`Int{self == 0}` is the type of \xcd`Int`s which are zero.  
-\item \xcd`Int{self != 0, self != 1}` is the type of \xcd`Int`s which are
+\item \xcd`Long{self != 0}` is the type of non-zero \xcd`Long`s. 
+\item \xcd`Long{self == 0}` is the type of \xcd`Long`s which are zero.  
+\item \xcd`Long{self != 0, self != 1}` is the type of \xcd`Long`s which are
       neither zero nor one.
-\item \xcd`Int{self == 0, self == 1}` is the type of \xcd`Int`s which are both
+\item \xcd`Long{self == 0, self == 1}` is the type of \xcd`Long`s which are both
       zero and one.  There are no such values, so it is an empty type. 
 \item \xcd`String{self != null}` is the type of non-null strings. 
 \item Suppose that \xcd`Matrix` is a matrix class with  properties \xcd`rows`
       and \xcd`cols`.  
-%~~type~~`~~`~~ ~~class Matrix(rows:Int,cols:Int){} ^^^ Types300
+%~~type~~`~~`~~ ~~class Matrix(rows:Long,cols:Long){} ^^^ Types300
       \xcd`Matrix{self.rows == self.cols}` is the type of square matrices.
 \item One way to say that \xcd`a` has the same number of columns that \xcd`b`
       has rows (so that \xcd`a*b` is a valid matrix product), one could say: 
 %~~gen ^^^ Types310
 % package Types.cripes.whered.you.get.those.gripes;
-% class Matrix(rows:Int, cols:Int){
+% class Matrix(rows:Long, cols:Long){
 % public static def someMatrix(): Matrix = null;
 % public static def example(){
 %~~vis
@@ -1176,10 +1176,10 @@ In a \xcd`val` variable declaration, the variable itself is in scope in its
 type, and can be used in constraints.
 
 \begin{ex}
-For example, \xcd`val nz: Int{nz != 0} = 1;` declares a
+For example, \xcd`val nz: Long{nz != 0} = 1;` declares a
 non-zero variable \xcd`nz`.
 In this case, \xcd`nz` could have been declared as
-\xcd`val nz: Int{self != 0} = 1`.  
+\xcd`val nz: Long{self != 0} = 1`.  
 %%FAILY-jira-XTENLANG-2779%%  However, some variables can have types that cannot otherwise be expressed in
 %%FAILY-jira-XTENLANG-2779%%  X10 v2.2's type system. \Eg, 
 %%FAILY-jira-XTENLANG-2779%%  %~~gen ^^^ Types6z9j
@@ -1188,7 +1188,7 @@ In this case, \xcd`nz` could have been declared as
 %%FAILY-jira-XTENLANG-2779%%  %   public static def example() {
 %%FAILY-jira-XTENLANG-2779%%  %~~vis
 %%FAILY-jira-XTENLANG-2779%%  \begin{xten}
-%%FAILY-jira-XTENLANG-2779%%      val a : Array[Int{self!=a.rank}] = null;
+%%FAILY-jira-XTENLANG-2779%%      val a : Array[Long{self!=a.rank}] = null;
 %%FAILY-jira-XTENLANG-2779%%  \end{xten}
 %%FAILY-jira-XTENLANG-2779%%  %~~siv
 %%FAILY-jira-XTENLANG-2779%%  %} } 
@@ -1200,9 +1200,9 @@ In this case, \xcd`nz` could have been declared as
 
 Example of entailment and subtyping involving constraints.
 \begin{itemize}
-\item \xcd`Int{self == 3} <: Int{self != 14}`.  The only value of
-      \xcd`Int{self ==3}` is $3$.  All integers but $14$ are members of
-      \xcd`Int{self != 14}`, and in particular $3$ is.  
+\item \xcd`Long{self == 3} <: Long{self != 14}`.  The only value of
+      \xcd`Long{self ==3}` is $3$.  All integers but $14$ are members of
+      \xcd`Long{self != 14}`, and in particular $3$ is.  
 \item Suppose we have classes \xcd`Child <: Person`, and \xcd`Person` has a
       \xcd`ssn:Long` property.  If \xcd`rhys : Child{ssn == 123456789}`, then
       \xcd`rhys` is also a \xcd`Person`.  
@@ -1248,7 +1248,7 @@ which might have the same coordinates.
 % package triangleExample.partOne;
 %~~vis
 \begin{xten}
-struct Position(x: Int, y: Int) {}
+struct Position(x: Long, y: Long) {}
 struct Line(start: Position, end: Position){start != end}
   {}
 \end{xten}
@@ -1265,8 +1265,8 @@ vertices are not collinear.
 
 %~~gen ^^^ Types350
 %package triangleExample.partTwo;
-% struct Position(x: Int, y: Int) {
-%    def this(x:Int,y:Int){property(x,y);}
+% struct Position(x: Long, y: Long) {
+%    def this(x:Long,y:Long){property(x,y);}
 %    }
 % class Line(start: Position, 
 %            end: Position{self != start}) {}
@@ -1297,7 +1297,7 @@ triangle.
 %%TYPES-CONSTR-EXP%% underlying dependent type \xcd"C{c}" by replacing all occurrences of \xcd"v"
 %%TYPES-CONSTR-EXP%% in the constraint of \xcd"T" by \xcd"self".)
 %%TYPES-CONSTR-EXP%% 
-%%TYPES-CONSTR-EXP%% For instance, \xcd"v: Int{v == 0}" is shorthand for \xcd"v: Int{self == 0}".
+%%TYPES-CONSTR-EXP%% For instance, \xcd"v: Long{v == 0}" is shorthand for \xcd"v: Long{self == 0}".
 %%TYPES-CONSTR-EXP%% 
 %%TYPES-CONSTR-EXP%% 
 %%TYPES-CONSTR-EXP%% A variable occurring in the constraint \xcd"c" of a dependent type, other than
@@ -1419,12 +1419,12 @@ succeeds.
 %~~vis
 \begin{xten}
 class Keyed {
-  private val k : Int;
-  public def this(k : Int) {
+  private val k : Long;
+  public def this(k : Long) {
     this.k = k; 
   }
-  public def secret(q:Int){q==this.k} = 11;
-  public def key():Int{self==this.k} = this.k;
+  public def secret(q:Long){q==this.k} = 11;
+  public def key():Long{self==this.k} = this.k;
 }
 class Snooper {
   public static def main(argv:Rail[String]) {
@@ -1446,7 +1446,7 @@ class Snooper {
 
 
 {\bf Note:} Constraints may not contain casts.   In particular, comparisons of
-values of incompatible types are not allowed.  If \xcd`i:Int`, then \xcd`i==0`
+values of incompatible types are not allowed.  If \xcd`i:Long`, then \xcd`i==0`
 is allowed as a constraint, but \xcd`i==0L` is an error, and 
 \xcd`i as Long==0L` is outside of the constraint language.
 
@@ -1492,7 +1492,7 @@ idiom:
 % class Example {
 %~~vis
 \begin{xten}
-class Thing(p:Int){}
+class Thing(p:Long){}
 static def example(){
    var x : Thing{x.p==3} = null;
 }
@@ -1644,9 +1644,9 @@ Without this restriction, typechecking becomes undecidable.
 %%NOW-GONE%% % package Types.Entailment.EntailFail;
 %%NOW-GONE%% %~~vis
 %%NOW-GONE%% \begin{xten}
-%%NOW-GONE%% class Listlike(x:Int) {
+%%NOW-GONE%% class Listlike(x:Long) {
 %%NOW-GONE%%   val kid : Listlike{self.x == this.x};
-%%NOW-GONE%%   def this(x:Int, kid:Listlike) { 
+%%NOW-GONE%%   def this(x:Long, kid:Listlike) { 
 %%NOW-GONE%%      property(x); 
 %%NOW-GONE%%      this.kid = kid as Listlike{self.x == this.x};}
 %%NOW-GONE%% }
@@ -1765,17 +1765,17 @@ instances of generic types, and to type variables, are potentially troublesome.}
 
 \begin{ex}
 The following code illustrates the dangers of casting to generic types. 
-It constructs a rail \xcd`a` of \xcd`Int{self==3}`'s -- integers
+It constructs a rail \xcd`a` of \xcd`Long{self==3}`'s -- integers
 which 
 are statically known to be 3. 
 The only number that can be stored into \xcd`a` is \xcd`3`.  
 Then it tricks the ocmpiler into 
-thinking that it is a rail of \xcd`Int`, without restriction on the
+thinking that it is a rail of \xcd`Long`, without restriction on the
 elements, giving it the name \xcd`b` at that type.  
-The cast \xcd`aa as Rail[Int]` is a cast to an instance of a generic type,
+The cast \xcd`aa as Rail[Long]` is a cast to an instance of a generic type,
 which is the problem. 
 
-But, itc an store any \xcd`Int` into the elements of 
+But, itc an store any \xcd`Long` into the elements of 
 \xcd`b`, thereby violating 
 the invariant that all the elements of the rail are 3.  
 This could lead to program failures, as illustrated by the failing assertion.  
@@ -1783,13 +1783,13 @@ This could lead to program failures, as illustrated by the failing assertion.
 With the \xcd`-VERBOSE` compiler option, X10 prints a warning about the
 declaration of \xcd`b`.  
 \begin{xten}
-  val a = new Rail[Int{self==3}](10, 3);
+  val a = new Rail[Long{self==3}](10, 3);
   // a(0) = 1; would be illegal
   a(0) = 3; // LEGAL
   val aa = a as Any;
-  val b = aa as Rail[Int]; // WARNED with -VERBOSE
+  val b = aa as Rail[Long]; // WARNED with -VERBOSE
   b(0) = 1;
-  val x : Int{self==3} = a(0);
+  val x : Long{self==3} = a(0);
   assert x == 3 : "This fails at runtime.";
 \end{xten}
 \end{ex}
@@ -1840,7 +1840,7 @@ class Generic {
   // With -VERBOSE, the following line gets a warning
   public static def cast[T](x:Any):T       = x as T;
 }
-class Pea(p:Int) {}
+class Pea(p:Long) {}
 class Example{
   static def example() {
      val pea : Pea = new Pea(1);
@@ -1932,7 +1932,7 @@ type of \xcd`i` to avoid one of the many longs which are not possible subscripts
 %  def example()  {
 %~~vis
 \begin{xten}
-val inc = (r:Rail[Int], i: Long{i != r.size}) => {
+val inc = (r:Rail[Long], i: Long{i != r.size}) => {
   if (i < 0 || i >= r.size) throw new DoomExn();
   r(i)++;
 };
@@ -1973,9 +1973,9 @@ to  \xcd`ie`.  Also, \xcd`id`'s type uses \xcd`x`, and \xcd`id`'s value uses \xc
 % static def example() {
 %~~vis
 \begin{xten}
-val id : (x:Int) => Int{self==x} 
-       = (y:Int) => y;
-val ie : (z:Int) => Int{self==z}
+val id : (x:Long) => Long{self==x} 
+       = (y:Long) => y;
+val ie : (z:Long) => Long{self==z}
        = id;
 \end{xten}
 %~~siv
@@ -2069,12 +2069,12 @@ Default values, or lack of them, is defined thus:
 \end{itemize}
 
 \begin{ex}
-\xcd`var x: Int{x != 4}` has default value 0, which is allowed
+\xcd`var x: Long{x != 4}` has default value 0, which is allowed
 because \xcd`0 != 4` satisfies the constraint on \xcd`x`. 
-\xcd`var y : Int{y==4}` has no default value, because \xcd`0` does not satisfy \xcd`y==4`.
-The fact that \xcd`Int{y==4}` has precisely one value, \viz{} 4, doesn't
+\xcd`var y : Long{y==4}` has no default value, because \xcd`0` does not satisfy \xcd`y==4`.
+The fact that \xcd`Long{y==4}` has precisely one value, \viz{} 4, doesn't
 matter; the only candidate for its default value, as for any subtype of
-\xcd`Int`, is 0. \xcd`y` must be initialized before it is used.
+\xcd`Long`, is 0. \xcd`y` must be initialized before it is used.
 \end{ex}
 
 The predicate \xcd`T haszero` tells if the type \xcd`T` has a default value.
@@ -2153,8 +2153,8 @@ written \xcdmath"T$_1$ <: T$_2$",
 if
 every instance of \xcdmath"T$_1$" is also an instance of \xcdmath"T$_2$".  For
 example, \xcd`Child` is a subtype of \xcd`Person` (assuming a suitably defined
-class hierarchy): every child is a person.  Similarly, \xcd`Int{self != 0}`
-is a subtype of \xcd`Int` -- every non-zero integer is an integer.  
+class hierarchy): every child is a person.  Similarly, \xcd`Long{self != 0}`
+is a subtype of \xcd`Long` -- every non-zero integer is an integer.  
 
 This section formalizes the concept of subtyping. Subtyping of types depends
 on a {\em type context}, \viz. a set of constraints on type parameters
@@ -2179,7 +2179,7 @@ Inside \xcd`upcast`, \xcd`T` is constrained to be a subtype of \xcd`U`, and so
 Outside of \xcd`upcast`, there is no reason to expect any relationship between
 them, and \xcd`T <: U` may be false.
 However, subtyping of types that have no free variables does not depend
-on the context.    \xcd`Int{self != 0} <: Int` is always
+on the context.    \xcd`Long{self != 0} <: Long` is always
 true.
 
 \limitation{Subtyping of type variables does not work under all circumstances
@@ -2315,7 +2315,7 @@ a good type for:
 % class Examplerator {
 %~~vis
 \begin{xten}
-def f(a:Int) {
+def f(a:Long) {
   if (a == 0) return 0;
   else return "non-zero";
 }
@@ -2347,16 +2347,16 @@ b ? 0 : 1   // Call this expression $E$
 \end{xtenmath}
 The
 best type of \xcd`0` 
-is \xcd`Int{self==0}`, and the best type of 1 is \xcd`Int{self==1}`.
-Certainly {$E$} could be given the type \xcd`Int`, or even \xcd`Any`, and that
+is \xcd`Long{self==0}`, and the best type of 1 is \xcd`Long{self==1}`.
+Certainly {$E$} could be given the type \xcd`Long`, or even \xcd`Any`, and that
 would describe all possible results.  However, we actually know more.
-\xcd`Int{self != 2}` is a better description of the type of {$E$}---certainly
-the result of {$E$} can never be \xcd`2`.   \xcd`Int{self != 2, self != 3}` is
+\xcd`Long{self != 2}` is a better description of the type of {$E$}---certainly
+the result of {$E$} can never be \xcd`2`.   \xcd`Long{self != 2, self != 3}` is
 an even better description; {$E$} can't be \xcd`3` either.  We can continue
 this process forever, adding integers which {$E$} will definitely not return
 and getting better and better approximations. (If the constraint
 sublanguage had \xcd`||`, we could give it the type 
-\xcd`Int{self == 0 || self == 1} `, which would be nearly perfect.  But 
+\xcd`Long{self == 0 || self == 1} `, which would be nearly perfect.  But 
 \xcd`||` makes typechecking far more expensive, so it is excluded.)
 No X10 type is the best description of {$E$}; there is always a better one.
 
@@ -2397,8 +2397,8 @@ a ? b as T{t} : c as T{t}
 \end{xtenmath}
 \item If \xcd`T == U`, then \xcd`V == T == U`.  For example, 
       X10 will compute the type of \xcd`b ? 0 : 1` as 
-      \xcd`Int{c}` for some constraint \xcd`c`---perhaps simply 
-      picking \xcd`Int{true}`, \viz, \xcd`Int`. 
+      \xcd`Long{c}` for some constraint \xcd`c`---perhaps simply 
+      picking \xcd`Long{true}`, \viz, \xcd`Long`. 
 \item X10 preserves place information about \xcd`GlobalRef`s, because it is so important. If both
       \xcd`t` and \xcd`u` entail \xcd`self.home==p`, then  
       \xcd`v` will also entail \xcd`self.home==p`.  
@@ -2430,7 +2430,7 @@ Certain types are used in fundamental ways by X10.
 
 It is quite convenient to have a type which all values are instances of; that
 is, a supertype of all types.\footnote{Java, for one, suffers a number of
-  inconveniences because some built-in types like \xcd`int` and \xcd`char`
+  inconveniences because some built-in types like \xcd`long` and \xcd`char`
   aren't subtypes of anything else.}  X10's universal supertype is the
   interface \xcd`Any`. 
 
@@ -2440,7 +2440,7 @@ public interface Any {
   def toString():String;
   def typeName():String;
   def equals(Any):Boolean;
-  def hashCode():Int;
+  def hashCode():Long;
 }
 \end{xten}
 
@@ -2471,7 +2471,7 @@ For example,
 \xcd`val seven = 7;`
 is identical to 
 \begin{xtenmath}
-val seven: Int{self==7} = 7;
+val seven: Long{self==7} = 7;
 \end{xtenmath}
 Note that type inference gives the most precise X10 type, which might be more
 specific than the type that a programmer would write.
@@ -2533,9 +2533,9 @@ inferred return type \xcd`Spot{x==xx}`.
 % package Types.Inferred.By.Phone;
 %~~vis
 \begin{xten}
-class Spot(x:Int) {
+class Spot(x:Long) {
   def this() {property(0);}
-  def this(xx: Int) { property(xx); }
+  def this(xx: Long) { property(xx); }
 }
 \end{xten}
 %~~siv
@@ -2598,15 +2598,15 @@ type.
 In the following code, the type inferred for \xcd`x`
 is \xcd`Numb{self.p==n, n!=0, self!=null}`.  In particular, 
 the conjunct \xcd`n != 0` is preserved from the cast of 
-    \xcd`n` to \xcd`Int{self != 0}`.
+    \xcd`n` to \xcd`Long{self != 0}`.
 %~~gen ^^^ Types7e6v
 % package Types7e6v;
 %~~vis
 \begin{xten}
-class Numb(p:Int){
-  static def dup(n:Int){n != 0} = new Numb(n);
-  public static def example(n:Int) {
-    val x = dup(n as Int{self != 0});
+class Numb(p:Long){
+  static def dup(n:Long){n != 0} = new Numb(n);
+  public static def example(n:Long) {
+    val x = dup(n as Long{self != 0});
     val y : Numb{self.p==n, n!=0, self!=null} = x;
   }
 }
@@ -2642,7 +2642,7 @@ static def choose[T](a: T, b: T): T = a;
 
 
 The type argument \xcd`T` can always be supplied: 
-\xcd`choose[Int](1, 2)` picks an integer, 
+\xcd`choose[Long](1, 2)` picks an integer, 
 and \xcd`choose[Any](1, "yes")` picks a value that might be an integer or a
 string.  
 However, the type argument can be elided.  Suppose that \xcd`Sub <: Super`;
@@ -2823,10 +2823,10 @@ Consider the program:
 import x10.util.*;
 class Cl[C1, C2, C3]{}
 class Example {
-  static def me[X1, X2](Cl[Int, X1, X2]) = 
+  static def me[X1, X2](Cl[Long, X1, X2]) = 
      new Cl[X1, X2, Point]();
   static def example() {
-    val a = new Cl[Int, Boolean, String]();
+    val a = new Cl[Long, Boolean, String]();
     val b : Cl[Boolean, String, Point] 
           = me[Boolean, String](a);
     val c : Cl[Boolean, String, Point] 
@@ -2842,12 +2842,12 @@ The call for \xcd`c` infers the parameters.  The computation
 starts with one equation, saying that the formal parameter of 
 \xcd`me` has to be able to accept the actual parameter \xcd`a`:
 \begin{xtenmath}
- Cl[Int, Boolean, String] <: Cl[Int, X1, X2] 
+ Cl[Long, Boolean, String] <: Cl[Long, X1, X2] 
 \end{xtenmath}
 Note that both terms are \xcd`Cl` of three things. 
 This is broken into three equations: 
 \begin{xtenmath}
-Int = Int
+Long = Long
 \end{xtenmath}
 which is easy to satisfy,
 \begin{xtenmath}
@@ -2872,7 +2872,7 @@ will fail.   Consider the program:
 public class Failsome {
   static def fail[X](a:Rail[X], b:Rail[X]):void {}
   public static def main(argv:Rail[String]) {
-    val aint  : Rail[Int]     = [1,2,3];
+    val aint  : Rail[Long]     = [1,2,3];
     val abool : Rail[Boolean] = [true, false];
     fail(aint, abool);    // THIS IS WRONG
   }
@@ -2881,35 +2881,35 @@ public class Failsome {
 The type inference computation starts, as always, by insisting that the types
 of the formals to \xcd`fail` are capable of accepting the actuals: 
 \begin{xtenmath}
-$B_0=\{$Rail[Int] <: Rail[X]$,$ Rail[Boolean] <: Rail[X]$\}$
+$B_0=\{$Rail[Long] <: Rail[X]$,$ Rail[Boolean] <: Rail[X]$\}$
 \end{xtenmath}
 Arbitrarily picking the first relation to {\it Strip} first, we get:
 \begin{xtenmath}
-$B_1=\{$Int = X$,$ Rail[Boolean] <: Rail[X] $\}$
+$B_1=\{$Long = X$,$ Rail[Boolean] <: Rail[X] $\}$
 \end{xtenmath}
 and then 
 \begin{xtenmath}
-$B_2=\{$Int = X$,$ Boolean = X $\}$
+$B_2=\{$Long = X$,$ Boolean = X $\}$
 \end{xtenmath}
 (At this point it is clear to a human that $B$ is inconsistent, but the
 algorithm's check comes a bit later.)
 {$B_2$} consists entirely of comparisons with type variables, so the loop is
 over.  Arbitrarily picking the first equality, it guesses the binding 
 \begin{xtenmath}
-$B=\{$X = Int$\}$.
+$B=\{$X = Long$\}$.
 \end{xtenmath}
 In the validation step, it checks that 
 \begin{xtenmath}
-fail[Int](aint, abool)
+fail[Long](aint, abool)
 \end{xtenmath}
 is a well-typed call to \xcd`fail`.  Of course it is not; \xcd`abool` would
-have to be a value of type \xcd`Rail[Int]`, which it is not.  So type
+have to be a value of type \xcd`Rail[Long]`, which it is not.  So type
 inference fails at this point.  In this case it is correct: there is no way to
 give a proper type to this program.\footnote{
-In particular, \xcd`X=Any` doesn't work either.  A \xcd`Rail[Int]` is not a
+In particular, \xcd`X=Any` doesn't work either.  A \xcd`Rail[Long]` is not a
 \xcd`Rail[Any]` --- and it must not be, for you can put a boolean value into
 a \xcd`Rail[Any]`, but you cannot put a boolean value into an
-\xcd`Rail[Int]`.  However, if the types of the arguments had simply been 
+\xcd`Rail[Long]`.  However, if the types of the arguments had simply been 
 \xcd`X` rather than \xcd`Rail[X]`, then type inference would correctly infer
 \xcd`X=Any`.
 }
@@ -3039,9 +3039,9 @@ the simplest data flows would be beyond the ability of the type system to detect
 %//OPTIONS: -STATIC_CHECKS
 %~~vis
 \begin{xten}
-class Extra(n:Int) {
+class Extra(n:Long) {
   val f : Long;
-  def this(n:Int, f:Long) { property(n); this.f = f; }
+  def this(n:Long, f:Long) { property(n); this.f = f; }
   static def typeIs[T](val x:T) {}
   public static def main(argv:Rail[String]) {
      val x : Extra = new Extra(1,2L);

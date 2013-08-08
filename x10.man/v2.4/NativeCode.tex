@@ -136,7 +136,7 @@ must be mangled, by use of the \xcd`FMGL` macro.
 \begin{xten}
 import x10.compiler.Native;
 class Ability {
-  static val A : Int = 1;
+  static val A : Int = 1n;
   @Native("java", "A+2")
   @Native("c++", "Ability::FMGL(A)+2")
   static native def fromStatic():Int;
@@ -163,10 +163,10 @@ there is no \xcd`@Native`), it sets it to 3.
 \begin{xten}
 import x10.compiler.Native;
 class Born {
-  var y : Int = 1; 
+  var y : Int = 1n; 
   public def example(x:Int):Int{
     @Native("java", "y=x;") 
-    {y = 3;}
+    {y = 3n;}
     return y;
   }
 }

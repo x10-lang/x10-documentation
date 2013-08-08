@@ -105,7 +105,7 @@ structs using the facilities of the language.
 X10 provides functions (\Sref{Closures}) to allow code to be used
 as values.  Functions are first-class data: they can be stored in lists,
 passed between activities, and so on.  \xcd`square`, below, is a function
-which squares an \xcd`Int`.  \xcd`of4` takes an \xcd`Int`-to-\xcd`Int`
+which squares an \xcd`Long`.  \xcd`of4` takes an \xcd`Long`-to-\xcd`Long`
 function and applies it to the number \xcd`4`.  So, \xcd`fourSquared` computes
 \xcd`of4(square)`, which is \xcd`square(4)`, which is 16, in a fairly
 complicated way.
@@ -115,8 +115,8 @@ complicated way.
 % def chkplz() {
 %~~vis
 \begin{xten}
-  val square = (i:Int) => i*i;
-  val of4 = (f: (Int)=>Int) => f(4);
+  val square = (i:Long) => i*i;
+  val of4 = (f: (Long)=>Long) => f(4);
   val fourSquared = of4(square);
 \end{xten}
 %~~siv
@@ -126,8 +126,8 @@ complicated way.
 
 
 Functions are used extensively in X10
-programs.  For example, a common way to construct and initialize an \xcd`Rail[Int]` --
-that is, a fixed-length one-dimensional array of numbers, like an \xcd`int[]` in Java -- is to
+programs.  For example, a common way to construct and initialize an \xcd`Rail[Long]` --
+that is, a fixed-length one-dimensional array of numbers, like an \xcd`long[]` in Java -- is to
 pass two arguments to a factory method: the first argument being the length of
 the rail, and the second being a function which computes the initial value of
 the \xcd`i`{$^{th}$} element.  The following code constructs a 1-dimensional
@@ -137,10 +137,10 @@ initialized to the squares of 0,1,...,9: \xcd`r(0) == 0`, \xcd`r(5)==25`, etc.
 % package Overview.of.Functions.two;
 % class Whatevermore {
 %  def plzchk(){
-%    val square = (i:Long) => ((i*i) as Int);
+%    val square = (i:Long) => (i*i);
 %~~vis
 \begin{xten}
-  val r : Rail[Int] = new Rail[Int](10, square);
+  val r : Rail[Long] = new Rail[Long](10, square);
 \end{xten}
 %~~siv
 %}}
@@ -168,16 +168,16 @@ shape, and \xcd`*` that works on matrices with appropriately matching shapes.
 %package Overview.Mat2;
 %~~vis
 \begin{xten}
-abstract class Mat(rows:Int, cols:Int) {
- static type Mat(r:Int, c:Int) = Mat{rows==r&&cols==c};
+abstract class Mat(rows:Long, cols:Long) {
+ static type Mat(r:Long, c:Long) = Mat{rows==r&&cols==c};
  abstract operator this + (y:Mat(this.rows,this.cols))
                  :Mat(this.rows, this.cols);
  abstract operator this * (y:Mat) {this.cols == y.rows} 
                  :Mat(this.rows, y.cols);
 \end{xten}
 %~~siv
-%  static def makeMat(r:Int,c:Int) : Mat(r,c) = null;
-%  static def example(a:Int, b:Int, c:Int) {
+%  static def makeMat(r:Long,c:Long) : Mat(r,c) = null;
+%  static def example(a:Long, b:Long, c:Long) {
 %    val axb1 : Mat(a,b) = makeMat(a,b);
 %    val axb2 : Mat(a,b) = makeMat(a,b);
 %    val bxc  : Mat(b,c) = makeMat(b,c);
@@ -195,15 +195,15 @@ However, an attempt to compute \xcd`axb1 + bxc` or
 %~~gen ^^^ Overview50
 %package Overview.Mat1;
 %//OPTIONS: -STATIC_CHECKS
-%abstract class Mat(rows:Int, cols:Int) {
-%  static type Mat(r:Int, c:Int) = Mat{rows==r&&cols==c};
-%  public def this(r:Int, c:Int) : Mat(r,c) = {property(r,c);}
-%  static def makeMat(r:Int,c:Int) : Mat(r,c) = null;
+%abstract class Mat(rows:Long, cols:Long) {
+%  static type Mat(r:Long, c:Long) = Mat{rows==r&&cols==c};
+%  public def this(r:Long, c:Long) : Mat(r,c) = {property(r,c);}
+%  static def makeMat(r:Long,c:Long) : Mat(r,c) = null;
 %  abstract  operator this + (y:Mat(this.rows,this.cols)):Mat(this.rows, this.cols);
 %  abstract  operator this * (y:Mat) {this.cols == y.rows} : Mat(this.rows, y.cols);
 %~~vis
 \begin{xten}
-  static def example(a:Int, b:Int, c:Int) {
+  static def example(a:Long, b:Long, c:Long) {
     val axb1 : Mat(a,b) = makeMat(a,b);
     val axb2 : Mat(a,b) = makeMat(a,b);
     val bxc  : Mat(b,c) = makeMat(b,c);
@@ -219,7 +219,7 @@ However, an attempt to compute \xcd`axb1 + bxc` or
 
 The ``little bit of care'' shows off many of the features of constrained
 types.    
-The \xcd`(rows:Int, cols:Int)` in the class definition declares two
+The \xcd`(rows:Long, cols:Long)` in the class definition declares two
 properties, \xcd`rows` and \xcd`cols`.\footnote{The class is officially declared
 abstract to allow for multiple implementations, like sparse and band matrices,
 but in fact is abstract to avoid having to write the actual definitions of
@@ -265,8 +265,8 @@ method compiles under those definitions.
 
 Containers may have type parameters, permitting the definition of
 {\em generic types}.  Type parameters may be instantiated by any X10 type.  It
-is thus possible to make a list of integers \xcd`List[Int]`, a list of
-non-zero integers \xcd`List[Int{self != 0}]`, or a list of people
+is thus possible to make a list of integers \xcd`List[Long]`, a list of
+non-zero integers \xcd`List[Long{self != 0}]`, or a list of people
 \xcd`List[Person]`.  In the definition of \xcd`List`, \xcd`T` is a type
 parameter; it can be instantiated with any type.
 %~~gen ^^^ Overview60
@@ -290,8 +290,8 @@ The constructor (\xcd"def this") initializes the fields of the new object.
 The \xcd"add" method appends an element to the list.
 \xcd"List" is a generic type.  When  instances of \xcd"List" are
 allocated, the type \param{} \xcd"T" must be bound to a concrete
-type.  \xcd"List[Int]" is the type of lists of element type
-\xcd"Int", \xcd"List[List[String]]" is the type of lists whose elements are
+type.  \xcd"List[Long]" is the type of lists of element type
+\xcd"Long", \xcd"List[List[String]]" is the type of lists whose elements are
 themselves lists of string, and so on.
 
 %%BARD-HERE
@@ -305,9 +305,9 @@ raise exceptions and \xcd`try...catch` to handle them, and so on.
 
 X10 has both implicit coercions and explicit conversions, and both can be
 defined on user-defined types.  Explicit conversions are written with the
-\xcd`as` operation: \xcd`n as Int`.  The types can be constrained: 
-%~~exp~~`~~`~~n:Int~~ ^^^ Overview70
-\xcd`n as Int{self != 0}` converts \xcd`n` to a non-zero integer, and throws a
+\xcd`as` operation: \xcd`n as Long`.  The types can be constrained: 
+%~~exp~~`~~`~~n:Long~~ ^^^ Overview70
+\xcd`n as Long{self != 0}` converts \xcd`n` to a non-zero integer, and throws a
 runtime exception if its value as an integer is zero.
 
 \section{Places and activities}

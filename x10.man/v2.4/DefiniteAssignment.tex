@@ -13,7 +13,7 @@ Sometimes this is easy, as when a variable is declared and assigned together:
 % def example() {
 %~~vis
 \begin{xten}
-  var x : Int = 0;
+  var x : Long = 0;
   assert x == 0;
 \end{xten}
 %~~siv
@@ -26,8 +26,8 @@ initializing variables.
 % class Example {
 %~~vis
 \begin{xten}
-def example(a:Int, b:Int) {
-  val max:Int;
+def example(a:Long, b:Long) {
+  val max:Long;
   //ERROR: assert max==max; // can't read 'max'
   if (a > b) max = a;
   else max = b;
@@ -55,7 +55,7 @@ variables must be definitely assigned before they can be read.
 As X10 requires that \xcd`val` variables {\em not} be initialized
 twice,  we need the dual concept as well.  A variable is {\em definitely
 unassigned} at a point in code if it cannot have been assigned there.  For
-example, immediately after \xcd`val x:Int`, \xcd`x` is definitely unassigned. 
+example, immediately after \xcd`val x:Long`, \xcd`x` is definitely unassigned. 
 
 Finally, we need the concept of {\em singly} and {\em multiply assigned}.
 A variable is singly assigned in a block if it is assigned precisely
@@ -74,7 +74,7 @@ definitely unassigned.    Such states are not always useful.
 %~~vis
 \begin{xten}
 def example(flag : Boolean) {
-  var x : Int;
+  var x : Long;
   if (flag) x = 1;
   // x is neither def. assigned nor unassigned.
   x = 2; 
@@ -108,7 +108,7 @@ statement, which reads it, is forbidden.
 %~~vis
 \begin{xten}
 def example(flag:Boolean) {
-  var x : Int;
+  var x : Long;
   if (flag) x = 1;
   if (!flag) x = 2;
   // ERROR: assert x < 3;
@@ -132,7 +132,7 @@ variable can be assigned in an \xcd`async` statement, and, when the
 % def example() {
 %~~vis
 \begin{xten}
-val a : Int;
+val a : Long;
 finish {
   async {
     a = 1;
@@ -167,7 +167,7 @@ For example, the following
 program fragment will always result in \xcd`x` being definitely and singly
 assigned:  
 \begin{xten}
-val x : Int;
+val x : Long;
 var b : Boolean = mysterious();
 if (b) {
    x = cryptic();
@@ -345,7 +345,7 @@ field initialization, X10 will ensure:
 %~~vis
 \begin{xten}
 class C {
-  val f : Int;
+  val f : Long;
   val g : String;
   def this() {
      f = fless();
@@ -400,8 +400,8 @@ class C {
 %%AT-COPY%% % class DefAss { def defass() { 
 %%AT-COPY%% %~~vis
 %%AT-COPY%% \begin{xten}
-%%AT-COPY%% var a : Int;
-%%AT-COPY%% at(here.next(); var a : Int = a) {
+%%AT-COPY%% var a : Long;
+%%AT-COPY%% at(here.next(); var a : Long = a) {
 %%AT-COPY%%   a = 1;
 %%AT-COPY%%   a = 2; 
 %%AT-COPY%%   athome(a) a = 3;

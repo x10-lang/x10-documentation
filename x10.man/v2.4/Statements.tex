@@ -69,12 +69,12 @@ block.
 %~~gen ^^^ Statements20
 % package statements.should.have.locals;
 % class LocalExample {
-% def example(a:Int) {
+% def example(a:Long) {
 %~~vis
 \begin{xten}
   if (a > 1) {
      val b = a/2;
-     var c : Int = 0;
+     var c : Long = 0;
      // b and c are defined here
   }
   // b and c are not defined here.
@@ -105,12 +105,12 @@ as \xcd`this.x`.
 %%AT-COPY%% %~~vis
 %%AT-COPY%% \begin{xten}
 %%AT-COPY%% class Shadow{
-%%AT-COPY%%   var x : Int; 
-%%AT-COPY%%   def this(x:Int) { 
+%%AT-COPY%%   var x : Long; 
+%%AT-COPY%%   def this(x:Long) { 
 %%AT-COPY%%      // Parameter can shadow field
 %%AT-COPY%%      this.x = x; 
 %%AT-COPY%%   }
-%%AT-COPY%%   def example(y:Int) {
+%%AT-COPY%%   def example(y:Long) {
 %%AT-COPY%%      val x = "shadows a field";
 %%AT-COPY%%      // ERROR: val y = "shadows a param";
 %%AT-COPY%%      val z = "local";
@@ -140,12 +140,12 @@ as \xcd`this.x`.
 %~~vis
 \begin{xten}
 class Shadow{
-  var x : Int; 
-  def this(x:Int) { 
+  var x : Long; 
+  def this(x:Long) { 
      // Parameter can shadow field
      this.x = x; 
   }
-  def example(y:Int) {
+  def example(y:Long) {
      val x = "shadows a field";
      // ERROR: val y = "shadows a param";
      val z = "local";
@@ -181,9 +181,9 @@ following example, has no meaningful definition.  Recursive declarations of
 local functions is forbidden, even though (like \xcd`f` below) there are
 meaningful uses of it.  
 \begin{xten}
-val x : Int = x + 1; // ERROR: recursive local declaration
-val f : (Int)=>Int 
-      = (n:Int) => (n <= 2) ? 1 : f(n-1) + f(n-2);
+val x : Long = x + 1; // ERROR: recursive local declaration
+val f : (Long)=>Long 
+      = (n:Long) => (n <= 2) ? 1 : f(n-1) + f(n-2);
       // ERROR: recursive local declaration
 \end{xten}
 
@@ -220,7 +220,7 @@ of an \xcd`if`, and for limiting the scope of local variables.
 %~~gen ^^^ Statements30
 % package statements.FOR.block.heads;
 % class Example {
-% def example(b:Boolean, S1:(Int)=>void, S2:(Int)=>void ) {
+% def example(b:Boolean, S1:(Long)=>void, S2:(Long)=>void ) {
 %~~vis
 \begin{xten}
 if (b) {
@@ -274,7 +274,7 @@ class StmtEx {
   static def call() { 
      x10.io.Console.OUT.println("call!");}
   def example() {
-     var a : Int = 0;
+     var a : Long = 0;
      a = 1; // assignment
      new StmtEx(); // allocation
      call(); // call
@@ -312,7 +312,7 @@ loop.
 %~~gen ^^^ Statements50
 % package state.meant.labe.L;
 % class Example {
-% def example(a:(Int,Int) => Int, do_things_to:(Int)=>Int) {
+% def example(a:(Long,Long) => Long, do_things_to:(Long)=>Long) {
 %~~vis
 \begin{xten}
 lbl : for (i in 1..10) {
@@ -386,7 +386,7 @@ array and breaks out of the loop when it is found:
 %~~gen ^^^ Statements60
 % package statements.come.from.banks.and.cranks;
 % class LabelledBreakeyBreakyHeart {
-% def findy(a:Rail[Rail[Int]], v:Int): Boolean {
+% def findy(a:Rail[Rail[Long]], v:Long): Boolean {
 %~~vis
 \begin{xten}
 var found: Boolean = false;
@@ -513,10 +513,10 @@ other cases are separated by \xcd`break`s.
 %~~vis
 \begin{xten}
 switch (i) {
-  case 1: println("one, and ");
-  case 2: println("two"); 
+  case 1n: println("one, and ");
+  case 2n: println("two"); 
           break;
-  case 3: println("three");
+  case 3n: println("three");
           break;
   default: println("Something else");
            break;
@@ -550,7 +550,7 @@ and Syracuse problem) can be written as follows:
 %~~gen ^^^ Statements80
 % package Statements.AreFor.Flatements;
 % class Example {
-% def example(var n:Int) {
+% def example(var n:Long) {
 %~~vis
 \begin{xten}
   while (n > 1) {
@@ -624,7 +624,7 @@ perform the \xcd`step`, which, in the \xcd`while` loop, they will not do.
 
 \xcd`init` is performed before the loop, and is traditionally used to declare
 and/or initialize the loop variables. It may be a single variable binding
-statement, such as \xcd`var i:Int = 0` or \xcd`var i:Int=0, j:Int=100`. (Note
+statement, such as \xcd`var i:Long = 0` or \xcd`var i:Long=0, j:Long=100`. (Note
 that a single variable binding statement may bind multiple variables.)
 Variables introduced by \xcd`init` may appear anywhere in the \xcd`for`
 statement, but not outside of it.  Or, it may be a sequence of expression
@@ -683,7 +683,7 @@ the iterable \xcd`c` must have type \xcd`Iterable[U}` for some \xcd`U <: T`,
 and \xcd`x` will be given the type \xcd`U`.
 
 \begin{ex}
-This loop adds up the elements of a \xcd`List[Int]`.
+This loop adds up the elements of a \xcd`List[Long]`.
 Note that iterating over a list yields the elements of the list, as specified
 in the \xcd`List` API. 
 %~~gen ^^^ Statements3d9l
@@ -691,8 +691,8 @@ in the \xcd`List` API.
 % class Example {
 %~~vis
 \begin{xten}
-static def sum(a:x10.util.List[Int]):Int {
-  var s : Int = 0;
+static def sum(a:x10.util.List[Long]):Long {
+  var s : Long = 0;
   for(x in a) s += x;
   return s;
 }
@@ -707,8 +707,8 @@ The following code sums the elements of an integer rail.
 % class Example { 
 %~~vis
 \begin{xten}
-static def sum(a: Rail[Int]): Int {
-  var s : Int = 0;
+static def sum(a: Rail[Long]): Long {
+  var s : Long = 0;
   for(v in a) s += v;
   return s;
 }
@@ -717,14 +717,14 @@ static def sum(a: Rail[Int]): Int {
 %}
 %~~neg
 
-Iteration over an \xcd`IntRange` (\Sref{sect:intrange}) is quite common. This
+Iteration over an \xcd`LongRange` (\Sref{sect:intrange}) is quite common. This
 allows looping while varying an integer index: 
 %~~gen ^^^ Statements3o9s
 % package Statements3o9s;
 % class Example { static def example() {
 %~~vis
 \begin{xten}
-var sum : Int = 0;
+var sum : Long = 0;
 for(i in 1..10) sum += i;
 assert sum == 55;
 \end{xten}
@@ -765,8 +765,8 @@ The \xcd`return` inside of \xcd`closure` returns from \xcd`closure`, not from
 % class Example {
 %~~vis
 \begin{xten}
-def method(x:Int) {
-  val closure = (y:Int) => {return x+y;}; 
+def method(x:Long) {
+  val closure = (y:Long) => {return x+y;}; 
   val res = closure(0);
   assert res == x;
   return res == x;
@@ -882,7 +882,7 @@ throws an exception if not.
 %~~gen ^^^ Statements110
 % package Statements_index_check;
 % class ThrowStatementExample {
-% def thingie(i:Int, x:Rail[Boolean])  {
+% def thingie(i:Long, x:Rail[Boolean])  {
 %~~vis
 \begin{xten}
 if (i < 0 || i >= x.size)

@@ -38,7 +38,7 @@ spreads the data across multiple \xcd`Place`s, {\em via} \Xcd{Dist}s.
 Both kinds of arrays are indexed by \xcd`Point`s, which are $n$-dimensional tuples of
 integers.  The \xcd`rank`
 property of a point gives its dimensionality.  Points can be constructed from
-integers, or \xcd`Rail[Int] by the \xcd`Point.make` factory methods:
+integers, or \xcd`Rail[Long] by the \xcd`Point.make` factory methods:
 %~~gen ^^^ArraysPointsExample1
 % package Arrays.Points.Example1;
 % import x10.regionarray.*;
@@ -48,13 +48,13 @@ integers, or \xcd`Rail[Int] by the \xcd`Point.make` factory methods:
 \begin{xten}
 val origin_1 : Point{rank==1} = Point.make(0);
 val origin_2 : Point{rank==2} = Point.make(0,0);
-val origin_5 : Point = Point.make(new Rail[Int](5));
+val origin_5 : Point = Point.make(new Rail[Long](5));
 \end{xten}
 %~~siv
 % } } 
 %~~neg
 
-There is an implicit conversion from \xcd`Rail[Int]` to 
+There is an implicit conversion from \xcd`Rail[Long]` to 
 \xcd`Point`, giving
 a convenient syntax for constructing points: 
 
@@ -109,11 +109,11 @@ val R5 = R4 && R3; // intersection of two regions
 % } } 
 %~~neg
 
-The \xcd`IntRange` value \xcd`1..100` can be used to construct
+The \xcd`LongRange` value \xcd`1..100` can be used to construct
 the one-dimensional \xcd`Region` consisting of the points
 $\{$\xcdmath`[m]`, \dots, \xcdmath`[n]`$\}$
 \xcd`Region` by using the \xcd`Region.make` factory method.  
-\xcd`IntRange`s are useful in building up regions, especially rectangular regions.  
+\xcd`LongRange`s are useful in building up regions, especially rectangular regions.  
 \end{ex}
 
 By a special dispensation, the compiler knows that, if \xcd`r : Region(m)` and
@@ -126,18 +126,18 @@ to keep track of ranks nearly so much.
 Various built-in regions are provided through  factory
 methods on \xcd`Region`.  
 \begin{itemize}
-%~~exp~~"~~"~~ n:Int ~~ import x10.regionarray.*; ^^^Arrays3s5h
+%~~exp~~"~~"~~ n:Long ~~ import x10.regionarray.*; ^^^Arrays3s5h
 \item \xcd"Region.makeEmpty(n)" returns an empty region of rank \xcd"n".
-%~~exp~~"~~"~~ n:Int ~~ import x10.regionarray.*; ^^^Arrays3x4j
+%~~exp~~"~~"~~ n:Long ~~ import x10.regionarray.*; ^^^Arrays3x4j
 \item \xcd"Region.makeFull(n)" returns the region containing all points of
       rank \xcd"n".  
 %~~exp~~"~~"~~ ~~ import x10.regionarray.*; ^^^Arrays7l3d
 \item \xcd"Region.makeUnit()" returns the region of rank 0 containing the
       unique point of rank 0.  It is useful as the identity for Cartesian
       product of regions.
-%~~exp~~"~~"~~ normal:Point, k:Int ~~ import x10.regionarray.*; ^^^Arrays3l7z
+%~~exp~~"~~"~~ normal:Point, k:Long ~~ import x10.regionarray.*; ^^^Arrays3l7z
 \item \xcd"Region.makeHalfspace(normal, k)",
-      where \xcd`normal` is a \xcd`Point` and \xcd`k` an \xcd`Int`, 
+      where \xcd`normal` is a \xcd`Point` and \xcd`k` an \xcd`Long`, 
       returns the unbounded
       half-space of rank \xcd"normal.rank", consisting of all points \xcd"p"
       satisfying the vector inequality \xcdmath`p$\cdot$normal $\le$ k`.
@@ -151,13 +151,13 @@ methods on \xcd`Region`.
 \item \xcd"Region.makeBanded(size, a, b)" constructs the
       banded \xcd"Region(2)" of size \xcd"size", with \Xcd{a} bands above
       and \Xcd{b} bands below the diagonal.
-%~~exp~~"~~"~~size:Int ~~ import x10.regionarray.*; ^^^Arrays5s3q
+%~~exp~~"~~"~~size:Long ~~ import x10.regionarray.*; ^^^Arrays5s3q
 \item \xcd"Region.makeBanded(size)" constructs the banded \Xcd{Region(2)} with
       just the main diagonal.
-%~~exp~~`~~`~~N:Int ~~ import x10.regionarray.*; ^^^Arrays5s3qtri
+%~~exp~~`~~`~~N:Long ~~ import x10.regionarray.*; ^^^Arrays5s3qtri
 \item \xcd`Region.makeUpperTriangular(N)` returns a region corresponding
 to the non-zero indices in an upper-triangular \xcd`N x N` matrix.
-%~~exp~~`~~`~~N:Int ~~ import x10.regionarray.*; ^^^Arrays5s3qlowertri
+%~~exp~~`~~`~~N:Long ~~ import x10.regionarray.*; ^^^Arrays5s3qlowertri
 \item \xcd`Region.makeLowerTriangular(N)` returns a region corresponding
 to the non-zero indices in a lower-triangular \xcd`N x N` matrix.
 \item 
@@ -191,7 +191,7 @@ iterate over the points in a region in the canonical order.
 A region is said to be {\em rectangular}\index{region!convex} if it is of
 the form \xcdmath`(T$_1$ * $\cdots$ * T$_k$)` for some set of intervals
 \xcdmath`T$_i = $ l$_i$ .. h$_i$ `. 
-In particular an \xcd`IntRange` turned into a \xcd`Region` is rectangular: 
+In particular an \xcd`LongRange` turned into a \xcd`Region` is rectangular: 
 %~~exp~~`~~`~~ ~~ import x10.regionarray.*; ^^^Arrays3x4z
 \xcd`Region.make(1..10)`.
 Such a
@@ -260,7 +260,7 @@ languages.  A \Xcd{Point} may have any number of coordinates, so an
 \xcd`Array` can have, in effect, any number of integer subscripts.  
 
 \begin{ex}Indeed, it is possible to write code that works on \Xcd{Array}s regardless 
-of dimension.  For example, to add one \Xcd{Array[Int]} \Xcd{src} into another
+of dimension.  For example, to add one \Xcd{Array[Long]} \Xcd{src} into another
 \Xcd{dest}, 
 %~~gen ^^^ Arrays140
 %package Arrays.Arrays.Arrays.Example;
@@ -268,7 +268,7 @@ of dimension.  For example, to add one \Xcd{Array[Int]} \Xcd{src} into another
 % class Example{
 %~~vis
 \begin{xten}
-static def addInto(src: Array[Int], dest:Array[Int])
+static def addInto(src: Array[Long], dest:Array[Long])
   {src.region == dest.region}
   = {
     for (p in src.region) 
@@ -279,8 +279,8 @@ static def addInto(src: Array[Int], dest:Array[Int])
 %}
 % class Hook{
 %   def run() { 
-%     val a = new Array[Int](3, [1,2,3]);
-%     val b = new Array[Int](a.region, (p:Point(1)) => 10*a(p) );
+%     val a = new Array[Long](3, [1,2,3]);
+%     val b = new Array[Long](a.region, (p:Point(1)) => 10*a(p) );
 %     Example.addInto(a, b);
 %     return b(0) == 11 && b(1) == 22 && b(2) == 33;
 % }}
@@ -292,7 +292,7 @@ necessary for the arrays \Xcd{src} and \Xcd{dest}.
 
 The basic operation on arrays is subscripting: if \Xcd{A} is an \Xcd{Array[T]}
 and \Xcd{p} a point with the same rank as \xcd`A.region`, then
-%~~exp~~`~~`~~A:Array[Int], p:Point{self.rank == A.region.rank} ~~ import x10.regionarray.*; ^^^ Arrays150
+%~~exp~~`~~`~~A:Array[Long], p:Point{self.rank == A.region.rank} ~~ import x10.regionarray.*; ^^^ Arrays150
 \xcd`A(p)`
 is the value of type \Xcd{T} associated with point \Xcd{p}.
 This is the same operation as function application
@@ -317,11 +317,11 @@ values in \Xcd{A} unchanged.
 
 An \Xcd{Array[T]} named \Xcd{a} has: 
 \begin{itemize}
-%~~exp~~`~~`~~a:Array[Int] ~~ import x10.regionarray.*; ^^^ Arrays170
+%~~exp~~`~~`~~a:Array[Long] ~~ import x10.regionarray.*; ^^^ Arrays170
 \item \xcd`a.region`: the \Xcd{Region} upon which \Xcd{a} is defined.
-%~~exp~~`~~`~~a:Array[Int] ~~ import x10.regionarray.*; ^^^ Arrays180
+%~~exp~~`~~`~~a:Array[Long] ~~ import x10.regionarray.*; ^^^ Arrays180
 \item \xcd`a.size`: the number of elements in \Xcd{a}.
-%~~exp~~`~~`~~a:Array[Int] ~~ import x10.regionarray.*; ^^^ Arrays190
+%~~exp~~`~~`~~a:Array[Long] ~~ import x10.regionarray.*; ^^^ Arrays190
 \item \xcd`a.rank`, the rank of the points usable to subscript \Xcd{a}. 
       \xcd`a.rank` is a cached copy of 
       \Xcd{a.region.rank}.
@@ -346,7 +346,7 @@ region \Xcd{R}, with \Xcd{a(p)} initialized to \Xcd{f(p)} for each point
 \begin{ex}
 One way to construct the array \xcd`[11, 22, 33]` is with an array constructor
 %~~exp~~`~~`~~ ~~ import x10.regionarray.*; ^^^ Arrays210
-\xcd`new Array[Int](3, (i:long)=>(11*i) as Int)`. 
+\xcd`new Array[Long](3, (i:long)=>11*i)`. 
 To construct a multiplication table, call
 %~~exp~~`~~`~~ ~~ import x10.regionarray.*; ^^^ Arrays220
 \xcd`new Array[Long](Region.make(0..9, 0..9), (p:Point(2)) => p(0)*p(1))`.
@@ -363,7 +363,7 @@ The basic operation on \Xcd{Array}s is subscripting.  If \Xcd{a:Array[T]} and
 appearing at position \Xcd{p} in \Xcd{a}.    The syntax is identical to
 function application, and, indeed, arrays may be used as functions.
 \Xcd{a(p)} may be assigned to, as well, by the usual assignment syntax
-%~~exp~~`~~`~~a:Array[Int], p:Point{rank == a.rank}, t:Int ~~ import x10.regionarray.*; ^^^ Arrays230
+%~~exp~~`~~`~~a:Array[Long], p:Point{rank == a.rank}, t:Long ~~ import x10.regionarray.*; ^^^ Arrays230
 \xcd`a(p)=t`.
 (This uses the application and setting syntactic sugar, as given in \Sref{set-and-apply}.)
 
@@ -376,9 +376,9 @@ can, in fact, be accessed by integers:
 %static def example(){
 %~~vis
 \begin{xten}
-val A1 = new Array[Int](10, 0);
+val A1 = new Array[Long](10, 0);
 A1(4) = A1(4) + 1;
-val A4 = new Array[Int](Region.make(1..2, 1..3, 1..4, 1..5), 0);
+val A4 = new Array[Long](Region.make(1..2, 1..3, 1..4, 1..5), 0);
 A4(2,3,4,5) = A4(1,1,1,1)+1;
 \end{xten}
 %~~siv
@@ -575,9 +575,9 @@ val da <: DistArray[Float]
 \xcd`DistArray`s are instantiated by invoking one of the \xcd`make` factory
 methods of the \xcd`DistArray` class.
 A \xcd`DistArray` creation 
-must take either an \xcd`Int` as an argument or a \xcd`Dist`. In the first
+must take either an \xcd`Long` as an argument or a \xcd`Dist`. In the first
 case,  a distributed array is created over the distribution 
-%~~exp~~`~~`~~N:Int ~~ import x10.regionarray.*; ^^^Arrays1s6g
+%~~exp~~`~~`~~N:Long ~~ import x10.regionarray.*; ^^^Arrays1s6g
 \xcd`Dist.makeConstant(Region.make(0, N-1),here)`;
 in the second over the given distribution. 
 
@@ -636,18 +636,18 @@ array with distribution \xcd`D` and base type \xcd`T`.
 
 \subsubsection{Element operations}\index{array!access}
 The value of \xcd`a` at a point \xcd`p` in its region of definition is
-%~~exp~~`~~`~~a:Array[Int](3), p:Point(3) ~~ import x10.regionarray.*; ^^^ Arrays380
+%~~exp~~`~~`~~a:Array[Long](3), p:Point(3) ~~ import x10.regionarray.*; ^^^ Arrays380
 obtained by using the indexing operation \xcd`a(p)`. 
 The value of \xcd`da` at \xcd`p` is similarly
-%~~exp~~`~~`~~da:DistArray[Int](3), p:Point(3) ~~ import x10.regionarray.*; ^^^ Arrays390
+%~~exp~~`~~`~~da:DistArray[Long](3), p:Point(3) ~~ import x10.regionarray.*; ^^^ Arrays390
 \xcd`da(p)`.
 This operation
 may be used on the left hand side of an assignment operation to update
 the value: 
-%~~stmt~~`~~`~~a:Array[Int](3), p:Point(3), t:Int ~~ import x10.regionarray.*; ^^^ Arrays400
+%~~stmt~~`~~`~~a:Array[Long](3), p:Point(3), t:Long ~~ import x10.regionarray.*; ^^^ Arrays400
 \xcd`a(p)=t;`
 and 
-%~~stmt~~`~~`~~da:DistArray[Int](3), p:Point(3), t:Int ~~ import x10.regionarray.*; ^^^ Arrays410
+%~~stmt~~`~~`~~da:DistArray[Long](3), p:Point(3), t:Long ~~ import x10.regionarray.*; ^^^ Arrays410
 \xcd`da(p)=t;`
 The operator assignments, \xcd`a(i) += e` and so on,  are also
 available. 
@@ -685,11 +685,11 @@ freedom to select appropriate implementations.
 \subsubsection{Restriction of an array}\index{array!restriction}
 
 Let \xcd`R` be a sub-region of \xcd`da.region`. Then 
-%~~exp~~`~~`~~da:DistArray[Int](3), p:Point(3), R: Region(da.rank) ~~ import x10.regionarray.*; ^^^ Arrays440
+%~~exp~~`~~`~~da:DistArray[Long](3), p:Point(3), R: Region(da.rank) ~~ import x10.regionarray.*; ^^^ Arrays440
 \xcd`da | R`
 represents the sub-\xcd`DistArray` of \xcd`da` on the region \xcd`R`.
 That is, \xcd`da | R` has the same values as \xcd`da` when subscripted by a
-%~~exp~~`~~`~~R:Region, da: DistArray[Int]{da.region.rank == R.rank} ~~ import x10.regionarray.*; ^^^ Arrays450
+%~~exp~~`~~`~~R:Region, da: DistArray[Long]{da.region.rank == R.rank} ~~ import x10.regionarray.*; ^^^ Arrays450
 point in region \xcd`R && da.region`, and is undefined elsewhere.
 
 Recall that a rich set of operators are available on distributions
@@ -712,9 +712,9 @@ The following produces an array of cubes:
 %static def example() {
 %~~vis
 \begin{xten}
-val A = new Array[Int](11, (i:long)=>i as Int);
+val A = new Array[Long](11, (i:long)=>i);
 assert A(3) == 3 && A(4) == 4 && A(10) == 10; 
-val cube = (i:Int) => i*i*i;
+val cube = (i:Long) => i*i*i;
 val B = A.map(cube);
 assert B(3) == 27 && B(4) == 64 && B(10) == 1000; 
 \end{xten}
@@ -732,10 +732,10 @@ will be stored,
 %static def example() {
 %~~vis
 \begin{xten}
-val A = new Array[Int](11, (i:long)=>i as Int);
+val A = new Array[Long](11, (i:long)=>i);
 assert A(3) == 3 && A(4) == 4 && A(10) == 10; 
-val cube = (i:Int) => i*i*i;
-val B = new Array[Int](A.region); // B = 0,0,0,0,0,0,0,0,0,0,0
+val cube = (i:Long) => i*i*i;
+val B = new Array[Long](A.region); // B = 0,0,0,0,0,0,0,0,0,0,0
 A.map(B, cube);
 assert B(3) == 27 && B(4) == 64 && B(10) == 1000; 
 \end{xten}
@@ -754,9 +754,9 @@ reuse its space:
 %static def example() {
 %~~vis
 \begin{xten}
-val A = new Array[Int](11, (i:long)=>i as Int);
+val A = new Array[Long](11, (i:long)=>i);
 assert A(3) == 3 && A(4) == 4 && A(10) == 10; 
-val cube = (i:Int) => i*i*i;
+val cube = (i:Long) => i*i*i;
 A.map(A, cube);
 assert A(3) == 27 && A(4) == 64 && A(10) == 1000; 
 \end{xten}
@@ -779,9 +779,9 @@ The following code adds two distributed arrays:
 % class Example{
 %~~vis
 \begin{xten}
-static def add(da:DistArray[Int], db: DistArray[Int])
+static def add(da:DistArray[Long], db: DistArray[Long])
     {da.dist==db.dist}
-    = da.map(db, (a:Int,b:Int)=>a+b);
+    = da.map(db, (a:Long,b:Long)=>a+b);
 \end{xten}
 %~~siv
 %}
@@ -830,8 +830,8 @@ and \Xcd{unit} is zero.
 % static def example() {
 %~~vis
 \begin{xten}
-val a = new Array[Int](4, (i:long)=>(i+1) as Int);
-val sum = a.reduce((a:Int,b:Int)=>a+b, 0); 
+val a = new Array[Long](4, (i:long)=>i+1);
+val sum = a.reduce((a:Long,b:Long)=>a+b, 0); 
 assert(sum == 10); // 10 == 1+2+3+4
 \end{xten}
 %~~siv
