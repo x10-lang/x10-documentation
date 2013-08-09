@@ -985,9 +985,9 @@ could not possibly be equal.
 
 \begin{ex}
 Nonetheless, it is possible to wind up comparing values of different numeric
-types.   Even though, say, \xcd`0` and \xcd`0L` represent the same number,
-they are different values and of different types, and hence, \xcd`0 != 0L`.  
-The expression \xcd`0 == 0L` does not compile.  However, if you hide type
+types.   Even though, say, \xcd`0n` and \xcd`0L` represent the same number,
+they are different values and of different types, and hence, \xcd`0n != 0L`.  
+The expression \xcd`0n == 0L` does not compile.  However, if you hide type
 information from X10, you can get a similar expression to compile: 
 
 %~~gen ^^^ Expressions1x7i
@@ -995,7 +995,7 @@ information from X10, you can get a similar expression to compile:
 % class Example { static def example() { 
 %~~vis
 \begin{xten}
-   val a : Any = 0;
+   val a : Any = 0n;
    val b : Any = 0L;
    assert a != b;
 \end{xten}
