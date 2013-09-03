@@ -555,29 +555,10 @@ All Java programs that call X10 code should be launched with it, and
 no other mechanisms, including direct execution with java command, are
 supported.
 
-In current implementation, the setup process includes preloading of
-all reachable classes in order to assign a globally unique id for each
-type.  The \verb|runjava| command ensures this for the X10 standard
-library. However all the X10 types that are not in the standard
-library must be specified as command-line arguments to \verb|runjava|
-as follows.  To make preloading successfully preload all used types in
-a program run, users must use one of the following two techniques.
-One technique is to specify X10 types that are unreachable by other
-means as command-line arguments as follows.
-
 \begin{verbatim}
-Usage: runjava [options] <Java-main-class> [arg0 arg1 ...]
-where [options] includes all x10 options, and:
-    -preload <class>         class to be preloaded
+Usage: runjava <Java-main-class> [arg0 arg1 ...]
 \end{verbatim}
 
-The other technique is to insert dummy references in Java programs to
-the X10 types that are unreachable by other means, and make them
-reachable.
-
-We anticipate the future versions of \Xten{} will use a more dynamic
-id assignment algorithm and that therefore this preloading requirement
-will be eliminated.
 
 \section{Interoperability with External C and C++ Code}
 
