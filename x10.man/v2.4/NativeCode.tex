@@ -267,16 +267,13 @@ Managed X10 provides a special X10 type
 \xcd{x10.interop.Java.array[T]} which represents Java array type
 \xcd{T[]}.  Note that for X10 types in Table~\ref{tab:specialtypes},
 this type means the Java array type of their primary type.  For
-example, \xcd{Java.array[Int]} and \xcd{Java.array[String]} mean
+example, \xcd{array[Int]} and \xcd{array[String]} mean
 \xcd{int[]} and \xcd{java.lang.String[]}, respectively.  Managed X10
 also provides conversion methods between X10 \xcd`Rail`s and Java
-arrays (\xcd{Java.convert[T](a:Rail[T]):Java.array[T]} and
-\xcd{Java.convert[T](a:Java.array[T]):Rail[T]}), between X10 \`Array`s 
-of rank 1 and Java arrays
-(\xcd{Java.convert[T](a:Array[T](1)):Java.array[T]} and
-\xcd{Java.convert[T](a:Java.array[T]):Array[T](1)}),
+arrays (\xcd{Java.convert[T](a:Rail[T]):array[T]} and
+\xcd{Java.convert[T](a:array[T]):Rail[T]}),
 and creation methods for Java arrays 
-(\xcd{Java.newArray[T](d0:Int):Java.array[T]}
+(\xcd{Java.newArray[T](d0:Int):array[T]}
 etc.).
 
 \paragraph{Exceptions}
