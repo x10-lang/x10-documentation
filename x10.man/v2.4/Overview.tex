@@ -373,6 +373,26 @@ up a new activity running \xcd`S`.  It does not wait for the new activity to
 finish; there is a separate statement (\xcd`finish`) to do that.
 
 
+\section{Distributed heap management}
+
+\Xten{} is the language for parallel and distributed computing, which is based on the APGAS (Asynchronous Partitioned Global Address Space) programming model. In (A)PGAS, the address space is partitioned into multiple semi-spaces. The semi-space is called \emph{place} in \Xten{}. In Managed \Xten{} (\Xten{} on Java VM), a place is represented as a single Java VM and the semi-space is mapped to the heap of the Java VM.
+
+\Xten{} supports garbage collection. Objects in a local heap (local objects) are collected with (local) garbage collection and there is no way to explicitly free them. The reference to local objects is called \emph{local reference}.
+
+In addition, \Xten{} has another type of reference called \emph{remote reference}. Unlike local reference, remote reference can reference objects at both local and remote places.
+
+With remote reference, an activity (something like thread, it runs on a place at a time but it can move itself to different places) can access objects at a remote place (remote objects) when the activity has moved to the remote place. The place where an object is created is the home place of the object and it does not change for the lifetime.
+
+To guarantee an activity can access remote objects at their home place, the objects with remote reference are protected from (local) garbage collection at their home place even if they have no local reference. Objects can be garbage collected only when they have neither local nor remote reference. The garbage collection that takes care of remote reference is called distributed garbage collection and it is supported in Managed \Xten{}.
+
+Distributed garbage collection in Managed \Xten{} \cite{KawachiyaX1012} tracks the lifetime of remote reference with reference counting. When the local garbage collection at a remote place detects the remote reference is no longer needed at the place, the count is decremented. When the count becomes zero, the local garbage collection at the home place is ready to collect the referenced object in the ordinary way.
+
+This mechanism works in most cases, but when there is unbalance in heap allocation rate between places, there is a risk of out of memory error at a frequently allocating place. This is because remote reference from infrequently allocating (i.e. infrequently garbage collected) places could retain remotely referenced objects longer than needed.
+
+To avoid the out of memory error even with unbalanced heap allocation rate, there is a way to explicitly release remote reference.
+
+A single call of \xcd`PlaceLocalHandle.destroy()` (\xcd`PlaceLocalHandle` is an \Xten{} type that bundles multiple remote references to the objects at different places) releases all remote references immediately, thus the local garbage collection at each place becomes ready to collect the referenced object in the ordinary way. It can be called at the point where the all objects referenced by the handle are no longer needed to be accessible with the handle. Local reference to the object at each place won't be affected.
+
 
 
 \section{Clocks}
