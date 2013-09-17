@@ -127,7 +127,7 @@ complicated way.
 
 Functions are used extensively in X10
 programs.  For example, a common way to construct and initialize an \xcd`Rail[Long]` --
-that is, a fixed-length one-dimensional array of numbers, like an \xcd`long[]` in Java -- is to
+that is, a fixed-length one-dimensional array of numbers, like an \xcd`long[]` in \java{} -- is to
 pass two arguments to a factory method: the first argument being the length of
 the rail, and the second being a function which computes the initial value of
 the \xcd`i`{$^{th}$} element.  The following code constructs a 1-dimensional
@@ -375,7 +375,7 @@ finish; there is a separate statement (\xcd`finish`) to do that.
 
 \section{Distributed heap management}
 
-\Xten{} is the language for parallel and distributed computing, which is based on the APGAS (Asynchronous Partitioned Global Address Space) programming model. In (A)PGAS, the address space is partitioned into multiple semi-spaces. The semi-space is called \emph{place} in \Xten{}. In Managed \Xten{} (\Xten{} on Java VM), a place is represented as a single Java VM and the semi-space is mapped to the heap of the Java VM.
+\Xten{} is the language for parallel and distributed computing, which is based on the APGAS (Asynchronous Partitioned Global Address Space) programming model. In (A)PGAS, the address space is partitioned into multiple semi-spaces. The semi-space is called \emph{place} in \Xten{}. In Managed \Xten{} (\Xten{} on \java{} VMs), a place is represented as a single \java{} VM and the semi-space is mapped to the heap of the \java{} VM.
 
 \Xten{} supports garbage collection. Objects in a local heap (local objects) are collected with (local) garbage collection and there is no way to explicitly free them. The reference to local objects is called \emph{local reference}.
 
