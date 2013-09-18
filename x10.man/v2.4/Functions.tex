@@ -22,9 +22,9 @@ an immediately following call.
 A \emph{function literal} \xcd"(x1:T1,..,xn:Tn){c}:T=>e" creates a function of
 type\\ \xcd"(x1:T1,...,xn:Tn){c}=>T" (\Sref{FunctionType}).  For example, 
 \xcd`(x:Long):Long => x*x` is a function literal describing the squaring function on
-integers.   
-\xcd`null` is also a function value.
+integers.  Every function type also posses the (default) value \xcd`null`.
 
+%% CHECK vj: What is ``or constraints'' supposed to mean?
 \limitation{X10 functions cannot have type arguments or constraints.}
 
 Function application is written \xcd`f(a,b,c)`, following common mathematical
@@ -54,16 +54,15 @@ val sq: (Long) => Long
 %~~neg
 
 
-
-
 A function literal evaluates to a function entity $f$. When {$f$} is
 applied to a suitable list of actual parameters \xcd`a1` through \xcd`an`, it
 evaluates \xcd`e` with the formal parameters bound to the actual parameters.
 So, the following are equivalent, where \xcd`e` is an expression involving
-\xcd`x1` and \xcd`x2`\footnote{Strictly, there are a few other requirements;
-  \eg, \xcd`result` must be a \xcd`var` of type \xcd`T` defined outside the
-  outer block, the variables \xcd`a1` and \xcd`a2` had better not appear in
-  \xcd`e`, and everything in sight had better typecheck properly.}
+\xcd`x1` and \xcd`x2`
+%\footnote{Strictly, there are a few other requirements;
+%  \eg, \xcd`result` must be a \xcd`var` of type \xcd`T` defined outside the
+%  outer block, the variables \xcd`a1` and \xcd`a2` had better not appear in
+% \xcd`e`, and everything in sight had better typecheck properly.}
 
 %~~gen ^^^ Functions20
 % package Functions.function_literal_a;
@@ -73,6 +72,7 @@ So, the following are equivalent, where \xcd`e` is an expression involving
 % def thing1(e:T) {var result:T;
 %~~vis
 \begin{xten}
+var result:T;
 {
   val f = (x1:T1,x2:T2){true}:T => e;
   val a1 : T1 = arg1();
@@ -83,7 +83,7 @@ So, the following are equivalent, where \xcd`e` is an expression involving
 %~~siv
 %}}
 %~~neg
-and 
+\noindent and 
 %~~gen ^^^ Functions30
 % package functions2_b;
 % abstract class FunctionsTooManyFlippingFunctions[T, T1, T2]{
@@ -92,13 +92,14 @@ and
 % def thing1(e:T) {var result:T;
 %~~vis
 \begin{xten}
+var result:T;
 {
   val a1 : T1 = arg1();
   val a2 : T2 = arg2();
   {
      val x1 : T1 = a1;
      val x2 : T2 = a2;
-     result = e;
+     val result = f(x1,x2);
   }  
 }
 \end{xten}
@@ -112,7 +113,7 @@ that surrounds the function literal) or mean something different (\xcd`return`
 inside a function returns from the function, not the surrounding block). 
 
 
-
+%% CHECK: vj -- Check that we permit a class to implement multiple function types.
 Function types may be used in \Xcd{implements} clauses of class
 definitions. Suitable operator definitions must be supplied, with 
 \xcdmath"public operator this(x1:T1, $\ldots$, xn:Tn)" declarations.
@@ -170,7 +171,13 @@ if:
 \noindent
 In this case, if the application terminates normally, it returns a
 value of type 
-\xcdmath"T[e$_1$/x$_1$, $\ldots$, e$_n$/x$_n$]".
+\xcdmath"T[y1/x$_1$, $\ldots$, yn/x$_n$]" where \xcdmath"y1,$\ldots$,yn" may be thought of 
+as new variables defined as if by:
+\begin{xten}
+val y1=e1;
+...
+val yn=en;
+\end{xten}
 
 \begin{ex}
 Consider
@@ -245,13 +252,12 @@ which is to say, \xcd`Long{self!=3}`.
 Functions have zero or more formal parameters and an optional return type.
 The body has the 
 same syntax as a method body; it may be either an expression, a block
-of statements, or a block terminated by an expression to return. In
-particular, a value may be returned from the body of the function
-using a return statement (\Sref{ReturnStatement}). 
+of statements, or a block terminated by an expression to return. Return statements
+may be used in the body of the function to return a value (\Sref{ReturnStatement}). 
 
 The type of a function is a function type as described in \Sref{FunctionType}.  In some
 cases the 
-return type \Xcd{T} is also optional and defaults to the type of the
+return type \Xcd{T} of the function can be omittted and defaults to the type of the
 body. If a formal \Xcd{xi} does not occur in any
 \Xcd{Tj}, \Xcd{c}, \Xcd{T} or \Xcd{e}, the declaration \Xcd{xi:Ti} may
 be replaced by just \Xcd{Ti}. \Eg,  \xcd`(Long)=>7` is the integer function returning
@@ -351,8 +357,7 @@ x: Long = find((x: Long) => x>0, xs, 0);
 In a function
 \xcdmath"(x$_1$: T$_1$, $\dots$, x$_n$: T$_n$){c} => { s }"
 the types \xcdmath"T$_i$", the guard \xcd"c" and the body \xcd"s"
-may access many, though not all, sorts of variables from outer scopes.  
-Specifically, they can access: 
+may access the following variables from outer scopes:
 \begin{itemize}
 \item All fields of the enclosing object(s) and class(es);
 \item All type parameters;
@@ -361,12 +366,10 @@ Specifically, they can access:
 \noindent
 \xcd`var` variables cannot be accessed.
 
-
 The function body may refer to instances of enclosing classes using
 the syntax \xcd"C.this", where \xcd"C" is the name of the
 enclosing class.  \xcd`this` refers to the instance of the immediately
 enclosing class, as usual.
-
 
 \begin{eg}
  The following is legal.  
@@ -384,9 +387,9 @@ class Lambda {
       var e : Long = 0;
       val f : Long = 0;
       val closure = (var i: Long, val j: Long) => {
-    	  return a + b + d + f + i 
-               + j + this.a + Lambda.this.a;
           // c and e are not usable here
+    	  a + b + d + f + i 
+               + j + this.a + Lambda.this.a
       };
       return closure;
    }
@@ -579,12 +582,11 @@ functions are equal then they refer to the same locations in the environment
 and represent the same code, so their executions in an identical situation are
 indistinguishable. (Specifically, if \xcd`f == g`, then \xcd`f(1)` can be
 substituted for \xcd`g(1)` and the result will be identical. However, there is
-no guarantee that \xcd`f(1)==g(1)` will evaluate to true. Indeed, there is no
+no guarantee that \xcd`f(1)==g(1)` will evaluate to true, since there is no
 guarantee that \xcd`f(1)==f(1)` will evaluate to true either, as \xcd`f` might
 be a function which returns {$n$} on its {$n^{th}$} invocation. However,
 \xcd`f(1)==f(1)` and \xcd`f(1)==g(1)` are interchangeable.)
 \index{function!==}
-
 
 Every function type implements all the methods of \Xcd{Any}.
 \xcd`f.equals(g)` is equivalent to \xcd`f==g`.  The behavior of   \xcd`hashCode`, 
