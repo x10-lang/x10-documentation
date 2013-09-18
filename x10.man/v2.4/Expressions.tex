@@ -1,3 +1,4 @@
+%% vj No change for v 2.4
  \chapter{Expressions}\label{XtenExpressions}\index{expression}
 
 \Xten{} has a rich expression language.
@@ -94,9 +95,8 @@ body or in supertypes, are accessible through \xcd"this".
 \end{bbgrammar}
 %##)
 
-A local variable expression consists simply of the name of the local variable,
-field of the current object, formal parameter in scope, etc. It evaluates to
-the value of the local variable. 
+A local variable expression consists simply of the name of the local variable, a field of \xcd`this`, 
+a formal parameter in scope, etc. It evaluates to the value of the local variable. 
 
 
 \begin{ex}
@@ -900,7 +900,7 @@ efficient as possible.  It never runs user-defined code, and the compiler can
 analyze and understand it in detail -- and guarantee that it is efficient.
 
 The disadvantage is that certain straightforward-looking idioms do not work.
-One may not test that a \xcd`Int` variable is \xcd`==` to an long like
+One may not test that an \xcd`Int` variable is \xcd`==` to a long like
 \xcd`0`: 
 %~~gen ^^^ Expressions6q7k
 % package Expressions6q7k;
@@ -915,7 +915,6 @@ One may not test that a \xcd`Int` variable is \xcd`==` to an long like
 %~~neg
 
 A \xcd`Int` like \xcd`i` can never \xcd`==` a \xcd`Long` like \xcd`100`.
-
 Because \xcd`==` does not permit implicit coercions, \xcd`i`
 stays a \xcd`Int`.  The loop must be written with a comparison of two
 \xcd`Ints`s: 
@@ -1025,7 +1024,7 @@ compared for equality.
       \xcd`b==null`. Despite this, \xcd`a==b` is a static error, because it is
       generally a programming mistake.  \xcd`a as Any == b as Any` can
       be used to express the equality, if it is necessary.
-
+%% CHECK vj: Hmm. Why do we ignore constrained type information.
 \item Constraints are ignored in determining whether an equality is statically
       allowed.  For example, the following is allowed: 
 %~~gen ^^^ Expressions4w6f
