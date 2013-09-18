@@ -4,8 +4,10 @@ Many concurrent algorithms proceed in phases: in phase {$k$}, several
 activities work independently, but synchronize together before proceeding on
 to phase {$k+1$}. X10 supports this communication structure (and many
 variations on it) with a generalization of barriers 
-called {\em clocks}. Clocks are designed so that programs which follow a
-simple syntactic discipline will not have either deadlocks or race conditions.
+called {\em clocks}. Clocks are designed to be dynamic (new activities
+can be registered with clocks, and terminated activities automatically
+deregister from clocks), and to support a simple syntactic discipline
+for deadlock-free and race-free conditions. 
 
 
 The following minimalist example of clocked code has two worker activities A
@@ -36,8 +38,9 @@ neither proceeds to the third phase until both are ready.  This example uses
 %~~vis
 \begin{xten}
 class ClockEx {
-  static def say(s:String) = 
-     { atomic{x10.io.Console.OUT.println(s);} }
+  static def say(s:String) {
+    Console.OUT.println(s); 
+  }
   public static def main(argv:Rail[String]) {
     finish async{
       val cl = Clock.make();
@@ -74,8 +77,8 @@ An attempt by an activity to operate on a clock it is not registered with
 will cause a 
 \xcd"ClockUseException"\index{clock!ClockUseException}
 to be thrown.  
-An activity is registered with zero or more clocks when it is created.
-During its lifetime the only additional clocks it can possibly be registered with
+An activity is registered with zero or more (existing) clocks when it is created.
+During its lifetime, the only additional clocks it can possibly be registered with
 are exactly those that it creates. In particular it is not possible
 for an activity to register itself with a clock it discovers by
 reading a data structure.
@@ -83,10 +86,10 @@ reading a data structure.
 The primary operations that an activity \xcd`a` may perform on a clock \xcd`c`
 that it is registered upon are: 
 \begin{itemize}
-\item It may spawn and simultaneously  {\em register} a new activity on
-      \xcd`c`, with the statement       \xcd`async clocked(c)S`.
+\item It may spawn and simultaneously {\em register} a new activity on
+      \xcd`c`, with the statement \xcd`async clocked(c)S`.
 \item It may {\em unregister} itself from \xcd`c`, with \xcd`c.drop()`.  After
-      doing so, it can no longer use most primary operations on \xcd`c`.
+      doing so, it can no longer use most operations on \xcd`c`.
 \item It may {\em resume} the clock, with \xcd`c.resume()`, indicating that it
       has finished with the current phase associated with \xcd`c` and is ready
       to move on to the next one.
@@ -96,8 +99,8 @@ that it is registered upon are:
       clock have called \xcd`c.resume()`.
 \item It may {\em block} on all the clocks it is registered with
       simultaneously, by the command \xcd`Clock.advanceAll();`.  This, in effect, calls
-      \xcd`c.advance()` simultaneously 
-      on all clocks \xcd`c` that the current activity is registered with.
+      \xcd`c.advance()` simultaneously on all clocks \xcd`c` that the
+      current activity is registered with. 
 \item Other miscellaneous operations are available as well; see the
       \xcd`Clock` API.
 \end{itemize}
@@ -131,9 +134,9 @@ val c: Clock = Clock.make();
 
 The current activity is automatically registered with the newly
 created clock.  It may deregister using the \xcd"drop" method on
-clocks (see the documentation of \xcd"x10.lang.Clock"). All activities
-are automatically deregistered from all clocks they are registered
-with on termination (normal or abrupt).
+clocks (see the documentation of \xcd"x10.lang.Clock"). On
+(normal or abrupt) termination, an activity is automatically
+deregistered from all clocks it is registered with.
 
 \subsection{Registering new activities on clocks}
 \index{clock!clocked statements}\label{sec:clock:register}
@@ -302,7 +305,7 @@ is:
       (The 
       \xcd`Clock.advanceAll();` method is allowed for this discipline.)
 \item Inside of \xcd`finish{S}`, all clocked \xcd`async`s shall be in the scope
-      an unclocked \xcd`async`.  
+      some unclocked \xcd`async` in \xcd`S`.
 \end{itemize}
 X10 does not enforce this discipline.  Doing so would exclude useful programs,
 many of which are deadlock-free for reasons more subtle than the
@@ -335,7 +338,7 @@ finish.
 other activities registered on \xcd`c` to execute their \xcd`advance()`s.
 However, \xcd`(A)` is registered on \xcd`c`.  So, \xcd`(B)` cannot finish
 until \xcd`(A)` has proceeded to \xcd`(Anext)`, and \xcd`(A)` cannot proceed
-until \xcd`(B)` finishes. Thus, this causes deadlock.
+until \xcd`(B)` finishes. Thus, the activities are deadlocked.
 
 
 \section{Program equivalences}
@@ -382,7 +385,7 @@ statements  may use the
 \xcd`Clock.advanceAll()` 
 method call to advance the implicit clock.  Since the implicit clock is not
 available in a variable, it cannot be manipulated directly. (If you want to
-manipulate the clock directly, use an explicit clock, not a \xcd`clocked finish`.)
+manipulate the clock directly, use an explicit clock.)
 
 \begin{ex}
 The following code starts two activities, each of which perform their first
