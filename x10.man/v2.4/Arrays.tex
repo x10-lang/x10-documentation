@@ -6,8 +6,8 @@ Indexable memory is fundamental abstraction for a programming
 language. X10 includes
 \begin{itemize}
 \item Rails -- intrinsic one dimensional arrays
-\item Local multi-dimensional arrays; both simplearray and regionarray
-\item Distributed multi-dimensional arrays; both simplearray and regionarray
+\item Local multi-dimensional arrays; both \xcd`simplearray` and \xcd`regionarray`
+\item Distributed multi-dimensional arrays; both \xcd`simplearray` and \xcd`regionarray`
 \end{itemize}
 
 \section{Rails}
@@ -247,8 +247,8 @@ More \Xcd{Region} methods are described in the API documentation.
 \subsection{Arrays}
 \index{array}
 
-Arrays are organized data, arranged so that it can be accessed by subscript.
-An \xcd`Array[T]` \Xcd{A} has a \Xcd{Region} \Xcd{A.region}, telling which
+Arrays are organized data, arranged so that the daat can be accessed with subscripts.
+An \xcd`Array[T]` \Xcd{A} has a \Xcd{Region} \Xcd{A.region}, specifying which
 \Xcd{Point}s are in \Xcd{A}.  For each point \Xcd{p} in \Xcd{A.region},
 \Xcd{A(p)} is the datum of type \Xcd{T} associated with \Xcd{p}.  X10
 implementations should 
@@ -367,8 +367,8 @@ function application, and, indeed, arrays may be used as functions.
 \xcd`a(p)=t`.
 (This uses the application and setting syntactic sugar, as given in \Sref{set-and-apply}.)
 
-Sometimes it is more convenient to subscript by integers.  Arrays of rank 1-4
-can, in fact, be accessed by integers: 
+Sometimes it is more convenient to subscript by longs.  Arrays of rank 1-4
+can, in fact, be accessed by longs: 
 %~~gen ^^^ Arrays240
 %package Arrays240;
 %import x10.regionarray.*;
@@ -408,6 +408,23 @@ for (p in a) a(p) = Math.log(a(p));
 
 %~~neg
 
+The method \xcd`a.values()` can be used to enumerate all the values of an \xcd`Array[T]` array \xcd`a`.
+%~~gen ^^^ Arrays251
+%package Arrays251;
+%import x10.regionarray.*;
+%class Example{
+%~~vis
+\begin{xten}
+static def allNonNegatives(a:Array[Double]):Boolean {
+ for (v in a) if (v < 0.0D) return false;
+ return true;
+}
+\end{xten}
+%~~siv
+%}}
+% class Hook{ def run() { val a = new Array[Double](2, [1.0,2.0]); return Example.allNonNegatives(a);  }}
+
+%~~neg
 
 
 \subsection{Distributions}\label{XtenDistributions}
@@ -608,9 +625,6 @@ val data2 : DistArray[Long]
 % }  }
 %~~neg
 
-
-
-
 {}\noindent 
 The first declaration stores in \xcd`data` a reference to a mutable
 distributed array with \xcd`9` elements each of which is located in the
@@ -624,15 +638,11 @@ initialized with \xcd`i*j`
 at point \xcd`[i,j]`.
 \end{ex}
 
-
 \subsection{Operations on Arrays and Distributed Arrays}
 
 Arrays and distributed arrays share many operations.
 In the following, let \xcd`a` be an array with base type T, and \xcd`da` be an
 array with distribution \xcd`D` and base type \xcd`T`.
-
-
-
 
 \subsubsection{Element operations}\index{array!access}
 The value of \xcd`a` at a point \xcd`p` in its region of definition is
@@ -821,7 +831,7 @@ def oneWayToReduce[T](a:Array[T], f:(T,T)=>T, unit:T):T {
 %~~neg
 
 
-For example,  the following sums an array of integers.  \Xcd{f} is addition,
+For example,  the following sums an array of longs.  \Xcd{f} is addition,
 and \Xcd{unit} is zero.  
 %~~gen ^^^ Arrays520
 % package Arrays.Reductions.And.Emulsions;

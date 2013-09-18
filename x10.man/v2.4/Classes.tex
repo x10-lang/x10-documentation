@@ -15,11 +15,11 @@
 
 Objects are instances of classes: the most common and most powerful sort of
 value in X10.  The other kinds of values, structs and functions, are more
-specialized, better in some circumstances but not in all.
+specialized.%, better in some circumstances but not in all.
 
 Classes are structured in a forest of single-inheritance code
 hierarchies. Like C++, but unlike Java, there is no single root
-class (\Xcd{java.lang.Object}) that all classes inherit from.  Classes
+class (e.g.{} \Xcd{java.lang.Object}) that all classes inherit from.  Classes
 may have any or all of these features: 
 \begin{itemize}
 \item Implementing any number of interfaces;
@@ -590,7 +590,7 @@ There are no other semantic differences between the two forms.
 
 \subsection{Method Return Types}
 
-A method with an explicit return type returns that type.
+A method with an explicit return type returns values of that type.
 A method without an
 explicit return type is given a return type by type inference.
 A {\em call} to a method has type given by substituting information about the
