@@ -11,13 +11,13 @@ activity}.\index{root
 activity}
 
 
-Activities coordinate their execution by various control and data structures.
+Activities progress by executing control structures. %coordinate their execution by various control and data structures.
 For example, 
 %~~stmt~~`~~`~~x:Long, var y:Long ~~ ^^^ Activities10
 \xcd`when(x==0);` blocks the current activity until some other activity
-sets \xcd`x` to zero.  However, activities determine the places at which they
-may be blocked and resumed, by \xcd`when` and similar constructs.  There are
-no means by which one activity can arbitrarily interrupt, block, or resume
+sets \xcd`x` to zero.  However, activities determine the loca at which they
+may be blocked and resumed, using \xcd`when` and similar constructs.  There are
+no means by which one activity can arbitrarily interrupt, block, kill or resume
 another.
 
 
@@ -25,18 +25,17 @@ another.
 \index{activity!blocked}
 \index{activity!terminated}
 An activity may be {\em running}, {\em blocked} on some condition or {\em
-terminated}. If it is terminated, it is terminated in the same way that its
-statement is: in particular, if the statement terminates abruptly, the
-activity terminates abruptly for the same reason.
-(\Sref{ExceptionModel}).
+terminated}. An activity terminates when it has no more statements to
+execute; it terminates {\em normally} ({\em abruptly}) if the last statement it
+executes terminates normally (abruptly) (\Sref{ExceptionModel}).
 
-Activities can be long-running entities with a good deal of local state.  In
-particular they can involve recursive method calls (and therefore have runtime
-stacks).  However, activities can also be short-running light-weight entities,
-\eg, it is reasonable to have an activity that simply increments a variable.
+Activities can be long-running, and may access a lot of data.  In
+particular they can call recursive methods (and therefore have runtime
+stacks).  However, activities can also perform very few actions, such
+as incrementing some variables. 
 
-An activity may asynchronously and in parallel launch activities at
-other places.  Every activity except the initial \xcd`main` activity is spawned
+An activity may asynchronously and in parallel launch activities.
+Every activity except the initial \xcd`main` activity is spawned
 by another.  Thus, at any instant, the activities in a program form a tree.
 
 \index{termination}
@@ -46,12 +45,12 @@ X10 uses this tree in crucial ways.
 First is the distinction 
 between {\em local} termination and {\em global}
 termination of a statement. The execution of a statement by an
-activity is said to terminate locally when the activity has finished
+activity is said to terminate {\em locally} when the activity has finished
 all its computation. (For instance the
 creation of an asynchronous activity terminates locally when the
-activity has been created.)  It is said to terminate globally when it
-has terminated locally and all activities that it may have spawned at
-any place have, recursively, terminated globally.
+activity has been created.)  It is said to terminate {\em globally} when it
+has terminated locally and all activities that it may have spawned 
+have, recursively, terminated globally.
 For example, consider: 
 %~~gen ^^^ Activities20
 % package Activites.Are.For.Whacktivities;
@@ -324,8 +323,7 @@ assert result == 1;
 This code is deterministic: the \xcd`async` will finish before the
 \xcd`assert` starts, and the \xcd`assert`'s test will be true.
 
-However, without the
-\xcd`finish`, it would be wrong, and would not compile in X10.  If it were
+However, without the \xcd`finish`, the code would not compile in X10.  If it were
 allowed to compile, the activity might finish or might not finish before the
 \xcd`println`, and the program would not be deterministic.
 \end{ex}
@@ -334,12 +332,31 @@ allowed to compile, the activity might finish or might not finish before the
 \section{Atomic blocks}\label{AtomicBlocks}
 \index{atomic}
 
-X10's \xcd`atomic` blocks provide a high-level construct for coordinating
-the mutation of shared data. 
+X10's \xcd`atomic` blocks (\xcd`atomic S` and \xcd`when (c) S`)
+provide a high-level construct for coordinating 
+the mutation of shared data. An atomic block is executing as if in a
+single step, with respect to atomic blocks executed by all other
+activities in the same place. That is, 
+all \xcd`atomic` blocks execute in a {\em serializable} order.
+Hence no \xcd`atomic` block can see the intermediate state within the
+execution of some other \xcd`atomic` block.
+
+Code executed inside of \xcd`atomic S` and \xcd`when(E)S` is subject
+to certain restrictions. A violation of these restrictions causes an 
+\xcd`IllegalOperationException` to be thrown at the point of the violation.
+
+\begin{itemize}
+\item \xcd`S` may not spawn another activity.
+\item \xcd`S` may not use any blocking statements; \xcd`when`, \xcd`next`,
+      \xcd`finish`.  (The use of a nested \xcd`atomic` is permitted.)
+\item \xcd`S` may not \xcd`force()` a \xcd`Future`. 
+\item \xcd`S` may not use \xcd`at` expressions.
+\end{itemize}
+That is \xcd`S` must be sequential, single-place and non-blocking.
+
 A programmer may use atomic blocks to guarantee that invariants of
 shared data-structures are maintained even as they are being accessed
 simultaneously by multiple activities running in the same place.  
-
 An X10 program in which all accesses (both reads and writes) of shared
 variables appear in \xcd`atomic` or \xcd`when` blocks is guaranteed to use all
 shared variables atomically.  Equivalently, 
@@ -348,19 +365,9 @@ one is in an atomic block, then the other must be in an atomic block as well
 to guarantee atomicity of the accesses to \xcd`v`. 
 If some accesses to shared variables are not
 protected by \xcd`atomic` or \xcd`when`, then race conditions or deadlocks may
-occur.  
-
-In particular, atomic sections at the same place are atomic with respect to
+occur. In particular, atomic blocks at the same place are atomic with respect to
 each other. They may not be atomic with respect to non-atomic code, or with
 respect to atomic sections at different places.
-
-X10 guarantees that atomic sections at the same place are mutually exclusive.
-That is, if one activity $A$ at a given place $p$ is executing an atomic
-section, then no other activity $B$ at $p$ will also be executing an atomic
-section. If such a $B$ attempts to execute an \xcd`atomic` or \xcd`when`
-command, it will be blocked until $A$ finishes executing its atomic section.  
-
-
 
 %##(AtomicStatement WhenStatement
 \begin{bbgrammar}
@@ -439,51 +446,27 @@ def add(x:T) {
 
 \subsection{Unconditional atomic blocks}
 The simplest form of an atomic block is the {\em unconditional
-atomic block}: \xcd`atomic S`.
-When \xcd`atomic S` is executing at some place \xcd`p`, no other activity at
-\xcd`p` may enter an atomic block.  
-So, other activities may continue, even at the same place, but code protected
-by atomic blocks is not subject to interference from other code in atomic
-blocks. 
-
-If execution of the statement may throw an exception, it is
-the programmer's responsibility to wrap the atomic block within a
-\xcd"try"/\xcd"finally" clause and include undo code in the finally
-clause. Thus the \xcd"atomic" statement only guarantees atomicity on
-successful execution, not on a faulty execution.
-
-
-
+atomic block}: \xcd`atomic S`.  it executes \xcd`S` as if in a single
+step with respect to all other concurrently executing atomic
+blocks. \xcd`S` may 
+throw an exception; when control leaves \xcd`atomic S` the
+side-effects executed so far are made visible to other atomic blocks.  
+The programmer may surround \xcd`S` with a \xcd"try"/\xcd"finally"
+block and try to undo assignments when an exception is thrown. 
 
 Atomic blocks are closely related to non-blocking synchronization
 constructs \cite{herlihy91waitfree}, and can be used to implement 
 non-blocking concurrent algorithms.
-
-Code executed inside of \xcd`atomic S` and \xcd`when(E)S` is subject
-to certain restrictions. A violation of these restrictions causes an 
-\xcd`IllegalOperationException` to be thrown at the point of the violation.
-
-\begin{itemize}
-\item \xcd`S` may not spawn another activity.
-\item \xcd`S` may not use any blocking statements; \xcd`when`, \xcd`next`,
-      \xcd`finish`.  (The use of a nested \xcd`atomic` is permitted.)
-\item \xcd`S` may not \xcd`force()` a \xcd`Future`. 
-\item \xcd`S` may not use \xcd`at` expressions.
-\end{itemize}
-
-
-
 
 Note an important property of an (unconditional) atomic block:
 \begin{eqnarray}
 \mbox{\xcd"atomic \{s1; atomic s2\}"} &=& \mbox{\xcd"atomic \{s1; s2\}"}
 \end{eqnarray}
 
-Atomic blocks do not introduce deadlocks.    They may exhibit all the bad
-behavior of sequential programs, including throwing exceptions and running
-forever, but they are guaranteed not to deadlock.
-
-
+Unconditional atomic blocks do not introduce deadlocks.    They may
+exhibit all the bad behavior of sequential programs, including
+throwing exceptions and running forever, but they are guaranteed not
+to deadlock. 
 
 \begin{ex}
 The following class method implements a (generic) compare and swap (CAS) operation:
@@ -512,8 +495,34 @@ public atomic def CAS(old1: Any, y: Any):Boolean {
 \subsection{Conditional atomic blocks}
 \index{atomic!conditional}
 \index{when}
+Conditional atomic blocks are of the form \xcd`when(b)S`; 
+\xcd`b` is called the {\em guard}, and \xcd`S` the {\em body}.
 
+An activity executing such a statement suspends until such time as the  guard
+is true in the current state. In that state, the 
+body is executed. 
+The checking of the guards and the execution of the corresponding
+guarded statement is done atomically. 
 
+\Xten{} does not guarantee that a conditional atomic block
+will execute if its condition holds only intermittently. For, based on
+the vagaries of the scheduler, the precise instant at which a
+condition holds may be missed. Therefore the programmer is advised to
+ensure that conditions being tested by conditional atomic blocks are
+eventually stable, \ie, they will continue to hold until the block
+executes (the action in the body of the block may cause the condition
+to not hold any more).
+
+The statement \xcd"when (true) S" is behaviorally identical to
+\xcd"atomic S": it never suspends. 
+
+The body \xcd`S` of \xcd`when(b)S` is subject to the same restrictions that
+the body of \xcd`atomic S` is.  The guard is subject to the same restrictions
+as well.  Furthermore, guards should not have side effects.
+Note that this implies that guarded statements are required to be {\em
+flat}, that is, they may not contain conditional atomic blocks. (The
+implementation of nested conditional atomic blocks may require
+sophisticated operational techniques such as rollbacks.)
 
 Conditional atomic blocks allow the activity to wait for some condition to be
 satisfied before executing an atomic block. For example, consider a
@@ -541,10 +550,9 @@ def pop():T {
 % }
 %~~neg
 
-
 The execution of the test is atomic with the execution of the block.  This is
-important; it means that no other activity can sneak in and make the condition
-be false after the test was seen to be true, but 
+important; it means that no other activity can sneak in and falsify the condition
+after the test was seen to be true, but 
 before the block is executed.  In this example, two \xcd`pop`s
 executing on a list with one element would work properly. Without the
 conditional atomic block -- even doing the decrement atomically -- one call to
@@ -563,43 +571,6 @@ And
 atomic{ if(size>0) {size--; ret = list.removeAt(0);}}
 \end{xtenmath}
 does not wait for \xcd`size>0` to become true.
-
-
-Conditional atomic blocks are of the form \xcd`when(b)S`; 
-\xcd`b` is called the {\em guard}, and \xcd`S` the {\em body}.
-
-An activity executing such a statement suspends until such time as the  guard
-is true in the current state. In that state, the 
-body is executed. 
-The checking of the guards and the execution of the corresponding
-guarded statement is done atomically. 
-
-\Xten{} does not guarantee that a conditional atomic block
-will execute if its condition holds only intermittently. For, based on
-the vagaries of the scheduler, the precise instant at which a
-condition holds may be missed. Therefore the programmer is advised to
-ensure that conditions being tested by conditional atomic blocks are
-eventually stable, \ie, they will continue to hold until the block
-executes (the action in the body of the block may cause the condition
-to not hold any more).
-
-
-
-
-
-The statement \xcd"when (true) S" is
-behaviorally identical to \xcd"atomic S": it never suspends.
-
-The body \xcd`S` of \xcd`when(b)S` is subject to the same restrictions that
-the body of \xcd`atomic S` is.  The guard is subject to the same restrictions
-as well.  Furthermore, guards should not have side effects.
-
-
-Note that this implies that guarded statements are required to be {\em
-flat}, that is, they may not contain conditional atomic blocks. (The
-implementation of nested conditional atomic blocks may require
-sophisticated operational techniques such as rollbacks.)
-
 
 \begin{ex}
 The following class shows how to implement a bounded buffer of size
@@ -642,26 +613,29 @@ class OneBuffer[T] {
 
 Suppose that activity {$A$} is blocked waiting on \xcd`when(e)S`, because
 \xcd`e` is \xcd`false`.    If some other activity {$B$} changes the state 
-in an \xcd`atomic` section 
-in a
-way that makes \xcd`e` become \xcd`true`, then either: 
+in an \xcd`atomic` section in a way that makes \xcd`e` become \xcd`true`, then either: 
 \begin{itemize}
 \item {$A$} will eventually execute \xcd`S`, or
-\item Some activity {$C \ne A$} will cause \xcd`e` to become \xcd`false` again.
+\item Some activity {$C \ne A$} will cause \xcd`e` to become
+  \xcd`false` again, or
+\item Some activity at that place will execute an infinite number of steps.
 \end{itemize}
 In particular, if no other activity ever falsifies \xcd`e`, then {$A$} will,
-eventually, discover that \xcd`e` evaluates to \xcd`true` and run \xcd`S`.
+eventually, discover that \xcd`e` evaluates to \xcd`true` and run
+\xcd`S` (provided that no other activity at that place is running
+forever). 
 
 Two caveats are worth noting: 
 \begin{itemize}
 \item X10 has no guarantees of fairness or liveness.
-\item X10 only makes guarantees about state changes {\em in atomic sections}
-      alerting \xcd`when`s.  State changes outside of atomic sections might
+\item X10 only makes guarantees about state changes {\em in atomic blocks}
+      alerting \xcd`when`s.  State changes outside of atomic blocks might
       not cause {$A$} to re-evaluate \xcd`e`.  
 \end{itemize}
 
 \begin{ex}
-The method \xcd`good` below will always terminate.  In particular, if the
+The method \xcd`good` below will always terminate (assuming no other
+activities are executing an infinite number of steps). In particular, if the
 \xcd`when` statement is allowed to run first and block on \xcd`c()`, the
 \xcd`atomic` will alert it that \xcd`c()` has changed. 
 
@@ -697,10 +671,7 @@ static def bad() {
 
 \end{ex}
 
-
-
 \section{Use of Atomic Blocks}
-
 The semantics of atomicity is chosen as a compromise between programming
 simplicity and efficient implementation.  Unlike some possible definitions of
 ``atomic'', atomic blocks do not provide absolute atomicity.  
@@ -745,7 +716,7 @@ finish {
 %}}
 %~~neg
 
-If X10 had absolute atomic semantics, this program would be guaranteed to
+If X10 had absolute (``strong'') atomic semantics, this program would be guaranteed to
 treat the atomic increment as a single statement.  This would permit three
 interleavings: the two possible from the fully atomic program, or a third one
 with the events:  \xcd`(a)`'s read of \xcd`0` from \xcd`n`, the entirety of
@@ -753,7 +724,7 @@ with the events:  \xcd`(a)`'s read of \xcd`0` from \xcd`n`, the entirety of
 interleaving results in \xcd`n==1`. So, with absolute atomic semantics,
 \xcd`n==1` or \xcd`n==3` are the possible results.
 
-However, X10's semantics are weaker than that.  Atomic statements are atomic
+However, atomic blocks in X10 are ``weak''.  Atomic blocks are atomic
 with respect to each other --- but there is no guarantee about how they
 interact with non-atomic statements at all.  They might even break up the
 atomicity of an \xcd`atomic` block.
@@ -763,14 +734,14 @@ fourth interleaving is possible: \xcd`(a)`'s read of \xcd`0` from \xcd`n`,
 \xcd`n`, and \xcd`(b)`'s write of \xcd`2` to \xcd`n`.   Thus, \xcd`n==2` is
 permissible as a result in X10.
 
-X10's semantics permit more efficient implementation than absolute atomicity.
-Absolute atomicity would, in principle, require all activities at place
-\xcd`p` to stop whenever one of them enters an atomic section, which would
-seriously curtail concurrency.  X10 simply requires that, when one activity is
-in an atomic section, that other activities stop {\em when they are trying to
-enter an atomic section} --- which is to say, they can continue computing on
-their own all they like.  The difference can be substantial, both in execution
-time and possible behaviors.
+%X10's semantics permit more efficient implementation than strong atomicity.
+%Strong atomicity would, in principle, require all activities at place
+%\xcd`p` to stop whenever one of them enters an atomic section, which would
+%seriously curtail concurrency.  X10 simply requires that, when one activity is
+%in an atomic section, that other activities stop {\em when they are trying to
+%enter an atomic section} --- which is to say, they can continue computing on
+%their own all they like.  The difference can be substantial, both in execution
+%time and possible behaviors.
 
 However, X10's semantics do impose a certain burden on the programmer.  A
 sufficient rule of thumb is that, if {\em any} access to a
