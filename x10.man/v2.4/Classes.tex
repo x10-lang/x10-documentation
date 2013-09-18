@@ -714,12 +714,10 @@ which one to use.)
 The requirement of having a method guard 
 is that callers must demonstrate to
 the X10
-compiler that the guard is satisfied.  
+compiler and/or runtime that the guard is satisfied.  
 With the \xcd`STATIC_CHECKS` compiler option in force (\Sref{sect:Callstyle}), this is
-checked at compile time. 
-As usual with static constraint
-checking, there is no runtime cost.  Indeed, this code can be more efficient
-than usual, as it is statically provable that \xcd`x != null`.
+checked at compile time, and there is no runtime cost.
+Indeed, this code can be more efficient than usual, as it is statically provable that \xcd`x != null`.
 
 When \xcd`STATIC_CHECKS` is not in force, dynamic checks are generated as
 needed; method guards are checked at runtime. This is potentially more
@@ -900,7 +898,7 @@ nullary property method does not behave hugely different from a property.
 Indeed, a compilation scheme which cached the value of the property method
 would all but erase the distinction.  Other methods may
 have more behavior, \eg, side effects, so we keep the \xcd`()` to make it
-clear that a method call is potentially large.
+clear that a method call is potentially complex.
 }
 
 %~~longexp~~`~~` ^^^ Classes130
@@ -1096,13 +1094,13 @@ ce({\tt T})
 
 
 
- Two methods are said to have {\em erasedly equivalent signatures} if (a) they have the
+ Two methods are said to have {\em erasure equivalent signatures} if (a) they have the
  same number of type parameters, 
 (b) they have the same number of formal (value) parameters, and (c)
-for each formal parameter the constraint erasure of its types are erasedly equivalent.
+for each formal parameter the constraint erasure of its types are erasure equivalent.
 It is a 
 compile-time error for there to be two methods with the same name and
-erasedly equivalent signatures in a class (either defined in that class or in a
+erasure equivalent signatures in a class (either defined in that class or in a
 superclass), unless the signatures are identical (without erasures) and one of the methods is
 defined in a superclass (in which case the superclass's method is overridden
 by the subclass's, and the subclass's method's return type must be a subtype of
