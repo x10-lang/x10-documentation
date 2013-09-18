@@ -78,7 +78,7 @@ The following examples illustrate the syntax:
 
   // method annotation
   @PreCondition(0 <= i && i < this.size)
-  public def get(i: Int): T { ... }
+  public def get(i: Long): T { ... }
 
   // constructor annotation
   @Where(x != null)
@@ -94,7 +94,7 @@ The following examples illustrate the syntax:
 \begin{xtennoindent}
   List@Nonempty
 
-  Int@Range(1,4)
+  Int@Range(1n,4n)
 
   Rail[Rail[Double]]@Size(n * n)
 \end{xtennoindent}
@@ -108,7 +108,7 @@ The following examples illustrate the syntax:
 
   @MinIterations(0)
   @MaxIterations(n)
-  for (var i: Int = 0; i < n; i++) { ... }
+  for (var i: Long = 0; i < n; i++) { ... }
 
   // An annotated empty statement ;
   @Assert(x < y);
