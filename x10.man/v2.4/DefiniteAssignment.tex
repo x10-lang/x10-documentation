@@ -5,7 +5,7 @@
 \index{definitely assigned}
 \index{definitely not assigned}
 
-X10 requires, reasonably enough, that every variable be set before it is read.
+X10 requires that every variable be set before it is read.
 Sometimes this is easy, as when a variable is declared and assigned together: 
 %~~gen ^^^ DefiniteAssignment4x1u
 % package DefiniteAssignment4x1u;
@@ -44,18 +44,19 @@ initialized with the correct value.
 
 However, one must be careful -- and the X10 compiler enforces this care.
 Without the \xcd`else` clause, the preceding code might not give \xcd`max` a
-value by the \xcd`assert`.  
+value by the time \xcd`assert` is invoked.  
 
 This leads to the concept of {\em definite assignment} \cite{jls2}.
-A variable is definitely assigned at a point in code if, no matter how that
+A variable is {\em definitely assigned} at a point in code if, no matter how that
 point in code is reached, the variable has been assigned to.  In X10,
 variables must be definitely assigned before they can be read.
 
 
 As X10 requires that \xcd`val` variables {\em not} be initialized
 twice,  we need the dual concept as well.  A variable is {\em definitely
-unassigned} at a point in code if it cannot have been assigned there.  For
-example, immediately after \xcd`val x:Long`, \xcd`x` is definitely unassigned. 
+unassigned} at a point in code if it cannot have been assigned no
+matter how that point in code is reached.  For example, immediately
+after \xcd`val x:Long`, \xcd`x` is definitely unassigned.  
 
 Finally, we need the concept of {\em singly} and {\em multiply assigned}.
 A variable is singly assigned in a block if it is assigned precisely
@@ -169,12 +170,8 @@ assigned:
 \begin{xten}
 val x : Long;
 var b : Boolean = mysterious();
-if (b) {
-   x = cryptic();
-}
-if (!b) { 
-   x = unknown();
-}
+if (b) x = cryptic();
+if (!b) x = unknown();
 \end{xten}
 However, most conservative approximations of program execution won't mark
 \xcd`x` as properly initialized, though it is.   For \xcd`x` to be properly
@@ -218,14 +215,10 @@ error if
 \xcd`x` is ever read at a point where it have been assigned zero times.  It is
 an error if a \xcd`val` may be assigned many times.
 
-
 We do not guarantee that any particular X10 compiler uses this algorithm;
 indeed, as of the time of writing, the X10 compiler uses a somewhat more
 precise one.  However, any conformant X10 compiler must provide results which
 are at least as accurate as this analysis.
-
-
-
 
 \subsubsection{Assignment: {\tt x = e}}   
 
@@ -236,13 +229,13 @@ multiply assigns \xcd`x`.
 
 \subsubsection{{\tt async} and {\tt finish}}
 
-By itself, \xcd`async S` provides few guarantees.  After \xcd`async{x=1;}`
-finishes, we know that there is a separate activity which will, when the
-scheduler lets it, set \xcd`x` to \xcd`1`.  We do not know that anything has
-happened yet.
+By itself, \xcd`async S` provides few guarantees.  After an activity
+executes \xcd`async{x=1;}` we know that there is a separate activity
+which (on being scheduled) will set \xcd`x` to \xcd`1`.  We do not
+know that this has happened yet.
 
 However, if there is a \xcd`finish` around the \xcd`async`, the situation is
-clearer.  After \xcd`finish{ async{ x=1; }}`, \xcd`x` has definitely been
+clearer.  After \xcd`finish async x=1;`, \xcd`x` has definitely been
 assigned.  
 
 In general, if an \xcd`async S` appears in the body of a \xcd`finish` in a way
@@ -251,8 +244,6 @@ assignments made by \xcd`S` will have occurred.  For example, if \xcd`S`
 definitely assigns to \xcd`x`, and the body of the \xcd`finish` guarantees
 that \xcd`async S` will be executed, then \xcd`finish{...async S...}`
 definitely assigns \xcd`x`.
-
-
 
 \subsubsection{{\tt if} and {\tt switch}}
 
@@ -270,7 +261,14 @@ case, so it performs the same assignments as \xcd`B;C`.
 \subsubsection{Sequencing}
 
 When \xcd`R;S` finishes, it will have performed the assignments of \xcd`R` and
-those of \xcd`S`.  For example, \xcd`x=1;y=2;` definitely assigns \xcd`x` and
+those of \xcd`S`, if \xcd`R` and \xcd`S` terminate normally. If
+\xcd`R` terminates abruptly, then only the assignments of \xcd`R`
+executed till the point of termination will have been executed. if
+\xcd`R` terminates normally, but \xcd`S` terminates abruptly then the
+assignments of \xcd`R` will have been executed and those of \xcd`S`
+executed till the point of termination. 
+
+For example, \xcd`x=1;y=2;` definitely assigns \xcd`x` and 
 \xcd`y`, and \xcd`x=1;x=2;` multiply assigns \xcd`x`. 
 
 
@@ -291,22 +289,18 @@ Loops are of very little value for providing definite assignments, since X10
 does not in general know how many times they will be executed. 
 
 \xcd`continue` and \xcd`break` inside of a loop are hard to describe in simple
-terms.  They may be conservatively assumed to cause the loop give no
+terms.  They may be conservatively assumed to cause the loop to give no
 information about the variables assigned inside of it.
 For example, the analysis may conservatively conclude that 
 \xcd`do{ x = 1; if (true) break; } while(true)` may 
 assign to \xcd`x` zero, one, or many times, overlooking the more precise fact
 that it is assigned once.  
 
-
-
-
 \subsubsection{Method Calls}
 
 A method call \xcd`E.m(A,B)` performs the assignments of \xcd`E`, \xcd`A`, and
 \xcd`B` once each, and also those of \xcd`m`.  This implies that X10 must be
 aware of the possible assignments performed by each method.
-
 
 If X10 has complete information about \xcd`m` (as when \xcd`m` is a
 \xcd`private` or \xcd`final` method), this is straightforward.  When such
@@ -317,10 +311,10 @@ that can be called from within a constructor on a raw --
 incompletely-constructed -- object) are the \xcd`private` and
 \xcd`final` ones.)  
 \begin{itemize}
-\item \xcd`m` cannot assign to local fields of the caller; methods have no
+\item \xcd`m` cannot assign to local variables of the caller; methods have no
       such power.
-\item \xcd`m` can assign to \xcd`var` fields of \xcd`this` freely. 
-\item \xcd`m` cannot initialize \xcd`val` fields of \xcd`this`.  (But see
+\item Let \xcd`m` be an instance method. \xcd`m` can assign to \xcd`var` fields of \xcd`this` freely,
+\item Let \xcd`m` be an instance method. \xcd`m` cannot initialize \xcd`val` fields of \xcd`this`.  (But see
       \Sref{sect:call-another-ctor}; when one constructor calls another as the
       first statement of its body, the other constructor can initialize
       v\xcd`val` fields. This is a constructor call, not a method call.) 
@@ -415,17 +409,27 @@ class C {
 %%AT-COPY%% \end{ex}
 %%AT-COPY%% 
 
-\xcd`at(p)S` cannot perform any assignments.  \xcd`this` cannot be read or
-written by an \xcd`at`-statement.
+% vj Wed Sep 18 04:19:05 EDT 2013
+% Hmm. This used to be incorrect.
+\xcd`at(p)S` performs precisely the assignments of \xcd`p` and those
+of \xcd`S`. Note that \xcd`S` is executed at the place named by
+\xcd`p` in an environment in which all variables used in \xcd`S` but
+defined outside \xcd`S` are bound to copies (made at \xcd`p`) of the
+values they had at the \xcd`at(p)S` statement (\Sref{AtStatement}).
+
+% vj Wed Sep 18 04:19:05 EDT 2013
+% Hmm. Commented this out. This is not true :-(
+%\xcd`this` cannot be read or written by an \xcd`at`-statement.
 
 \subsubsection{{\tt atomic}}
 
 \xcd`atomic S` performs the assignments of \xcd`S`, 
-and \xcd`when(E)S` performs those of \xcd`E` and \xcd`S`.  
+and \xcd`when(E)S` performs those of \xcd`E` and \xcd`S`.  Note that
+\xcd`E` or \xcd`S` may terminate abruptly.
 
 \subsubsection{{\tt try}}
 
-\xcd`try S catch(x:T1) E1 ... catch(x:Tn) En  finally F` 
+\xcd`try S catch(x:T1) E1 ... catch(x:Tn) En finally F` 
 performs some or all of the assignments of \xcd`S`, plus all the assignments
 of zero or one of the \xcd`E`'s, plus those of \xcd`F`.  
 For example,
@@ -451,6 +455,6 @@ expression and do something innocuous with it (local variable declaration and
 \subsubsection{{\tt return}, {\tt throw}}
 
 Statements that do not finish normally, such as \xcd`return` and \xcd`throw`,
-don't initialize anything (though the computation of the return or thrown
+do not initialize anything (though the computation of the return or thrown
 value may).    They also terminate a line of computation.  For example, 
 \xcd`if(b) {x=1; return;}  x=2;` definitely and singly assigns \xcd`x`.  
