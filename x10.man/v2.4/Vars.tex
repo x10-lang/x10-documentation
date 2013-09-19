@@ -40,7 +40,7 @@ A few other kinds of things are called variables for historical reasons; \eg,
 type parameters are often called type variables, despite not being variables
 in this sense because they do not refer to X10 values.  Other named entities,
 such as classes and methods, are not called variables.  However, all
-name-to-whatever bindings enjoy similar concepts of scope and visibility.  
+name bindings enjoy similar concepts of scope and visibility.  
 
 \begin{ex}
 In the following example, 
@@ -170,7 +170,7 @@ val b = (a+1)*(a-1);
 
 \end{ex}
 
-In two special cases, the declaration and assignment are separate.  One 
+In three special cases, the declaration and assignment are separate.  One 
 case is how constructors give values to \xcd`val` fields of objects.  In this
 case, production (\ref{prod:LocVarDecln}) is taken, with the {\it
 FormalDeclarators} option, such as  \Xcd{var n:Long;}.  
@@ -196,7 +196,7 @@ class Example {
 \end{ex}
 
 
-The other case of separating declaration and assignment is in function
+The second case of separating declaration and assignment is in function
 and method call, described in \Sref{sect:formal-parameters}.  The formal
 parameters are bound to the corresponding actual 
 parameters, but the binding does not happen until the function is called.  
@@ -220,6 +220,9 @@ x10.io.Console.OUT.println("4 squared = " + sq(4));
 %~~neg
 \end{ex}
 
+The third case is delayed initialization
+(\Sref{sect:DefiniteAssignment}), useful in cases where the code has
+to make decisions (possibly asynchronously) before assigning values to variables.
 
 
 
@@ -267,9 +270,9 @@ These variables are all initialized:
 %~~neg
 \end{ex}
 
-Or, a variable may be given a value by an assignment.  \xcd`var` variables may
+A variable may also be given a value by an assignment.  \xcd`var` variables may
 be assigned to repeatedly.  \xcd`val` variables may only be assigned once; the
-compiler will ensure that they are assigned before they are used.
+compiler will ensure that they are assigned before they are used (\Sref{sect:DefiniteAssignment}).
 
 \begin{ex}
 The variables in the following example are given their initial values by

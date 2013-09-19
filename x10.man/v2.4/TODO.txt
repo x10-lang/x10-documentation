@@ -1,3 +1,5 @@
-Array/Rail changes:
-  (1) Update discussion of destructuring in Vars.tex
+Thu Sep 19 05:52:23 EDT 2013
+
+(1) Update discussion of destructuring in Vars.tex
+(2) Update type safety discussion -- no IndexedMemoryChunk?
 
