@@ -1,6 +1,6 @@
 \chapter{Options}
 
-\subsection{Compiler Options}
+\section{Compiler Options: Common}
 
 The X10 compilers have many useful options. 
 
@@ -59,24 +59,36 @@ These options cause the compiler to print a list of all command-line options.
 This option tells the compiler where to look for X10 source code.  
 
 
-\subsection{(Deprecated) Class Path: {\tt -classpath {\em path}}}
+\subsection{Output Directory: {\tt -d {\em directory}}}
+
+This option tells the compiler to produce its output files in the specified directory.
+
+
+\subsection{Executable File: {\tt -o {\em path}}}
+
+This option tells the compiler what path to use for the executable file. 
+
+
+\section{Compiler Option: C++}
+
+The C++ compilation command \xcd`x10c++` has the following option as well. 
+
+\subsection{Runtime: {\tt -x10rt {\em impl}}}
+
+This option tells which runtime implementation to use.  The choices are
+\xcd`sockets`, \xcd`standalone`, \xcd`pami`, \xcd`mpi`, and \xcd`bgas_bgp`.
+
+
+\section{Compiler Option: Java}
+
+The Java compilation command \xcd`x10c` has the following option as well. 
+
+\subsection{Class Path: {\tt -classpath {\em path}}}
 
 This option is used in conjunction with the Java interoperability
 feature to tell the compiler where to look for Java .class files that
 may be used by the X10 code being compiled.
 
-\subsection{Output Directory: {\tt -d {\em directory}}}
-
-This option tells the compiler to produce its output files in the specified directory.
-
-\subsection{Runtime {\tt -x10rt {\em impl}}}
-
-This option tells which runtime implementation to use.  The choices are
-\xcd`sockets`, \xcd`standalone`, \xcd`pami`, \xcd`mpi`, and \xcd`bgas_bgp`.
-
-\subsection{Executable File {\tt -o {\em path}}}
-
-This option tells the compiler what path to use for the executable file. 
 
 \section{Execution Options: Java}
 
@@ -90,9 +102,26 @@ This option specifies the search path for class files.
 
 This option specifies the search path for native libraries.
 
-\subsection{Heap Size: {\tt -mx {\em size}}}
+\subsection{Heap Size: {\tt -ms{\em size}} and {\tt -mx{\em size}}}
 
-Sets the maximum size of the heap. 
+Sets the minimum and maximum size of the heap. 
+
+\subsection{Stack Size: {\tt -ss{\em size}}}
+
+Sets the maximum size of the stack. 
+
+\subsection{Places: {\tt -np {\em count}}}
+
+Specify the number of places.
+
+\subsection{Hosts: {\tt -host {\em host1,host2,...}} or {\tt -hostfile {\em file}}}
+
+Specify the hosts either by the list of host names or the host file.
+
+\subsection{Runtime: {\tt -x10rt {\em impl}}}
+
+This option tells which runtime implementation to use.  The choices are
+\xcd`sockets`, \xcd`JavaSockets` (experimental), and \xcd`mpi` (experimental).
 
 \subsection{Help: {\tt -h}}
 
