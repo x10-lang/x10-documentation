@@ -30,12 +30,35 @@ abstractions (for example column-major arrays as in Fortran or 1-based
 arrays as in MATLAB).
 
 \section{Rails}
+\index{Rail}
 
-WRITE ME
+\begin{itemize}
+\item Abstraction provided: bounds-checked, 0..size-1, indexed storage
+\item Construction, literals (back-ref to expressions)
+\item element access a(i) and a(i) = 
+\item size, range
+\item iteration
+\item bulk operations: copy, fill, clear
+\item GlobalRail and asyncCopy
+\item Unsafe extensions (allocation, element access)
+\item RailUtils
+\end{itemize}
+
 
 \section{\xcd{x10.array}: Simple Arrays}
 
-WRITE ME
+\begin{itemize}
+\item Abstraction: multi-D, rect, zero-based, dense
+\item Design pattern of library:  Abstract class with concrete
+  implementation subclasses
+\item Points
+\item IterationSpace
+\item Array: rank, size, element access, iteration, bulk operations, access to
+  backing rail. When rank is known, prefer long-based operations
+  instead of Point-based ones.
+\item DistArray: element access, iteration, ateach,
+\end{itemize}
+
 
 \section{\xcd{x10.regionarray}: Flexible Arrays}
 
