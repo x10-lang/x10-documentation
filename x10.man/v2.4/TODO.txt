@@ -26,15 +26,16 @@ Done:
   -rw-r--r--  1 vsaraswa  staff    3411 Sep 19 05:01 UserDefinedOperators.tex
   -rw-r--r--  1 vsaraswa  staff   44216 Sep 17 18:39 Grammar.tex
   -rw-r--r--  1 vsaraswa  staff     754 Sep 17 18:39 NotCovered.tex
+  -rw-r--r--  1 vsaraswa  staff   25954 Sep 17 18:39 Overview.tex
+  -rw-r--r--  1 vsaraswa  staff    4671 Sep 17 18:39 Options.tex
 
 In progress:
   -rw-r--r--  1 vsaraswa  staff   11362 Sep 17 18:39 Interfaces.tex
   -rw-r--r--  1 vsaraswa  staff   23525 Sep 17 18:39 NativeCode.tex
-  -rw-r--r--  1 vsaraswa  staff   25954 Sep 17 18:39 Overview.tex
   -rw-r--r--  1 vsaraswa  staff   15776 Sep 17 18:39 Packages.tex
   -rw-r--r--  1 vsaraswa  staff   45235 Sep 17 18:39 Places.tex
   -rw-r--r--  1 vsaraswa  staff   15706 Sep 17 18:39 Structs.tex
   -rw-r--r--  1 vsaraswa  staff    4389 Sep 17 18:39 first.tex
   -rw-r--r--  1 vsaraswa  staff    5043 Sep 17 18:39 x10.tex
 
-  -rw-r--r--  1 vsaraswa  staff    4671 Sep 17 18:39 Options.tex
+
