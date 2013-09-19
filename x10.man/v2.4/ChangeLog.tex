@@ -1,19 +1,40 @@
 \chapter{Change Log}
 
 \section{Changes from \Xten{} v2.3}
+\Xten{} v2.4 is not backwards compatible with \Xten{} v2.3. The
+motivation for making backwards incompatible language changes with
+this release of \Xten{} is to significantly improve the ability of the
+\Xten{} programmer to exploit the expanded memory capabilities of
+modern computer systems.  In particular, \Xten{} v2.4 includes an
+extensive redesign of arrays and a change of the default type of
+unqualified integral literals (\eg \xcd`2`) from \xcd{Int} to
+\xcd{Long}. Taken together these two changes enable natural
+exploitation of large memories via 64-bit addressing and
+\xcd{Long}-based indexing of arrays and similar data structures. 
+
+\subsection{Integral Literals}
+
+The default type of unqualified integral literals was change from
+\xcd{Int} to \xcd{Long}. 
+
+The qualifying suffix \xcd`n` and \xcd`un` are used to indicate
+\xcd{Int} and \xcd{UInt} literals respectively.  The suffix xcd\`u` is
+now interpreted as indicating a \xcd{ULong} literal.
+
+\subsection{Arrays}
+
 An extensive redesign of the \Xten{} abstractions for arrays is the
 major new feature of the \Xten{} v2.4 release.  Although this redesign
 only involved very minor changes to the actual \Xten{} language
 specification, the core class libraries did change significantly.  As
-a result, virtually all \Xten{} v2.3 programs will need at least minor
-updates to be valid \Xten{} 2.4 programs.  The driving motivation for
+mentioned above, the driving motivation for
 the change was a long-contemplated strategic decision to shift to from
-int-based (32-bit) to long-based (64-bit) indexing for all \Xten{}
-arrays. This change enables \Xten{} to better utilize the rapidly
+\xcd{Int}-based (32-bit) to \xcd{Long}-based (64-bit) indexing for all
+\Xten{} arrays. This change enables \Xten{} to better utilize the rapidly
 expanding memory capacity and 64-bit address space found on modern
 machines. For consistency, the \xcd{id} field of \xcd{x10.lang.Place} and
 the \xcd{size} and indexing-related APIs of the \xcd{x10.util}
-collection hierarchy were also changed from \xcd{int} to \xcd{long}.
+collection hierarchy were also changed from \xcd{Int} to \xcd{Long}.
 
 Once this inherently backwards-incompatible decision was made, the
 \Xten{} team decided to do a larger rethinking of all of \Xten{}'s
@@ -31,7 +52,8 @@ packages are built.  The intent is that the combination of \xcd{Rail},
 abstractions that capture common usage patterns and enable appropriate
 trade-offs between performance and flexibility. 
 
-In more detail the major changes made in the \Xten{} v2.4 release are
+In more detail the major array-related changes made in the \Xten{}
+v2.4 release are 
 \begin{enumerate}
 \item The class \xcd{x10.lang.Rail} was introduced.  It provides
   an efficient one-dimensional, zero-based, densely indexed array
@@ -41,9 +63,8 @@ In more detail the major changes made in the \Xten{} v2.4 release are
   a \xcd{Rail} instead of an \xcd{Array}. 
 \item The main method signature is changed from \xcd{Array[String]} to
   \xcd{Rail[String]}. 
-\item \xcd{x10.util.IndexedMemoryChunk} has been deprecated and all
-  uses have been removed from the \Xten{} standard library.
-  \xcd{IndexedMemoryChunk} will be removed in the next release of \Xten{}.
+\item \xcd{x10.util.IndexedMemoryChunk} has removed from the \Xten{}
+  standard library.
 \item To enable usage of classes from both \xcd{x10.array} and
   \xcd{x10.regionarray}, the package \xcd{x10.array} is no longer
   auto-imported by the \Xten{} compiler.
@@ -53,7 +74,7 @@ In more detail the major changes made in the \Xten{} v2.4 release are
   to the \xcd{x10.lang} package instead.
 \item \xcd{Point}, \xcd{Region}, \xcd{Dist}, etc. were all updated to
   support long-based indexing by consistently changing indexing
-  related fields and methods from \xcd{int} to \xcd{long}. 
+  related fields and methods from \xcd{Int} to \xcd{Long}. 
 \end{enumerate}
 
 \section{Changes from \Xten{} v2.2}
