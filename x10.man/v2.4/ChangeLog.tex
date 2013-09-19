@@ -77,6 +77,27 @@ v2.4 release are
   related fields and methods from \xcd{Int} to \xcd{Long}. 
 \end{enumerate}
 
+\subsection{Other Changes from \Xten{} v2.3}
+
+\begin{enumerate}
+\item The custom serialization protocol was changed to operate in
+  terms of new user-level classes \xcd{x10.io.Serializer} and
+  \xcd{x10.io.Deserializer}.  The \xcd{serialize} method of
+  the xcd{x10.io.CustomSerialization} interface now takes a
+  \xcd{Serializer} as an argument.  The custom deserialization
+  constructor for a class takes a \xcd{Deserializer}. The
+  \xcd{x10.io.SerialData} class used by the \Xten{} v2.3 custom
+  serialization protocol has been removed from the class library. 
+
+\item A constraint was added to \xcd{PlaceLocalHandle} that types used
+  to instantiate a \xcd{PlaceLocalHandle} must satisfy both the
+  \xcd`isref` and \xcd`haszero` constraints.
+
+\item The \xcd{x10.util.Team} API was revised by (a) removing the
+  endpoint argument from all API calls and (b) to operate on \xcd`Rail` and
+  xcd`Long` where appropriate.
+\end{enumerate}
+
 \section{Changes from \Xten{} v2.2}
 
 \begin{enumerate}
