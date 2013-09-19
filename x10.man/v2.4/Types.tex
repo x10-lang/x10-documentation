@@ -694,7 +694,7 @@ on instantiation.
 For example, a generic stack class may be defined as 
 \xcd`Stack[T]{...}`.  Stacks can hold values of any type; \eg, 
 %~~type~~`~~`~~ ~~class Stack[T]{} ^^^ Types160
-\xcd`Stack[Long]` is a stack of integers, and 
+\xcd`Stack[Long]` is a stack of longs, and 
 %~~type~~`~~`~~ ~~class Stack[T]{} ^^^ Types170
 \xcd`Stack[Point {self!=null}]` is a stack of non-null \xcd`Point`s.
 Generics {\em must} be instantiated when they are used: \xcd`Stack`, by
@@ -2055,7 +2055,7 @@ Default values, or lack of them, is defined thus:
       \xcd`Long`, \xcd`ULong`, 
   \xcd`Short`, \xcd`UShort`, \xcd`Byte`,
    \xcd`UByte`, 
-      \xcd`Float`, \xcd`Double`) all have default value 0.
+      \xcd`Float`, \xcd`Double`) all have default value \xcd`0`.
 \item \xcd`Boolean` has default value \xcd`false`.
 \item \xcd`Char` has default value \xcd`'\0'`.
 \item If every field of a struct type \xcd`T` has a default value, then
@@ -2549,10 +2549,10 @@ class Spot(x:Long) {
 \index{void}
 
 A method or closure that has expression-free \xcd`return` statements
-(\xcd`return;` rather than \xcd`return e;`) is said to return \xcd`void`.
+(\xcd`return;` rather than \xcd`return e;`) is said to be a \xcd`void` method or closure.
 \xcd`void` is not a type; there are no \xcd`void` values, nor can \xcd`void`
 be used as the argument of a generic type. However, \xcd`void` takes the
-syntactic place of a type in a few contexts. A method returning \xcd`void` can be specified by
+syntactic place of a type in a few contexts. A \xcd`void` method can be specified by
 \xcd`def m():void`, and similarly for a closure: 
 
 %~~gen ^^^ Types520
@@ -2570,8 +2570,9 @@ val f : () => void = () => {return;};
 
 By a convenient abuse of language, \xcd`void` is sometimes
 lumped in with types; \eg, we may say ``return type of a method'' rather than
-the formally correct but rather more awkward ``return type of a method, or
-\xcd`void`''.   Despite this informal usage, \xcd`void` is not a type.  For
+the formally correct but rather more awkward ``return type of a method that is not a 
+\xcd`void` method''.   Despite this informal usage, \xcd`void` is not a type and cannot be used as 
+the value of a type parameter.  For
 example, given 
 %~~gen ^^^ Types530
 % package Types.void_is_not_a_type;
@@ -2584,11 +2585,24 @@ example, given
 % }
 %~~neg
 \noindent
-The call \xcd`eval[void](f)` does {\em not} typecheck; \xcd`void` is not a
-type and thus cannot be used as a type argument.  There is no way in X10 to
+The call \xcd`eval[void](f)` does {\em not} typecheck. There is no way in X10 to
 write a generic function which works with both functions which return a value
-and functions which do not.  In most cases, functions which have no sensible
-return value can be provided with a dummy return value.
+and functions which do not.  In such cases it may be convenient to define a type 
+\xcd`Unit` thus:
+%~~gen ^^^ Types531
+% package Types.unittype;
+% class EEEEVi1 {
+%~~vis
+\begin{xten}
+  struct Unit{}
+\end{xten}
+%~~siv
+% }
+%~~neg
+\noindent
+Functions whose return type is \xcd`Unit` may simply return the expression \xcd`Unit()` which
+evaluates to the unique value of type \xcd`Unit`. (By definition of equality of structurs
+\xcd`Unit()==Unit()`.)
 
 X10 preserves known information when computing return types.  
 A constraint on a method induces a corresponding constraint on its return
@@ -2625,13 +2639,10 @@ A call to a polymorphic method %, closure, or constructor
 may omit the
 explicit type arguments.  
 X10 will compute a type from the types of the actual arguments. 
-
-(As an exception of sorts, it is an error if the method call provides no information about
-a type parameter that must be inferred.  For example, given the method
+Failure of the compiler to infer unique types for omitted type arguments
+is a compile-time error. For instance, given the method
 definition \xcd`def m[T](){...}`, an invocation \xcd`m()` is considered a
-static error.  The compiler has no idea what \xcd`T` the programmer intends.)
-
-
+compile-time error.  The compiler has no idea what \xcd`T` the programmer intends.
 
 \begin{ex}Consider the following method, which chooses one of its arguments.  (A more
 sophisticated one might sometimes choose the second argument, but that does
@@ -2671,9 +2682,8 @@ inside of the type of a variable; X10 can extract it.
 The \xcd`first` method below returns the first element of a rail.  
 The type parameter \xcd`T` represents the type of the rail's
 elements. There is no parameter of type \xcd`T`. There is one of type
-\xcd`Rail[T]{c}`.  When doing type inference, 
-X10 strips off the constraint \xcd`{c}` and the
-\xcd`Rail[...]` type to get at the \xcd`T` inside.
+\xcd`Rail[String]{length==3}`.  When doing type inference, 
+the compiler is able to infer that \xcd`T` should be instantiated to \xcd`String`:
 %~~gen ^^^ Types3d5j
 % package Types3d5j;
 % class Example {
@@ -2681,8 +2691,8 @@ X10 strips off the constraint \xcd`{c}` and the
 \begin{xten}
 static def first[T](x:Rail[T]) = x(0);
 static def example() {
-  val ss <: Rail[String] = ["X10", "Scala", "Thorn"];
-  val s1 = first(ss);
+  val ss <: Rail[String] = ["X10", "Java", "C++"]; // ok
+  val s1 <: String = first(ss); // ok
   assert s1.equals("X10");
 }
 \end{xten}
@@ -2715,7 +2725,7 @@ Let
 \begin{xtenmath}
 T$_i \mbox{\rm ~be the type of }$ b$_i$
 \end{xtenmath}
-Then, X10 is seeking a
+Then, the compiler is seeking a
 set {$B$}  of type 
 bindings 
 \begin{xtenmath}
