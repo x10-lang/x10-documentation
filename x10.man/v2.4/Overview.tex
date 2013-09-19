@@ -517,12 +517,12 @@ from a word of memory has previously been written into that word.
 %Pointer safety guarantees that a null pointer exception cannot be
 %thrown by an operation on a value of a non-nullable type.
 
-Because places are reflected in the type system, static type safety
-also implies \emph{place safety}. All operations that need to be performed
-locally are, in fact, performed locally.  All data which is declared to be
-stored locally are, in fact, stored locally.
+%Because places are reflected in the type system, static type safety
+%also implies \emph{place safety}. All operations that need to be performed
+%locally are, in fact, performed locally.  All data which is declared to be
+%stored locally are, in fact, stored locally.
 
-\Xten{} programs that use only clocks and unconditional atomic
+\Xten{} programs that use only the common, specified clock idioms and unconditional atomic
 blocks are guaranteed not to deadlock. Unconditional atomic blocks
 are non-blocking, hence cannot introduce deadlocks.
 Many concurrent programs can be shown to be determinate (hence
