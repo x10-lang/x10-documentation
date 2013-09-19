@@ -1,24 +1,43 @@
-\chapter{Local and Distributed Arrays}\label{XtenArrays}\index{array}
+\chapter{Rails and Arrays}\label{XtenArrays}\index{array}
 
 \section{Overview}
 
-Indexable memory is fundamental abstraction for a programming
-language. X10 includes
-\begin{itemize}
-\item Rails -- intrinsic one dimensional arrays
-\item Local multi-dimensional arrays; both \xcd`simplearray` and \xcd`regionarray`
-\item Distributed multi-dimensional arrays; both \xcd`simplearray` and \xcd`regionarray`
-\end{itemize}
+Indexable memory is a fundamental abstraction provided by a
+programming language. To enable the programmer to best balance
+performance and flexibility, \Xten{} provides a layered implementation
+of this abstraction. The foundation of all indexable storage in
+\Xten{} is \xcd{x10.lang.Rail}, an intrinsic one-dimensional array
+analogous to the built-in arrays provided by languages such as C or
+Java. On top of \xcd{Rail}'s, more sophisticated array abstractions
+can be constructed completely as user-defined \Xten{} classes without
+additional language or compiler support. Two such families of
+user-defined array abstractions are included in the \Xten{} core class
+libraries in the \xcd{x10.array} and \xcd{x10.regionarray} packages.
+Both families of arrays provide both local (single place) and
+distributed (multi-place) arrays. 
+
+The next section specifies \xcd{Rail}.  Subsequent sections outline
+the \xcd{x10.array} and \xcd{x10.regionarray} packages.  As discussed,
+in more detail below, \xcd{Rail} and the classes of \xcd{x10.array}
+provide significantly higher performance operations than the
+corresponding classes of \xcd{x10.regionarray}. Therefore we recommend
+that programmers only use the more general arrays of
+\xcd{x10.regionarray} where absolutely necessary.  We also encourage
+programmers to use the classes of \xcd{x10.array} as an example of how
+to define high-performance array abstractions in \Xten{} and use them
+as templates for defining additional high-performance array
+abstractions (for example column-major arrays as in Fortran or 1-based
+arrays as in MATLAB).
 
 \section{Rails}
 
 WRITE ME
 
-\section{Simple Arrays}
+\section{\xcd{x10.array}: Simple Arrays}
 
 WRITE ME
 
-\section{Region-based Arrays}
+\section{\xcd{x10.regionarray}: Flexible Arrays}
 
 Classes in the \Xcd{x10.regionarray} package provide the most general and 
 flexible array abstraction that support mapping arbitrary multi-dimensional
