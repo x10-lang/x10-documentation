@@ -178,27 +178,25 @@ f &=& b x
       \xcd`Any{self==null}`. \index{null} \index{object!literal}
 
 \item \index{Int!literal}\index{literal!integer}
-\xcd`Int` literals have the form {$si$}; \eg, \xcd`123`,
-      \xcd`-321` are decimal \xcd`Int`s, \xcd`0123` and \xcd`-0321` are octal
-      \xcd`Int`s, and \xcd`0x123`, \xcd`-0X321`,  \xcd`0xBED`, and \xcd`0XEBEC` are
+\xcd`Int` literals have the form {$si{\tt n}$} or {$si{\tt N}$}. \Eg, \xcd`123n`,
+      \xcd`-321N` are decimal \xcd`Int`s, \xcd`0123N` and \xcd`-0321n` are octal
+      \xcd`Int`s, and \xcd`0x123n`, \xcd`-0X321N`,  \xcd`0xBEDN`, and \xcd`0XEBECN` are
       hexadecimal \xcd`Int`s.  
 
-\item \xcd`Long` literals have the form {$si{\tt l}$} or
-      {$si{\tt L}$}. \Eg, \xcd`1234567890L`  and \xcd`0xBABEL` are \xcd`Long` literals. 
+\item \xcd`Long` literals have the form {$si$}, {$si{\tt l}$} or {$si{\tt L}$}. \Eg, \xcd`1234567890`  and \xcd`0xBABEL` are \xcd`Long` literals. 
 
-\item \xcd`UInt` literals have the form {$i{\tt u}$} or {$i {\tt U}$}.
-      \Eg, \xcd`123u`, \xcd`0123u`, and \xcd`0xBEAU` are \xcd`UInt` literals.
+\item \xcd`UInt` literals have the form {$i{\tt un}$} or {$i{\tt nu}$}, or capital versions of those.
+      \Eg, \xcd`123un`, \xcd`0123un`, and \xcd`0xBEAUN` are \xcd`UInt` literals.
 
-\item \xcd`ULong` literals have the form {$i {\tt ul}$} or {$i {\tt
-      lu}$}, or capital versions of those.  For example, 
-      \xcd`123ul`, \xcd`0124567012ul`,  \xcd`0xFLU`, \xcd`OXba1eful`, and \xcd`0xDecafC0ffeefUL` are \xcd`ULong`
+\item \xcd`ULong` literals have the form {$i{\tt u}$}, {$i{\tt ul}$} or {$i{\tt lu}$}, or capical versions of those.  For example, 
+      \xcd`123u`, \xcd`0124567012u`,  \xcd`0xFU`, \xcd`OXba1efu`, and \xcd`0xDecafC0ffeefU` are \xcd`ULong`
       literals. 
 
 \item \xcd`Short` literals have the form {$si{\tt s}$} or
       {$si{\tt S}$}. \Eg,  414S, \xcd`OxACES` and \xcd`7001s` are short
       literals. 
 
-\item \xcd`UShort` literals  form {$i {\tt us}$} or {$i {\tt
+\item \xcd`UShort` literals  form {$i{\tt us}$} or {$i{\tt
       su}$}, or capital versions of those.  For example, \xcd`609US`, 
       \xcd`107us`, and \xcd`OxBeaus` are unsigned short literals.
 
@@ -206,7 +204,7 @@ f &=& b x
       {$si{\tt Y}$}.  (The letter \xcd`B` cannot be used for bytes, as it is
       a hexadecimal digit.)  \xcd`50Y` and \xcd`OxBABY` are byte literals.
 
-\item \xcd`UByte` literals have the form {$i {\tt uy}$} or {$i {\tt yu}$}, or
+\item \xcd`UByte` literals have the form {$i{\tt uy}$} or {$i{\tt yu}$}, or
       capitalized versions of those.  For example, \xcd`9uy` and \xcd`OxBUY`
       are \xcd`UByte` literals.
       
