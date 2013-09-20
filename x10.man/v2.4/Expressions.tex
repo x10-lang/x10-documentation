@@ -535,8 +535,10 @@ obey the same general rules as other X10 structs. For example, numeric
 operations, coercions, and conversions are defined by \xcd`operator` definitions, the same way you could
 for any struct.
 
-Promoting a numeric value to a longer numeric type preserves the sign of the
-value.  For example, \xcd`(255 as UByte) as UInt` is 255. 
+Promoting a numeric value to a longer numeric type results in either
+sign extension or zero extension depending on whether the target type
+is signed or unsigned. For example, \xcd`(255 as UByte) as UInt` is
+255 while  \xcd`(255 as Byte) as Int` is -1.
 
 Most of these operations can be defined on user-defined types as well.  While
 it is good practice to keep such operations consistent with the numeric
