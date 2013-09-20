@@ -10,7 +10,7 @@
 \author{Vijay Saraswat, Bard Bloom, Igor Peshansky, Olivier Tardieu, and David Grove\\
 \\
 Please send comments to 
-\texttt{bardb@us.ibm.com}}
+\texttt{vsaraswa@us.ibm.com}}
 %\else
 %\author{
 %Vijay Saraswat \\
@@ -43,57 +43,53 @@ idioms.
 %and using this language.
 
 The \Xten{} design team consists of
-\authorsc{Bard Bloom}, 
 \authorsc{David Cunningham},
-\authorsc{Robert Fuhrer},
 \authorsc{David Grove},
 \authorsc{Ben Herta},
-\authorsc{Sreedhar Kodali}, 
-\authorsc{Nathaniel Nystrom},
-\authorsc{Igor Peshansky}, 
 \authorsc{Vijay Saraswat},
 \authorsc{Avraham Shinnar},
 \authorsc{Mikio Takeuchi},
-\authorsc{Olivier Tardieu},
-\authorsc{Yoav Zibin}.
-
-This version of the language was implemented by a team that includes
-the designers and 
-\authorsc{Bowen Alpern}, 
-\authorsc{Philippe Charles}, 
-\authorsc{Ben Herta}, 
-\authorsc{Yan Li}, 
-\authorsc{Yuki Makino}, 
-\authorsc{Toshio Suganuma}, 
-\authorsc{Hai Chuan Wang}. 
-
+\authorsc{Olivier Tardieu}.
 
 Past members include
 \authorsc{Shivali Agarwal}, 
+\authorsc{Bowen Alpern}, 
 \authorsc{David Bacon}, 
 \authorsc{Raj Barik}, 
 \authorsc{Ganesh Bikshandi}, 
 \authorsc{Bob Blainey}, 
+\authorsc{Bard Bloom}, 
+\authorsc{Philippe Charles}, 
 \authorsc{Perry Cheng}, 
 \authorsc{Christopher Donawa}, 
 \authorsc{Julian Dolby}, 
 \authorsc{Kemal Ebcio\u{g}lu},
 \authorsc{Stephen Fink},
+\authorsc{Robert Fuhrer},
 \authorsc{Patrick Gallop}, 
 \authorsc{Christian Grothoff}, 
 \authorsc{Allan Kielstra}, 
+\authorsc{Sreedhar Kodali}, 
 \authorsc{Sriram Krishnamoorthy}, 
+\authorsc{Yan Li}, 
 \authorsc{Bruce Lucas},
+\authorsc{Yuki Makino}, 
+\authorsc{Nathaniel Nystrom},
+\authorsc{Igor Peshansky}, 
 \authorsc{Vivek Sarkar},
 \authorsc{Armando Solar-Lezama},  
 \authorsc{S. Alexander Spoon}, 
+\authorsc{Toshio Suganuma}, 
 \authorsc{Sayantan Sur}, 
 \authorsc{Christoph von Praun},
 \authorsc{Leena Unnikrishnan},
 \authorsc{Pradeep Varma}, 
 \authorsc{Krishna Nandivada Venkata},
-\authorsc{Jan Vitek}, and
-\authorsc{Tong Wen}.
+\authorsc{Jan Vitek}, 
+\authorsc{Hai Chuan Wang}, 
+\authorsc{Tong Wen}, and
+\authorsc{Yoav Zibin}.
+
 
 For extended discussions and support we would like to thank: 
 Gheorghe Almasi,
@@ -130,10 +126,8 @@ Specification \cite{jls2}, the Scala language specification
 %document, as evidenced by the numerous citations in the text.
 
 This document specifies the language corresponding to Version
-\integerversion{}
-of the implementation. Version 1.7 of the report was co-authored by
-Nathaniel Nystrom. The design of structs in \Xten{} was led by Olivier Tardieu
-and Nathaniel Nystrom.
+\integerversion{} of the implementation. The redesign and reimplementation of arrays and rails was  done by Dave Grove and Olivier Tardieu.
+ Version 1.7 of the report was co-authored by Nathaniel Nystrom. The design of structs in \Xten{} was led by Olivier Tardieu and Nathaniel Nystrom.
 
 Earlier implementations benefited from significant contributions by
 Raj Barik, 
