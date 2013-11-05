@@ -485,6 +485,37 @@ interface I {
 %----------------
 
 
+\paragraph{Note on name resolution}
+In X10, fields (both static and instance), local variables, and types are in the same name space, and fields and local variables have higher precedence than types in resolving names. This is same as in Java and it is programmers' responsibility to avoid name conflict. Figure~\ref{fig:nameconflict} explains how name conflict occurs. Uncommenting either a or b, or replacing c with c' causes {\em Field C not found in type "x10.lang.Long"} at x.
+Even if there is no name conflict in X10 code, it may occur in the generated Java code since Java backend generates static field access to get runtime type in some situation.
+To avoid potential name conflict, the best practice is not to use the same name for variables and package prefix.
+
+%----------------
+\begin{figure}
+{\bf Main.x10}: 
+\begin{xten}
+public class Main {
+  //static val p:Long = 1; // a
+  //val p:Long = 1;        // b
+  //def func(p:Long) {     // c'
+  def func() {             // c
+    val f = p.C.f;         // x
+  }
+}
+\end{xten}
+{\bf p/C.x10}: 
+\begin{xten}
+package p;
+public class C {
+  public static val f = true;
+}
+\end{xten}
+\caption{Name conflict in X10}
+\label{fig:nameconflict}
+\end{figure}
+%----------------
+
+
 \paragraph{Methods}
 
 As shown in Figure~\ref{fig:methods}, methods of \Xten{} classes or structs are translated to the methods of the same names of the generated \Java{} classes.
