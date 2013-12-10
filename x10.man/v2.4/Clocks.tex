@@ -2,13 +2,14 @@
 
 Many concurrent algorithms proceed in phases: in phase {$k$}, several
 activities work independently, but synchronize together before proceeding on
-to phase {$k+1$}. X10 supports this communication structure (and many
+to phase {$k+1$}. \Xten{} supports this communication structure (and many
 variations on it) with a generalization of barriers 
 called {\em clocks}. Clocks are designed to be dynamic (new activities
 can be registered with clocks, and terminated activities automatically
 deregister from clocks), and to support a simple syntactic discipline
-for deadlock-free and race-free conditions. 
-
+for deadlock-free and race-free conditions.  Just like \xcd`finish`,
+\Xten's clocks can both be used within a single place and to synchronize
+activities across multiple places.
 
 The following minimalist example of clocked code has two worker activities A
 and B, and three phases. In the first phase, each worker activity says its
@@ -307,7 +308,7 @@ is:
 \item Inside of \xcd`finish{S}`, all clocked \xcd`async`s shall be in the scope
       some unclocked \xcd`async` in \xcd`S`.
 \end{itemize}
-X10 does not enforce this discipline.  Doing so would exclude useful programs,
+\Xten{} does not enforce this discipline.  Doing so would exclude useful programs,
 many of which are deadlock-free for reasons more subtle than the
 straightforward syntactic discipline.  Still, this discipline is useful for
 simple cases. 
@@ -368,7 +369,7 @@ once.
 \index{clocked!async}
 \label{ClockedFinish}
 
-In the most common case of a single clock coordinating a few behaviors, X10
+In the most common case of a single clock coordinating a few behaviors, \Xten{}
 allows coding with an implicit clock.  \xcd`finish` and \xcd`async` statements
 may be qualified with \xcd`clocked`.  
 
@@ -408,6 +409,44 @@ clocked finish {
      phase("B", 1);
      Clock.advanceAll();
      phase("B", 2);
+  }
+}
+\end{xten}
+%~~siv
+%}}
+%~~neg
+\end{ex}
+
+The \xcd`clocked async` and \xcd`clocked finish` constructs can be
+combined with \xcd`at` in the same ways as their unclocked
+counterparts.
+
+\begin{ex} The following code creates one clocked 
+activity in every Place that synchronize to execute \xcd`iter` steps
+of a two phase computation.  The clock ensures that every activity has
+completed the call to \xcd`before(N)` before any activity calls
+\xcd`after(N)`. Note that executions of \xcd`after(N)` and
+\xcd`before(N+1)` in different places may overlap; if this is not
+desired an additional call to \xcd`Clock.advanceAll()` could be added
+after the call to \xcd`after(count)`.
+
+%~~gen ^^^ Clocks100
+%package Clocks.ClockedFinish;
+%class Example2 {
+%static def before(Long) {}
+%static def after(Long) {}
+%def example(iters:long) {
+%~~vis
+\begin{xten}
+clocked finish {
+  for (p in Place.places()) {
+     at (p) clocked async {
+       for (count in 1..iters) {
+         before(count);
+         Clock.advanceAll();
+         after(count);
+       }
+     }
   }
 }
 \end{xten}
