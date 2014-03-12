@@ -129,7 +129,7 @@ An activity may change place synchronously using the \xcd"at" statement or
 \xcd"at" expression. Like any distributed operation, it is 
 potentially expensive, as it requires, at a minimum, two messages
 and the copying of all data used in the operation, and must be used with care
--- but it provides the basis for multicore programming in X10.
+-- but it provides the basis for distributed programming in X10.
 
 %##(AtStatement AtExp
 \begin{bbgrammar}
@@ -144,6 +144,17 @@ The {\it PlaceExp} must be an expression of type \xcd`Place` or some
 subtype. For programming convenience, if {\it PlaceExp} is of type
 \xcd`GlobalRef[T]` then the \xcd'home' property of \xcd'GlobalRef' is
 used as the value of {\it PlaceExp}.
+
+An activity may also spawn an asynchronous remote child activity.  For
+optimal performance, it is desirable for the spawning activity to
+continue executing locally without waiting for the message creating
+the remote child activity to arrive at the destination place. \Xten{}
+supports this ``fire-and-forget'' style of remote activity creation by
+special handling of the combination of \xcd'at (P) async S'.  In
+particular, any exceptions raised during deserialization
+(\Sref{sect:at-init-val}) at the remote place will be reported
+asynchronously (as if they occured after the remote activity
+\xcd`async S` was spawned).
 
 %%AT-COPY%% The \xcd`at`-statment \xcd`at(p;F)S` first evaluates \xcd`p` to a place, then
 %%AT-COPY%% copies information to that place as determined by \xcd`F`, and then executes
@@ -518,7 +529,6 @@ assert  a(0)==1 && a(1)==2 && a(2)==3;
 %%AT-COPY%% with this interpretation.
 %%AT-COPY%% 
 
-
 \subsection{Copying Values}
 %%AT-COPY%% An activity executing statement \xcd"at (q;F) S" at a place \xcd`p`
 %%AT-COPY%% evaluates \xcd`q` at \xcd`p` and then moves to \xcd`q` to execute
@@ -638,6 +648,15 @@ serialized data.   On deserialization, \xcd`transient` fields are initialized
 with their default values (\Sref{DefaultValues}).    The types of
 \xcd`transient` fields must therefore have default values.
 
+The default serialization/deserialization mechanism will not (modulo
+error conditions like \xcd`OutOfMemoryError`) throw any exceptions. However,
+user code running during serialization/deserialization via
+\xcd`CustomSerialization` may raise exceptions.  These exceptions are
+handled like any other exception raised during the execution of an X10
+activity.  However, due to the special treatment of \xcd`at (p) async S` 
+(\Sref{sect:AtStatement}) any exception raised during
+deserialization will be handled as if it was raised by \xcd`async S`,
+not by the \xcd`at` statement itself.
 
 
 A struct \xcd`s` of type \xcd`x10.lang.GlobalRef[T]` \ref{GlobalRef}
