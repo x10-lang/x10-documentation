@@ -144,9 +144,9 @@ The basic form of \xcd`async` is \xcd`async S`, which starts a new activity
 located \xcd`here` executing \xcd`S`.   (For the clocked form, see
 \Sref{ClockedFinish}.)  
 
-Multiple activities launched by a single activity at another place are not
-ordered in any way. They are added to the set of activities at the target
-place and will be executed based on the local scheduler's decisions.
+Multiple activities launched by a single activity in a place are not
+ordered in any way. They are added to the set of activities running in
+the place and will be executed based on the local scheduler's decisions.
 If some particular sequencing of events is needed, \xcd`when`, \xcd`atomic`,
 \xcd`finish`, clocks, and other X10 constructs can be used.
 \Xten{} implementations are not required to have fair schedulers,
