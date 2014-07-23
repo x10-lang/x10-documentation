@@ -1,0 +1,13 @@
+
+This is the formalization of the resilient X10 semantics in Coq (http://coq.inria.fr/).
+
+To "run", it requires that you have coq installed (http://coq.inria.fr/download).
+
+Please obtain version >= 8.4pl2.
+
+You can "compile" (and thereby verify) the proofs by running "make".  As is common, "make clean" cleans up generated files.
+
+Warning: compiling CopyObj.v currently takes a few (>3) hours of 100% cpu utilization (using one core), and about a 1G of memory.
+
+For more interactive viewing, you can use either CoqIDE (bundled with Coq) or proof-general (http://proofgeneral.inf.ed.ac.uk/) for emacs.
+

@@ -1,0 +1,302 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<html> <head>
+<!-- (C) Copyright IBM Corporation 2013-2014. -->
+
+
+<title>Coq mechanization of the semantics for Resilient X10</title>
+</head>
+
+<body>
+<h1>Coq mechanization of the semantics for Resilient X10</h1>
+<h2>by <a href="mailto:shinnar@us.ibm.com">Avi Shinnar</a></h2>
+<p>This mechanization is meant as an accompaniment to the ECOOP 2014
+paper(92): "Semantics of (Resilient) X10".</p>
+
+<p>It contains the source files for a mechanization of the semantics
+for Resilient X10, done in the semi-interactive theorem prover <a
+href="http://coq.inria.fr/">Coq</a>.
+</p>
+
+<h2>Building</h2>
+To build the source, <a href="http://coq.inria.fr/download">Coq 8.4pl3</a> is required.  This is available for a number of platforms, and can be obtained <a
+href="http://coq.inria.fr/download">here</a>.
+
+The proofs can be built (type-checked/verified) by running make.
+This takes quite a while.  In particular, building CopyObj takes
+multiple hours and over a gigabyte of memory (although the output is
+only around 20MB).
+
+Note that building simply verifies the proofs, and is not otherwise
+required to understand the development.
+
+<h2>Structure</h2>
+Here we give a list of the files in the development, ordered bottom-up
+(so dependencies are listed first), along with a description of
+their content.
+<ul>
+  <li>Util
+  <ul><li>Defines notations used throughout the development for lookup,
+  update, and substitution.  To allow these notations to be reused for
+  the corresponding concepts with multiple types, they are associated
+  with typeclass operations.  Instances are then defined defined for appropriate
+  types.</li>
+  <li>Defines a typeclass for carrying the "StaticConfig"uration of
+      the system: the number of PLACES, which must be non-zero.
+      All the development is parameterized over the static
+      configuration.
+      To avoid some limitations of coq modules (such as the diamond problem), we do not use modules for this, but instead
+      paramaterize everything in the rest of the development that
+      needs it over the StaticConfig.  This is done implicitly, taking advantage
+      of the normal typeclass mechanisms to find the appropriate
+      configuration from the environment.
+  </li>
+  <li>Defines some useful tactics that are used in the development.</li>
+    </ul>
+  </li>
+  <li>ListUtil: defines many useful lemmas about lists (that are not
+  part of the standard library).</li>
+  <li>Assoc: defines many useful definitions and lemmas about
+  association lists, particularly those with decidable equality for
+  the keys.  This includes lookup and update operations, as well as
+  the definition of a "compact" operation that removes entries with
+  duplicate keys.</li>
+  <li>Heap: Defines what it means to be a heap (as in memory, not as
+  in the data structure).
+  <ul>
+    <li>A typeclass defines a finite heap with lookup, update, and
+    new operations.  Additionally, the heap can be reasoned about using
+    an association list model.</li>
+    <li>For appropriate key and value types, we build an instance of
+    the heap satisfying the required properties.</li>
+    <li>Various derived definitions and lemmas about heaps are stated
+    and proven.
+    This includes a definition of heap inclusion, a partial order on heaps.</li>
+  </ul>
+  </li>
+  <li>ListVector
+  <ul>
+  <li>Defines bounded numbers: a dependent pair of a number and a
+  proof that it is less than some bound.</li>
+  <li>Defines a list_vector: a dependent pair of a list and a proof
+  that the length of the list is equal to some bound.</li>
+  <li>Defines lookup (nth) and update (replace_nth) functions over list vectors.</li>
+  </ul>
+  </li>
+  <li>Value: defines the values of TX10 (and Resilient X10).  A value can be
+  either an Object (reference), a GlobalObject (global reference), or
+  a Nat (natural number).  GlobalObjects, and
+  hence values, are parameterized over the number of PLACES (specified
+  by the StaticConfig in the environment).  Equality of values is
+  shown to be decidable.</li>
+  <li>Auxiliary
+  <ul>
+    <li>Defines objects as a dependent pair of: a list of (field
+    names, value) pairs, and
+    a proof that the field names are all distinct.
+    </li>
+    <li>Using this, it builds a (local) heap instance whose keys are natural
+    numbers (addresses) and values are objects.</li>
+    <li>Defines a global heap as a partial map from places to local heaps.</li>
+  </ul>
+  </li>
+    <li>WfUtil: defines some well founded operations, useful for
+  witnessing the termination of non-structurally recursive functions.</li>
+  <li>Reachable: defines (local) reachability and associated
+  definitions and properties.  A value v is reachable
+  from another value/object, if v is part its (local) object graph.  Using
+  reachability, we define (locally) well formed values as those whose object
+  graph is all valid in the (local) heap (no dangling pointers).
+  </li>
+  <li>HeapIso: defines what it means for two values, in two different
+  heaps, to be isomorphic.  This is first done by establishing what it
+  means for a list of pairs of object ids to be an isomorphism between two heaps.
+  Two references (object values) are isomorphic if they are a pair in
+  an isomorphism.  Two valus/objects are isomorphic if their structurally
+  corresponding references are isomorphic.
+  <li>HeapIsoReach: contains lemmas about how isomorphism and
+  reachability interact.</li>
+  <li>CopyObj: This contains the definition of copy_obj, which copies
+  the object graph rooted at an object from one heap to another heap.
+  <p>
+  This is done by traversing the source object graph while maintaining
+  a map of previously found object ids.  Whenever an object id is
+  encountered, if it is in the map, the previously created target
+  object id is used.  Otherwise, a new object id is created in the
+  target heap, and added to the mapping.  After recursively copying
+  its children, the heap is updated so that the target object id
+  points to the newly created copy.
+  </p>
+  <p>
+  The difficulty with this is showing termination, since the algorithm
+  given is not structurally recursive.  To see that it is well
+  founded, we observe that at each recursive call, either the number
+  of stored mappings increases, or the number of records left to process
+  in the object decreases.  Since the number of object ids in the
+  source heap is finite, we can rewrite the former condition as the number of
+  unprocessed object ids, which decreases on each iteration (unless
+  the latter measure decreases).  We put these two decreasing
+  measures together to form a well founded measure, which verifies
+  that the algorithm terminates.
+  </p>
+  <p>Reasoning about a function defined with a well-founded measure is
+  very painful in Coq, since it is actually defined recursively on the
+  accessibility structure derived from the proof of well foundedness.
+  Unfolding and reasoning about this is hard.  Instead of trying to
+  reason about its behavior after the fact, we give the
+  copy_obj method a very strong dependent type, which encodes all the
+  information we want to know.  In particular, it guarantees that
+  the resulting object and heap satisfy all the expected heap
+  isomorphism properties.
+  </p>
+  <p>Using this strong type requires that we embed proofs into our
+  algorithm.  To simplify this, we use
+  the <a href="http://coq.inria.fr/refman/Reference-Manual026.html">Program</a> extension to Coq, that allows us to put
+  "holes" in our function definition.  These are turned into proof
+  obligations that can then be discharged with tactics, as is usual
+  for proofs.
+  </p>
+  <p>
+   Unfortunately, this approach results in poor
+   performance of the Coq type checker.  As a result, verifying this
+   function takes several hours and over a gigabyte of memory.
+  </p>
+  </li>
+  <li>CopyVal: Defines heap copy for values.  The heavy lifting/recursion is
+      done by the previously defined copy_obj.  Calling copy_obj
+      naively results in the type checker including the proof of
+      copy_val, which results in poor performance.  To avoid this, the
+      development uses a trick: the call to copy_obj is protected by a
+      "lock", which is just the identity function, but constructed such
+      that Coq will not unfold its definition automatically.
+
+      <p>A successfully copied value is provably well-formed. Conversely, if an
+      object cannot be copied, then it is provably not well-formed.
+  Thus, a corollary of our definition of copy_obj is that value well-formedness is decidable.
+  </p>
+</li>
+
+    <li>TransitionLabels: defines transition labels and various
+  operations on them.  This includes a definition of copying a
+  transition label (and its nested exception values) between
+  heaps. </li>
+  <li>Auxiliary2: assorted proofs about global heaps, well formedness, and
+  copying.</li>
+  <li>HeapEvolve: defines a notion of heap evolution.  A heap is an
+  evolution of another heap if it contains all the object identifiers
+  the first one does (and possibly more).  This is generalized to
+  global heaps, wherein both global heaps have to be defined at the
+  same places, and the corresponding heaps have to be (local)
+  evolutions.</li>
+  <li>HeapIsoReachExt: Some additional proofs that are not in
+  HeapIsoReach to reduce the amount of times that copy_obj needs to be
+  rebuilt.</li>
+  <li>GloballyReachable: defines global reachability (as opposed to
+  the local reachability defined in Reachable).  Global
+  reachability traverses global references as well as (local)
+  references.  Global well formedness is then defined for values, and
+  the development closely parallels that found in Reachable.
+  </li>
+
+  <li>Expr
+  <ul>
+    <li>Defines the syntax of expressions in TX10 (and Resilient X10).
+    </li>
+    <li>Defines (capture-avoiding) substitution on expressions.
+    </li>
+    <li>Provides for the conversion of value expressions into values,
+    and uses this to define toCompactVals, which builds an object from
+    a list of (field name, value expression) pairs.
+    </li>
+    <li>Proves a stronger induction and recursion principle for
+    expressions, which accounts for the nested recursion introduced
+    by the New expression's nested expression list.
+    </li>
+  </ul>
+  </li>
+  <li>Stmt
+  <ul>
+    <li>Defines the syntax of statements in TX10 (and Resilient X10).
+    </li>
+    <li>Defines (capture avoiding) substitution on statements.
+    </li>
+    <li>Defines isSync and isAsync as in the paper.
+    </li>
+  </ul>
+  </li>
+  <li>ListUtil2:  More proofs about lists.  These are
+  separated out from Assoc so that CopyObj does not need to be
+  re-compiled as frequently.</li>
+  <li>Assoc2: More proofs about association lists.  These are
+  separated out from Assoc so that CopyObj does not need to be
+  re-compiled as frequently. </li>
+  <li>ExprProps: properties of expressions.
+   <ul>
+    <li>Defines the free variables and "free" (explicit) values of an expression, and proves how they interact with substitution.
+    </li>
+    <li>Defines a complexity measure on expressions, and proves that
+    it is preserved by substitution.
+    </li>
+  </ul>
+  </li>
+  <li>StmtProps: properties of statements.</li>
+  <ul>
+    <li>Proves that isSync and isAsync are inverses.
+    </li>
+    <li>Defines the free variables and free values of a statement, and proves how they interact with substitution.
+    </li>
+    <li>Defines a complexity measure on statements, and proves that
+    it is preserved by substitution.
+    </li>
+    <li>Defines what it means for a statement to be closed at the top
+    level, as well as at every place changing statement, and states and
+    proves lemmas about them.
+    </li>
+    <li>Defines the isDynamic predicate, which classifies the
+    "dynamic" statements (dynamic at, dynamic async, and finish).
+    </li>
+    <li>
+    Defines a recursive staticOnly predicate, which verifies that
+    a statement does not contain any sub-statements that are dynamic.
+    </li>
+    <li>Defines "proper" statements, which only contain dynamic
+    statements in "valid" spots.  This prohibits, for example, a Bind
+    (let binding) statement from having any dynamic statements.  This
+    is motivated by the semantics, which require the bind to be
+    evaluated and substituted away before the sub-statement is
+    evaluated.  Note that all staticOnly statements are proper.
+    </li>
+    <li> Defines a well formed statement as one that is both "proper"
+    and closed (the statement must be closed at the top level and at
+    every place changing statement).
+  </ul>
+  <li>Syntax: re-exports the syntax and properties of expressions and
+  statements.  Simplifies the import lists of the subsequent development.
+  </li>  
+  <li>ExprSemantics: encodes the semantics of expressions in TX10 (and
+  Resilient X10).</li>
+  <li>EvalExprProps: States and proves properties of the expression
+  semantics in TX10 (and Resilient X10).  This includes proofs that
+  it is deterministic, total, and computable.  The transitive closure
+  of the evaluation relation for expressions is also shown to be total and computable.</li>
+  <li>Semantics: encodes the semantics of statements in TX10.</li>
+  <li>ECtxt: defines an evaluation context for statements, and uses it
+  to define a notion of sub-statement.</li>
+  <li>EvalStmtProps: States and proves properties of the statement
+  semantics.  This includes many of the properties in the paper,
+  including a proof that the evaluation relation is total and
+  computable (for well-formed inputs).  Since there are no loops or
+  recursion in TX10, it also proves this for the transitive closure of
+  the evaluation relation.</li>
+  <li>ResilientSemantics: encodes the semantics of Resilient X10.</li>
+  <li>ResilientSemanticsProps: States and proves properties of the statement
+  semantics for Resilient X10.  This includes many of the properties in the paper,
+  including a proof that the evaluation relation is total and
+  computable (for well-formed inputs).  Since there are no loops or
+  recursion in Resilient X10, it also proves this for the transitive closure of
+  the evaluation relation.</li>
+</ul>
+
+<hr>
+<address></address>
+<!-- hhmts start -->Last modified: Tue Mar 11 21:10:17 EDT 2014 <!-- hhmts end -->
+</body> </html>
