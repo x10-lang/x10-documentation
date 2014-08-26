@@ -1,0 +1,41 @@
+Thu Sep 19 05:52:23 EDT 2013
+
+(1) Update discussion of destructuring in Vars.tex
+(2) Update type safety discussion -- no IndexedMemoryChunk?
+(3) Check status of accumulator variables
+(4) Portions of array.tex to be written, to describe Rails and the new simplearrays.
+(5) Asked Dave C, Ben, Mikio to look at options.tex.
+
+Done:
+  /Users/vsaraswa/ws-sep-2013/x10.man/v2.4:
+  wildcard *.tex
+  -rw-r--r--  1 vsaraswa  staff   28882 Sep 17 20:05 Activities.tex
+  -rw-r--r--  1 vsaraswa  staff    4271 Sep 17 20:09 Annotations.tex
+  -rw-r--r--  1 vsaraswa  staff   32279 Sep 17 20:42 Arrays.tex
+  -rw-r--r--  1 vsaraswa  staff   20603 Sep 17 18:39 ChangeLog.tex
+  -rw-r--r--  1 vsaraswa  staff  142216 Sep 18 01:49 Classes.tex
+  -rw-r--r--  1 vsaraswa  staff   15591 Sep 18 03:53 Clocks.tex
+  -rw-r--r--  1 vsaraswa  staff   18542 Sep 18 04:24 DefiniteAssignment.tex
+  -rw-r--r--  1 vsaraswa  staff   67092 Sep 18 05:00 Expressions.tex
+  -rw-r--r--  1 vsaraswa  staff   21109 Sep 18 10:23 Functions.tex
+  -rw-r--r--  1 vsaraswa  staff    6005 Sep 18 10:39 Intro.tex
+  -rw-r--r--  1 vsaraswa  staff   12117 Sep 18 10:39 Lex.tex
+  -rw-r--r--  1 vsaraswa  staff   31294 Sep 18 19:36 Statements.tex
+  -rw-r--r--  1 vsaraswa  staff  114827 Sep 19 03:59 Types.tex
+  -rw-r--r--  1 vsaraswa  staff   33661 Sep 19 05:08 Vars.tex
+  -rw-r--r--  1 vsaraswa  staff    3411 Sep 19 05:01 UserDefinedOperators.tex
+  -rw-r--r--  1 vsaraswa  staff   44216 Sep 17 18:39 Grammar.tex
+  -rw-r--r--  1 vsaraswa  staff     754 Sep 17 18:39 NotCovered.tex
+  -rw-r--r--  1 vsaraswa  staff   25954 Sep 17 18:39 Overview.tex
+  -rw-r--r--  1 vsaraswa  staff    4671 Sep 17 18:39 Options.tex
+
+In progress:
+  -rw-r--r--  1 vsaraswa  staff   11362 Sep 17 18:39 Interfaces.tex
+  -rw-r--r--  1 vsaraswa  staff   23525 Sep 17 18:39 NativeCode.tex
+  -rw-r--r--  1 vsaraswa  staff   15776 Sep 17 18:39 Packages.tex
+  -rw-r--r--  1 vsaraswa  staff   45235 Sep 17 18:39 Places.tex
+  -rw-r--r--  1 vsaraswa  staff   15706 Sep 17 18:39 Structs.tex
+  -rw-r--r--  1 vsaraswa  staff    4389 Sep 17 18:39 first.tex
+  -rw-r--r--  1 vsaraswa  staff    5043 Sep 17 18:39 x10.tex
+
+
