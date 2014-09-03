@@ -347,7 +347,7 @@ to certain restrictions. A violation of these restrictions causes an
 
 \begin{itemize}
 \item \xcd`S` may not spawn another activity.
-\item \xcd`S` may not use any blocking statements; \xcd`when`, \xcd`next`,
+\item \xcd`S` may not use any blocking statements; \xcd`when`, \xcd`Clock.advanceAll()`,
       \xcd`finish`.  (The use of a nested \xcd`atomic` is permitted.)
 \item \xcd`S` may not \xcd`force()` a \xcd`Future`. 
 \item \xcd`S` may not use \xcd`at` expressions.

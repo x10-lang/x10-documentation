@@ -404,7 +404,7 @@ deadlock-free parallel computation, via the \xcd`Clock` type.
 
 A single \xcd`Clock` represents a computation that occurs in phases.
 At any given time, an activity is {\em registered} with zero or more clocks.
-The X10 statement \xcd`next` tells all of an activity's registered clocks that
+The static method \xcd`Clock.advanceAll` tells all of an activity's registered clocks that
 the activity has finished the current phase, and causes it to wait for the
 next phase.  Other operations allow waiting on a single clock, starting
 new clocks or new activities registered on an extant clock, and so on. 
