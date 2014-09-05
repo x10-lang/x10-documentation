@@ -2551,7 +2551,7 @@ subtype of \xcd`Named`, and hence provides all the operations of \xcd`Named`.
 %~~vis
 \begin{xten}
 interface Named { def name():String; }
-class NameMap[T]{T <: Named} {
+class NameMap[T]{T <: Named, T haszero} {
    val m = new HashMap[String, T]();
    def put(t:T) { m.put(t.name(), t); }
    def get(s:String):T = m.getOrThrow(s);

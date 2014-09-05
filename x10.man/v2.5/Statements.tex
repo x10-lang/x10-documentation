@@ -162,7 +162,7 @@ class Shadow{
        x
      };
      class Local {
-        val f = at(here.next()){ val x = "can here"; x };
+        val f = at(here) { val x = "can here"; x };
         def this() { val x = "can here, too"; }
      }
   }

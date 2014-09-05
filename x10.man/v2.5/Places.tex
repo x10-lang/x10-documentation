@@ -19,41 +19,27 @@ options to set the number of places.
 
 Places are first-class values in X10, as instances 
 \xcd"x10.lang.Place".   \xcd`Place` provides a number of useful ways to
-query places, such as \xcd`Place.places`, which is a  \xcd`Sequence[Place]` of 
-the places
-available to the current run of the program.
+query places, such as \xcd`Place.places()`, which returns a
+\xcd`PlaceGroup` of the places available to the current run of the program.
 
-Objects and structs (with one exception) are created in a single place -- the
+Objects and structs are created in a single place -- the
 place that the constructor call was running in. They cannot change places.
 They can be {\em copied} to other places, and the special library struct
 \Xcd{GlobalRef} allows values at one place to point to values at another.  
 
 \section{The Structure of Places}
-\index{place!MAX\_PLACES}
-\index{place!FIRST\_PLACES}
-\index{MAX\_PLACES}
+\index{place!FIRST\_PLACE}
 \index{FIRST\_PLACE}
 
-%~~exp~~`~~`~~ ~~ ^^^ Places10
-Places are numbered 0 through \xcd`Place.MAX_PLACES-1`; the number is stored
-in the field 
-\xcd`pl.id`.  The \xcd`Sequence[Place]` \xcd`Place.places()` contains the places of the
-program, in numeric order. 
+Places are numbered starting at 0; the number is stored
+in the field \xcd`pl.id`.  The method \xcd`Place.numPlaces()` returns the number of
+Places in the current execution of the program. 
 The program starts by executing a \xcd`main` method at
 %~~exp~~`~~`~~ ~~ ^^^ Places20
 \xcd`Place.FIRST_PLACE`, which is 
 %~~exp~~`~~`~~ ~~ ^^^ Placesoik
 \xcd`Place.places()(0)`; see
 \Sref{initial-computation}. 
-
-Operations on places include \xcd`pl.next()`, which gives the next entry
-(looping around) in \xcd`Place.places` and its opposite \xcd`pl.prev()`. 
-In multi-place executions, 
-\xcd`here.next()` is a convenient way to express ``a place other than \xcd`here`''.
-There are also tests, like  
-%~~exp~~`~~`~~pl:Place ~~ ^^^ Placesoid
-\xcd`pl.isCUDA()`, which test for particular kinds of processors.
-
 
 \section{{\tt here}}\index{here}\label{Here}
 
@@ -79,7 +65,8 @@ code, \xcd`here` has one value at
 %~~vis
 \begin{xten}
 val h0 = here;
-at (here.next()) {
+val world = Place.places();
+at (world.next(here)) {
   val h1 = here; 
   assert (h0 != h1);
 }
@@ -196,8 +183,7 @@ asynchronously (as if they occured after the remote activity
 
 \begin{ex}
 The following example creates a rail \xcd`a` located \xcd`here`, and copies
-it to another place.  \xcd`a` in the second place (\xcd`here.next()`) refers
-to the copy.  The copy is
+it to another place.  \xcd`a` in the second place refers to the copy.  The copy is
 modified and examined.  After the \xcd`at` finishes, the original is also
 examined, and (since only the copy, not the original, was modified) is observed
 to be unchanged. 
@@ -208,7 +194,8 @@ to be unchanged.
 %~~vis
 \begin{xten}
 val a = [1,2,3];
-at(here.next()) {
+val world = Place.places();
+at(world.next(here)) {
   a(1) = 4;
   assert a(0)==1 && a(1)==4 && a(2)==3; 
 }
@@ -1031,7 +1018,8 @@ command-line argument array.
 \begin{xten}
   public static def main(argv:Rail[String]) {
     val argref = GlobalRef[Rail[String]](argv);
-    at(here.next()) 
+    val world = Place.places();
+    at(world.next(here)) 
         use(argref);
   }
   static def use(argref : GlobalRef[Rail[String]]) {
