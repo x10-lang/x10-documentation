@@ -1,5 +1,31 @@
 \chapter{Change Log}
 
+\section{Changes from \Xten{} v2.4}
+Although there were no backwards incompatible language changes between
+\Xten{} v2.4 and \Xten{} v2.5, a few core class library APIs did 
+have backwards incompatible changes.  These changes were driven by 
+our experience with Resilient and Elastic X10 and are designed to
+better support X10 computations over a dynamically varying number of
+Places.  In summary,
+\begin{enumerate}
+\item Static constants such as \xcd`PlaceGroup.WORLD`,
+    and \xcd`Place.MAX\_PLACES` were removed. They are replaced by
+    \xcd`Place.places()` and \xcd`Place.numPlaces()` which return
+    values that represent the current view on the dynamically
+    changeable set of Places available to the computation.
+\item The removal of iteration functionality (\xcd`next` and
+  \xcd`prev`) from \xcd`Place`. This functionality is now provided
+  only through \xcd`PlaceGroup`. 
+\item The addition of \xcd`PlaceTopology` to provide a more flexible
+  set of APIs describing the topological relationships of Places.
+\end{enumerate}
+
+In addition, the \xcd`put` and \xcd`get` methods of \xcd`x10.util.Map` 
+were changed to no longer wrap their return value in an instance of
+\xcd`x10.util.Box`. This improves the common case efficiency of map
+usage, but does require that the Values stored in Map satisfy the
+haszero constraint. 
+
 \section{Changes from \Xten{} v2.3}
 \Xten{} v2.4 is not backwards compatible with \Xten{} v2.3. The
 motivation for making backwards incompatible language changes with
