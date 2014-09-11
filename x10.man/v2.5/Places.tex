@@ -641,7 +641,7 @@ user code running during serialization/deserialization via
 \xcd`CustomSerialization` may raise exceptions.  These exceptions are
 handled like any other exception raised during the execution of an X10
 activity.  However, due to the special treatment of \xcd`at (p) async S` 
-(\Sref{sect:AtStatement}) any exception raised during
+(\Sref{AtStatement}) any exception raised during
 deserialization will be handled as if it was raised by \xcd`async S`,
 not by the \xcd`at` statement itself.
 
