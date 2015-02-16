@@ -660,28 +660,24 @@ does {\em not} start a new activity.  It should be thought of as
 transporting the current activity to \xcd`p`, running \xcd`S` there, and then
 transporting it back.  \xcd`async` is the only construct in the
 language that starts a new activity. In different contexts, each one
-of the following makes sense:
-%%AT-COPY%% (1)~\xcd`async at(p;F) S` 
-(1)~\xcd`async at(p) S` 
-(spawn an activity locally to execute \xcd`S` at
-\xcd`p`; here \xcd`p` is evaluated by the spawned activity) , 
-%%AT-COPY%% (2)~\xcd`at(p;F) async S` 
-(2)~\xcd`at(p) async S` 
-(evaluate \xcd`p` and then at \xcd`p` spawn an
-activity to execute \xcd`S`), and,
-%%AT-COPY%% (3)~\xcd`async at(p;F) async S`. 
-(3)~\xcd`async at(p) async S`. 
-%%AT-COPY%% In most cases, \xcd`at(p;F) async S` is preferred to
-%%\xcd`async at(p;F)`, since In most cases, \xcd`at(p) async S` is
-preferred to \xcd`async at(p) S`, since the former form enables a more
-efficient runtime implementation.  In the first case, the expression
-\xcd`p` is evaluated synchronously by the current activity and then a
-single remote async is spawned.  In the second case, \xcd`p` is
-semantically required to be evaluated asynchronously with the parent
-async as it is contained in the body of an async.  Therefore, if the
-compiler cannot prove that "async at (p)" can be safely rewritten into
-"at (p) async", a first local async is spawned to evaluate \xcd`p`
-then a remote async is spawned to evaluate \xcd`S`.
+of the following combination of \xcd`async` and  \xcd`at` makes sense:
+%%AT-COPY%% (1)~\xcd`at(p;F) async S` 
+(1)~\xcd`at(p) async S` 
+and,
+%%AT-COPY%% (2)~\xcd`async at(p;F) S` 
+(2)~\xcd`async at(p) S`.
+%
+In the first case, the expression \xcd`p` is evaluated synchronously
+by the current activity and then a single remote async is spawned.
+%
+In the second case, \xcd`p` is semantically required to be evaluated
+asynchronously with the parent async as it is contained in the body of
+an async. Then the evaluation of \xcd`S` is transported to the new place.
+%
+In most cases, the first form~(\xcd`at(p) async S`) is preferred to
+second one~(\xcd`async at(p) S`), since it enables a more efficient
+runtime implementation~(a first local async has not to be spawned).
+
 
 Since 
 %%AT-COPY%% \Xcd{at(p;F) S} 
