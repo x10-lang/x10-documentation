@@ -676,7 +676,8 @@ an async. Then the evaluation of \xcd`S` is transported to the new place.
 %
 In most cases, the first form~(\xcd`at(p) async S`) is preferred to
 second one~(\xcd`async at(p) S`), since it enables a more efficient
-runtime implementation~(a first local async has not to be spawned).
+runtime implementation~(it avoids the spawning a local async solely to
+evaluate \xcd`p`).
 
 
 Since 
