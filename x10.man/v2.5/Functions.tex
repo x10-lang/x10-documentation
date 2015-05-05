@@ -319,7 +319,7 @@ element.  It returns \xcd`no` if no element matches.
 def find[T](f: (T) => Boolean, xs: List[T], no:T): T {
   for (x: T in xs)
     if (f(x)) return x;
-  no
+  return no;
   }
 \end{xten}
 %~~siv
@@ -335,7 +335,7 @@ return \xcd`0` if there is no positive element.
 % static def find[T](f: (T) => Boolean, xs: x10.util.List[T], absent:T): T {
 %  for (x: T in xs)
 %    if (f(x)) return x;
-%  absent
+%  return absent;
 %}
 % static def checkery() {
 %~~vis
