@@ -695,7 +695,7 @@ pointer exception, and returns nothing:
 \begin{xten}
 class Example {
    var f : String = "";
-   def setF(x:Any){x != null} : void = {
+   def setF(x:Any){x != null} : void {
       this.f = x.toString();
    }
 }
@@ -731,7 +731,7 @@ but it may insert an extra \xcd`null`-test for \xcd`x`.
 %~~gen ^^^ Classes90
 % package Classes.methodguardnadacastthingie;
 %//OPTIONS: -STATIC_CHECKS
-% class Example {var f : String = ""; def example(x:Any){x != null} = {this.f = x.toString();}}
+% class Example {var f : String = ""; def example(x:Any){x != null} {this.f = x.toString();}}
 % class Eyample {
 %~~vis
 \begin{xten}
@@ -906,7 +906,7 @@ clear that a method call is potentially complex.
 % class Waif(rect:Boolean, onePlace:Place, zeroBased:Boolean) {
 %   def this(rect:Boolean, onePlace:Place, zeroBased:Boolean) 
 %          :Waif{self.rect==rect, self.onePlace==onePlace, self.zeroBased==zeroBased}
-%          = {property(rect, onePlace, zeroBased);}
+%          {property(rect, onePlace, zeroBased);}
 %   property rail(): Boolean = rect && onePlace == here && zeroBased;
 %   static def zoink() {
 %      val w : Waif{
@@ -921,7 +921,7 @@ is equivalent to
 % class Waif(rect:Boolean, onePlace:Place, zeroBased:Boolean) {
 %   def this(rect:Boolean, onePlace:Place, zeroBased:Boolean) 
 %          :Waif{self.rect==rect, self.onePlace==onePlace, self.zeroBased==zeroBased}
-%          = {property(rect, onePlace, zeroBased);}
+%          {property(rect, onePlace, zeroBased);}
 %   property rail(): Boolean = rect && onePlace == here && zeroBased;
 %   static def zoink() {
 %      val w : Waif{
@@ -1509,7 +1509,7 @@ argument \xcd`x`.  We would like to write code thus:
 %        // x10.io.Console.OUT.println("sumdeg(" + k + "," + a + "," + b + ")=" + s);
 %      return s;
 %      };
-%   public final def toString() = {
+%   public final def toString() {
 %      var allZeroSoFar : Boolean = true;
 %      var s : String ="";
 %      for( i in 0L..this.degree() ) {
@@ -1527,7 +1527,7 @@ argument \xcd`x`.  We would like to write code thus:
 %      if (allZeroSoFar) s = "0";
 %      return s;
 %   }
-%   private final def term(ai: Long, n:Long) = {
+%   private final def term(ai: Long, n:Long) {
 %      val xpow = (n==0L) ? "" : (n==1L) ? "x" : "x^" + n ;
 %      return (ai == 1L) ? xpow : "" + Math.abs(ai) + xpow;
 %   }
@@ -1610,7 +1610,7 @@ Writing the same code with method calls, while possible, is far less elegant:
 %        // x10.io.Console.OUT.println("sumdeg(" + k + "," + a + "," + b + ")=" + s);
 %      return s;
 %      };
-%   public final def toString() = {
+%   public final def toString() {
 %      var allZeroSoFar : Boolean = true;
 %      var s : String ="";
 %      for( i in 0L..this.degree() ) {
@@ -1628,7 +1628,7 @@ Writing the same code with method calls, while possible, is far less elegant:
 %      if (allZeroSoFar) s = "0";
 %      return s;
 %   }
-%   private final def term(ai: Long, n:Long) = {
+%   private final def term(ai: Long, n:Long) {
 %      val xpow = (n==0L) ? "" : (n==1L) ? "x" : "x^" + n ;
 %      return (ai == 1L) ? xpow : "" + Math.abs(ai) + xpow;
 %   }
@@ -2091,7 +2091,7 @@ addition to add it to \xcd`x`.
 %   public def this(coeff: Rail[Long]) { this.coeff = coeff;}
 %   public def degree() = (coeff.size-1);
 %   public def  a(i:Long) = (i<0 || i>this.degree()) ? 0L : coeff(i);
-%   public final def toString() = {
+%   public final def toString() {
 %      var allZeroSoFar : Boolean = true;
 %      var s : String ="";
 %      for( i in 0L..this.degree() ) {
@@ -2109,7 +2109,7 @@ addition to add it to \xcd`x`.
 %      if (allZeroSoFar) s = "0";
 %      return s;
 %   }
-%   private final def term(ai: Long, n:Long) = {
+%   private final def term(ai: Long, n:Long) {
 %      val xpow = (n==0L) ? "" : (n==1L) ? "x" : "x^" + n ;
 %      return (ai == 1L) ? xpow : "" + Math.abs(ai) + xpow;
 %   }
@@ -2195,9 +2195,9 @@ class Oddvec {
   public operator this(i:Long) = v(i);
   public operator this(i:Long, j:Long) = [v(i),v(j)];
   public operator this(i:Long) = (newval:Long) 
-      = {v(i) = newval;}
+      {v(i) = newval;}
   public operator this(i:Long, j:Long) = (newval:Long) 
-      = { v(i) = newval; v(j) = newval+1;} 
+      { v(i) = newval; v(j) = newval+1;} 
   public def example() {
     this(1) = 6;   assert this(1) == 6;
     this(1) += 7;  assert this(1) == 13;

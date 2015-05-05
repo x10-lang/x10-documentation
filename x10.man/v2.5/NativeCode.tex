@@ -44,7 +44,7 @@ import x10.compiler.Native;
 class Son {
   @Native("c++", "printf(\"Hi!\")")
   @Native("java", "System.out.println(\"Hi!\")")
-  static def printNatively():void = {};
+  static def printNatively():void {}
 }
 \end{xten}
 %~~siv
@@ -60,7 +60,7 @@ remaining back ends:
 import x10.compiler.Native;
 class Land {
   @Native("c++", "printf(\"Hi from C++!\")")
-  static def example():void = {
+  static def example():void {
     x10.io.Console.OUT.println("Hi from X10!");
   };
 }

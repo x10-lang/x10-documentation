@@ -316,7 +316,7 @@ element.  It returns \xcd`no` if no element matches.
 % static 
 %~~vis
 \begin{xten}
-def find[T](f: (T) => Boolean, xs: List[T], no:T): T = {
+def find[T](f: (T) => Boolean, xs: List[T], no:T): T {
   for (x: T in xs)
     if (f(x)) return x;
   no
@@ -332,7 +332,7 @@ return \xcd`0` if there is no positive element.
 % package functions2.oh.no.my.ears;
 % import x10.util.*;
 % class Finderator {
-% static def find[T](f: (T) => Boolean, xs: x10.util.List[T], absent:T): T = {
+% static def find[T](f: (T) => Boolean, xs: x10.util.List[T], absent:T): T {
 %  for (x: T in xs)
 %    if (f(x)) return x;
 %  absent

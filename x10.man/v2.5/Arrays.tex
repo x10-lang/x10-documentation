@@ -546,7 +546,7 @@ of dimension.  For example, to add one \Xcd{Array[Long]} \Xcd{src} into another
 \begin{xten}
 static def addInto(src: Array[Long], dest:Array[Long])
   {src.region == dest.region}
-  = {
+  {
     for (p in src.region) 
        dest(p) += src(p);
   }
