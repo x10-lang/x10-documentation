@@ -444,9 +444,7 @@ In this grammar, $X^?$ denotes an optional $X$ element.
 
 \begin{bbgrammarappendix}{4.2in}
 
-(\arabic{equation}) & CtorBody \refstepcounter{equation}\label{prod:CtorBody}  \: \xcd"=" CtorBlock  \\
-
- &    \| CtorBlock \\
+(\arabic{equation}) & CtorBody \refstepcounter{equation}\label{prod:CtorBody}  \: CtorBlock \\
  &    \| \xcd"=" ExplicitCtorInvo \\
  &    \| \xcd"=" AssignPropCall \\
  &    \| \xcd";" \\
@@ -942,9 +940,6 @@ In this grammar, $X^?$ denotes an optional $X$ element.
 \begin{bbgrammarappendix}{4.0in}
 
 (\arabic{equation}) & MethodBody \refstepcounter{equation}\label{prod:MethodBody}  \: \xcd"=" LastExp \xcd";"  \\
-
- &    \| \xcd"=" Annotations\opt \xcd"{" BlockStmts\opt LastExp \xcd"}" \\
- &    \| \xcd"=" Annotations\opt Block \\
  &    \| Annotations\opt Block \\
  &    \| \xcd";" \\
 
