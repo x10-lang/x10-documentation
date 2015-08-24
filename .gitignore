@@ -1,0 +1,116 @@
+
+# /x10.man/
+/x10.man/*.aux
+/x10.man/*.bbl
+/x10.man/*.blg
+/x10.man/*.dvi
+/x10.man/*.idx
+/x10.man/*.ilg
+/x10.man/*.log
+/x10.man/*.pdf
+/x10.man/*.ps
+/x10.man/*.toc
+
+# /x10.man/initialization/
+/x10.man/initialization/Are We Ready for a Safer Construction Environment.pdf
+/x10.man/initialization/main.aux
+/x10.man/initialization/main.bbl
+/x10.man/initialization/main.blg
+/x10.man/initialization/main.dvi
+/x10.man/initialization/main.log
+/x10.man/initialization/main.pdf
+/x10.man/initialization/main.ps
+
+# /x10.man/initialization/formalism/
+/x10.man/initialization/formalism/tech-report.aux
+/x10.man/initialization/formalism/tech-report.dvi
+/x10.man/initialization/formalism/tech-report.log
+
+# /x10.man/popl09/
+/x10.man/popl09/*.aux
+/x10.man/popl09/*.bbl
+/x10.man/popl09/*.blg
+/x10.man/popl09/*.log
+/x10.man/popl09/paper.stamp
+/x10.man/popl09/paper.pdf
+/x10.man/popl09/generics.pdf
+
+# /x10.man/v0.1/psu/
+/x10.man/v0.1/psu/*.aux
+/x10.man/v0.1/psu/*.bbl
+/x10.man/v0.1/psu/*.blg
+/x10.man/v0.1/psu/*.dvi
+/x10.man/v0.1/psu/*.idx
+/x10.man/v0.1/psu/*.ilg
+/x10.man/v0.1/psu/*.log
+/x10.man/v0.1/psu/*.pdf
+/x10.man/v0.1/psu/*.ps
+/x10.man/v0.1/psu/*.toc
+
+# /x10.man/v0.1/r4rs/
+/x10.man/v0.1/r4rs/*.aux
+/x10.man/v0.1/r4rs/*.bbl
+/x10.man/v0.1/r4rs/*.blg
+/x10.man/v0.1/r4rs/*.dvi
+/x10.man/v0.1/r4rs/*.idx
+/x10.man/v0.1/r4rs/*.ilg
+/x10.man/v0.1/r4rs/*.log
+/x10.man/v0.1/r4rs/*.pdf
+/x10.man/v0.1/r4rs/*.ps
+/x10.man/v0.1/r4rs/*.toc
+
+# /x10.man/v0.4/
+/x10.man/v0.4/*.aux
+/x10.man/v0.4/*.bbl
+/x10.man/v0.4/*.blg
+/x10.man/v0.4/*.dvi
+/x10.man/v0.4/*.idx
+/x10.man/v0.4/*.ilg
+/x10.man/v0.4/*.log
+/x10.man/v0.4/*.pdf
+/x10.man/v0.4/*.ps
+/x10.man/v0.4/*.toc
+
+# /x10.man/v1.7/
+/x10.man/v1.7/*.log
+/x10.man/v1.7/*.toc
+/x10.man/v1.7/*.aux
+/x10.man/v1.7/*.bbl
+/x10.man/v1.7/*.blg
+/x10.man/v1.7/*.ind
+/x10.man/v1.7/*.ilg
+/x10.man/v1.7/*.idx
+/x10.man/v1.7/x10.stamp
+/x10.man/v1.7/spec.pdf
+
+# /x10.man/v2.0/
+/x10.man/v2.0/x10.log
+/x10.man/v2.0/x10.toc
+/x10.man/v2.0/x10.aux
+/x10.man/v2.0/x10.bbl
+/x10.man/v2.0/x10.blg
+/x10.man/v2.0/x10.ind
+/x10.man/v2.0/x10.ilg
+/x10.man/v2.0/x10.idx
+/x10.man/v2.0/x10.out
+/x10.man/v2.0/x10.stamp
+/x10.man/v2.0/spec.pdf
+/x10.man/v2.0/*.dvi
+
+# /x10.man/v2.1/
+/x10.man/v2.1/x10.log
+/x10.man/v2.1/x10.toc
+/x10.man/v2.1/x10.out
+/x10.man/v2.1/x10.ind
+/x10.man/v2.1/x10.ilg
+/x10.man/v2.1/x10.idx
+
+# /x10.semantics/
+/x10.semantics/*.vo
+/x10.semantics/*.glob
+/x10.semantics/*.v.d
+
+# /x10.semantics/coq/
+/x10.semantics/coq/*.vo
+/x10.semantics/coq/*.glob
+/x10.semantics/coq/*.v.d
