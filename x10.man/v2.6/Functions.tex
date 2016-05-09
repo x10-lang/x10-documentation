@@ -1,0 +1,601 @@
+
+
+\chapter{Functions}
+\label{Functions}
+\label{functions}
+\index{function}
+\index{closure}
+\index{function!literal}
+\label{Closures}
+
+\section{Overview}
+Functions, the last of the three kinds of values in X10, encapsulate pieces of
+code which can be applied to a vector of arguments to produce a value.
+Functions, when applied, can do nearly anything that any other code could do:
+fail to terminate, throw an exception, modify variables, spawn activities,
+execute in several places, and so on. X10 functions are not mathematical
+functions: the \xcd`f(1)` may return \xcd`true` on one call and \xcd`false` on
+an immediately following call.
+
+
+
+A \emph{function literal} \xcd"(x1:T1,..,xn:Tn){c}:T=>e" creates a function of
+type\\ \xcd"(x1:T1,...,xn:Tn){c}=>T" (\Sref{FunctionType}).  For example, 
+\xcd`(x:Long):Long => x*x` is a function literal describing the squaring function on
+integers.  Every function type also posses the (default) value \xcd`null`.
+
+%% CHECK vj: What is ``or constraints'' supposed to mean?
+\limitation{X10 functions cannot have type arguments or constraints.}
+
+Function application is written \xcd`f(a,b,c)`, following common mathematical
+usage. 
+\index{Exception!unchecked}
+
+
+The function body may be a block.  To compute integer squares by repeated
+addition (inefficiently), one may write: 
+%~~gen ^^^ Functions10
+% package Functions10;
+% class Examplllll {
+% static 
+%~~vis
+\begin{xten}
+val sq: (Long) => Long 
+      = (n:Long) => {
+           var s : Long = 0;
+           val abs_n = n < 0 ? -n : n;
+           for (i in 1..abs_n) s += abs_n;
+           s
+        };
+\end{xten}
+%~~siv
+%}
+% class Hook{ def run() { return Examplllll.sq(5) == 25; } }
+%~~neg
+
+
+A function literal evaluates to a function entity $f$. When {$f$} is
+applied to a suitable list of actual parameters \xcd`a1` through \xcd`an`, it
+evaluates \xcd`e` with the formal parameters bound to the actual parameters.
+So, the following are equivalent, where \xcd`e` is an expression involving
+\xcd`x1` and \xcd`x2`
+%\footnote{Strictly, there are a few other requirements;
+%  \eg, \xcd`result` must be a \xcd`var` of type \xcd`T` defined outside the
+%  outer block, the variables \xcd`a1` and \xcd`a2` had better not appear in
+% \xcd`e`, and everything in sight had better typecheck properly.}
+
+%~~gen ^^^ Functions20
+% package Functions.function_literal_a;
+% abstract class FunctionsTooManyFlippingFunctions[T, T1, T2]{
+% abstract def arg1():T1;
+% abstract def arg2():T2;
+% def thing1(e:T) {
+%~~vis
+\begin{xten}
+var result:T;
+{
+  val f = (x1:T1,x2:T2){true}:T => e;
+  val a1 : T1 = arg1();
+  val a2 : T2 = arg2();
+  result = f(a1,a2);
+}
+\end{xten}
+%~~siv
+%}}
+%~~neg
+\noindent and 
+%~~gen ^^^ Functions30
+% package functions2_b;
+% abstract class FunctionsTooManyFlippingFunctions[T, T1, T2]{
+% abstract def arg1():T1;
+% abstract def arg2():T2;
+% def thing1(e:T) {
+%~~vis
+\begin{xten}
+var result:T;
+{
+  val a1 : T1 = arg1();
+  val a2 : T2 = arg2();
+  {
+     val x1 : T1 = a1;
+     val x2 : T2 = a2;
+     result = e;
+  }  
+}
+\end{xten}
+%~~siv
+%}}
+%~~neg
+\noindent
+This equivalence does not hold if the body is a statement rather than an expression.
+A few language features are forbidden (\xcd`break` or \xcd`continue` of a loop
+that surrounds the function literal) or mean something different (\xcd`return`
+inside a function returns from the function, not the surrounding block). 
+
+
+%% CHECK: vj -- Check that we permit a class to implement multiple function types.
+Function types may be used in \Xcd{implements} clauses of class
+definitions. Suitable operator definitions must be supplied, with 
+\xcdmath"public operator this(x1:T1, $\ldots$, xn:Tn)" declarations.
+Instances of such classes may be used as functions of the
+given type.  Indeed, an object may behave like any (fixed) number of
+functions, since the class it is an instance of may implement any
+(fixed) number of function types.
+\begin{eg}
+Instances of the \xcd`Funny` class behave like two functions: 
+a constant function on Booleans, and a linear function on 
+pairs of \xcd`Long`s.  
+%~~gen ^^^ Functions6w6w
+% package Functions6w6w;
+%~~vis
+\begin{xten}
+class Funny implements (Boolean) => Long, 
+                       (Long, Long) => Long
+{
+  public operator this(Boolean) = 1;
+  public operator this(x:Long, y:Long) = 10*x+y;
+  static def example() {
+    val f <: Funny  = new Funny();
+    assert f(true) == 1; // (Boolean)=>Long behavior
+    assert f(1,2) == 12; // (Long,Long)=>Long behavior
+  }
+}
+\end{xten}
+%~~siv
+% class Hook{ def run() { Funny.example(); return true; }}
+%~~neg
+
+\end{eg}
+
+
+\section{Function Application}
+\index{function!application}
+\label{sect:FunctionApplication}
+
+The basic operation on functions is function application.  
+(Since, \eg, array lookup has the same type as function application, these
+rules are used for array lookup as well, and so on.) 
+
+A function with type 
+\xcdmath"(x$_1$:T$_1$, $\ldots$, x$_n$:T$_n$){c} => T"
+can be applied to a sequence of expressions 
+\xcdmath"e$_1$, $\ldots$, e$_n$"
+if: 
+\begin{itemize}
+\item \xcdmath"e$_1$" is of type \xcdmath"T$_1$[e$_1$/x$_1$]",
+\item $\ldots$,
+\item \xcdmath"e$_n$" is of type 
+      \xcdmath"T$_n$[e$_1$/x$_1$, $\ldots$, e$_n$/x$_n$]",
+\item X10 can prove that \xcdmath"c[e$_1$/x$_1$, $\ldots$, e$_n$/x$_n$]" holds.
+\end{itemize}
+\noindent
+In this case, if the application terminates normally, it returns a
+value of type 
+\xcdmath"T[y1/x$_1$, $\ldots$, yn/x$_n$]" where \xcdmath"y1,$\ldots$,yn" may be thought of 
+as new variables defined as if by:
+\begin{xten}
+val y1=e1;
+...
+val yn=en;
+\end{xten}
+
+\begin{ex}
+Consider
+%~~gen ^^^ Functions6p3q
+% package Functions6p3q;
+% class Whatever {
+% var 
+%~~vis
+\begin{xten}
+ f : (a:Long{a!=0}, b:Long{b!=a}){b!=0} => Long{self != a}
+\end{xten}
+%~~siv
+% = null;
+%}
+%~~neg
+
+Then the call \xcd`f(3,4)` is allowed, because: 
+\begin{itemize}
+\item \xcd`3` is of type \xcd`Long{a!=0}` with \xcd`a` replaced by \xcd`3`, 
+\viz{}  \xcd`Long{3 != 0}`; 
+\item \xcd`4` is of type \xcd`Long{b!=a}` 
+with \xcd`a` replaced by \xcd`3` and 
+\xcd`b` replaced by \xcd`4`, 
+\viz{} \xcd`Long{3 != 4}`. 
+\item The guard \xcd`b!=0`, 
+with \xcd`a` replaced by \xcd`3` and 
+\xcd`b` replaced by \xcd`4`, 
+is \xcd`4!=0`, which is true.  
+\end{itemize}
+So, \xcd`f(3,4)` will return a value of type 
+\xcd`Long{self != a}` with 
+ \xcd`a` replaced by \xcd`3` and 
+\xcd`b` replaced by \xcd`4`, 
+which is to say, \xcd`Long{self!=3}`.
+\end{ex}
+
+%\section{Implementation Notes}
+%\begin{itemize}
+%
+%\item Note that e.m.(T1,...,Tn) will evaluate e to create a
+%  function. This function will be applied later to given
+%  arguments. Thus this syntax can be used to evaluate the receiver of
+%  a method call ahead of the actual invocation. The resulting function
+%  can be used multiple times, of course.
+%\end{itemize}
+
+
+\section{Function Literals}
+\index{literal!function}
+\label{FunctionLiteral}
+
+\Xten{} provides first-class, typed functions, often called {\em closures}.
+
+%##(ClosureExp Formals Guard DepParams  HasResultType ClosureBody
+\begin{bbgrammar}
+%(FROM #(prod:ClosureExp)#)
+          ClosureExp \: Formals Guard\opt HasResultType\opt \xcd"=>" ClosureBody & (\ref{prod:ClosureExp}) \\
+%(FROM #(prod:Formals)#)
+             Formals \: \xcd"(" FormalList\opt \xcd")" & (\ref{prod:Formals}) \\
+%(FROM #(prod:Guard)#)
+               Guard \: DepParams & (\ref{prod:Guard}) \\
+%(FROM #(prod:HasResultType)#)
+       HasResultType \: ResultType & (\ref{prod:HasResultType}) \\
+                     \| \xcd"<:" Type \\
+%(FROM #(prod:ClosureBody)#)
+         ClosureBody \: Exp & (\ref{prod:ClosureBody}) \\
+                     \| Annotations\opt \xcd"{" BlockStmts\opt LastExp \xcd"}" \\
+                     \| Annotations\opt Block \\
+\end{bbgrammar}
+%##)
+
+Functions have zero or more formal parameters and an optional return type.
+The body has the 
+same syntax as a method body; it may be either an expression, a block
+of statements, or a block terminated by an expression to return. Return statements
+may be used in the body of the function to return a value (\Sref{ReturnStatement}). 
+
+The type of a function is a function type as described in \Sref{FunctionType}.  In some
+cases the 
+return type \Xcd{T} of the function can be omittted and defaults to the type of the
+body. If a formal \Xcd{xi} does not occur in any
+\Xcd{Tj}, \Xcd{c}, \Xcd{T} or \Xcd{e}, the declaration \Xcd{xi:Ti} may
+be replaced by just \Xcd{Ti}. \Eg,  \xcd`(Long)=>7` is the integer function returning
+7 for all inputs.
+
+\label{ClosureGuard}
+
+
+As with methods, a function may declare a guard to
+constrain the actual parameters with which it may be invoked.
+The guard may refer to the type parameters, formal parameters,
+and any \xcd`val`s in scope at the function expression.
+
+\begin{ex}
+%~~gen ^^^ Functions5g5m
+% package Functions5g5m;
+% class clogua {
+%  public static def main(argv:Rail[String]) {
+%~~vis
+\begin{xten}
+    val n = 3;
+    val f : (x:Long){x != n} => Long  
+          = (x:Long){x != n} => (12/(n-x));
+    Console.OUT.println("f(5)=" + f(5));    
+\end{xten}
+%~~siv
+%}} 
+%~~neg
+
+\end{ex}
+
+The body of the function is evaluated when the function is
+invoked by a call expression (\Sref{Call}), not at the function's
+place in the program text.
+
+As with methods, a function with return type \xcd"void" cannot
+have a terminating expression. 
+If the return type is omitted, it is inferred, as described in
+\Sref{TypeInference}.
+It is a static error if the return type cannot be inferred.  \Eg,
+\xcd`(Long)=>null` is not well-specified; X10 does not know which type of
+\xcd`null` is intended.  
+%~~exp~~`~~`~~ ~~ ^^^ Functions40
+But \xcd`(Long):Rail[Double] => null` is legal.
+
+
+\begin{ex}
+The following method takes a function parameter and uses it to
+test each element of the list, returning the first matching
+element.  It returns \xcd`no` if no element matches.
+
+%~~gen ^^^ Functions50
+% package functions2.oh.no;
+% import x10.util.*;
+% class Finder {
+% static 
+%~~vis
+\begin{xten}
+def find[T](f: (T) => Boolean, xs: List[T], no:T): T {
+  for (x: T in xs)
+    if (f(x)) return x;
+  return no;
+  }
+\end{xten}
+%~~siv
+% }
+%~~neg
+
+The method may be invoked thus, to find a positive element of \xcd`xs`, or
+return \xcd`0` if there is no positive element.
+%~~gen ^^^ Functions60
+% package functions2.oh.no.my.ears;
+% import x10.util.*;
+% class Finderator {
+% static def find[T](f: (T) => Boolean, xs: x10.util.List[T], absent:T): T {
+%  for (x: T in xs)
+%    if (f(x)) return x;
+%  return absent;
+%}
+% static def checkery() {
+%~~vis
+\begin{xten}
+xs: List[Long] = new ArrayList[Long]();
+x: Long = find((x: Long) => x>0, xs, 0);
+\end{xten}
+%~~siv
+%}}
+%~~neg
+
+\end{ex}
+
+
+
+\subsection{Outer variable access}
+\index{function!outer variables in}
+
+In a function
+\xcdmath"(x$_1$: T$_1$, $\dots$, x$_n$: T$_n$){c} => { s }"
+the types \xcdmath"T$_i$", the guard \xcd"c" and the body \xcd"s"
+may access the following variables from outer scopes:
+\begin{itemize}
+\item All fields of the enclosing object(s) and class(es);
+\item All type parameters;
+\item All \xcd`val` variables;
+\end{itemize}
+\noindent
+\xcd`var` variables cannot be accessed.
+
+The function body may refer to instances of enclosing classes using
+the syntax \xcd"C.this", where \xcd"C" is the name of the
+enclosing class.  \xcd`this` refers to the instance of the immediately
+enclosing class, as usual.
+
+\begin{eg}
+ The following is legal.  
+Note that \xcd`a` is not a local \xcd`var` variable. It is a field of
+\xcd`this`. A reference to \xcd`a` is simply short for \xcd`this.a`, which is
+a use of a \xcd`val` variable (\xcd`this`).  
+%~~gen ^^^ Functions70
+% package Functions.scoping_rules;
+%~~vis
+\begin{xten}
+class Lambda {
+   var a : Long = 0;
+   val b = 0;
+   def m(var c : Long, val d : Long) {
+      var e : Long = 0;
+      val f : Long = 0;
+      val closure = (var i: Long, val j: Long) => {
+          // c and e are not usable here
+    	  a + b + d + f + i 
+               + j + this.a + Lambda.this.a
+      };
+      return closure;
+   }
+}
+\end{xten}
+%~~siv
+%
+%~~neg
+
+
+%~~gen ^^^ Functions9u3u
+% // OK, we want to do the negative tests, but they don't work properly.
+% class Lambda {
+%    var a : Long = 0;
+%    val b = 0;
+%    def m(var c : Long, val d : Long) {
+%       var e : Long = 0;
+%       val f : Long = 0;
+%       val closure = (var i: Long, val j: Long) => {
+%     	  // return a + b + d + f + j + this.a + Lambda.this.a;
+%           // ERROR: return c;
+%           // ERROR: return e;
+%       };
+%       return closure;
+%    }
+% }
+% 
+% package Functions9u3u;
+%~~vis
+\begin{xten}
+\end{xten}
+%~~siv
+%
+%~~neg
+
+
+
+\end{eg}
+
+%%METHOD-SELECTION%% \section{Method selectors}
+%%METHOD-SELECTION%% \label{MethodSelectors}
+%%METHOD-SELECTION%% \index{function!method selector}
+%%METHOD-SELECTION%% \index{method!underlying function}
+%%METHOD-SELECTION%% 
+%%METHOD-SELECTION%% A method selector expression allows a method to be used as a
+%%METHOD-SELECTION%% first-class function, without writing a function expression for it.
+%%METHOD-SELECTION%% 
+%%METHOD-SELECTION%% \begin{ex}
+%%METHOD-SELECTION%% Consider a class \xcd`Span` defining ranges of integers.  
+%%METHOD-SELECTION%% 
+%%METHOD-SELECTION%% %~todo~gen ^^^ Functions80
+%%METHOD-SELECTION%% % package Functions2.Span;
+%%METHOD-SELECTION%% %~todo~vis
+%%METHOD-SELECTION%% \begin{xten}
+%%METHOD-SELECTION%% class Span(low:Long, high:Long) {
+%%METHOD-SELECTION%%   def this(low:Long, high:Long) {property(low,high);}
+%%METHOD-SELECTION%%   def between(n:Long) = low <= n && n <= high;
+%%METHOD-SELECTION%%   static def example() {
+%%METHOD-SELECTION%%     val digit = new Span(0,9);
+%%METHOD-SELECTION%%     val isDigit : (Long) => Boolean = digit.between.(Long);
+%%METHOD-SELECTION%%     assert isDigit(8);
+%%METHOD-SELECTION%%   }
+%%METHOD-SELECTION%% }
+%%METHOD-SELECTION%% \end{xten}
+%%METHOD-SELECTION%% %~todo~siv
+%%METHOD-SELECTION%% % class Hook{ def run() {Span.example(); return true;}}
+%%METHOD-SELECTION%% %~todo~neg
+%%METHOD-SELECTION%% \noindent
+%%METHOD-SELECTION%% 
+%%METHOD-SELECTION%% 
+%%METHOD-SELECTION%% In \xcd`example()`, 
+%%METHOD-SELECTION%% %~todo~exp~~`~~`~~ digit:Span~~class Span(low:Long, high:Long) {def this(low:Long, high:Long) {property(low,high);} def between(n:Long) = low <= n && n <= high;} ^^^ Functions90
+%%METHOD-SELECTION%% \xcd`digit.between.(Long)` 
+%%METHOD-SELECTION%% is a unary function testing whether its argument is between zero
+%%METHOD-SELECTION%% and nine.  It could also be written 
+%%METHOD-SELECTION%% %~todo~exp~~`~~`~~ digit:Span~~class Span(low:Long, high:Long) {def this(low:Long, high:Long) {property(low,high);} def between(n:Long) = low <= n && n <= high;} ^^^ Functions100
+%%METHOD-SELECTION%% \xcd`(n:Long) => digit.between(n)`.
+%%METHOD-SELECTION%% \end{ex}
+%%METHOD-SELECTION%% 
+%%METHOD-SELECTION%% 
+%%METHOD-SELECTION%% %##(MethodSelection
+%%METHOD-SELECTION%% \begin{bbgrammar}
+%%METHOD-SELECTION%% %(FROM #(prod:MethodSelection)#)
+%%METHOD-SELECTION%%      MethodSelection \: MethodName \xcd"." \xcd"(" FormalParamList\opt \xcd")" & (\ref{prod:MethodSelection}) \\
+%%METHOD-SELECTION%%                     \| Primary \xcd"." Id \xcd"." \xcd"(" FormalParamList\opt \xcd")" \\
+%%METHOD-SELECTION%%                     \| \xcd"super" \xcd"." Id \xcd"." \xcd"(" FormalParamList\opt \xcd")" \\
+%%METHOD-SELECTION%%                     \| ClassName \xcd"." \xcd"super"  \xcd"." Id \xcd"." \xcd"(" FormalParamList\opt \xcd")" \\
+%%METHOD-SELECTION%% \end{bbgrammar}
+%%METHOD-SELECTION%% %##)
+%%METHOD-SELECTION%% 
+%%METHOD-SELECTION%% The \emph{method selector expression} \Xcd{e.m.(T1,...,Tn)} is type
+%%METHOD-SELECTION%% correct only if  the static type of \Xcd{e} is a
+%%METHOD-SELECTION%% class or struct or interface \xcd`V` with a method
+%%METHOD-SELECTION%% \Xcd{m(x1:T1,...xn:Tn)\{c\}:T} defined on it (for some
+%%METHOD-SELECTION%% \Xcd{x1,...,xn,c,T)}. At runtime the evaluation of this expression
+%%METHOD-SELECTION%% evaluates \Xcd{e} to a value \Xcd{v} and creates a function \Xcd{f}
+%%METHOD-SELECTION%% which, when applied to an argument list \Xcd{(a1,...,an)} (of the right
+%%METHOD-SELECTION%% type) yields the value obtained by evaluating \Xcd{v.m(a1,...,an)}.
+%%METHOD-SELECTION%% 
+%%METHOD-SELECTION%% Thus, the method selector
+%%METHOD-SELECTION%% \begin{xtenmath}
+%%METHOD-SELECTION%% e.m.(T$_1$, $\dots$, T$_n$)
+%%METHOD-SELECTION%% \end{xtenmath}
+%%METHOD-SELECTION%% \noindent behaves as if it were the function
+%%METHOD-SELECTION%% \begin{xtenmath}
+%%METHOD-SELECTION%% ((v:V)=>
+%%METHOD-SELECTION%%   (x$_1$: T$_1$, $\dots$, x$_n$: T$_n$){c} 
+%%METHOD-SELECTION%%   => v.m(x$_1$, $\dots$, x$_n$))
+%%METHOD-SELECTION%% (e)
+%%METHOD-SELECTION%% \end{xtenmath}
+%%METHOD-SELECTION%% 
+%%METHOD-SELECTION%% 
+%%METHOD-SELECTION%% 
+%%METHOD-SELECTION%% Because of overloading, a method name is not sufficient to
+%%METHOD-SELECTION%% uniquely identify a function for a given class.
+%%METHOD-SELECTION%% One needs the argument type information as well.
+%%METHOD-SELECTION%% The selector syntax (dot) is used to distinguish \xcd"e.m()" (a
+%%METHOD-SELECTION%% method invocation on \xcd"e" of method named \xcd"m" with no arguments)
+%%METHOD-SELECTION%% from \xcd"e.m.()"
+%%METHOD-SELECTION%% (the function bound to the method). 
+%%METHOD-SELECTION%% 
+%%METHOD-SELECTION%% A static method provides a binding from a name to a function that is
+%%METHOD-SELECTION%% independent of any instance of a class; rather it is associated with the
+%%METHOD-SELECTION%% class itself. The static function selector
+%%METHOD-SELECTION%% \xcdmath"T.m.(T$_1$, $\dots$, T$_n$)" denotes the
+%%METHOD-SELECTION%% function bound to the static method named \xcd"m", with argument types
+%%METHOD-SELECTION%% \xcdmath"(T$_1$, $\dots$, T$_n$)" for the type \xcd"T". The return type
+%%METHOD-SELECTION%% of the function is specified by the declaration of \xcd"T.m".
+%%METHOD-SELECTION%% 
+%%METHOD-SELECTION%% There is no difference between using a function defined directly 
+%%METHOD-SELECTION%% directly using the function syntax, or obtained via static or
+%%METHOD-SELECTION%% instance function selectors.
+%%METHOD-SELECTION%% 
+%%OP-FUN%% o
+%%OP-FUN%% \section{Operator functions}
+%%OP-FUN%% \label{OperatorFunction}
+%%OP-FUN%% \index{function!operator}
+%%OP-FUN%% Every binary operator (e.g.,
+%%OP-FUN%% \xcd"+",
+%%OP-FUN%% \xcd"-",
+%%OP-FUN%% \xcd"*",
+%%OP-FUN%% \xcd"/",
+%%OP-FUN%% \dots) has a family of functions, one for
+%%OP-FUN%% each type on which the operator is defined. The function can be
+%%OP-FUN%% selected using the ``\xcd`.`'' syntax:
+%%OP-FUN%% 
+%%OP-FUN%% 
+%%OP-FUN%% \begin{xtenmath}
+%%OP-FUN%% String.+    $\equiv$ (x: String, y: String): String => x + y
+%%OP-FUN%% Long.-      $\equiv$ (x: Long, y: Long): Long => x - y
+%%OP-FUN%% Float.-     $\equiv$ (x: Float, y: Float): Float => x - y
+%%OP-FUN%% Boolean.&   $\equiv$ (x: Boolean, y: Boolean): Boolean => x & y
+%%OP-FUN%% Long.<       $\equiv$ (x: Long, y: Long): Boolean => x < y
+%%OP-FUN%% \end{xtenmath}
+%%OP-FUN%% 
+%%OP-FUN%% %~x~gen ^^^ Functions110
+%%OP-FUN%% % package Functions.Operatorfunctionsgracklegrackle;
+%%OP-FUN%% % class JustATest {
+%%OP-FUN%% % val dummy = [String.+,
+%%OP-FUN%% %  Long.-,
+%%OP-FUN%% %  Float.-,
+%%OP-FUN%% %  Boolean.&,
+%%OP-FUN%% %  Long.<
+%%OP-FUN%% %  ];
+%%OP-FUN%% % }
+%%OP-FUN%% %~x~vis
+%%OP-FUN%% \begin{xten}
+%%OP-FUN%% \end{xten}
+%%OP-FUN%% %~x~siv
+%%OP-FUN%% %
+%%OP-FUN%% %~x~neg
+%%OP-FUN%% 
+%%OP-FUN%% 
+%%OP-FUN%% Unary and binary promotion (\Sref{XtenPromotions}) is not performed
+%%OP-FUN%% when invoking these
+%%OP-FUN%% operations; instead, the operands are coerced individually via implicit
+%%OP-FUN%% coercions (\Sref{XtenConversions}), as appropriate.
+%%OP-FUN%% 
+%%OP-FUN%% 
+
+\section{Functions as objects of type {\tt Any}}
+\label{FunctionAnyMethods}
+
+\label{FunctionEquality}
+\index{function!equality} \index{equality!function} Two functions \Xcd{f} and
+\Xcd{g} are equal if both were obtained by the same evaluation of a function
+literal.\footnote{A literal may occur in program text within a loop, and hence
+  may be evaluated multiple times.} Further, it is guaranteed that if two
+functions are equal then they refer to the same locations in the environment
+and represent the same code, so their executions in an identical situation are
+indistinguishable. (Specifically, if \xcd`f == g`, then \xcd`f(1)` can be
+substituted for \xcd`g(1)` and the result will be identical. However, there is
+no guarantee that \xcd`f(1)==g(1)` will evaluate to true, since there is no
+guarantee that \xcd`f(1)==f(1)` will evaluate to true either, as \xcd`f` might
+be a function which returns {$n$} on its {$n^{th}$} invocation. However,
+\xcd`f(1)==f(1)` and \xcd`f(1)==g(1)` are interchangeable.)
+\index{function!==}
+
+Every function type implements all the methods of \Xcd{Any}.
+\xcd`f.equals(g)` is equivalent to \xcd`f==g`.  The behavior of   \xcd`hashCode`, 
+\xcd`toString`, and \xcd`typeName` is up to the implementation, but 
+respect \xcd`equals` and the basic contracts of \xcd`Any`. 
+
+\index{function!equals}
+\index{function!hashCode}
+\index{function!toString}
+\index{function!typeName}
+\index{function!home}
+\index{function!at(Place)}

@@ -1,0 +1,370 @@
+%% vj Wed Sep 18 10:39:31 EDT 2013
+%% Updated for 2.4
+
+\chapter{Lexical and Grammatical structure}
+
+
+Lexically a program consists of a stream of white space, comments,
+identifiers, keywords, literals, separators and operators, all of them
+composed of Unicode characters in the UTF-8 (or US-ASCII) encoding. 
+
+\section{Whitespace}
+\index{white space}
+% Whitespace \index{whitespace} follows \java{} rules \cite[Chapter 3.6]{jls2}.
+ASCII space, horizontal tab (HT), form feed (FF) and line
+terminators constitute white space.
+
+\section{Comments}
+\index{comment}
+% Comments \index{comments} follows \java{} rules
+% \cite[Chapter 3.7]{jls2}. 
+All text included within the ASCII characters ``\xcd"/*"'' and
+``\xcd"*/"'' is
+considered a comment and ignored; nested comments are not
+allowed.  All text from the ASCII characters
+``\xcd"//"'' to the end of line is considered a comment and is ignored.
+
+\section{Identifiers}
+\index{identifier}
+\index{variable name}
+
+Identifiers consist of a single letter followed by zero or more letters or
+digits. The letters are the ASCII characters \xcd`a` through \xcd`z`, \xcd`A`
+through \xcd`Z`, and \xcd`_`. Digits are defined as the ASCII characters
+\xcd"0" through \xcd"9". Case is significant; \xcd`a` and \xcd`A` are distinct
+identifiers, \xcd`as` is a keyword, but \xcd`As` and \xcd`AS` are identifiers.
+(However, case is insignificant in the hexadecimal numbers, exponent markers,
+and type-tags of numeric literals -- 0xbabe = 0XBABE.)
+
+In addition, any string of characters may be enclosed in backquotes \xcd"`" to
+form an identifier -- though the backquote character itself, and the backslash 
+character, must be quoted by a backslash if they are to be included.
+This allows,
+for example, keywords to be used as identifiers.  The following are
+backquoted identifiers: 
+%~~gen ^^^ Lex1p9o
+% package Lex1p9o;
+% 
+% class Backyquotey {
+% def hokey(e:Long, a:Long, b:Long, d:Long, c:Long) = 0;
+% def example() { 
+% val `while`=0; val `!`=0; val  `(unbalanced(`=0;  val `\`\\`=0; val `0` = 0;
+% hokey(
+%~~vis
+\begin{xten}
+`while`, `!`, `(unbalanced(`,  `\`\\`, `0`
+\end{xten}
+%~~siv
+% ); } } 
+%~~neg
+\noindent
+Certain  back ends and compilation options do not support all choices of
+identifier.  
+
+\section{Keywords}
+\index{keywords}
+\Xten{} uses the following keywords:\\
+{\tt 
+\begin{tabular}{llllll}
+    abstract &
+    as&
+    assert&
+    async&
+    at\\
+    athome &
+    ateach&
+    atomic&
+    break&
+    case\\
+    catch &
+    class&
+    clocked&
+    continue&
+    def\\
+    default &
+    do&
+    else&
+    extends&
+    false\\
+    final &
+    finally&
+    finish&
+    for&
+    goto\\
+    haszero &
+    here&
+    if&
+    implements&
+    import\\
+    in &
+    instanceof&
+    interface&
+    native&
+    new\\
+    null &
+    offer&
+    offers&
+    operator&
+    package\\
+    private &
+    property&
+    protected&
+    public&
+    return\\
+    self &
+    static&
+    struct&
+    super&
+    switch\\
+    this &
+    throw&
+    transient&
+    true&
+    try\\
+    type &
+    val&
+    var&
+    void&
+    when\\
+    while
+
+\end{tabular}
+}
+
+Keywords may be used as identifiers by enclosing them in backquotes:
+\xcd"`new`" is an identifier, \xcd`new` is a keyword but not an identifier.  
+
+Note that the primitive type names are not considered keywords.
+
+\section{Literals}\label{Literals}\index{literal}
+
+Briefly, \XtenCurrVer{} uses fairly standard syntax for its literals:
+integers, unsigned integers, floating point numbers, booleans, 
+characters, strings, and \xcd"null".  The most exotic points are (1) unsigned
+numbers are marked by a \xcd`u` and cannot have a sign; (2) \xcd`true` and
+\xcd`false` are the literals for the booleans; and (3) floating point numbers
+are \xcd`Double` unless marked with an \xcd`f` for \xcd`Float`. 
+
+Less briefly, we use the following abbreviations: 
+\begin{displaymath}
+\begin{array}{rcll}
+d &=& \mbox{one or more decimal digits} \mbox{only starting with 0 if it is 0}\\
+d_8 &=& \mbox{one or more octal digits}\\
+d_{16} &=& \mbox{one or more hexadecimal digits, using \xcd`a`-\xcd`f`
+or \xcd`A`-\xcd`F`
+for 10-15}\\
+i &=& d  
+        \mathbin{|} {\tt 0} d_8 
+        \mathbin{|} {\tt 0x} d_{16}
+        \mathbin{|} {\tt 0X} d_{16}
+\\
+s &=& \mbox{optional \xcd`+` or \xcd`-`}\\
+b &=& d 
+          \mathbin{|} d {\tt .}
+          \mathbin{|} d {\tt .} d
+          \mathbin{|}  {\tt .} d \\
+x &=& ({\tt e } \mathbin{|} {\tt E})
+         s
+         d \\
+f &=& b x
+\end{array}
+\end{displaymath}
+
+\begin{itemize}
+
+\item \xcd`true` and \xcd`false` are the \xcd`Boolean` literals. \index{Boolean!literal}\index{literal!Boolean}
+
+\item \xcd`null` is a literal for the null value.  It has type
+      \xcd`Any{self==null}`. \index{null} \index{object!literal}
+
+\item \index{Int!literal}\index{literal!integer}
+\xcd`Int` literals have the form {$si{\tt n}$} or {$si{\tt N}$}. \Eg, \xcd`123n`,
+      \xcd`-321N` are decimal \xcd`Int`s, \xcd`0123N` and \xcd`-0321n` are octal
+      \xcd`Int`s, and \xcd`0x123n`, \xcd`-0X321N`,  \xcd`0xBEDN`, and \xcd`0XEBECN` are
+      hexadecimal \xcd`Int`s.  
+
+\item \xcd`Long` literals have the form {$si$}, {$si{\tt l}$} or {$si{\tt L}$}. \Eg, \xcd`1234567890`  and \xcd`0xBABEL` are \xcd`Long` literals. 
+
+\item \xcd`UInt` literals have the form {$i{\tt un}$} or {$i{\tt nu}$}, or capital versions of those.
+      \Eg, \xcd`123un`, \xcd`0123un`, and \xcd`0xBEAUN` are \xcd`UInt` literals.
+
+\item \xcd`ULong` literals have the form {$i{\tt u}$}, {$i{\tt ul}$} or {$i{\tt lu}$}, or capical versions of those.  For example, 
+      \xcd`123u`, \xcd`0124567012u`,  \xcd`0xFU`, \xcd`OXba1efu`, and \xcd`0xDecafC0ffeefU` are \xcd`ULong`
+      literals. 
+
+\item \xcd`Short` literals have the form {$si{\tt s}$} or
+      {$si{\tt S}$}. \Eg,  414S, \xcd`OxACES` and \xcd`7001s` are short
+      literals. 
+
+\item \xcd`UShort` literals  form {$i{\tt us}$} or {$i{\tt
+      su}$}, or capital versions of those.  For example, \xcd`609US`, 
+      \xcd`107us`, and \xcd`OxBeaus` are unsigned short literals.
+
+\item \xcd`Byte` literals have the form  {$si{\tt y}$} or
+      {$si{\tt Y}$}.  (The letter \xcd`B` cannot be used for bytes, as it is
+      a hexadecimal digit.)  \xcd`50Y` and \xcd`OxBABY` are byte literals.
+
+\item \xcd`UByte` literals have the form {$i{\tt uy}$} or {$i{\tt yu}$}, or
+      capitalized versions of those.  For example, \xcd`9uy` and \xcd`OxBUY`
+      are \xcd`UByte` literals.
+      
+
+
+\item \xcd`Float` literals have the form {$s f {\tt f}$} or  {$s
+\index{float!literal}
+\index{literal!float}
+      f {\tt F}$}.  Note that the floating-point marker letter \xcd`f` is
+      required: unmarked floating-point-looking literals are \xcd`Double`. 
+      \Eg, \xcd`1f`, \xcd`6.023E+32f`, \xcd`6.626068E-34F` are \xcd`Float`
+      literals. 
+
+\item \xcd`Double` literals have the form {$s f$}\footnote{Except that
+\index{double!literal}
+\index{literal!double}
+      literals like \xcd`1` 
+      which match both {$i$} and {$f$} are counted as
+      integers, not \xcd`Double`; \xcd`Double`s require a decimal
+      point, an exponent, or the \xcd`d` marker.
+      }, {$s f {\tt
+      D}$}, and {$s f {\tt d}$}.  
+      \Eg, \xcd`0.0`, \xcd`0e100`, \xcd`1.3D`,  \xcd`229792458d`, and \xcd`314159265e-8`
+      are \xcd`Double` literals.
+
+\item 
+\index{char!literal}
+\index{literal!char}
+\xcd`Char` literals have one of the following forms: 
+      \begin{itemize}
+      \item \xcd`'`{\it c}\xcd`'` where {\em c} is any printing ASCII
+            character other than 
+            \xcd`\` or \xcd`'`, representing the character {\em c} itself; 
+            \eg, \xcd`'!'`;
+      \item \xcd`'\b'`, representing backspace;
+      \item \xcd`'\t'`, representing tab;
+      \item \xcd`'\n'`, representing newline;
+      \item \xcd`'\f'`, representing form feed;
+      \item \xcd`'\r'`, representing return;
+      \item \xcd`'\''`, representing single-quote;
+      \item \xcd`'\"'`, representing double-quote;
+      \item \xcd`'\\'`, representing backslash;
+      \item \xcd`'\`{\em dd}\xcd`'`, where {\em dd} is one or more octal
+            digits, representing the one-byte character numbered {\em dd}; it
+            is an error if {\em dd}{$>0377$}.      
+      \end{itemize}
+
+\item
+\index{string!literal} 
+\index{literal!string}
+\xcd`String` literals consist of a double-quote \xcd`"`, followed by
+      zero or more of the contents of a \xcd`Char` literal, followed by
+      another double quote.  \Eg, \xcd`"hi!"`, \xcd`""`.
+
+
+\end{itemize}
+
+
+
+\section{Separators}
+\Xten{} has the following separators and delimiters:
+\begin{xten}
+( )  { }  [ ]  ;  ,  .
+\end{xten}
+
+\section{Operators}
+\index{operator}
+\Xten{} has the following operator,  type constructor, and miscellaneous symbols.  (\xcd`?` and
+\xcd`:` comprise a single ternary operator, but are written separately.)
+\begin{xten}
+==  !=  <   >   <=  >=
+&&  ||  &   |   ^
+<<  >>  >>>
++   -   *   /   %
+++  --  !   ~
+&=  |=  ^=
+<<= >>= >>>=
++=  -=  *=  /=  %=
+=   ?   :   =>  ->
+<:  :>  @   ..
+**  !~  -<  >-
+\end{xten}
+
+The precedence of the operators is as follows.  Earlier rows of the
+table have higher precedence than later rows, binding more tightly.
+For example, \xcd`a+b*c<d` parses as \xcd`(a+(b*c))<d`, 
+and \xcd`-1 as Byte` parses as \xcd`-(1 as Byte)`. 
+
+\begin{tabular}{l}
+postfix \xcd`()`\\
+\xcd`as T`, postfix \xcd`++`, postfix \xcd`--`\\
+unary \xcd`-`, unary \xcd`+`, prefix \xcd`++`, prefix \xcd`--`\\
+unary operators \xcd`!`, \xcd`~`, \xcd`^`, \xcd`*`, \xcd`|`,
+\xcd`&`, \xcd`/`, and \xcd`%`
+\\
+\xcd`..`\\
+\xcd`*     `  \xcd`/     `  \xcd`%   ` \xcd`**` \\
+\xcd`+` \xcd`     -` \\
+\xcd`<<    ` \xcd`>>    ` \xcd`>>>   ` \xcd`->   >-    -<     <-     !` \\
+\xcd`>     ` \xcd`>=    ` \xcd`<     ` \xcd`<=  ` 
+\xcd`instanceof` \\
+\xcd`==    `  \xcd`!=    `  \xcd`!     ` \xcd`!~   `   \\
+
+\xcd`&` \\
+\xcd`^` \\
+\xcd`|` \\
+\xcd`&&` \\
+\xcd`||` \\
+\xcd`? :` \\
+\xcd`=`, \xcd`*=`, \xcd`/=`, \xcd`%=`, 
+\xcd`+=`, \xcd`-=`, \xcd`<<=`, \xcd`>>=`, \xcd`>>>=`,
+\xcd`&=`, \xcd`^=`, \xcd`|=`
+\end{tabular}
+
+
+\section{Grammatical Notation}
+
+In this manual, ordinary BNF notation is used to specify grammatical
+constructions, with a few minor extensions. 
+Grammatical rules look like this: \\
+\begin{bbgrammar}
+Adj \: Adv\opt \mbox{\xcd`happy`}\\
+    \| Adv\opt \mbox{\xcd`sad`}\\ 
+Adv \: \mbox{\xcd`very`}\\
+    \| Adv Adv 
+\end{bbgrammar}
+
+Terms in {\em italics} are called {\bf non-terminals}.  They 
+represent kinds of phrases; for example, {\em ForStmt}
+(\ref{prod:ForStmt})\footnote{Grammar rules are given in \Sref{Grammar},
+and referred to by equation number in that section.} describes all \xcd`for` statements.  
+Equation numbers refer to the full X10 grammar, in \Sref{Grammar}.  
+The small example has two non-terminals, {\em Adv} and {\em Adj}.  
+
+Terms in \xcd`fixed-width font` are {\bf terminals}.  They represent the words
+and symbols of the language itself.  In X10, the terminals are the words
+described in this chapter.
+
+A single grammatical rule has the form {$ A \mathrel{::=} X_1 X_2 ... X_n $},
+where the $X_i$'s are either terminals or nonterminals.  This indicates that
+the non-terminal $A$ could be an instance of $X_1$, followed by an instance of
+$X_2$, \ldots, followed by an instance of $X_n$.  Multiple rules for the same
+$A$ are allowed, giving several possible phrasings of $A$'s.  For brevity,
+two rules with the same left-hand side are written with the left-hand side
+appearing once, and the right-hand sides 
+separated by $|$.  
+
+In the {\em Adj} example, there are two rules for {\it Adv}, 
+$Adv \mathrel{::=} \mbox{\xcd`very`}$ and
+$Adv \mathrel{::=} Adv~Adv$.  So, an adverb could be \xcd`very`, or (by three
+uses of the rule) \xcd`very very`, or, one or more \xcd`very`s.  
+
+The notation $A^{?}$ indicates an optional $A$.  This is an ordinary
+non-terminal, defined by the rules:\\ 
+\begin{bbgrammar}
+A\opt \:  \\
+    \| A
+\end{bbgrammar}
+The first rule says that $A^?$ can amount to nothing; the second, that it can
+amount to an $A$.  This concept shows up so often that it is worth having a
+separate notation for it.  In the {\em Adj} example, an adjective phrase may be
+preceded by an optional adverb. Thus, it may be \xcd`happy`, or 
+\xcd`very happy`, or \xcd`very very sad`, etc. 

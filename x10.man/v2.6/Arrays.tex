@@ -1,0 +1,1159 @@
+\chapter{Rails and Arrays}\label{XtenArrays}\index{array}
+
+\section{Overview}
+
+Indexable memory is a fundamental abstraction provided by a
+programming language. To enable the programmer to best balance
+performance and flexibility, \Xten{} provides a layered implementation
+of indexable memory. The foundation of all indexable storage in
+\Xten{} is \xcd{x10.lang.Rail}, an intrinsic one-dimensional array
+analogous to the built-in arrays provided by languages such as C or
+Java. On top of \xcd{Rail}, more sophisticated array abstractions can
+be constructed completely as user-defined \Xten{} classes. Two such
+families of user-defined array abstractions are included in the
+\Xten{} core class libraries in the \xcd{x10.array} and
+\xcd{x10.regionarray} packages.  Both families of arrays provide both
+local (single place) and distributed (multi-place) arrays.
+
+The next section specifies \xcd{Rail}.  Subsequent sections outline
+the \xcd{x10.array} and \xcd{x10.regionarray} packages.  As discussed,
+in more detail below, \xcd{Rail} and the classes of \xcd{x10.array}
+provide significantly higher performance operations than the
+corresponding classes of \xcd{x10.regionarray}. Therefore we recommend
+that programmers only use the more general arrays of
+\xcd{x10.regionarray} where the increased flexibility justifies the
+redudced performance. We also encourage programmers to use the classes
+of \xcd{x10.array} as an example of how to define high-performance
+array abstractions in \Xten{} and use them as templates for defining
+additional high-performance array abstractions (for example
+column-major arrays as in Fortran or 1-based arrays as in MATLAB).
+
+\section{Rails}\label{XtenRails}\index{Rail}
+
+The \xcd{Rail} class provides a basic abstraction of fixed-sized
+indexed storage.  If \xcd{r} is a \xcd{Rail[T]}, then \xcd{r} contains
+\xcd{r.size} elements of type \xcd{T} that may be accessed using the
+\xcd{Long} values \xcd{0} to \xcd{r.size-1} as indices.  All accesses
+to the elements of a \xcd{Rail} are checked: attempting to use an
+index that is less than \xcd{0} or greater than \xcd{r.size-1} will
+result in an \xcd{ArrayIndexOutOfBoundsException} being thrown.
+
+As shown in the example below, instances of \xcd{Rail[T]} may be created
+using one of several constructors that initialize the data elements to
+the zero-value of \xcd{T}, a single initial value, or to a different
+initial value for each element of the \xcd{Rail}.
+
+%~~gen ^^^ Rail10
+% package Arrays.Rails.Rail10;
+% class Example {
+% def example() {
+%~~vis
+\begin{xten}
+// A zero-initialized Rail of 10 doubles
+val r1 = new Rail[Double](10);
+
+// A Rail of 10 doubles, all initialized to pi
+val r2 = new Rail[Double](10, Math.PI);
+
+// A Rail of 10 doubles, r3(i) == i*pi
+val r3 = new Rail[Double](10, (i:long)=>i*Math.PI);
+\end{xten}
+%~~siv
+%} } 
+%~~neg
+
+As described in more detail in section~\ref{sect:RailCtors}, \Xten{} also includes a
+shorthand form for \xcd{Rail} construction: simply put brackets around
+a list of expressions.
+
+%~~gen ^^^ Rail20
+% package Arrays.Rails.Rail20;
+% class Example{
+% def example() {
+%~~vis
+\begin{xten}
+// A Rail[Long] containing the first 5 primes
+val r1 = [2,3,5,7,11];
+
+// A Rail[Double] such that r2(i) == i*pi
+val r2 = [Math.PI, 2*Math.PI, 3*Math.PI, 4*Math.PI];
+\end{xten}
+%~~siv
+% } } 
+%~~neg
+
+Accessing and updating single elements of a \xcd{Rail} is doing using
+application syntax. For example,
+%~~stmt~~`~~`~~a:Rail[Long], i:Long ~~ ^^^ Rail30
+\xcd`a(i)=a(i+1);`
+sets the \xcd`i`th element of \xcd`a` to the value of the \xcd`i+1`
+element of \xcd`a`.  If \xcd`T` supports the \xcd`+` or \xcd`-`
+operation, then the usual pre/post increment/decrement operations are
+also available on individual array elements.  For example, 
+%~~exp~~`~~`~~a:Rail[Long], i:Long ~~ ^^^ Rail40
+\xcd`a(i)++`
+is equivalent to
+%~~exp~~`~~`~~a:Rail[Long], i:Long ~~ ^^^ Rail50
+\xcd`a(i) = a(i)+1`
+
+Iteration over the elements of a \xcd{Rail} can be accomplished using
+several equivalent idioms.  Furthermore, via some modest compiler
+support, each of these for loops will actually result in identical
+generated code.  In the examples below, \xcd`r` is a \xcd{Rail[Long]}
+and \xcd`sum` is a local variable of type \xcd`Long`.
+%~~gen ^^^ Rail60
+% package Arrays.Rails.Rail60;
+% class Example{
+% def example(r:Rail[Long]) {
+% var sum:long = 0;
+%~~vis
+\begin{xten}
+// A classic C-style for loop
+for (var i:long=0; i<r.size; i++) {
+    sum += r(i);
+}
+
+// Iterate over the LongRange 0..(r.size-1)
+for (i in 0..(r.size-1)) {
+    sum += r(i);
+}
+
+// Get the LongRange to iterate over from r
+for (i in r.range()) {
+    sum += r(i);
+}
+
+// Directly iterate over the values of r
+for (v in r) {
+    sum += v;
+} 
+\end{xten}
+%~~siv
+% } } 
+%~~neg
+
+Basic bulk operations such as clearing (setting to zero), filling with
+a single value, and copying are provided by methods of the \xcd{Rail}
+class.  Efficient copying of Rails across places is supported via the
+combination of the \xcd{x10.lang.GlobalRail} struct\footnote{a specialized
+  version of \xcd{x10.lang.GlobalRef} that includes the \xcd{size} of the
+  referenced \xcd{Rail} to enable bounds checking} and the
+\xcd{asyncCopy} method of \xcd{Rail}. 
+
+Additional complex bulk operations on \xcd{Rail} such as sorting,
+searching, map, and reduce are provided by the
+\xcd{x10.util.RailUtils} class.
+
+When implementing higher-level data structures that use \xcd{Rail} as
+their backing storage, there may be significant performance advantage
+in performing unsafe operations on \xcd{Rail}.  For example, when
+building a multi-dimensional \xcd{Array} class, the \xcd{Array} level
+bounds checking and initialization logic make the \xcd{Rail} level
+operations redundant. To support such scenarios the class
+\xcd{x10.lang.Unsafe} provides methods to allocate uninitialized
+\xcd{Rail} objects and to access the elements of a \xcd{Rail} without
+bounds checking.  These unsafe extensions should be used judiciously,
+as improper use can result in memory safety violations that would not
+be possible in pure \Xten{} code. 
+
+\section{x10.array: Simple Arrays}\label{XtenSimpleArray}
+
+Classes in the \xcd{x10.array} package provide high-performance
+implementations of both local and distributed multi-dimension arrays.
+The array implementations in this package are restricted to the case
+of rectangular, dense, zero-based index spaces.  By making this
+restriction, the indexing calculations for both single-place and
+multi-place arrays can be optimized, resulting in an array
+implementation that should obtain equivalent performance to the
+corresponding array abstractions in C or Fortran. More general index
+spaces are supported by the classes in the \xcd{x10.regionarray}
+package (see Section~\ref{XtenRegionArray}.
+
+The three main concepts of this package: iteration spaces, arrays, and
+distributed arrays are outlined below.  All three concepts are
+implemented as simple class hierarchies with an abstract superclass
+and a collection of concrete final subclasses that contain the
+performance-critical operations.  Client code using the abstractions
+can be written (with lower performance) using the abstract APIs
+provided by the superclass, but performance sensitive code should be
+written using the more specific type of the concrete subclasses.  This
+enables compile time optimization and inlining of key operations,
+resulting in optimal code sequences.
+
+\subsection{Points}\label{point-syntax}
+\index{point}
+\index{point!syntax}
+
+Both kinds of arrays are indexed by \xcd`Point`s, which are
+$n$-dimensional tuples of integers.  The \xcd`rank` property of a
+point gives its dimensionality.  Points can be constructed from
+integers, or \xcd`Rail[Long] by the \xcd`Point.make` factory methods:
+%~~gen ^^^ArraysPointsExample1
+% package Arrays.Points.Example1;
+% class Example1 {
+% def example1() {
+%~~vis
+\begin{xten}
+val origin_1 : Point{rank==1} = Point.make(0);
+val origin_2 : Point{rank==2} = Point.make(0,0);
+val origin_5 : Point = Point.make(new Rail[Long](5));
+\end{xten}
+%~~siv
+% } } 
+%~~neg
+
+There is an implicit conversion from \xcd`Rail[Long]` to 
+\xcd`Point`, giving
+a convenient syntax for constructing points: 
+
+%~~gen ^^^ Arrays30
+% package Arrays.Points.Example2;
+% class Example{
+% def example() {
+%~~vis
+\begin{xten}
+val p : Point = [1,2,3];
+val q : Point{rank==5} = [1,2,3,4,5];
+val r : Point(3) = [11,22,33];
+\end{xten}
+%~~siv
+% } } 
+%~~neg
+
+The coordinates of a point are available by function application, or, if you
+prefer, by subscripting; \xcd`p(i)` is the
+\xcd`i`th coordinate of the point \xcd`p`. 
+\xcdmath`Point($n$)` is a \Xcd{type}-defined shorthand  for 
+\xcdmath`Point{rank==$n$}`.
+
+\subsection{IterationSpace}
+An \xcd{IterationSpace} is a generalization of \xcd{LongRange} to
+multiple dimensions.  The \xcd{rank} property of the
+\xcd{IterationSpace} corresponds to its dimensionality.  An
+\xcd{IterationSpace} represents an ordered collection of \xcd{Points}
+of the same \xcd{rank} as the \xcd{IterationSpace}.  The primary
+purpose of an \xcd{IterationSpace} is to represent the indices of an
+\xcd{Array} or \xcd{DistArray}.  
+
+\subsection{Array}
+
+The abstract \xcd{Array} class provides rank-generic operations for
+single place multi-dimensional arrays.   Its concrete subclasses
+\xcd{Array_1}, \xcd{Array_2}, etc. provide rank-specific operations
+such as efficient element access. The APIs of the classes are designed
+to be a natural extension of the \xcd{Rail} API to multiple
+dimensions.  In most usage scenarios, programmers should
+operate using the types of the concrete subclasses, not of \xcd{Array}
+itself. 
+
+The example below illustrates the construction and indexing operations
+of rank 2 arrays using a simple matrix multiply kernel where \xcd'N'
+is a \xcd{Long}.
+
+%~~gen ^^^ SimpleArrays10
+% package Arrays.SimpleArrays.Example1;
+% import x10.array.*;
+% class Example{
+% def example(N:long) {
+%~~vis
+\begin{xten}
+val a = new Array_2[double](N, N, (i:long,j:long)=>(i*j) as double);
+val b = new Array_2[double](N, N, (i:long,j:long)=>(i-j) as double);
+val c = new Array_2[double](N, N, (i:long,j:long)=>(i+j) as double);
+
+for (i in 0..(N-1))
+  for (j in 0..(N-1))
+    for (k in 0..(N-1))
+      a(i,j) += b(i,k)*c(k,j);
+\end{xten}
+%~~siv
+% } } 
+%~~neg
+
+Similarly to \xcd{Rail}, iteration over the elements of a \xcd{Array} 
+can be accomplished using
+several equivalent idioms.  Furthermore, via some modest compiler
+support, each of these for loops will actually result in identical
+generated code.  In the examples below, \xcd`a` is a \xcd{Array_2[Long]}
+and \xcd`sum` is a local variable of type \xcd`Long`.
+%~~gen ^^^ SimpleArrays20
+% package Arrays.SimpleArrays.Example2;
+% import x10.array.*;
+% class Example{
+% def example(a:Array_2[Long]) {
+% var sum:long = 0;
+%~~vis
+\begin{xten}
+// A classic C-style for loop
+for (var i:long=0; i<a.numElems_1; i++) {
+  for (var j:long=0; j<a.numElems_2; j++) {
+    sum += a(i,j);
+  }
+}
+
+// Iterate over the indices of a using Point destructuring 
+for ([i,j] in a.indices()) {
+    sum += a(i,j);
+}
+
+// Directly iterate over the values of a
+for (v in a) {
+    sum += v;
+} 
+\end{xten}
+%~~siv
+% } } 
+%~~neg
+
+An additional idiom which iterates over the \xcd{Point}s in the
+\xcd{IterationSpace} of \xcd{a} without destructuring the \xcd{Point}s
+is also supported, but should be avoid in the current implementation of
+\Xten{} as the compiler does not optimize away all of the overheads
+associated with explicit use of \xcd{Point} objects.
+%~~gen ^^^ SimpleArrays30
+% package Arrays.SimpleArrays.Example3;
+% import x10.array.*;
+% class Example{
+% def example(a:Array_2[Long]) {
+% var sum:long = 0;
+%~~vis
+\begin{xten}
+// Iterate over the indices of a using Points
+for (p in a.indices()) {
+    sum += a(p);
+}
+\end{xten}
+%~~siv
+% } } 
+%~~neg
+
+\subsection{DistArray}
+
+The abstract class \xcd{DistArray} and its concrete subclasses
+represent an extension of the \xcd{Array} API to multiple places. 
+In \Xten{} version 2.4.0 \xcd{DistArray}s are still a work in
+progress.  Only three concrete implementations are available:
+\xcd{DistArray_Unique} which has one data element per \xcd{Place},
+\xcd{DistArray_Block_1} which block distributes a rank-1 array across
+the \xcd{Place}s in its \xcd{PlaceGroup}, and
+\xcd{DistArray_BlockBlock_2} which distributes blocks of a rank-2
+array across the \xcd{Place}s in its \xcd{PlaceGroup}.
+
+The API of \xcd{DistArray} is preliminary in this release of \Xten{}
+we anticipate extending it with more operations and supporting a wider
+range of ranks and distributions in future release of \Xten{}.
+
+\section{x10.regionarray: Flexible Arrays}\label{XtenRegionArray}
+
+Classes in the \Xcd{x10.regionarray} package provide the most general and 
+flexible array abstraction that support mapping arbitrary multi-dimensional
+index spaces to data elements. Although they are significantly more
+flexible than \Xcd{Rail}s or the classes of the \Xcd{x10.array}
+package, this flexibility does carry with it an expectation of lower
+runtime performance. 
+
+\Xcd{Array}s provide indexed access to data at a single \Xcd{Place}, {\em via}
+\Xcd{Point}s---indices of any dimensionality. \Xcd{DistArray}s is similar, but
+spreads the data across multiple \xcd`Place`s, {\em via} \Xcd{Dist}s.  
+
+\subsection{Regions}\label{XtenRegions}\index{region}
+\index{region!syntax}
+
+A {\em region} is a set of points of the same rank.  {}\Xten{}
+provides a built-in class, \xcd`x10.regionarray.Region`, to allow the
+creation of new regions and to perform operations on regions. 
+Each region \xcd`R` has a property \xcd`R.rank`, giving the dimensionality of
+all the points in it.
+
+\begin{ex}
+%~~gen ^^^ Arrays40
+% package Arrays40;
+% import x10.regionarray.*;
+% class Example {
+% static def example() {
+%~~vis
+\begin{xten}
+val MAX_HEIGHT=20;
+val Null = Region.makeUnit(); //Empty 0-dimensional region
+val R1 = Region.make(1, 100); // Region 1..100
+val R2 = Region.make(1..100);  // Region 1..100
+val R3 = Region.make(0..99, -1..MAX_HEIGHT);
+val R4 = Region.makeUpperTriangular(10);
+val R5 = R4 && R3; // intersection of two regions
+\end{xten}
+%~~siv
+% } } 
+%~~neg
+
+The \xcd`LongRange` value \xcd`1..100` can be used to construct
+the one-dimensional \xcd`Region` consisting of the points
+$\{$\xcdmath`[m]`, \dots, \xcdmath`[n]`$\}$
+\xcd`Region` by using the \xcd`Region.make` factory method.  
+\xcd`LongRange`s are useful in building up regions, especially rectangular regions.  
+\end{ex}
+
+By a special dispensation, the compiler knows that, if \xcd`r : Region(m)` and
+\xcd`s : Region(n)`, then \xcd`r*s : Region(m+n)`.  (The X10 type system
+ordinarily could not specify the sum; the best it could do 
+would be \xcd`r*s : Region`, with the rank of the region unknown.)  This
+feature allows more convenient use of arrays; in particular, one does not need
+to keep track of ranks nearly so much.
+
+Various built-in regions are provided through  factory
+methods on \xcd`Region`.  
+\begin{itemize}
+%~~exp~~"~~"~~ n:Long ~~ import x10.regionarray.*; ^^^Arrays3s5h
+\item \xcd"Region.makeEmpty(n)" returns an empty region of rank \xcd"n".
+%~~exp~~"~~"~~ n:Long ~~ import x10.regionarray.*; ^^^Arrays3x4j
+\item \xcd"Region.makeFull(n)" returns the region containing all points of
+      rank \xcd"n".  
+%~~exp~~"~~"~~ ~~ import x10.regionarray.*; ^^^Arrays7l3d
+\item \xcd"Region.makeUnit()" returns the region of rank 0 containing the
+      unique point of rank 0.  It is useful as the identity for Cartesian
+      product of regions.
+%~~exp~~"~~"~~ normal:Point, k:Long ~~ import x10.regionarray.*; ^^^Arrays3l7z
+\item \xcd"Region.makeHalfspace(normal, k)",
+      where \xcd`normal` is a \xcd`Point` and \xcd`k` an \xcd`Long`, 
+      returns the unbounded
+      half-space of rank \xcd"normal.rank", consisting of all points \xcd"p"
+      satisfying the vector inequality \xcdmath`p$\cdot$normal $\le$ k`.
+%~~exp~~"~~"~~ min:Rail[Long], max:Rail[Long] ~~ import x10.regionarray.*; ^^^Arrays3i3n
+\item \xcd"Region.makeRectangular(min, max)", 
+      where \xcd"min" and \xcd"max"
+      are rank-1 length-\xcd`n` integer arrays, returns a
+      \xcd"Region(n)" equal to: 
+      \xcdmath`[min(0) .. max(0), $\ldots$, min(n-1)..max(n-1)]`.
+%~~exp~~"~~"~~ size: int, a: int, b: int~~ import x10.regionarray.*; ^^^Arrays2f2y
+\item \xcd"Region.makeBanded(size, a, b)" constructs the
+      banded \xcd"Region(2)" of size \xcd"size", with \Xcd{a} bands above
+      and \Xcd{b} bands below the diagonal.
+%~~exp~~"~~"~~size:Long ~~ import x10.regionarray.*; ^^^Arrays5s3q
+\item \xcd"Region.makeBanded(size)" constructs the banded \Xcd{Region(2)} with
+      just the main diagonal.
+%~~exp~~`~~`~~N:Long ~~ import x10.regionarray.*; ^^^Arrays5s3qtri
+\item \xcd`Region.makeUpperTriangular(N)` returns a region corresponding
+to the non-zero indices in an upper-triangular \xcd`N x N` matrix.
+%~~exp~~`~~`~~N:Long ~~ import x10.regionarray.*; ^^^Arrays5s3qlowertri
+\item \xcd`Region.makeLowerTriangular(N)` returns a region corresponding
+to the non-zero indices in a lower-triangular \xcd`N x N` matrix.
+\item 
+  If \xcd`R` is a region, and \xcd`p` a Point of the same rank, then 
+%~~exp~~`~~`~~R:Region, p:Point(R.rank) ~~ import x10.regionarray.*; ^^^ Arrays50
+  \xcd`R+p` is \xcd`R` translated forwards by 
+  \xcd`p` -- the region whose
+%~~exp~~`~~`~~r:Point, p:Point(r.rank) ~~ import x10.regionarray.*; ^^^ Arrays60
+  points are \xcd`r+p` 
+  for each \xcd`r` in \xcd`R`.
+\item 
+  If \xcd`R` is a region, and \xcd`p` a Point of the same rank, then 
+%~~exp~~`~~`~~R:Region, p:Point(R.rank) ~~ import x10.regionarray.*; ^^^ Arrays70
+  \xcd`R-p` is \xcd`R` translated backwards by 
+  \xcd`p` -- the region whose
+%~~exp~~`~~`~~r:Point, p:Point(r.rank) ~~ import x10.regionarray.*; ^^^ Arrays80
+  points are \xcd`r-p` 
+  for each \xcd`r` in \xcd`R`.
+
+\end{itemize}
+
+All the points in a region are ordered canonically by the
+lexicographic total order. Thus the points of the region \xcd`(1..2)*(1..2)`
+are ordered as 
+\begin{xten}
+(1,1), (1,2), (2,1), (2,2)
+\end{xten}
+Sequential iteration statements such as \xcd`for` (\Sref{ForAllLoop})
+iterate over the points in a region in the canonical order.
+
+A region is said to be {\em rectangular}\index{region!convex} if it is of
+the form \xcdmath`(T$_1$ * $\cdots$ * T$_k$)` for some set of intervals
+\xcdmath`T$_i = $ l$_i$ .. h$_i$ `. 
+In particular an \xcd`LongRange` turned into a \xcd`Region` is rectangular: 
+%~~exp~~`~~`~~ ~~ import x10.regionarray.*; ^^^Arrays3x4z
+\xcd`Region.make(1..10)`.
+Such a
+region satisfies the property that if two points $p_1$ and $p_3$ are
+in the region, then so is every point $p_2$ between them (that is, it is {\em convex}). 
+(Banded and triangular regions are not rectangular.)
+The operation
+%~~exp~~`~~`~~R:Region ~~ import x10.regionarray.*; ^^^ Arrays90
+\xcd`R.boundingBox()` gives the smallest rectangular region containing
+\xcd`R`.
+
+\subsubsection{Operations on regions}
+\index{region!operations}
+
+Let \xcd`R` be a region. A {\em sub-region} is a subset of \xcd"R".
+\index{region!sub-region}
+
+Let \xcdmath`R1` and \xcdmath`R2` be two regions whose types establish that
+they are of the same rank. Let \xcdmath`S` be another region; its rank is
+irrelevant. 
+
+\xcdmath`R1 && R2` is the intersection of \xcdmath`R1` and
+\xcdmath`R2`, \viz, the region containing all points which are in both
+\Xcd{R1} and \Xcd{R2}.  \index{region!intersection}
+%~~exp~~`~~`~~ ~~ import x10.regionarray.*; ^^^ Arrays100
+For example, \xcd`Region.make(1..10) && Region.make(2..20)` is \Xcd{2..10}.
+
+
+\xcdmath`R1 * S` is the Cartesian product of \xcdmath`R1` and
+\xcdmath`S`,  formed by pairing each point in \xcdmath`R1` with every  point in \xcdmath`S`.
+\index{region!product}
+%~~exp~~`~~`~~ ~~ import x10.regionarray.*; ^^^ Arrays110
+Thus, \xcd`Region.make(1..2)*Region.make(3..4)*Region.make(5..6)`
+is the region of rank \Xcd{3} containing the eight points with coordinates
+\xcd`[1,3,5]`, \xcd`[1,3,6]`, \xcd`[1,4,5]`, \xcd`[1,4,6]`,
+\xcd`[2,3,5]`, \xcd`[2,3,6]`, \xcd`[2,4,5]`, \xcd`[2,4,6]`.
+
+
+For a region \xcdmath`R` and point \xcdmath`p` of the same rank,
+%~~exp~~`~~`~~R:Region, p:Point{p.rank==R.rank} ~~ import x10.regionarray.*; ^^^ Arrays120
+\xcd`R+p` 
+and
+%~~exp~~`~~`~~R:Region, p:Point{p.rank==R.rank} ~~ import x10.regionarray.*; ^^^ Arrays130
+\xcd`R-p` 
+represent the translation of the region
+forward 
+and backward 
+by \xcdmath`p`. That is, \Xcd{R+p} is the set of points
+\Xcd{p+q} for all \Xcd{q} in \Xcd{R}, and \Xcd{R-p} is the set of \Xcd{q-p}.
+
+More \Xcd{Region} methods are described in the API documentation.
+
+\subsection{Arrays}
+\index{array}
+
+Arrays are organized data, arranged so that the data can be accessed with subscripts.
+An \xcd`Array[T]` \Xcd{A} has a \Xcd{Region} \Xcd{A.region}, specifying which
+\Xcd{Point}s are in \Xcd{A}.  For each point \Xcd{p} in \Xcd{A.region},
+\Xcd{A(p)} is the datum of type \Xcd{T} associated with \Xcd{p}.  X10
+implementations should 
+attempt to store \xcd`Array`s efficiently, and to make array element accesses
+quick---\eg, avoiding constructing \Xcd{Point}s when unnecessary.
+
+This generalizes the concepts of arrays appearing in many other programming
+languages.  A \Xcd{Point} may have any number of coordinates, so an
+\xcd`Array` can have, in effect, any number of integer subscripts.  
+
+\begin{ex}Indeed, it is possible to write code that works on \Xcd{Array}s regardless 
+of dimension.  For example, to add one \Xcd{Array[Long]} \Xcd{src} into another
+\Xcd{dest}, 
+%~~gen ^^^ Arrays140
+%package Arrays.Arrays.Arrays.Example;
+%import x10.regionarray.*;
+% class Example{
+%~~vis
+\begin{xten}
+static def addInto(src: Array[Long], dest:Array[Long])
+  {src.region == dest.region}
+  {
+    for (p in src.region) 
+       dest(p) += src(p);
+  }
+\end{xten}
+%~~siv
+%}
+% class Hook{
+%   def run() { 
+%     val a = new Array[Long](3, [1,2,3]);
+%     val b = new Array[Long](a.region, (p:Point(1)) => 10*a(p) );
+%     Example.addInto(a, b);
+%     return b(0) == 11 && b(1) == 22 && b(2) == 33;
+% }}
+%~~neg
+\noindent
+Since \Xcd{p} is a \Xcd{Point}, it can hold as many coordinates as are
+necessary for the arrays \Xcd{src} and \Xcd{dest}.
+\end{ex}
+
+The basic operation on arrays is subscripting: if \Xcd{A} is an \Xcd{Array[T]}
+and \Xcd{p} a point with the same rank as \xcd`A.region`, then
+%~~exp~~`~~`~~A:Array[Long], p:Point{self.rank == A.region.rank} ~~ import x10.regionarray.*; ^^^ Arrays150
+\xcd`A(p)`
+is the value of type \Xcd{T} associated with point \Xcd{p}.
+This is the same operation as function application
+(\Sref{sect:FunctionApplication}); arrays implement function types, and can be
+used as functions.
+
+Array elements can be changed by assignment. If \Xcd{t:T}, 
+%~~gen ^^^ Arrays160
+%package Arrays.Arrays.Subscripting.Is.From.Mars;
+%import x10.regionarray.*; 
+%class Example{
+%def example[T](A:Array[T], p: Point{rank == A.region.rank}, t:T){
+%~~vis
+\begin{xten}
+A(p) = t;
+\end{xten}
+%~~siv
+%} } 
+%~~neg
+modifies the value associated with \Xcd{p} to be \Xcd{t}, and leaves all other
+values in \Xcd{A} unchanged.
+
+An \Xcd{Array[T]} named \Xcd{a} has: 
+\begin{itemize}
+%~~exp~~`~~`~~a:Array[Long] ~~ import x10.regionarray.*; ^^^ Arrays170
+\item \xcd`a.region`: the \Xcd{Region} upon which \Xcd{a} is defined.
+%~~exp~~`~~`~~a:Array[Long] ~~ import x10.regionarray.*; ^^^ Arrays180
+\item \xcd`a.size`: the number of elements in \Xcd{a}.
+%~~exp~~`~~`~~a:Array[Long] ~~ import x10.regionarray.*; ^^^ Arrays190
+\item \xcd`a.rank`, the rank of the points usable to subscript \Xcd{a}. 
+      \xcd`a.rank` is a cached copy of 
+      \Xcd{a.region.rank}.
+\end{itemize}
+
+\subsubsection{Array Constructors}
+\index{array!constructor}
+
+To construct an array whose elements all have the same value \Xcd{init}, call
+\Xcd{new Array[T](R, init)}. 
+For example, an array of a thousand \xcd`"oh!"`s can be made by:
+%~~exp~~`~~`~~ ~~ import x10.regionarray.*; ^^^ Arrays200
+\xcd`new Array[String](1000, "oh!")`.
+
+
+To construct and initialize an array, call the two-argument constructor. 
+\Xcd{new Array[T](R, f)} constructs an array of elements of type \Xcd{T} on
+region \Xcd{R}, with \Xcd{a(p)} initialized to \Xcd{f(p)} for each point
+\Xcd{p} in \Xcd{R}.  \Xcd{f} must be a function taking a point of rank
+\Xcd{R.rank} to a value of type \Xcd{T}.  
+
+\begin{ex}
+One way to construct the array \xcd`[11, 22, 33]` is with an array constructor
+%~~exp~~`~~`~~ ~~ import x10.regionarray.*; ^^^ Arrays210
+\xcd`new Array[Long](3, (i:long)=>11*i)`. 
+To construct a multiplication table, call
+%~~exp~~`~~`~~ ~~ import x10.regionarray.*; ^^^ Arrays220
+\xcd`new Array[Long](Region.make(0..9, 0..9), (p:Point(2)) => p(0)*p(1))`.
+\end{ex}
+
+Other constructors are available; see the API documentation and
+\Sref{sect:RailCtors}. 
+
+\subsubsection{Array Operations}
+\index{array!operations on}
+
+The basic operation on \Xcd{Array}s is subscripting.  If \Xcd{a:Array[T]} and 
+\xcd`p:Point{rank == a.rank}`, then \Xcd{a(p)} is the value of type \Xcd{T}
+appearing at position \Xcd{p} in \Xcd{a}.    The syntax is identical to
+function application, and, indeed, arrays may be used as functions.
+\Xcd{a(p)} may be assigned to, as well, by the usual assignment syntax
+%~~exp~~`~~`~~a:Array[Long], p:Point{rank == a.rank}, t:Long ~~ import x10.regionarray.*; ^^^ Arrays230
+\xcd`a(p)=t`.
+(This uses the application and setting syntactic sugar, as given in \Sref{set-and-apply}.)
+
+Sometimes it is more convenient to subscript by longs.  Arrays of rank 1-4
+can, in fact, be accessed by longs: 
+%~~gen ^^^ Arrays240
+%package Arrays240;
+%import x10.regionarray.*;
+%class Example{
+%static def example(){
+%~~vis
+\begin{xten}
+val A1 = new Array[Long](10, 0);
+A1(4) = A1(4) + 1;
+val A4 = new Array[Long](Region.make(1..2, 1..3, 1..4, 1..5), 0);
+A4(2,3,4,5) = A4(1,1,1,1)+1;
+\end{xten}
+%~~siv
+% assert A1(4) == 1 && A4(2,3,4,5) == 1;
+%}}
+% class Hook{ def run() {Example.example(); return true;}}
+%~~neg
+
+
+
+Iteration over an \Xcd{Array} is defined, and produces the \Xcd{Point}s of the
+array's region.  If you want to use the values in the array, you have to
+subscript it.  For example, you could take the logarithm of every element of an
+\Xcd{Array[Double]} by: 
+%~~gen ^^^ Arrays250
+%package Arrays250;
+%import x10.regionarray.*;
+%class Example{
+%static def example(a:Array[Double]) {
+%~~vis
+\begin{xten}
+for (p in a) a(p) = Math.log(a(p));
+\end{xten}
+%~~siv
+%}}
+% class Hook{ def run() { val a = new Array[Double](2, [1.0,2.0]); Example.example(a); return a(0)==Math.log(1.0) && a(1)==Math.log(2.0); }}
+
+%~~neg
+
+The method \xcd`a.values()` can be used to enumerate all the values of an \xcd`Array[T]` array \xcd`a`.
+%~~gen ^^^ Arrays251
+%package Arrays251;
+%import x10.regionarray.*;
+%class Example{
+%~~vis
+\begin{xten}
+static def allNonNegatives(a:Array[Double]):Boolean {
+ for (v in a.values()) if (v < 0.0D) return false;
+ return true;
+}
+\end{xten}
+%~~siv
+%}
+% class Hook{ def run() { val a = new Array[Double](2, [1.0,2.0]); return Example.allNonNegatives(a);  }}
+%~~neg
+
+
+\subsection{Distributions}\label{XtenDistributions}
+\index{distribution}
+
+Distributed arrays are spread across multiple \xcd`Place`s.  
+A {\em distribution}, a mapping from a region to a set of places, 
+describes where each element of a distributed array is kept.
+Distributions are embodied by the class \Xcd{x10.regionarray.Dist} and its
+subclasses. 
+The {\em rank} of a distribution is the rank of the underlying region, and
+thus the rank of every point that the distribution applies to.
+
+
+\begin{ex}
+%~~gen ^^^ Arrays260
+%package Arrays.Dist_example_a;
+%import x10.regionarray.*;
+% class Example{
+% def example() {
+%~~vis
+\begin{xten}
+val R  <: Region = Region.make(1..100);
+val D1 <: Dist = Dist.makeBlock(R);
+val D2 <: Dist = Dist.makeConstant(R, here);
+\end{xten}
+%~~siv
+% } } 
+%~~neg
+
+\xcd`D1` distributes the region \xcd`R` in blocks, with a set of consecutive
+points at each place, as evenly as possible.  \xcd`D2` maps all the points in
+\xcd`R` to \xcd`here`.  
+\end{ex}
+
+Let \xcd`D` be a distribution. 
+%~~exp~~`~~`~~D:Dist ~~ import x10.regionarray.*; ^^^ Arrays270
+\xcd`D.region` 
+denotes the underlying
+region. 
+Given a point \xcd`p`, the expression
+%~~exp~~`~~`~~ D:Dist, p:Point{p.rank == D.rank}~~ import x10.regionarray.*; ^^^ Arrays280
+\xcd`D(p)` represents the application of \xcd`D` to \xcd`p`, that is,
+the place that \xcd`p` is mapped to by \xcd`D`. The evaluation of the
+expression \xcd`D(p)` throws an \xcd`ArrayIndexOutofBoundsException`
+if \xcd`p` does not lie in the underlying region.
+
+
+\subsubsection{{\tt PlaceGroup}s}
+
+A \xcd`PlaceGroup` represents an ordered set of \xcd`Place`s.
+\xcd`PlaceGroup`s exist for performance and scaleability: they are more
+efficient, in certain critical places, than general collections of
+\xcd`Place`. \xcd`PlaceGroup` implements \xcd`Sequence[Place]`, and thus
+provides familiar operations -- \xcd`pg.size()` for the number of places,
+\xcd`pg.iterator()` to iterate over them, etc.  
+
+\xcd`PlaceGroup` is an abstract class.  The concrete class
+\xcd`SparsePlaceGroup` is intended for a small group of places. 
+%~~exp~~`~~`~~ somePlace:Place ~~ ^^^Arrays1j6q
+\xcd`new SparsePlaceGroup(somePlace)` is a good \xcd`PlaceGroup` containing
+one place.  
+%~~exp~~`~~`~~ seqPlaces: Rail[Place] ~~ ^^^Arrays9g6f
+\xcd`new SparsePlaceGroup(seqPlaces)`
+constructs a sparse place group from a Rail of places.
+
+\subsubsection{Operations returning distributions}
+\index{distribution!operations}
+
+
+
+Let \xcd`R` be a region, \xcd`Q` 
+a \xcd`PlaceGroup`, and \xcd`P` a place.
+
+\paragraph{Unique distribution} \index{distribution!unique}
+%~~exp~~`~~`~~Q:PlaceGroup ~~ import x10.regionarray.*; ^^^ Arrays290
+The distribution \xcd`Dist.makeUnique(Q)` is the unique distribution from the
+region \xcd`Region.make(1..k)` to \xcd`Q` mapping each point \xcd`i` to
+\xcd`pi`.
+
+
+\paragraph{Constant distributions.} \index{distribution!constant}
+%~~exp~~`~~`~~R:Region, P:Place ~~ import x10.regionarray.*; ^^^ Arrays300
+The distribution \xcd`Dist.makeConstant(R,P)` maps every point in region
+\xcd`R` to place \xcd`P`.  
+%~~exp~~`~~`~~R:Region ~~ import x10.regionarray.*; ^^^Arrays9n5n
+The special case \xcd`Dist.makeConstant(R)` maps every point in \xcd`R` to
+\xcd`here`. 
+
+\paragraph{Block distributions.}\index{distribution!block}
+%~~exp~~`~~`~~R:Region ~~ import x10.regionarray.*; ^^^ Arrays320
+The distribution \xcd`Dist.makeBlock(R)` distributes the elements of \xcd`R`,
+in approximately-even blocks, over all the places available to the program. 
+There are other \xcd`Dist.makeBlock` methods capable of controlling the
+distribution and the set of places used; see the API documentation.
+
+
+\paragraph{Domain Restriction.} \index{distribution!restriction!region}
+
+If \xcd`D` is a distribution and \xcd`R` is a sub-region of {\cf
+%~~exp~~`~~`~~D:Dist,R :Region{R.rank==D.rank} ~~ import x10.regionarray.*; ^^^ Arrays330
+D.region}, then \xcd`D | R` represents the restriction of \xcd`D` to
+\xcd`R`---that is, the distribution that takes each point \xcd`p` in \xcd`R`
+to 
+%~~exp~~`~~`~~D:Dist, p:Point{p.rank==D.rank} ~~ import x10.regionarray.*; ^^^ Arrays340
+\xcd`D(p)`, 
+but doesn't apply to any points but those in \xcd`R`.
+
+\paragraph{Range Restriction.}\index{distribution!restriction!range}
+
+If \xcd`D` is a distribution and \xcd`P` a place expression, the term
+%~~exp~~`~~`~~ D:Dist, P:Place~~ import x10.regionarray.*; ^^^ Arrays350
+\xcd`D | P` 
+denotes the sub-distribution of \xcd`D` defined over all the
+points in the region of \xcd`D` mapped to \xcd`P`.
+
+Note that \xcd`D | here` does not necessarily contain adjacent points
+in \xcd`D.region`. For instance, if \xcd`D` is a cyclic distribution,
+\xcd`D | here` will typically contain points that differ by the number of
+places. 
+An implementation may find a
+way to still represent them in contiguous memory, \eg, using an arithmetic
+function to map from the region index to an index 
+into the array.
+
+
+\subsection{Distributed Arrays}
+\index{array!distributed}
+\index{distributed array}
+\index{\Xcd{DistArray}}
+\index{DistArray}
+
+Distributed arrays, instances of \xcd`DistArray[T]`, are very much like
+\xcd`Array`s, except that they distribute information among multiple
+\xcd`Place`s according to a \xcd`Dist` value passed in as a constructor
+argument.  
+
+\begin{ex}The following code creates a distributed array holding
+a thousand cells, each initialized to 0.0, distributed via a block
+distribution over all places.
+%~~gen ^^^ Arrays360
+% package Arrays.Distarrays.basic.example;
+% import x10.regionarray.*;
+% class Example {
+% def example() {
+%~~vis
+\begin{xten}
+val R <: Region = Region.make(1..1000);
+val D <: Dist = Dist.makeBlock(R);
+val da <: DistArray[Float] 
+       = DistArray.make[Float](D, (Point(1))=>0.0f);
+\end{xten}
+%~~siv
+%}}
+%~~neg
+\end{ex}
+
+
+
+\subsection{Distributed Array Construction}\label{ArrayInitializer}
+\index{distributed array!creation}
+\index{\Xcd{DistArray}!creation}
+\index{DistArray!creation}
+
+\xcd`DistArray`s are instantiated by invoking one of the \xcd`make` factory
+methods of the \xcd`DistArray` class.
+A \xcd`DistArray` creation 
+must take either an \xcd`Long` as an argument or a \xcd`Dist`. In the first
+case,  a distributed array is created over the distribution 
+%~~exp~~`~~`~~N:Long ~~ import x10.regionarray.*; ^^^Arrays1s6g
+\xcd`Dist.makeConstant(Region.make(0, N-1),here)`;
+in the second over the given distribution. 
+
+\begin{ex}A distributed array creation operation may also specify an initializer
+function.
+The function is applied in parallel
+at all points in the domain of the distribution. The
+construction operation terminates locally only when the \xcd`DistArray` has been
+fully created and initialized (at all places in the range of the
+distribution).
+
+For instance:
+%~~gen ^^^ Arrays370
+% package Arrays.DistArray.Construction.FeralWolf;
+% import x10.regionarray.*;
+% class Example {
+% def example() {
+%~~vis
+\begin{xten}
+val ident = ([i]:Point(1)) => i;
+val data : DistArray[Long]
+    = DistArray.make[Long](Dist.makeConstant(Region.make(1, 9)), ident);
+val blk = Dist.makeBlock(Region.make(1..9, 1..9));
+val data2 : DistArray[Long]
+    = DistArray.make[Long](blk, ([i,j]:Point(2)) => i*j);
+\end{xten}
+%~~siv
+% }  }
+%~~neg
+
+{}\noindent 
+The first declaration stores in \xcd`data` a reference to a mutable
+distributed array with \xcd`9` elements each of which is located in the
+same place as the array. The element at \Xcd{[i]} is initialized to its index
+\xcd`i`. 
+
+The second declaration stores in \xcd`data2` a reference to a mutable
+two-dimensional distributed array, whose coordinates both range from 1 to
+9, distributed in blocks over all \xcd`Place`s, 
+initialized with \xcd`i*j`
+at point \xcd`[i,j]`.
+\end{ex}
+
+\subsection{Operations on Arrays and Distributed Arrays}
+
+Arrays and distributed arrays share many operations.
+In the following, let \xcd`a` be an array with base type T, and \xcd`da` be an
+array with distribution \xcd`D` and base type \xcd`T`.
+
+\subsubsection{Element operations}\index{array!access}
+The value of \xcd`a` at a point \xcd`p` in its region of definition is
+%~~exp~~`~~`~~a:Array[Long](3), p:Point(3) ~~ import x10.regionarray.*; ^^^ Arrays380
+obtained by using the indexing operation \xcd`a(p)`. 
+The value of \xcd`da` at \xcd`p` is similarly
+%~~exp~~`~~`~~da:DistArray[Long](3), p:Point(3) ~~ import x10.regionarray.*; ^^^ Arrays390
+\xcd`da(p)`.
+This operation
+may be used on the left hand side of an assignment operation to update
+the value: 
+%~~stmt~~`~~`~~a:Array[Long](3), p:Point(3), t:Long ~~ import x10.regionarray.*; ^^^ Arrays400
+\xcd`a(p)=t;`
+and 
+%~~stmt~~`~~`~~da:DistArray[Long](3), p:Point(3), t:Long ~~ import x10.regionarray.*; ^^^ Arrays410
+\xcd`da(p)=t;`
+The operator assignments, \xcd`a(i) += e` and so on,  are also
+available. 
+
+It is a runtime error to 
+access arrays, with \xcd`da(p)` or \xcd`da(p)=v`, at a place
+other than \xcd`da.dist(p)`, \viz{} at the place that the element exists. 
+
+
+\subsubsection{Arrays of Single Values}\label{ConstantArray}
+\index{array!constant promotion}
+
+For a region \xcd`R` and a value \xcd`v` of type \xcd`T`, the expression 
+%~~genexp~~`~~`~~T~~R:Region{self!=null}, v:T ~~ import x10.regionarray.*; ^^^ Arrays420
+\xcd`new Array[T](R, v)` 
+produces an array on region \xcd`R` initialized with value \xcd`v`.
+Similarly, 
+for a distribution \xcd`D` and a value \xcd`v` of
+type \xcd`T` the expression 
+\begin{xtenmath}
+DistArray.make[T](D, (Point(D.rank))=>v)
+\end{xtenmath}
+constructs a distributed array with
+distribution \xcd`D` and base type \xcd`T` initialized with \xcd`v`
+at every point.
+
+Note that \xcd`Array`s are constructed by constructor calls, but
+\xcd`DistArrays` are constructed by calls to the factory methods
+\xcd`DistArray.make`. This is because \xcd`Array`s are fairly simple objects,
+but \xcd`DistArray`s may be implemented by different classes for different
+distributions. The use of the factory method gives the library writer the
+freedom to select appropriate implementations.
+
+
+\subsubsection{Restriction of an array}\index{array!restriction}
+
+Let \xcd`R` be a sub-region of \xcd`da.region`. Then 
+%~~exp~~`~~`~~da:DistArray[Long](3), p:Point(3), R: Region(da.rank) ~~ import x10.regionarray.*; ^^^ Arrays440
+\xcd`da | R`
+represents the sub-\xcd`DistArray` of \xcd`da` on the region \xcd`R`.
+That is, \xcd`da | R` has the same values as \xcd`da` when subscripted by a
+%~~exp~~`~~`~~R:Region, da: DistArray[Long]{da.region.rank == R.rank} ~~ import x10.regionarray.*; ^^^ Arrays450
+point in region \xcd`R && da.region`, and is undefined elsewhere.
+
+Recall that a rich set of operators are available on distributions
+(\Sref{XtenDistributions}) to obtain sub-distributions
+(e.g. restricting to a sub-region, to a specific place etc).
+
+
+\subsubsection{Operations on Whole Arrays}
+
+\paragraph{Pointwise operations}\label{ArrayPointwise}\index{array!pointwise operations}
+The unary \xcd`map` operation applies a function to each element of
+a distributed or non-distributed array, returning a new distributed array with
+the same distribution, or a non-distributed array with the same region.
+
+The following produces an array of cubes: 
+%~~gen ^^^ Arrays460
+%package Arrays_pointwise_a;
+%import x10.regionarray.*;
+%class Example{
+%static def example() {
+%~~vis
+\begin{xten}
+val A = new Array[Long](11, (i:long)=>i);
+assert A(3) == 3 && A(4) == 4 && A(10) == 10; 
+val cube = (i:Long) => i*i*i;
+val B = A.map(cube);
+assert B(3) == 27 && B(4) == 64 && B(10) == 1000; 
+\end{xten}
+%~~siv
+%} } 
+% class Hook{ def run() {Example.example(); return true;}}
+%~~neg
+
+A variant operation lets you specify the array \Xcd{B} into which the result
+will be stored, 
+%~~gen ^^^ Arrays470
+%package Arrays.map_with_result;
+%import x10.regionarray.*;
+%class Example{
+%static def example() {
+%~~vis
+\begin{xten}
+val A = new Array[Long](11, (i:long)=>i);
+assert A(3) == 3 && A(4) == 4 && A(10) == 10; 
+val cube = (i:Long) => i*i*i;
+val B = new Array[Long](A.region); // B = 0,0,0,0,0,0,0,0,0,0,0
+A.map(B, cube);
+assert B(3) == 27 && B(4) == 64 && B(10) == 1000; 
+\end{xten}
+%~~siv
+%} } 
+% class Hook{ def run() {Example.example(); return true;}}
+%~~neg
+\noindent
+This is convenient if you have an already-allocated array lying around unused.
+In particular, it can be used if you don't need \Xcd{A} afterwards and want to
+reuse its space:
+%~~gen ^^^ Arrays480
+%package Arrays.map_reusing_space;
+%import x10.regionarray.*;
+%class Example{
+%static def example() {
+%~~vis
+\begin{xten}
+val A = new Array[Long](11, (i:long)=>i);
+assert A(3) == 3 && A(4) == 4 && A(10) == 10; 
+val cube = (i:Long) => i*i*i;
+A.map(A, cube);
+assert A(3) == 27 && A(4) == 64 && A(10) == 1000; 
+\end{xten}
+%~~siv
+%} } 
+% class Hook{ def run() {Example.example(); return true;}}
+%~~neg
+
+
+The binary \xcd`map` operation takes a binary function and
+another
+array over the same region or distributed array over the same  distribution,
+and applies the function 
+pointwise to corresponding elements of the two arrays, returning
+a new array or distributed array of the same shape.
+The following code adds two distributed arrays: 
+%~~gen ^^^ Arrays490
+% package Arrays.Pointwise.Pointless.Map2;
+% import x10.regionarray.*;
+% class Example{
+%~~vis
+\begin{xten}
+static def add(da:DistArray[Long], db: DistArray[Long])
+    {da.dist==db.dist}
+    = da.map(db, (a:Long,b:Long)=>a+b);
+\end{xten}
+%~~siv
+%}
+%~~neg
+
+
+
+\paragraph{Reductions}\label{ArrayReductions}\index{array!reductions}
+
+Let \xcd`f` be a function of type \xcd`(T,T)=>T`.  Let
+\xcd`a` be an array over base type \xcd`T`.
+Let \xcd`unit` be a value of type \xcd`T`.
+Then the
+%~~genexp~~`~~`~~ T ~~ f:(T,T)=>T, a : Array[T], unit:T ~~ import x10.regionarray.*; ^^^ Arrays500
+operation \xcd`a.reduce(f, unit)` returns a value of type \xcd`T` obtained
+by combining all the elements of \xcd`a` by use of  \xcd`f` in some unspecified order
+(perhaps in parallel).   
+The following code gives one method which 
+meets the definition of \Xcd{reduce},
+having a running total \Xcd{r}, and accumulating each value \xcd`a(p)` into it
+using \Xcd{f} in turn.  (This code is simply given as an example; \Xcd{Array}
+has this operation defined already.)
+%~~gen ^^^ Arrays510
+%package Arrays.Reductions.And.Eliminations;
+%import x10.regionarray.*;
+% class Example {
+%~~vis
+\begin{xten}
+def oneWayToReduce[T](a:Array[T], f:(T,T)=>T, unit:T):T {
+  var r : T = unit;
+  for(p in a.region) r = f(r, a(p));
+  return r;
+}
+\end{xten}
+%~~siv
+%}
+%~~neg
+
+
+For example,  the following sums an array of longs.  \Xcd{f} is addition,
+and \Xcd{unit} is zero.  
+%~~gen ^^^ Arrays520
+% package Arrays.Reductions.And.Emulsions;
+%import x10.regionarray.*;
+% class Example {
+% static def example() {
+%~~vis
+\begin{xten}
+val a = new Array[Long](4, (i:long)=>i+1);
+val sum = a.reduce((a:Long,b:Long)=>a+b, 0); 
+assert(sum == 10); // 10 == 1+2+3+4
+\end{xten}
+%~~siv
+%}}
+% class Hook{ def run() {Example.example(); return true;}}
+%~~neg
+
+Other orders of evaluation, degrees of parallelism, and applications of
+\Xcd{f(x,unit)} and \xcd`f(unit,x)`are also correct.
+In order to guarantee that the result is precisely
+determined, the  function \xcd`f` should be associative and
+commutative, and the value \xcd`unit` should satisfy
+\xcd`f(unit,x)` \xcd`==` \xcd`x` \xcd`==` \xcd`f(x,unit)`
+for all \Xcd{x:T}.  
+
+
+
+
+\xcd`DistArray`s have the same operation.
+This operation involves communication between the places over which
+the \xcd`DistArray` is distributed. The \Xten{} implementation guarantees that
+only one value of type \xcd`T` is communicated from a place as part of
+this reduction process.
+
+\paragraph{Scans}\label{ArrayScans}\index{array!scans}
+
+
+Let \xcd`f:(T,T)=>T`, \xcd`unit:T`, and \xcd`a` be an \xcd`Array[T]` or
+\xcd`DistArray[T]`.  Then \xcd`a.scan(f,unit)` is the array or distributed
+array of type \xcd`T` whose {$i$}th element in canonical order is the
+reduction by \xcd`f` with unit \xcd`unit` of the first {$i$} elements of
+\xcd`a`. 
+
+
+This operation involves communication between the places over which the
+distributed array is distributed. The \Xten{} implementation will endeavour to
+minimize the communication between places to implement this operation.
+
+Other operations on arrays, distributed arrays, and the related classes may be
+found in the \xcd`x10.regionarray` package.
