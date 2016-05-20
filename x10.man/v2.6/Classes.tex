@@ -2362,11 +2362,11 @@ $$
 Similarly to user-defined operators (Section~\ref{sect:operators}), it is possible to redefine the
 behavior of some control structures.
 %
-For example, suppose that we want to define a \verb+if+ statement that
-randomly chooses which branch to execute. In a class \verb+RandomIf+,
-we define a method named \verb+if+~(introduced with the keyword
-\verb+operator+) that implements this behavior:
-\begin{verbatim}
+For example, suppose that we want to define a \xcd+if+ statement that
+randomly chooses which branch to execute. In a class \xcd+RandomIf+,
+we define a method named \xcd+if+~(introduced with the keyword
+\xcd+operator+) that implements this behavior:
+\begin{xten}
 class RandomIf {
     val random = new Random();
     public operator if(then: ()=>void, else_: ()=>void) {
@@ -2377,9 +2377,9 @@ class RandomIf {
         }
     }
 }
-\end{verbatim}
-Then, we can call this method using the syntax of the \verb+if+
-statement by prefixing the \verb+if+ keyword by an object that
+\end{xten}
+Then, we can call this method using the syntax of the \xcd+if+
+statement by prefixing the \xcd+if+ keyword by an object that
 implements this method:
 \begin{verbatim}
     val random = new RandomIf();
@@ -2389,9 +2389,9 @@ implements this method:
         Console.OUT.println("false");
     }
 \end{verbatim}
-The blocks that represent the \verb+then+ and the \verb+else+ branches
-of the \verb+if+ are automatically turned into closures and are given
-as argument to the \verb+RandomIf.if+ method.
+The blocks that represent the \xcd+then+ and the \xcd+else+ branches
+of the \xcd+if+ are automatically turned into closures and are given
+as argument to the \xcd+RandomIf.if+ method.
 
 To distinguish the use of a user-defined control structure from the
 use of a built-in one, the first keyword of the control structure must
@@ -2402,8 +2402,8 @@ is exactly the same as the one of methods.
 
 
 User-defined control structures can also be called as standard methods
-using the \verb+operator+ prefix~(as for user-defined operators). For
-example, the previous code is equivalent to:
+using the keyword \xcd+operator+ as prefix~(as for user-defined
+operators). For example, the previous code is equivalent to:
 \begin{verbatim}
     val random = new RandomIf();
     random.operator if (() => { Console.OUT.println("true"); },
@@ -2522,7 +2522,7 @@ optionally end with an expression~(a return value);
 %
 $(\,)^?$ is an optional group.
 
-The rule for \verb+if+ is:
+Let's comment the rule for \xcd+if+:
 $$
 \begin{array}{rcl}
   \usrIf{o}{\overline{T}}{\overline{e}}{b_1}{b_2}
@@ -2532,9 +2532,9 @@ $$
   \qquad\libIf{o}{\overline{T}}{\overline{e}}{b_1}{b_2}}
 \end{array}
 $$
-Compared to the builtin \verb+if+ control structure, the user-defined one accepts type arguments and replaces one condition expression with a list of expressions, possibly empty.
-The branches of the user-defined \verb+if+ statement are lifted to no-arg closures and passed to the user-defined \verb+if+ method as arguments. 
- The \verb+else+ branch is optional.
+Compared to the builtin \xcd+if+ control structure, the user-defined one accepts type arguments and replaces one condition expression with a list of expressions, possibly empty.
+The branches of the user-defined \xcd+if+ statement are lifted to no-arg closures and passed to the user-defined \xcd+if+ method as arguments. 
+ The \xcd+else+ branch is optional.
 
 The correspondence is purely syntactic. In other words, the control structure syntax is simply rewritten into the regular method invocation syntax with no consideration of types or method lookup.
 
@@ -2566,12 +2566,12 @@ $$
 \end{array}
 $$
 
-A \verb+for+ loop over a collection may be defined in a container \verb+A+ as:
+A \xcd+for+ loop over a collection may be defined in a container \xcd+A+ as:
 \begin{verbatim}
 operator for[T](c: Iterable[T], body: (T)=>void) = ...
 \end{verbatim}
 %
-The use of such user-defined \verb+for+ loop would have the following form:
+The use of such user-defined \xcd+for+ loop would have the following form:
 \begin{verbatim}
 A.for (x: T in c) { ... }
 \end{verbatim}
@@ -2580,22 +2580,22 @@ and would correspond to the following method call:
 A.operator for (c, (x: Long) => { ... });
 \end{verbatim}
 %
-The body of the \verb+for+ is automatically translated into a closure
+The body of the \xcd+for+ is automatically translated into a closure
 that takes the iteration variable as parameter.
 %
 Since there is no type inference for closure parameters, the type of
 the iteration variable must be given explicitly.
 
-The second argument of a \verb+for+ method can be a closure without argument:
+The second argument of a \xcd+for+ method can be a closure without argument:
 \begin{verbatim}
 operator for[T](c: Iterable[T], body: ()=>void) = ...
 \end{verbatim}
-In this case, the method is called using the syntax of a \verb+for+ loop without iteration variable:
+In this case, the method is called using the syntax of a \xcd+for+ loop without iteration variable:
 \begin{verbatim}
 A.for (c) { ... }
 \end{verbatim}
 
-\begin{example}
+\begin{ex}
   A naive implementation of a parallel loop can be:
 \begin{verbatim}
 class Parallel {
@@ -2617,10 +2617,10 @@ class Parallel {
   }
 }
 \end{verbatim}
-\end{example}
+\end{ex}
 
-\begin{example}
-  We can also use the user-defined \verb+for+ loops to define
+\begin{ex}
+  We can also use the user-defined \xcd+for+ loops to define
   iterations over a two dimensional space. Let define a loop that
   creates an activity for each element of the first dimension.
 \begin{verbatim}
@@ -2641,9 +2641,9 @@ and it can be used as follows:
 \begin{verbatim}
 Parallel2.for (i:Long, j:Long in 1..10 * 1..10) { ... }
 \end{verbatim}
-The list of variables before the \verb+in+ keyword becomes the
+The list of variables before the \xcd+in+ keyword becomes the
 parameters of the closure whose body is the body of the loop.
-\end{example}
+\end{ex}
 
 \subsection{User-Defined \texttt{if}}
 % {\scriptsize
@@ -2668,13 +2668,13 @@ $$
 \end{array}
 $$
 
-  When we use a user-defined \verb+if+ statement, the condition is
-evaluated before calling the \verb+if+ method, but the then and else
+  When we use a user-defined \xcd+if+ statement, the condition is
+evaluated before calling the \xcd+if+ method, but the then and else
 branches are implicitly lifted to closures without argument.
 
-Note that the condition of a user-defined \verb+if+ statement can take
+Note that the condition of a user-defined \xcd+if+ statement can take
 an arbitrary number of arguments. This is why we were able to define the
-\verb+Random.if+ that does not take a condition.
+\xcd+Random.if+ that does not take a condition.
 
 
 \subsection{User-Defined \texttt{try}}
@@ -2713,17 +2713,17 @@ $$
 \end{array}
 $$
 
-When we use a user-defined \verb+try+ statement, the body of the
-\verb+try+ is lifted to a closure without argument and handler is
-lifted to a closure that has the parameter of the \verb+catch+ as
-parameter. The \verb+finally+ block is also lifted to a closure
+When we use a user-defined \xcd+try+ statement, the body of the
+\xcd+try+ is lifted to a closure without argument and handler is
+lifted to a closure that has the parameter of the \xcd+catch+ as
+parameter. The \xcd+finally+ block is also lifted to a closure
 without argument.
 
 
-\begin{example}
-  The user-defined \verb+try+ construct can be used to provide a
+\begin{ex}
+  The user-defined \xcd+try+ construct can be used to provide a
   control structure that automatically removes the nesting of
-  \verb+MultipleExceptions+:
+  \xcd+MultipleExceptions+:
 \begin{verbatim}
 class Flatten {
 
@@ -2750,11 +2750,11 @@ class Flatten {
 }
 \end{verbatim}
 
-  Used in the following example, the \verb+MultipleExceptions+
-  \verb+me+ contains the exceptions \verb+Exception("Exn 1")+,
-  \verb+Exception("Exn 2")+, and \verb+Exception("Exn 3")+ instead of
-  the exception \verb+Exception("Exn 1")+ and another
-  \verb+MultipleExceptions+.
+  Used in the following example, the \xcd+MultipleExceptions+
+  \xcd+me+ contains the exceptions \xcd+Exception("Exn 1")+,
+  \xcd+Exception("Exn 2")+, and \xcd+Exception("Exn 3")+ instead of
+  the exception \xcd+Exception("Exn 1")+ and another
+  \xcd+MultipleExceptions+.
 \begin{verbatim}
 public static def main(Rail[String]) {
   Flatten.try {
@@ -2771,7 +2771,7 @@ public static def main(Rail[String]) {
 }
 \end{verbatim}
 
-\end{example}
+\end{ex}
 
 \subsection{User-Defined \texttt{throw}}
 % {\scriptsize
@@ -2792,8 +2792,8 @@ $$
   \libThrow{o}{\overline{T}}{e}
 \end{array}
 $$
-The argument of a user-defined \verb+throw+ is evaluated before
-calling the \verb+throw+ method.
+The argument of a user-defined \xcd+throw+ is evaluated before
+calling the \xcd+throw+ method.
 
 
 \subsection{User-Defined \texttt{async}}
@@ -2815,14 +2815,14 @@ $$
 \end{array}
 $$
 
-The body of a user-defined \verb+async+ is lifted to a closure without
+The body of a user-defined \xcd+async+ is lifted to a closure without
 argument. The clock arguments are evaluated before the call to the
-\verb+async+ method.
+\xcd+async+ method.
 
-\begin{example}
-  An \verb+async+ that does not execute in the scope in which it is
+\begin{ex}
+  An \xcd+async+ that does not execute in the scope in which it is
   written. The task is created in the scope where the object that
-  defines the \verb+async+ method is instantiated.
+  defines the \xcd+async+ method is instantiated.
 \begin{verbatim}
 class Escape {
   private var task: ()=>void = null;
@@ -2854,9 +2854,9 @@ class Escape {
   }
 }
 \end{verbatim}
-  In the following example, the message \verb+"OK"+ is printed even if
+  In the following example, the message \xcd+"OK"+ is printed even if
   the created task never terminates because the task is executed
-  outside of the scope of the \verb+finish+.
+  outside of the scope of the \xcd+finish+.
 \begin{verbatim}
 public static def main(Rail[String]) {
   val toplevel = new Escape();
@@ -2866,7 +2866,7 @@ public static def main(Rail[String]) {
   Console.OUT.println("OK");
 }
 \end{verbatim}
-\end{example}
+\end{ex}
 
 \subsection{User-Defined \texttt{atomic}}
 % {\scriptsize
@@ -2910,17 +2910,17 @@ $$
 \end{array}
 $$
 
-The arguments of a user-defined \verb+when+ statements are evaluated
-before the call of the \verb+when+ method and the body is lifted to a
+The arguments of a user-defined \xcd+when+ statements are evaluated
+before the call of the \xcd+when+ method and the body is lifted to a
 closure without argument. It means that if the argument of a
-user-defined \verb+when+ is of type \verb+Boolean+, the condition is
+user-defined \xcd+when+ is of type \xcd+Boolean+, the condition is
 evaluated once and cannot be changed. To be able to update the
 condition, it can be an object with mutable field as in the following
 example or a closure.
 
 
-\begin{example}
-  We can provide a \verb+when+ statement whose execution can be
+\begin{ex}
+  We can provide a \xcd+when+ statement whose execution can be
   canceled while it is waiting:
 \begin{verbatim}
 class CancelableWhen {
@@ -2937,8 +2937,8 @@ class CancelableWhen {
   }
 }
 \end{verbatim}
-The following example will not print the message \verb+"KO"+ but will
-terminate even if the condition \verb+b+ of the \verb+when+ remains
+The following example will not print the message \xcd+"KO"+ but will
+terminate even if the condition \xcd+b+ of the \xcd+when+ remains
 false:
 \begin{verbatim}
 public static def main(Rail[String]) {
@@ -2952,7 +2952,7 @@ public static def main(Rail[String]) {
   }
 }
 \end{verbatim}
-\end{example}
+\end{ex}
 
 \subsection{User-Defined \texttt{finish}}
 % {\scriptsize
@@ -2974,10 +2974,10 @@ $$
 \end{array}
 $$
 
-The body of a user-defined \verb+finish+ is lifted to a closure.
+The body of a user-defined \xcd+finish+ is lifted to a closure.
 
-\begin{example}
-  We define a \verb+finish+ that provide the ability to some parallel task to wait for its termination:
+\begin{ex}
+  We define a \xcd+finish+ that provide the ability to some parallel task to wait for its termination:
 \begin{verbatim}
 class SignalingFinish {
   private var terminated : Boolean = false;
@@ -2992,8 +2992,8 @@ class SignalingFinish {
   }
 }
 \end{verbatim}
-  The following example will always print the message \verb+"before"+
-  before the message \verb+"after"+.
+  The following example will always print the message \xcd+"before"+
+  before the message \xcd+"after"+.
 \begin{verbatim}
 public static def main(Rail[String]) {
   val t = new SignalingFinish();
@@ -3006,7 +3006,7 @@ public static def main(Rail[String]) {
   }
 }
 \end{verbatim}
-\end{example}
+\end{ex}
 
 \subsection{User-Defined \texttt{at}}
 % {\scriptsize
@@ -3028,14 +3028,14 @@ $$
 \end{array}
 $$
 
-The arguments of the user-defined \verb+at+ statement are evaluated
-before the call of the \verb+at+ method and the body of the statement
+The arguments of the user-defined \xcd+at+ statement are evaluated
+before the call of the \xcd+at+ method and the body of the statement
 is lifted to a closure without argument.
 
 
-\begin{example}
-  We define a class \verb+Ring+ implementing an \verb+at+ statement
-  without argument. Each call to this user-defined \verb+at+ statement
+\begin{ex}
+  We define a class \xcd+Ring+ implementing an \xcd+at+ statement
+  without argument. Each call to this user-defined \xcd+at+ statement
   moves the activity to the next place in the place group given when
   the object is instantiated.
 \begin{verbatim}
@@ -3063,7 +3063,7 @@ public static def main(Rail[String]) {
   }
 }
 \end{verbatim}
-\end{example}
+\end{ex}
 
 
 \subsection{User-Defined \texttt{ateach}}
@@ -3089,13 +3089,13 @@ $$
 \end{array}
 $$
 
-The arguments of the user-defined \verb+ateach+ statement are
-evaluated before the call of the \verb+ateach+ method and the body of
+The arguments of the user-defined \xcd+ateach+ statement are
+evaluated before the call of the \xcd+ateach+ method and the body of
 the statement is lifted to a closure without argument.
 
-\begin{example}
-  An \verb+ateach+ control structure that has the same behavior as the
-  built-in \verb+ateach+, except that the activities are executed in
+\begin{ex}
+  An \xcd+ateach+ control structure that has the same behavior as the
+  built-in \xcd+ateach+, except that the activities are executed in
   sequence instead of being executed in parallel.
 
 \begin{verbatim}
@@ -3109,7 +3109,7 @@ class Sequential {
   }
 }
 \end{verbatim}
-\end{example}
+\end{ex}
 
 \subsection{User-Defined \texttt{while} and \texttt{do}}
 % {\scriptsize
@@ -3139,8 +3139,8 @@ $$
 \end{array}
 $$
 
-The arguments of the user-defined \verb+while+~(resp. \verb+do+) are
-evaluated before the call of the \verb+while+~(resp. \verb+do+) method
+The arguments of the user-defined \xcd+while+~(resp. \xcd+do+) are
+evaluated before the call of the \xcd+while+~(resp. \xcd+do+) method
 and the body of the loop is lifted to a closure without argument.
 %
 Note that compared to usual loop, the condition is evaluated once
@@ -3148,7 +3148,7 @@ before the call of the method that implements the behavior of the
 loop.
 
 
-\begin{example}
+\begin{ex}
   A loop that iterates during at least a given number of milliseconds:
 \begin{verbatim}
 class Timeout {
@@ -3171,7 +3171,7 @@ public static def main(Rail[String]) {
 }
 \end{verbatim}
 
-\end{example}
+\end{ex}
 
 \subsection{User-Defined  \texttt{continue}}
 % {\scriptsize
@@ -3193,12 +3193,12 @@ $$
 \end{array}
 $$
 
-The argument of a user-defined \verb+continue+ is evaluated before
+The argument of a user-defined \xcd+continue+ is evaluated before
 calling the corresponding method.
 
-\begin{example}
-  The following code provides a parallel \verb+for+ loop and a
-  \verb+continue+ statement that allows to skip an iteration.
+\begin{ex}
+  The following code provides a parallel \xcd+for+ loop and a
+  \xcd+continue+ statement that allows to skip an iteration.
 \begin{verbatim}
 class Par {
   private static class Continue extends Exception {}
@@ -3230,7 +3230,7 @@ public static def main(Rail[String]) {
   Console.OUT.println(cpt());
 }
 \end{verbatim}
-\end{example}
+\end{ex}
 
 
 \subsection{User-Defined \texttt{break}}
@@ -3253,12 +3253,12 @@ $$
 \end{array}
 $$
 
-The argument of a user-defined \verb+break+ is
+The argument of a user-defined \xcd+break+ is
 evaluated before calling the corresponding method.
 
-\begin{example}
+\begin{ex}
   To break out of a user-defined loop, it is necessary to also define
-  the \verb+break+ statement:
+  the \xcd+break+ statement:
 \begin{verbatim}
 class Infinite {
   private static class Break extends Exception {}
@@ -3283,7 +3283,7 @@ class Infinite {
   }
 }
 \end{verbatim}
-\end{example}
+\end{ex}
 
 
 
