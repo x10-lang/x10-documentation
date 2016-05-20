@@ -25,7 +25,6 @@ currentFileName = "this gets overwritten before use"
 clue = "%~~"
 sep="~~"
 files = []
-maxLengthOfTestName = 74 # Magic number imposed by CatTrack.
 currentLine = 0
 genTestCases = True
 
@@ -506,10 +505,6 @@ def writeX10File(packagename, classname, code, fileroot):
     
     testcasecode = assembleTestCase(NOpackageline, classname, code, fileroot)
     # print "\n\n\ntestcasecode=" + testcasecode
-    if len(testCaseDir) > maxLengthOfTestName-20:
-        print "A doom for me! The test case dir " + testCaseDir + " is too long, at " + str(len(testCaseDir))
-    if len(fileroot) > maxLengthOfTestName-20:
-        print "A Doom for you!  The name of " + fileroot + " is too long, at " + str(len(fileroot))
     subdir_for_this_test_case = testCaseDir + "/" + (fileroot.strip())
 
     if os.path.exists(subdir_for_this_test_case):
