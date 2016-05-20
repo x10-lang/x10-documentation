@@ -2366,6 +2366,10 @@ For example, suppose that we want to define a \xcd+if+ statement that
 randomly chooses which branch to execute. In a class \xcd+RandomIf+,
 we define a method named \xcd+if+~(introduced with the keyword
 \xcd+operator+) that implements this behavior:
+%~~gen ^^^ ClassesUserDefStmt010
+% package Classes.UserDefStmt.If;
+% import x10.util.*;
+%~~vis
 \begin{xten}
 class RandomIf {
     val random = new Random();
@@ -2378,17 +2382,36 @@ class RandomIf {
     }
 }
 \end{xten}
+%~~siv
+% class Hook{
+%   var cpt : Long = 0;
+%   def run() {
+%     val random = new RandomIf();
+%     random.if() { cpt++; } else { cpt++; }
+%     return cpt == 1;
+%   }
+% }
+%~~neg
 Then, we can call this method using the syntax of the \xcd+if+
 statement by prefixing the \xcd+if+ keyword by an object that
 implements this method:
-\begin{verbatim}
+%~~gen ^^^ ClassesUserDefStmt020
+% package Classes.UserDefStmt.If;
+% class Test1 {
+%   def test() {
+%~~vis
+\begin{xten}
     val random = new RandomIf();
     random.if () {
         Console.OUT.println("true");
     } else {
         Console.OUT.println("false");
     }
-\end{verbatim}
+\end{xten}
+%~~siv
+%   }
+% }
+%~~neg
 The blocks that represent the \xcd+then+ and the \xcd+else+ branches
 of the \xcd+if+ are automatically turned into closures and are given
 as argument to the \xcd+RandomIf.if+ method.
@@ -2404,12 +2427,20 @@ is exactly the same as the one of methods.
 User-defined control structures can also be called as standard methods
 using the keyword \xcd+operator+ as prefix~(as for user-defined
 operators). For example, the previous code is equivalent to:
-\begin{verbatim}
+%~~gen ^^^ ClassesUserDefStmt025
+% package Classes.UserDefStmt.If;
+% class Test2 {
+%   def test() {
+%~~vis
+\begin{xten}
     val random = new RandomIf();
     random.operator if (() => { Console.OUT.println("true"); },
                         () => { Console.OUT.println("false"); });
-\end{verbatim}
-
+\end{xten}
+%~~siv
+%   }
+% }
+%~~neg
 
 \begin{figure}[t]
   \centering
@@ -2567,18 +2598,18 @@ $$
 $$
 
 A \xcd+for+ loop over a collection may be defined in a container \xcd+A+ as:
-\begin{verbatim}
+\begin{xten}
 operator for[T](c: Iterable[T], body: (T)=>void) = ...
-\end{verbatim}
+\end{xten}
 %
 The use of such user-defined \xcd+for+ loop would have the following form:
-\begin{verbatim}
+\begin{xten}
 A.for (x: T in c) { ... }
-\end{verbatim}
+\end{xten}
 and would correspond to the following method call:
-\begin{verbatim}
+\begin{xten}
 A.operator for (c, (x: Long) => { ... });
-\end{verbatim}
+\end{xten}
 %
 The body of the \xcd+for+ is automatically translated into a closure
 that takes the iteration variable as parameter.
@@ -2587,17 +2618,21 @@ Since there is no type inference for closure parameters, the type of
 the iteration variable must be given explicitly.
 
 The second argument of a \xcd+for+ method can be a closure without argument:
-\begin{verbatim}
+\begin{xten}
 operator for[T](c: Iterable[T], body: ()=>void) = ...
-\end{verbatim}
+\end{xten}
 In this case, the method is called using the syntax of a \xcd+for+ loop without iteration variable:
-\begin{verbatim}
+\begin{xten}
 A.for (c) { ... }
-\end{verbatim}
+\end{xten}
 
 \begin{ex}
   A naive implementation of a parallel loop can be:
-\begin{verbatim}
+%~~gen ^^^ ClassesUserDefStmt030
+% package Classes.UserDefStmt.For;
+% import x10.util.*;
+%~~vis
+\begin{xten}
 class Parallel {
 
   public static operator for[T](c: Iterable[T], body: (T)=>void) {
@@ -2616,14 +2651,30 @@ class Parallel {
     Console.OUT.println(cpt());
   }
 }
-\end{verbatim}
+\end{xten}
+%~~siv
+% class Hook{
+%   var cpt : Long = 0;
+%   def run() {
+%     val cpt = new Cell[Long](0);
+%     Parallel.for(i:Long in 1..10) {
+%       atomic { cpt() = cpt() + i; }
+%     }
+%     return cpt() == 55;
+%   }
+% }
+%~~neg
 \end{ex}
 
 \begin{ex}
   We can also use the user-defined \xcd+for+ loops to define
   iterations over a two dimensional space. Let define a loop that
   creates an activity for each element of the first dimension.
-\begin{verbatim}
+%~~gen ^^^ ClassesUserDefStmt040
+% package Classes.UserDefStmt.For2;
+% import x10.array.DenseIterationSpace_2;
+%~~vis
+\begin{xten}
 class Parallel2 {
   public static operator for (space: DenseIterationSpace_2,
                               body: (i:Long, j:Long)=>void) {
@@ -2636,11 +2687,23 @@ class Parallel2 {
     }
   }
 }
-\end{verbatim}
+\end{xten}
+%~~siv
+% class Hook{
+%   var cpt : Long = 0;
+%   def run() {
+%     val cpt = new Cell[Long](0);
+%     Parallel2.for(i:Long, j:Long in 1..10 * 1..10) {
+%       atomic { cpt() = cpt() + i + j; }
+%     }
+%     return cpt() == 1100;
+%   }
+% }
+%~~neg
 and it can be used as follows:
-\begin{verbatim}
+\begin{xten}
 Parallel2.for (i:Long, j:Long in 1..10 * 1..10) { ... }
-\end{verbatim}
+\end{xten}
 The list of variables before the \xcd+in+ keyword becomes the
 parameters of the closure whose body is the body of the loop.
 \end{ex}
@@ -2724,7 +2787,11 @@ without argument.
   The user-defined \xcd+try+ construct can be used to provide a
   control structure that automatically removes the nesting of
   \xcd+MultipleExceptions+:
-\begin{verbatim}
+%~~gen ^^^ ClassesUserDefStmt050
+% package Classes.UserDefStmt.Try;
+% import x10.util.*;
+%~~vis
+\begin{xten}
 class Flatten {
 
   public static operator try(body:()=>void,
@@ -2748,14 +2815,23 @@ class Flatten {
     }
   }
 }
-\end{verbatim}
+\end{xten}
+%~~siv
+%
+%~~neg
+
 
   Used in the following example, the \xcd+MultipleExceptions+
   \xcd+me+ contains the exceptions \xcd+Exception("Exn 1")+,
   \xcd+Exception("Exn 2")+, and \xcd+Exception("Exn 3")+ instead of
   the exception \xcd+Exception("Exn 1")+ and another
   \xcd+MultipleExceptions+.
-\begin{verbatim}
+%~~gen ^^^ ClassesUserDefStmt060
+% package Classes.UserDefStmt.Try;
+% import x10.util.*;
+% class Test {
+%~~vis
+\begin{xten}
 public static def main(Rail[String]) {
   Flatten.try {
     finish {
@@ -2769,7 +2845,10 @@ public static def main(Rail[String]) {
     Console.OUT.println(me.exceptions);
   }
 }
-\end{verbatim}
+\end{xten}
+%~~siv
+% }
+%~~neg
 
 \end{ex}
 
@@ -2823,7 +2902,10 @@ argument. The clock arguments are evaluated before the call to the
   An \xcd+async+ that does not execute in the scope in which it is
   written. The task is created in the scope where the object that
   defines the \xcd+async+ method is instantiated.
-\begin{verbatim}
+%~~gen ^^^ ClassesUserDefStmt070
+% package Classes.UserDefStmt.Async;
+%~~vis
+\begin{xten}
 class Escape {
   private var task: ()=>void = null;
   private var stop: Boolean = false;
@@ -2853,11 +2935,20 @@ class Escape {
     atomic { stop = true; }
   }
 }
-\end{verbatim}
+\end{xten}
+%~~siv
+%
+%~~neg
+
   In the following example, the message \xcd+"OK"+ is printed even if
   the created task never terminates because the task is executed
   outside of the scope of the \xcd+finish+.
-\begin{verbatim}
+%~~gen ^^^ ClassesUserDefStmt080
+% package Classes.UserDefStmt.Async;
+% import x10.util.*;
+% class Test {
+%~~vis
+\begin{xten}
 public static def main(Rail[String]) {
   val toplevel = new Escape();
   finish {
@@ -2865,7 +2956,10 @@ public static def main(Rail[String]) {
   }
   Console.OUT.println("OK");
 }
-\end{verbatim}
+\end{xten}
+%~~siv
+% }
+%~~neg
 \end{ex}
 
 \subsection{User-Defined \texttt{atomic}}
@@ -2922,7 +3016,11 @@ example or a closure.
 \begin{ex}
   We can provide a \xcd+when+ statement whose execution can be
   canceled while it is waiting:
-\begin{verbatim}
+%~~gen ^^^ ClassesUserDefStmt090
+% package Classes.UserDefStmt.When;
+% import x10.util.*;
+%~~vis
+\begin{xten}
 class CancelableWhen {
   private var stop : Boolean = false;
 
@@ -2936,11 +3034,19 @@ class CancelableWhen {
     atomic { stop = true; }
   }
 }
-\end{verbatim}
+\end{xten}
+%~~siv
+%
+%~~neg
 The following example will not print the message \xcd+"KO"+ but will
 terminate even if the condition \xcd+b+ of the \xcd+when+ remains
 false:
-\begin{verbatim}
+%~~gen ^^^ ClassesUserDefStmt100
+% package Classes.UserDefStmt.When;
+% import x10.util.*;
+% class Test {
+%~~vis
+\begin{xten}
 public static def main(Rail[String]) {
   val c = new CancelableWhen();
   val b = new Cell[Boolean](false);
@@ -2951,7 +3057,10 @@ public static def main(Rail[String]) {
     c.cancel();
   }
 }
-\end{verbatim}
+\end{xten}
+%~~siv
+% }
+%~~neg
 \end{ex}
 
 \subsection{User-Defined \texttt{finish}}
@@ -2978,7 +3087,11 @@ The body of a user-defined \xcd+finish+ is lifted to a closure.
 
 \begin{ex}
   We define a \xcd+finish+ that provide the ability to some parallel task to wait for its termination:
-\begin{verbatim}
+%~~gen ^^^ ClassesUserDefStmt110
+% package Classes.UserDefStmt.Finish;
+% import x10.util.*;
+%~~vis
+\begin{xten}
 class SignalingFinish {
   private var terminated : Boolean = false;
   public operator finish(body: ()=>void) {
@@ -2991,10 +3104,19 @@ class SignalingFinish {
     when (terminated) {}
   }
 }
-\end{verbatim}
+\end{xten}
+%~~siv
+%
+%~~neg
+
   The following example will always print the message \xcd+"before"+
   before the message \xcd+"after"+.
-\begin{verbatim}
+%~~gen ^^^ ClassesUserDefStmt120
+% package Classes.UserDefStmt.Finish;
+% import x10.util.*;
+% class Test {
+%~~vis
+\begin{xten}
 public static def main(Rail[String]) {
   val t = new SignalingFinish();
   async {
@@ -3005,7 +3127,10 @@ public static def main(Rail[String]) {
     Console.OUT.println("before");
   }
 }
-\end{verbatim}
+\end{xten}
+%~~siv
+% }
+%~~neg
 \end{ex}
 
 \subsection{User-Defined \texttt{at}}
@@ -3038,7 +3163,11 @@ is lifted to a closure without argument.
   without argument. Each call to this user-defined \xcd+at+ statement
   moves the activity to the next place in the place group given when
   the object is instantiated.
-\begin{verbatim}
+%~~gen ^^^ ClassesUserDefStmt130
+% package Classes.UserDefStmt.At;
+% import x10.util.*;
+%~~vis
+\begin{xten}
 class Ring {
   val places: PlaceGroup;
 
@@ -3050,9 +3179,17 @@ class Ring {
     at(places.next(here)) { body(); }
   }
 }
-\end{verbatim}
+\end{xten}
+%~~siv
+%
+%~~neg
 
-\begin{verbatim}
+%~~gen ^^^ ClassesUserDefStmt140
+% package Classes.UserDefStmt.At;
+% import x10.util.*;
+% class Test {
+%~~vis
+\begin{xten}
 public static def main(Rail[String]) {
   val r = new Ring(Place.places());
   r.at() {
@@ -3062,7 +3199,10 @@ public static def main(Rail[String]) {
     }
   }
 }
-\end{verbatim}
+\end{xten}
+%~~siv
+% }
+%~~neg
 \end{ex}
 
 
@@ -3098,7 +3238,11 @@ the statement is lifted to a closure without argument.
   built-in \xcd+ateach+, except that the activities are executed in
   sequence instead of being executed in parallel.
 
-\begin{verbatim}
+%~~gen ^^^ ClassesUserDefStmt150
+% package Classes.UserDefStmt.Ateach;
+% import x10.regionarray.Dist;
+%~~vis
+\begin{xten}
 class Sequential {
   public static operator ateach (d: Dist, body:(Point)=>void) {
     for (place in d.places()) {
@@ -3108,7 +3252,10 @@ class Sequential {
     }
   }
 }
-\end{verbatim}
+\end{xten}
+%~~siv
+%
+%~~neg
 \end{ex}
 
 \subsection{User-Defined \texttt{while} and \texttt{do}}
@@ -3150,7 +3297,11 @@ loop.
 
 \begin{ex}
   A loop that iterates during at least a given number of milliseconds:
-\begin{verbatim}
+%~~gen ^^^ ClassesUserDefStmt160
+% package Classes.UserDefStmt.While;
+% import x10.util.*;
+%~~vis
+\begin{xten}
 class Timeout {
   public static operator while(ms: Long, body: ()=>void) {
     val deadline = System.currentTimeMillis() + ms;
@@ -3159,9 +3310,17 @@ class Timeout {
     }
   }
 }
-\end{verbatim}
+\end{xten}
+%~~siv
+%
+%~~neg
 Here, we increment a counter during about 10 milliseconds:
-\begin{verbatim}
+%~~gen ^^^ ClassesUserDefStmt170
+% package Classes.UserDefStmt.While;
+% import x10.util.*;
+% class Test {
+%~~vis
+\begin{xten}
 public static def main(Rail[String]) {
   val cpt = new Cell[Long](0);
   Timeout.while(10) {
@@ -3169,7 +3328,10 @@ public static def main(Rail[String]) {
   }
   Console.OUT.println(cpt());
 }
-\end{verbatim}
+\end{xten}
+%~~siv
+% }
+%~~neg
 
 \end{ex}
 
@@ -3199,7 +3361,11 @@ calling the corresponding method.
 \begin{ex}
   The following code provides a parallel \xcd+for+ loop and a
   \xcd+continue+ statement that allows to skip an iteration.
-\begin{verbatim}
+%~~gen ^^^ ClassesUserDefStmt180
+% package Classes.UserDefStmt.Continue;
+% import x10.util.*;
+%~~vis
+\begin{xten}
 class Par {
   private static class Continue extends Exception {}
 
@@ -3217,10 +3383,18 @@ class Par {
     }
   }
 }
-\end{verbatim}
+\end{xten}
+%~~siv
+%
+%~~neg
   The following example skip every iteration where the loop index is
   even.
-\begin{verbatim}
+%~~gen ^^^ ClassesUserDefStmt190
+% package Classes.UserDefStmt.Continue;
+% import x10.util.*;
+% class Test {
+%~~vis
+\begin{xten}
 public static def main(Rail[String]) {
   val cpt = new Cell[Long](0);
   Par.for(i:Long in 1..10) {
@@ -3229,7 +3403,10 @@ public static def main(Rail[String]) {
   }
   Console.OUT.println(cpt());
 }
-\end{verbatim}
+\end{xten}
+%~~siv
+% }
+%~~neg
 \end{ex}
 
 
@@ -3259,7 +3436,11 @@ evaluated before calling the corresponding method.
 \begin{ex}
   To break out of a user-defined loop, it is necessary to also define
   the \xcd+break+ statement:
-\begin{verbatim}
+%~~gen ^^^ ClassesUserDefStmt200
+% package Classes.UserDefStmt.Break;
+% import x10.util.*;
+%~~vis
+\begin{xten}
 class Infinite {
   private static class Break extends Exception {}
 
@@ -3282,7 +3463,10 @@ class Infinite {
     Console.OUT.println("OK");
   }
 }
-\end{verbatim}
+\end{xten}
+%~~siv
+%
+%~~neg
 \end{ex}
 
 
