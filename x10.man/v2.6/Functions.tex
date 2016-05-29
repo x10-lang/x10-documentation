@@ -244,8 +244,10 @@ which is to say, \xcd`Long{self!=3}`.
                      \| \xcd"<:" Type \\
 %(FROM #(prod:ClosureBody)#)
          ClosureBody \: Exp & (\ref{prod:ClosureBody}) \\
-                     \| Annotations\opt \xcd"{" BlockStmts\opt LastExp \xcd"}" \\
-                     \| Annotations\opt Block \\
+                     \| ClosureBodyBlock \\
+%(FROM #(prod:ClosureBodyBlock)#)
+         ClosureBodyBlock \: Annotations\opt \xcd"{" BlockStmts\opt LastExp \xcd"}" & (\ref{prod:ClosureBodyBlock})\\
+                          \| Annotations\opt Block \\
 \end{bbgrammar}
 %##)
 

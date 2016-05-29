@@ -528,6 +528,7 @@ rights.
                      \| ApplyOpDecln \\
                      \| SetOpDecln \\
                      \| ConversionOpDecln \\
+                     \| KeywordOpDecln \\
 %(FROM #(prod:TypeParams)#)
           TypeParams \: \xcd"[" TypeParamList \xcd"]" & (\ref{prod:TypeParams}) \\
 %(FROM #(prod:Formals)#)
@@ -1444,6 +1445,7 @@ executing the rest of the program.
                      \| ApplyOpDecln \\
                      \| SetOpDecln \\
                      \| ConversionOpDecln \\
+                     \| KeywordOpDecln \\
 \end{bbgrammar}
 %##)
 
@@ -2329,35 +2331,29 @@ class Oddvec {
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-$$
-\begin{array}{lcl}
-  KeywordOpDecln & ::= &
-  \\
-  \multicolumn{3}{l}{\qquad
-  MethMods\ \mathtt{operator}\ keywordOp\ TypeParams^?\ Formals\ Guard^?\ Throws^?
-  }\\
-  \multicolumn{3}{l}{\qquad
-  HasResultType^?\ MethodBody
-  }\\
-  keywordOp & ::= &
-      \mathtt{for}
-    | \mathtt{if}
-    | \mathtt{try}
-    | \mathtt{throw}
-    | \mathtt{async}
-    | \mathtt{atomic}
-    | \mathtt{when}
-    | \mathtt{finish}
-    | \mathtt{at}
-  \\ &&
-    | \mathtt{continue}
-    | \mathtt{break}
-    | \mathtt{ateach}
-    | \mathtt{while}
-    | \mathtt{do}
-    % | \mathtt{return}
-\end{array}
-$$
+%##(keywordOperatorDeclatation
+\begin{bbgrammar}
+%(FROM #(prod:KeywordOpDecln)#)
+KeywordOpDecln \: MethMods\ \xcd"operator" keywordOp TypeParams\opt Formals Guard\opt Throws\opt HasResultType\opt MethodBody & (\ref{prod:KeywordOpDecln}) \\
+%(FROM #(prod:KeywordOp)#)
+KeywordOp \refstepcounter{equation}\label{prod:KeywordOp}  \:
+       \xcd"for"  & (\ref{prod:KeywordOp}) \\
+    \| \xcd"if" \\
+    \| \xcd"try" \\
+    \| \xcd"throw" \\
+    \| \xcd"async" \\
+    \| \xcd"atomic" \\
+    \| \xcd"when" \\
+    \| \xcd"finish" \\
+    \| \xcd"at" \\
+    \| \xcd"continue" \\
+    \| \xcd"break" \\
+    \| \xcd"ateach" \\
+    \| \xcd"while" \\
+    \| \xcd"do" \\
+
+\end{bbgrammar}
+%##)
 
 Similarly to user-defined operators (Section~\ref{sect:operators}), it is possible to redefine the
 behavior of some control structures.
