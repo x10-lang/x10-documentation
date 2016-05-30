@@ -1560,6 +1560,101 @@ In this grammar, $X^?$ denotes an optional $X$ element.
 
 \begin{bbgrammarappendix}{3.8in}
 
+(\arabic{equation}) & UserAsyncStmt \refstepcounter{equation}\label{prod:UserAsyncStmt}  \:
+ \xcd"async" TypeArgs\opt Arguments\opt ClockedClause\opt ClosureBodyBlock
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{4.0in}
+
+(\arabic{equation}) & UserAtEachStmt \refstepcounter{equation}\label{prod:UserAtEachStmt}  \:
+ \xcd"ateach" TypeArgs\opt \xcd"(" FormalList \xcd"in" ArgumentList\opt \xcd")" ClosureBodyBlock \\
+ &    \| \xcd"ateach" TypeArgs\opt \xcd"(" ArgumentList\opt \xcd")" ClosureBodyBlock
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{3.8in}
+
+(\arabic{equation}) & UserAtomicStmt \refstepcounter{equation}\label{prod:UserAtomicStmt}  \:
+ \xcd"atomic" TypeArgs\opt Arguments\opt ClosureBodyBlock
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{3.8in}
+
+(\arabic{equation}) & UserAtStmt \refstepcounter{equation}\label{prod:UserAtStmt}  \:
+ \xcd"at" TypeArgs\opt \xcd"(" ArgumentList\opt \xcd")" ClosureBodyBlock
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{3.8in}
+
+(\arabic{equation}) & UserBreakStmt \refstepcounter{equation}\label{prod:UserBreakStmt}  \:
+ \xcd"break" TypeArgs\opt Exp\opt \xcd";"
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{3.8in}
+
+(\arabic{equation}) & UserCatchClause \refstepcounter{equation}\label{prod:UserCatchClause}  \:
+ \xcd"catch" \xcd"(" FormalList\opt \xcd")" ClosureBodyBlock
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{3.8in}
+
+(\arabic{equation}) & UserCatches \refstepcounter{equation}\label{prod:UserCatches}  \:
+         UserCatchClause  \\
+ &    \| UserCatches UserCatchClause
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{3.8in}
+
+(\arabic{equation}) & UserContinueStmt \refstepcounter{equation}\label{prod:UserContinueStmt}  \:
+ \xcd"continue" TypeArgs\opt Exp\opt \xcd";"
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{3.8in}
+
+(\arabic{equation}) & UserDoStmt \refstepcounter{equation}\label{prod:UserDoStmt}  \:
+ \xcd"do" TypeArgs\opt ClosureBodyBlock \xcd"while" \xcd"(" ArgumentList\opt \xcd")" \xcd";"
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{4.0in}
+
+(\arabic{equation}) & UserEnhancedForStmt \refstepcounter{equation}\label{prod:UserEnhancedForStmt}  \:
+ \xcd"for" TypeArgs\opt \xcd"(" FormalList \xcd"in" ArgumentList\opt \xcd")" ClosureBodyBlock \\
+ &    \| \xcd"for" TypeArgs\opt \xcd"(" ArgumentList\opt \xcd")" ClosureBodyBlock
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{3.8in}
+
+(\arabic{equation}) & UserFinallyBlock \refstepcounter{equation}\label{prod:UserFinallyBlock}  \:
+ \xcd"finally" ClosureBodyBlock
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{3.8in}
+
+(\arabic{equation}) & UserFinishStmt \refstepcounter{equation}\label{prod:UserFinishStmt}  \:
+ \xcd"finish" TypeArgs\opt Arguments\opt ClosureBodyBlock
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{4.4in}
+
+(\arabic{equation}) & UserIfThenStmt \refstepcounter{equation}\label{prod:UserIfThenStmt}  \:
+         \xcd"if" TypeArgs\opt \xcd"(" ArgumentList\opt \xcd")" ClosureBodyBlock \\
+ &    \| \xcd"if" TypeArgs\opt \xcd"(" ArgumentList\opt \xcd")" ClosureBodyBlock \xcd"else" ClosureBodyBlock
+
+\end{bbgrammarappendix}
+
+\begin{bbgrammarappendix}{3.8in}
+
 (\arabic{equation}) & UserStmt \refstepcounter{equation}\label{prod:UserStmt}  \:
          UserEnhancedForStmt \\
  &    \| UserIfThenStmt \\
@@ -1588,42 +1683,6 @@ In this grammar, $X^?$ denotes an optional $X$ element.
 
 \end{bbgrammarappendix}
 
-\begin{bbgrammarappendix}{4.4in}
-
-(\arabic{equation}) & UserIfThenStmt \refstepcounter{equation}\label{prod:UserIfThenStmt}  \:
-         \xcd"if" TypeArgs\opt \xcd"(" ArgumentList\opt \xcd")" ClosureBodyBlock \\
- &    \| \xcd"if" TypeArgs\opt \xcd"(" ArgumentList\opt \xcd")" ClosureBodyBlock \xcd"else" ClosureBodyBlock
-
-\end{bbgrammarappendix}
-
-\begin{bbgrammarappendix}{3.8in}
-
-(\arabic{equation}) & UserWhileStmt \refstepcounter{equation}\label{prod:UserWhileStmt}  \:
-         \xcd"while" TypeArgs\opt \xcd"(" ArgumentList\opt \xcd")" ClosureBodyBlock
-
-\end{bbgrammarappendix}
-
-\begin{bbgrammarappendix}{3.8in}
-
-(\arabic{equation}) & UserDoStmt \refstepcounter{equation}\label{prod:UserDoStmt}  \:
- \xcd"do" TypeArgs\opt ClosureBodyBlock \xcd"while" \xcd"(" ArgumentList\opt \xcd")" \xcd";"
-
-\end{bbgrammarappendix}
-
-\begin{bbgrammarappendix}{3.8in}
-
-(\arabic{equation}) & UserBreakStmt \refstepcounter{equation}\label{prod:UserBreakStmt}  \:
- \xcd"break" TypeArgs\opt Exp\opt \xcd";"
-
-\end{bbgrammarappendix}
-
-\begin{bbgrammarappendix}{3.8in}
-
-(\arabic{equation}) & UserContinueStmt \refstepcounter{equation}\label{prod:UserContinueStmt}  \:
- \xcd"continue" TypeArgs\opt Exp\opt \xcd";"
-
-\end{bbgrammarappendix}
-
 \begin{bbgrammarappendix}{3.8in}
 
 (\arabic{equation}) & UserThrowStmt \refstepcounter{equation}\label{prod:UserThrowStmt}  \:
@@ -1640,77 +1699,17 @@ In this grammar, $X^?$ denotes an optional $X$ element.
 
 \begin{bbgrammarappendix}{3.8in}
 
-(\arabic{equation}) & UserCatches \refstepcounter{equation}\label{prod:UserCatches}  \:
-         UserCatchClause  \\
- &    \| UserCatches UserCatchClause
-
-\end{bbgrammarappendix}
-
-\begin{bbgrammarappendix}{3.8in}
-
-(\arabic{equation}) & UserCatchClause \refstepcounter{equation}\label{prod:UserCatchClause}  \:
- \xcd"catch" \xcd"(" FormalList\opt \xcd")" ClosureBodyBlock
-
-\end{bbgrammarappendix}
-
-\begin{bbgrammarappendix}{3.8in}
-
-(\arabic{equation}) & UserFinallyBlock \refstepcounter{equation}\label{prod:UserFinallyBlock}  \:
- \xcd"finally" ClosureBodyBlock
-
-\end{bbgrammarappendix}
-
-\begin{bbgrammarappendix}{3.8in}
-
-(\arabic{equation}) & UserAsyncStmt \refstepcounter{equation}\label{prod:UserAsyncStmt}  \:
- \xcd"async" TypeArgs\opt Arguments\opt ClockedClause\opt ClosureBodyBlock
-
-\end{bbgrammarappendix}
-
-\begin{bbgrammarappendix}{3.8in}
-
-(\arabic{equation}) & UserAtStmt \refstepcounter{equation}\label{prod:UserAtStmt}  \:
- \xcd"at" TypeArgs\opt \xcd"(" ArgumentList\opt \xcd")" ClosureBodyBlock
-
-\end{bbgrammarappendix}
-
-\begin{bbgrammarappendix}{3.8in}
-
-(\arabic{equation}) & UserAtomicStmt \refstepcounter{equation}\label{prod:UserAtomicStmt}  \:
- \xcd"atomic" TypeArgs\opt Arguments\opt ClosureBodyBlock
-
-\end{bbgrammarappendix}
-
-\begin{bbgrammarappendix}{3.8in}
-
 (\arabic{equation}) & UserWhenStmt \refstepcounter{equation}\label{prod:UserWhenStmt}  \:
  \xcd"when" TypeArgs\opt \xcd"(" ArgumentList\opt \xcd")" ClosureBodyBlock
 
 \end{bbgrammarappendix}
 
-\begin{bbgrammarappendix}{4.0in}
-
-(\arabic{equation}) & UserAtEachStmt \refstepcounter{equation}\label{prod:UserAtEachStmt}  \:
- \xcd"ateach" TypeArgs\opt \xcd"(" FormalList \xcd"in" ArgumentList\opt \xcd")" ClosureBodyBlock \\
- &    \| \xcd"ateach" TypeArgs\opt \xcd"(" ArgumentList\opt \xcd")" ClosureBodyBlock
-
-\end{bbgrammarappendix}
-
-\begin{bbgrammarappendix}{4.0in}
-
-(\arabic{equation}) & UserEnhancedForStmt \refstepcounter{equation}\label{prod:UserEnhancedForStmt}  \:
- \xcd"for" TypeArgs\opt \xcd"(" FormalList \xcd"in" ArgumentList\opt \xcd")" ClosureBodyBlock \\
- &    \| \xcd"for" TypeArgs\opt \xcd"(" ArgumentList\opt \xcd")" ClosureBodyBlock
-
-\end{bbgrammarappendix}
-
 \begin{bbgrammarappendix}{3.8in}
 
-(\arabic{equation}) & UserFinishStmt \refstepcounter{equation}\label{prod:UserFinishStmt}  \:
- \xcd"finish" TypeArgs\opt Arguments\opt ClosureBodyBlock
+(\arabic{equation}) & UserWhileStmt \refstepcounter{equation}\label{prod:UserWhileStmt}  \:
+         \xcd"while" TypeArgs\opt \xcd"(" ArgumentList\opt \xcd")" ClosureBodyBlock
 
 \end{bbgrammarappendix}
-
 
 \begin{bbgrammarappendix}{3.8in}
 
