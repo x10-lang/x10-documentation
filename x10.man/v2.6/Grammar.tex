@@ -1005,6 +1005,17 @@ In this grammar, $X^?$ denotes an optional $X$ element.
 
 \end{bbgrammarappendix}
 
+\begin{bbgrammarappendix}{3.8in}
+
+(\arabic{equation}) & MethodInvoStmt \refstepcounter{equation}\label{prod:MethodInvoStmt}  \:
+         MethodName TypeArgs\opt Arguments\opt  ClosureBodyBlock \\
+ &    \| Primary \xcd"." Id TypeArgs\opt Arguments\opt ClosureBodyBlock \\
+ &    \| \xcd"super" \xcd"." Id TypeArgs\opt Arguments\opt ClosureBodyBlock \\
+ &    \| ClassName \xcd"." \xcd"super"  \xcd"." Id TypeArgs\opt Arguments\opt ClosureBodyBlock \\
+ &    \| Primary TypeArgs\opt Arguments\opt ClosureBodyBlock \\
+
+\end{bbgrammarappendix}
+
 \begin{bbgrammarappendix}{4.0in}
 
 (\arabic{equation}) & MethodName \refstepcounter{equation}\label{prod:MethodName}  \: Id  \\
@@ -1083,6 +1094,7 @@ In this grammar, $X^?$ denotes an optional $X$ element.
  &    \| FinishStmt \\
  &    \| AssignPropCall \\
  &    \| userStmtPrefix userStmt \\
+ &    \| MethodInvoStmt   \\
 
 \end{bbgrammarappendix}
 
