@@ -1219,11 +1219,11 @@ In this grammar, $X^?$ denotes an optional $X$ element.
 
 \end{bbgrammarappendix}
 
-\begin{bbgrammarappendix}{3.5in}
+\begin{bbgrammarappendix}{3.3in}
 
-(\arabic{equation}) & PropMethodDecln \refstepcounter{equation}\label{prod:PropMethodDecln}  \: MethMods Id TypeParams\opt Formals Guard\opt HasResultType\opt MethodBody  \\
+(\arabic{equation}) & PropMethodDecln \refstepcounter{equation}\label{prod:PropMethodDecln}  \: Mods\opt \xcd"property" Id TypeParams\opt Formals Guard\opt HasResultType\opt MethodBody  \\
 
- &    \| MethMods Id Guard\opt HasResultType\opt MethodBody \\
+ &    \|  Mods\opt \xcd"property" Id Guard\opt HasResultType\opt MethodBody \\
 
 \end{bbgrammarappendix}
 

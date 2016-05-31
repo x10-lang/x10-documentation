@@ -798,8 +798,8 @@ Using a reference to an outer class, \xcd`Outer.this`, in a constraint, is not s
 %##(PropertyMethodDeclaration
 \begin{bbgrammar}
 %(FROM #(prod:PropMethodDecln)#)
-     PropMethodDecln \: MethMods Id TypeParams\opt Formals Guard\opt Throws\opt HasResultType\opt MethodBody & (\ref{prod:PropMethodDecln}) \\
-                     \| MethMods Id Guard\opt HasResultType\opt MethodBody \\
+     PropMethodDecln \: Mods\opt \xcd"property" Id TypeParams\opt Formals Guard\opt Throws\opt HasResultType\opt MethodBody & (\ref{prod:PropMethodDecln}) \\
+                     \| Mods\opt \xcd"property" Id Guard\opt HasResultType\opt MethodBody \\
 \end{bbgrammar}
 %##)
 
