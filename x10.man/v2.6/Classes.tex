@@ -2428,7 +2428,7 @@ use of a built-in one, the first keyword of the control structure must
 be prefixed with the object that redefines its behavior.
 %
 The scoping and dispatching rules of user-defined control structures
-is exactly the same as the one of methods.
+are exactly the same as the rules for methods.
 
 
 User-defined control structures can also be called as standard methods
@@ -2571,7 +2571,7 @@ optionally end with an expression~(a return value);
 %
 $(\,)^?$ is an optional group.
 
-Let's comment the rule for \xcd+if+:
+Let's consider the rule for \xcd+if+:
 $$
 \begin{array}{rcl}
   \usrIf{o}{\overline{T}}{\overline{e}}{b_1}{b_2}
@@ -2620,7 +2620,7 @@ A \xcd+for+ loop over a collection may be defined in a container \xcd+A+ as:
 operator for[T](c: Iterable[T], body: (T)=>void) = ...
 \end{xten}
 %
-The use of such user-defined \xcd+for+ loop would have the following form:
+The use of such a user-defined \xcd+for+ loop would have the following form:
 \begin{xten}
 A.for (x: T in c) { ... }
 \end{xten}
@@ -2686,7 +2686,7 @@ class Parallel {
 
 \begin{ex}
   We can also use the user-defined \xcd+for+ loops to define
-  iterations over a two dimensional space. Let define a loop that
+  iterations over a two dimensional space. Let us define a loop that
   creates an activity for each element of the first dimension.
 %~~gen ^^^ ClassesUserDefStmt040
 % package Classes.UserDefStmt.For2;
@@ -3414,7 +3414,7 @@ class Timeout {
 %~~siv
 %
 %~~neg
-Here, we increment a counter during about 10 milliseconds:
+Here, we increment a counter during a period of at least 10 milliseconds:
 %~~gen ^^^ ClassesUserDefStmt170
 % package Classes.UserDefStmt.While2;
 % import x10.util.*;
@@ -3467,8 +3467,8 @@ The argument of a user-defined \xcd+continue+ is evaluated before
 calling the corresponding method.
 
 \begin{ex}
-  The following code provides a parallel \xcd+for+ loop and a
-  \xcd+continue+ statement that allows to skip an iteration.
+  The following code provides a parallel \xcd+for+ loop with a
+  \xcd+continue+ statement that allows skipping an iteration.
 %~~gen ^^^ ClassesUserDefStmt180
 % package Classes.UserDefStmt.Continue1;
 % import x10.util.*;
@@ -3495,7 +3495,7 @@ class Par {
 %~~siv
 %
 %~~neg
-  The following example skip every iteration where the loop index is
+  The following example skips every iteration where the loop index is
   even.
 %~~gen ^^^ ClassesUserDefStmt190
 % package Classes.UserDefStmt.Continue2;
